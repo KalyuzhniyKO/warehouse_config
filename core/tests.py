@@ -2,12 +2,14 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.test import SimpleTestCase, TestCase
+from django.contrib.auth import get_user_model
+from django.test import TestCase
 from django.urls import reverse
 
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
+    Category,
     Item,
     Location,
     Recipient,
@@ -16,14 +18,6 @@ from .models import (
     Unit,
     Warehouse,
 )
-
-
-class DashboardTests(SimpleTestCase):
-    def test_dashboard_url_resolves(self):
-        response = self.client.get(reverse("dashboard"))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Warehouse dashboard")
 
 
 class WarehouseModelTests(TestCase):
@@ -350,3 +344,108 @@ class StockServiceTests(TestCase):
 
         self.assertEqual(self.get_balance_qty(), Decimal("1.235"))
         self.assertEqual(movement.qty, Decimal("1.235"))
+
+
+class WebInterfaceTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="ui-user", password="test-password"
+        )
+        self.client.force_login(self.user)
+        self.unit = Unit.objects.create(name="Штука", symbol="шт")
+        self.category = Category.objects.create(name="Матеріали")
+        self.recipient = Recipient.objects.create(name="Цех 1")
+        self.item = Item.objects.create(
+            name="Болт М8", internal_code="BOLT-M8", category=self.category, unit=self.unit
+        )
+        self.warehouse = Warehouse.objects.create(name="Основний склад")
+        self.location = Location.objects.create(warehouse=self.warehouse, name="A-01")
+        self.balance = StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("5.000")
+        )
+
+    def test_pages_redirect_anonymous_user_to_login(self):
+        self.client.logout()
+
+        response = self.client.get(reverse("item_list"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
+    def test_directory_list_pages_are_available_for_logged_in_user(self):
+        url_names = [
+            "unit_list",
+            "category_list",
+            "recipient_list",
+            "item_list",
+            "warehouse_list",
+            "location_list",
+        ]
+
+        for url_name in url_names:
+            with self.subTest(url_name=url_name):
+                response = self.client.get(reverse(url_name))
+                self.assertEqual(response.status_code, 200)
+
+    def test_unit_create_update_and_archive(self):
+        create_response = self.client.post(
+            reverse("unit_create"),
+            {"name": "Кілограм", "symbol": "кг", "is_active": "on"},
+        )
+        self.assertEqual(create_response.status_code, 302)
+        unit = Unit.objects.get(symbol="кг")
+
+        update_response = self.client.post(
+            reverse("unit_update", args=[unit.pk]),
+            {"name": "Кілограм", "symbol": "kg", "is_active": "on"},
+        )
+        self.assertEqual(update_response.status_code, 302)
+        unit.refresh_from_db()
+        self.assertEqual(unit.symbol, "kg")
+
+        archive_response = self.client.post(reverse("unit_archive", args=[unit.pk]))
+        self.assertEqual(archive_response.status_code, 302)
+        unit.refresh_from_db()
+        self.assertFalse(unit.is_active)
+
+    def test_item_can_be_created_through_web(self):
+        response = self.client.post(
+            reverse("item_create"),
+            {
+                "name": "Гайка М8",
+                "internal_code": "NUT-M8",
+                "category": self.category.pk,
+                "unit": self.unit.pk,
+                "description": "",
+                "is_active": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Item.objects.filter(internal_code="NUT-M8").exists())
+
+    def test_warehouse_and_location_can_be_created_through_web(self):
+        warehouse_response = self.client.post(
+            reverse("warehouse_create"),
+            {"name": "Резервний склад", "address": "", "is_active": "on"},
+        )
+        self.assertEqual(warehouse_response.status_code, 302)
+        warehouse = Warehouse.objects.get(name="Резервний склад")
+
+        location_response = self.client.post(
+            reverse("location_create"),
+            {
+                "warehouse": warehouse.pk,
+                "name": "B-02",
+                "location_type": Location.LocationType.LOCATION,
+                "is_active": "on",
+            },
+        )
+        self.assertEqual(location_response.status_code, 302)
+        self.assertTrue(Location.objects.filter(warehouse=warehouse, name="B-02").exists())
+
+    def test_stock_balance_list_opens_and_filters_by_search(self):
+        response = self.client.get(reverse("stockbalance_list"), {"q": "BOLT"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Болт М8")

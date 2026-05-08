@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if object %}{{ update_title }}{% else %}{{ create_title }}{% endif %} · {% trans "Складський облік" %}{% endblock %}
+
+{% block content %}
+<h1 class="mb-3">{% if object %}{{ update_title }}{% else %}{{ create_title }}{% endif %}</h1>
+<form method="post" class="card card-body">
+    {% csrf_token %}
+    {% for field in form %}
+        {% if field.field.widget.input_type == "checkbox" %}
+            <div class="form-check mb-3">
+                {{ field }}
+                <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% else %}
+            <div class="mb-3">
+                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
+        <a class="btn btn-outline-secondary" href="{% url list_url_name %}">{% trans "Скасувати" %}</a>
+    </div>
+</form>
+{% endblock %}
