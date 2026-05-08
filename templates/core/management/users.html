@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Користувачі та ролі" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4"><h1 class="h3 mb-0">{% trans "Користувачі та ролі" %}</h1><a class="btn btn-primary" href="{% url 'admin:auth_user_add' %}">{% trans "Створити в Django Admin" %}</a></div>
+<div class="card content-card"><div class="table-responsive"><table class="table mb-0"><thead><tr><th>{% trans "Логін" %}</th><th>{% trans "Email" %}</th><th>{% trans "Ролі" %}</th></tr></thead><tbody>{% for app_user in users %}<tr><td>{{ app_user.username }}</td><td>{{ app_user.email|default:"—" }}</td><td>{% for group in app_user.groups.all %}<span class="badge text-bg-secondary">{{ group.name }}</span>{% empty %}—{% endfor %}</td></tr>{% endfor %}</tbody></table></div></div>
+<h2 class="h5 mt-4">{% trans "Доступні ролі" %}</h2>
+<ul>{% for group in groups %}<li>{{ group.name }}</li>{% endfor %}</ul>
+{% endblock %}

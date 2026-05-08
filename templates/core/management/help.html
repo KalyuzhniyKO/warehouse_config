@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Центр допомоги" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="card content-card"><div class="card-body p-4"><h1 class="h3 mb-3">{% trans "Центр допомоги" %}</h1><p>{% trans "Документація знаходиться у каталозі docs: інструкція користувача, адміністратора та запуск складу з нуля." %}</p><div class="list-group"><a class="list-group-item list-group-item-action" href="{% url 'management_dashboard' %}">{% trans "Панель керування" %}</a><a class="list-group-item list-group-item-action" href="{% url 'analytics' %}">{% trans "Аналітика" %}</a><a class="list-group-item list-group-item-action" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></div></div></div>
+{% endblock %}
