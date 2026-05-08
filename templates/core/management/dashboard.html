@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Керування" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{% trans "Керування складом" %}</h1>
+        <p class="text-muted mb-0">{% trans "Операційна панель для адміністрування складу, аналітики та довідників." %}</p>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Номенклатура" %}</div><div class="fs-3 fw-semibold">{{ counts.items }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Склади" %}</div><div class="fs-3 fw-semibold">{{ counts.warehouses }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Локації" %}</div><div class="fs-3 fw-semibold">{{ counts.locations }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Користувачі" %}</div><div class="fs-3 fw-semibold">{{ counts.users }}</div></div></div></div>
+</div>
+<div class="row g-3">
+    {% if can_manage_directories %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_directories' %}"><div class="card-body"><h2 class="h5">📚 {% trans "Довідники" %}</h2><p class="text-muted mb-0">{% trans "Номенклатура, категорії, склади, локації та отримувачі." %}</p></div></a></div>{% endif %}
+    {% if can_view_analytics %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_analytics' %}"><div class="card-body"><h2 class="h5">📈 {% trans "Аналітика" %}</h2><p class="text-muted mb-0">{% trans "KPI, графіки та експорт рухів складу." %}</p></div></a></div>{% endif %}
+    {% if can_manage_users %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_users' %}"><div class="card-body"><h2 class="h5">👤 {% trans "Користувачі та ролі" %}</h2><p class="text-muted mb-0">{% trans "Перегляд користувачів і складських ролей." %}</p></div></a></div>{% endif %}
+    <div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_help' %}"><div class="card-body"><h2 class="h5">❓ {% trans "Допомога" %}</h2><p class="text-muted mb-0">{% trans "Швидкі інструкції для запуску та роботи." %}</p></div></a></div>
+</div>
+{% endblock %}

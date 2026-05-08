@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Довідники" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">{% trans "Довідники" %}</h1>
+<div class="row g-3">
+    {% for directory in directories %}
+        <div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{{ directory.url }}"><div class="card-body"><h2 class="h5">{{ directory.title }}</h2><div class="text-muted">{% trans "Записів" %}: {{ directory.count }}</div></div></a></div>
+    {% endfor %}
+</div>
+{% endblock %}

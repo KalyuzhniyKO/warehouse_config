@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Аналітика" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div><h1 class="h3 mb-1">{% trans "Аналітика" %}</h1><p class="text-muted mb-0">{% trans "Прихід, видача, списання, переміщення, повернення та залишки." %}</p></div>
+    <div class="btn-group"><a class="btn btn-outline-primary" href="{% url 'analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт CSV" %}</a><a class="btn btn-outline-primary" href="{% url 'analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт XLSX" %}</a></div>
+</div>
+<form method="get" class="card content-card mb-4"><div class="card-body"><div class="row g-3">{% for field in filter_form %}<div class="col-md-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endfor %}</div><div class="mt-3"><button class="btn btn-primary" type="submit">{% trans "Застосувати фільтр" %}</button> <a class="btn btn-outline-secondary" href="{% url 'analytics' %}">{% trans "Скинути" %}</a></div></div></form>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Прихід" %}</div><div class="fs-4 fw-semibold">{{ movement_summary.total_in }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Видача" %}</div><div class="fs-4 fw-semibold">{{ movement_summary.total_out }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Списання" %}</div><div class="fs-4 fw-semibold">{{ movement_summary.total_writeoff }}</div></div></div></div>
+    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Унікальні товари" %}</div><div class="fs-4 fw-semibold">{{ movement_summary.unique_items }}</div></div></div></div>
+</div>
+<div class="row g-3">
+    <div class="col-lg-4"><div class="card content-card h-100"><div class="card-body"><h2 class="h5">{% trans "Топ-10 товарів за видачею" %}</h2>{% for row in top_out %}<div class="d-flex justify-content-between border-bottom py-2"><span>{{ row.item__name }} <small class="text-muted">{{ row.item__internal_code|default:"" }}</small></span><strong>{{ row.total_qty }}</strong></div>{% empty %}<p class="text-muted">{% trans "Немає даних" %}</p>{% endfor %}</div></div></div>
+    <div class="col-lg-4"><div class="card content-card h-100"><div class="card-body"><h2 class="h5">{% trans "Топ-10 товарів за приходом" %}</h2>{% for row in top_in %}<div class="d-flex justify-content-between border-bottom py-2"><span>{{ row.item__name }} <small class="text-muted">{{ row.item__internal_code|default:"" }}</small></span><strong>{{ row.total_qty }}</strong></div>{% empty %}<p class="text-muted">{% trans "Немає даних" %}</p>{% endfor %}</div></div></div>
+    <div class="col-lg-4"><div class="card content-card h-100"><div class="card-body"><h2 class="h5">{% trans "Топ-10 отримувачів" %}</h2>{% for row in top_recipients %}<div class="d-flex justify-content-between border-bottom py-2"><span>{{ row.recipient__name }}</span><strong>{{ row.total_qty }}</strong></div>{% empty %}<p class="text-muted">{% trans "Немає даних" %}</p>{% endfor %}</div></div></div>
+</div>
+{{ day_chart_json|json_script:"day-chart-data" }}{{ type_chart_json|json_script:"type-chart-data" }}{{ warehouse_chart_json|json_script:"warehouse-chart-data" }}{{ top_out_chart_json|json_script:"top-out-chart-data" }}
+{% endblock %}

@@ -26,6 +26,8 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% trans "Номенклатура" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'management_dashboard' %}">{% trans "Керування" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">{% trans "Аналітика" %}</a></li>
             </ul>
             <div class="ms-auto d-flex align-items-center gap-3 text-white">
                 {% include "includes/language_switcher.html" %}
@@ -56,6 +58,9 @@
                             <a class="sidebar-link" href="{% url 'location_list' %}">📍 {% trans "Локації" %}</a>
                             <a class="sidebar-link" href="{% url 'recipient_list' %}">👥 {% trans "Отримувачі" %}</a>
                             <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
+                            <a class="sidebar-link" href="{% url 'analytics' %}">📈 {% trans "Аналітика" %}</a>
+                            <a class="sidebar-link" href="{% url 'management_dashboard' %}">🧭 {% trans "Керування" %}</a>
+                            <a class="sidebar-link" href="{% url 'help' %}">❓ {% trans "Допомога" %}</a>
                             <a class="sidebar-link" href="{% url 'admin:index' %}">🛠️ {% trans "Адмін-панель" %}</a>
                         </nav>
                     </div>
