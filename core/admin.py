@@ -1,6 +1,12 @@
 from django.contrib import admin
 
-from .forms import active_records_queryset
+from .forms import (
+    CategoryForm,
+    ItemForm,
+    LocationForm,
+    StockBalanceAdminForm,
+    StockMovementAdminForm,
+)
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -15,71 +21,67 @@ from .models import (
 )
 
 
-class ActiveRelatedAdminMixin:
-    """Prevent archived records from being offered as related choices."""
+class IncludeCurrentRelationsAdminMixin:
+    """Pass current archived relations to admin forms so existing records remain editable."""
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if hasattr(db_field.remote_field.model, "is_active"):
-            kwargs["queryset"] = active_records_queryset(db_field.remote_field.model.objects.all())
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form_class = super().get_form(request, obj, change, **kwargs)
 
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if hasattr(db_field.remote_field.model, "is_active"):
-            kwargs["queryset"] = active_records_queryset(db_field.remote_field.model.objects.all())
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
+        class AdminForm(form_class):
+            def __init__(self, *args, **form_kwargs):
+                form_kwargs["include_current_relations"] = True
+                super().__init__(*args, **form_kwargs)
 
-    def get_search_results(self, request, queryset, search_term):
-        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
-        if {"app_label", "model_name", "field_name"}.issubset(request.GET) and hasattr(self.model, "is_active"):
-            queryset = active_records_queryset(queryset)
-        return queryset, use_distinct
+        return AdminForm
 
 
 @admin.register(Unit)
-class UnitAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class UnitAdmin(admin.ModelAdmin):
     list_display = ("name", "symbol", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "symbol")
 
 
 @admin.register(Category)
-class CategoryAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class CategoryAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    form = CategoryForm
     list_display = ("name", "parent", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "parent__name")
 
 
 @admin.register(Recipient)
-class RecipientAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class RecipientAdmin(admin.ModelAdmin):
     list_display = ("name", "contact_name", "phone", "email", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "contact_name", "phone", "email")
 
 
 @admin.register(BarcodeRegistry)
-class BarcodeRegistryAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class BarcodeRegistryAdmin(admin.ModelAdmin):
     list_display = ("barcode", "prefix", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("barcode", "description")
 
 
 @admin.register(BarcodeSequence)
-class BarcodeSequenceAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class BarcodeSequenceAdmin(admin.ModelAdmin):
     list_display = ("prefix", "next_number", "padding", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("prefix",)
 
 
 @admin.register(Item)
-class ItemAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class ItemAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    form = ItemForm
     list_display = ("name", "internal_code", "category", "unit", "barcode", "is_active")
     list_filter = ("category", "unit", "is_active")
     search_fields = ("name", "internal_code", "barcode__barcode")
-    autocomplete_fields = ("category", "unit", "barcode")
+    autocomplete_fields = ("barcode",)
 
 
 @admin.register(Warehouse)
-class WarehouseAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class WarehouseAdmin(admin.ModelAdmin):
     list_display = ("name", "barcode", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "barcode__barcode", "address")
@@ -87,23 +89,25 @@ class WarehouseAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class LocationAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    form = LocationForm
     list_display = ("name", "warehouse", "location_type", "barcode", "is_active")
     list_filter = ("warehouse", "location_type", "is_active")
     search_fields = ("name", "warehouse__name", "barcode__barcode")
-    autocomplete_fields = ("warehouse", "barcode")
+    autocomplete_fields = ("barcode",)
 
 
 @admin.register(StockBalance)
-class StockBalanceAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class StockBalanceAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    form = StockBalanceAdminForm
     list_display = ("item", "location", "qty", "is_active")
     list_filter = ("location__warehouse", "is_active")
     search_fields = ("item__name", "item__internal_code", "location__name")
-    autocomplete_fields = ("item", "location")
 
 
 @admin.register(StockMovement)
-class StockMovementAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
+class StockMovementAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    form = StockMovementAdminForm
     list_display = (
         "movement_type",
         "item",
@@ -123,5 +127,4 @@ class StockMovementAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
         "recipient__name",
         "comment",
     )
-    autocomplete_fields = ("item", "source_location", "destination_location", "recipient")
     date_hierarchy = "occurred_at"

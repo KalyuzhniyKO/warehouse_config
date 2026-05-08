@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
@@ -16,18 +17,34 @@ class Command(BaseCommand):
 
         directory_models = [Unit, Category, Recipient, Item, Warehouse, Location]
         stock_models = [StockBalance, StockMovement]
+        admin_models = directory_models + stock_models + [get_user_model(), Group]
         all_models = directory_models + stock_models
 
-        admin_group.permissions.set(self.permissions_for(all_models, ["view", "add", "change", "delete"]))
-        storekeeper_group.permissions.set(self.permissions_for(stock_models + [Item, Warehouse, Location, Recipient], ["view", "add", "change"]))
+        admin_group.permissions.set(
+            self.permissions_for(admin_models, ["view", "add", "change", "delete"])
+        )
+        storekeeper_group.permissions.set(
+            self.permissions_for(
+                stock_models + [Item, Warehouse, Location, Recipient],
+                ["view", "add", "change"],
+            )
+        )
         auditor_group.permissions.set(self.permissions_for(all_models, ["view"]))
 
-        self.stdout.write(self.style.SUCCESS("Створено/оновлено групи: Адміністратор складу, Комірник, Перегляд / аудитор."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "Створено/оновлено групи: Адміністратор складу, Комірник, Перегляд / аудитор."
+            )
+        )
 
     def permissions_for(self, models, actions):
         permissions = []
         for model in models:
             content_type = ContentType.objects.get_for_model(model)
             codenames = [f"{action}_{model._meta.model_name}" for action in actions]
-            permissions.extend(Permission.objects.filter(content_type=content_type, codename__in=codenames))
+            permissions.extend(
+                Permission.objects.filter(
+                    content_type=content_type, codename__in=codenames
+                )
+            )
         return permissions

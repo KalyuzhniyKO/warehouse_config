@@ -1,10 +1,48 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import Category, Item, Location, Recipient, StockMovement, Unit, Warehouse
+from .models import (
+    Category,
+    Item,
+    Location,
+    Recipient,
+    StockBalance,
+    StockMovement,
+    Unit,
+    Warehouse,
+)
 
 
 ARCHIVED_CHOICE_ERROR = _("Не можна вибрати архівний запис.")
+
+
+def active_queryset(model, include=None, **filters):
+    queryset = model.objects.filter(is_active=True, **filters)
+    if include is not None and getattr(include, "pk", None):
+        queryset = model.objects.filter(pk=include.pk) | queryset
+    return queryset.distinct()
+
+
+def set_active_model_choice(form, field_name, queryset):
+    field = form.fields[field_name]
+    field.queryset = queryset
+    field.error_messages["invalid_choice"] = ARCHIVED_CHOICE_ERROR
+
+
+def current_related(instance, field_name):
+    if instance and getattr(instance, "pk", None):
+        return getattr(instance, field_name, None)
+    return None
+
+
+def is_current_relation(form, field_name, obj):
+    current = current_related(form.instance, field_name)
+    return bool(
+        getattr(form, "include_current_relations", False)
+        and obj
+        and current
+        and obj.pk == current.pk
+    )
 
 
 DUPLICATE_MESSAGES = {
@@ -31,26 +69,12 @@ def normalized_duplicate_exists(queryset, instance, field_name, value):
             return True
     return False
 
-
-def active_records_queryset(queryset):
-    if hasattr(queryset.model, "is_active"):
-        return queryset.filter(is_active=True)
-    return queryset
-
-
-def restrict_model_choice_to_active(field):
-    if isinstance(field, forms.ModelChoiceField):
-        field.queryset = active_records_queryset(field.queryset)
-        field.error_messages["invalid_choice"] = ARCHIVED_CHOICE_ERROR
-
-
 class BootstrapModelForm(forms.ModelForm):
     """Model form base class with Bootstrap-friendly widgets."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            restrict_model_choice_to_active(field)
             widget = field.widget
             if isinstance(widget, forms.CheckboxInput):
                 widget.attrs.setdefault("class", "form-check-input")
@@ -95,6 +119,15 @@ class CategoryForm(BootstrapModelForm):
         labels = {"name": _("Назва"), "parent": _("Батьківська категорія"), "is_active": _("Активний")}
         help_texts = {"parent": _("Залиште порожнім для категорії верхнього рівня.")}
 
+    def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.include_current_relations = include_current_relations
+        super().__init__(*args, **kwargs)
+        include = current_related(self.instance, "parent") if include_current_relations else None
+        queryset = active_queryset(Category, include=include)
+        if self.instance and self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        set_active_model_choice(self, "parent", queryset)
+
     def clean_name(self):
         return self.clean_normalized_char("name")
 
@@ -102,6 +135,10 @@ class CategoryForm(BootstrapModelForm):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")
         parent = cleaned_data.get("parent")
+        if parent and not parent.is_active and not is_current_relation(self, "parent", parent):
+            self.add_error("parent", ARCHIVED_CHOICE_ERROR)
+        if parent and self.instance and self.instance.pk and parent.pk == self.instance.pk:
+            self.add_error("parent", _("Категорія не може бути батьківською для самої себе."))
         if name:
             queryset = Category.objects.filter(parent__isnull=True) if parent is None else Category.objects.filter(parent=parent)
             if normalized_duplicate_exists(queryset, self.instance, "name", name):
@@ -144,6 +181,26 @@ class ItemForm(BootstrapModelForm):
         }
         help_texts = {"internal_code": _("Необов'язковий унікальний код у вашій системі обліку.")}
 
+    def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.include_current_relations = include_current_relations
+        super().__init__(*args, **kwargs)
+        category = current_related(self.instance, "category") if include_current_relations else None
+        unit = current_related(self.instance, "unit") if include_current_relations else None
+        set_active_model_choice(self, "category", active_queryset(Category, include=category))
+        set_active_model_choice(self, "unit", active_queryset(Unit, include=unit))
+
+    def clean_category(self):
+        category = self.cleaned_data.get("category")
+        if category and not category.is_active and not is_current_relation(self, "category", category):
+            raise forms.ValidationError(ARCHIVED_CHOICE_ERROR)
+        return category
+
+    def clean_unit(self):
+        unit = self.cleaned_data.get("unit")
+        if unit and not unit.is_active and not is_current_relation(self, "unit", unit):
+            raise forms.ValidationError(ARCHIVED_CHOICE_ERROR)
+        return unit
+
     def clean_name(self):
         return self.clean_normalized_char("name")
 
@@ -182,6 +239,18 @@ class LocationForm(BootstrapModelForm):
         }
         help_texts = {"name": _("Наприклад: A-01, Ряд 2, Комірка 5.")}
 
+    def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.include_current_relations = include_current_relations
+        super().__init__(*args, **kwargs)
+        warehouse = current_related(self.instance, "warehouse") if include_current_relations else None
+        set_active_model_choice(self, "warehouse", active_queryset(Warehouse, include=warehouse))
+
+    def clean_warehouse(self):
+        warehouse = self.cleaned_data.get("warehouse")
+        if warehouse and not warehouse.is_active and not is_current_relation(self, "warehouse", warehouse):
+            raise forms.ValidationError(ARCHIVED_CHOICE_ERROR)
+        return warehouse
+
     def clean_name(self):
         return self.clean_normalized_char("name")
 
@@ -204,7 +273,7 @@ class StockBalanceFilterForm(forms.Form):
     )
     location = forms.ModelChoiceField(
         label=_("Локація"),
-        queryset=Location.objects.filter(is_active=True).select_related("warehouse"),
+        queryset=Location.objects.filter(is_active=True, warehouse__is_active=True).select_related("warehouse"),
         required=False,
     )
     item = forms.ModelChoiceField(
@@ -221,11 +290,55 @@ class StockBalanceFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            restrict_model_choice_to_active(field)
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
             else:
                 field.widget.attrs.setdefault("class", "form-control")
+
+
+class StockBalanceAdminForm(BootstrapModelForm):
+    class Meta:
+        model = StockBalance
+        fields = "__all__"
+
+    def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.include_current_relations = include_current_relations
+        super().__init__(*args, **kwargs)
+        item = current_related(self.instance, "item") if include_current_relations else None
+        location = current_related(self.instance, "location") if include_current_relations else None
+        set_active_model_choice(self, "item", active_queryset(Item, include=item))
+        set_active_model_choice(
+            self,
+            "location",
+            active_queryset(Location, include=location, warehouse__is_active=True),
+        )
+
+
+class StockMovementAdminForm(BootstrapModelForm):
+    class Meta:
+        model = StockMovement
+        fields = "__all__"
+
+    def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.include_current_relations = include_current_relations
+        super().__init__(*args, **kwargs)
+        item = current_related(self.instance, "item") if include_current_relations else None
+        source_location = current_related(self.instance, "source_location") if include_current_relations else None
+        destination_location = current_related(self.instance, "destination_location") if include_current_relations else None
+        recipient = current_related(self.instance, "recipient") if include_current_relations else None
+        active_locations = active_queryset(Location, warehouse__is_active=True)
+        set_active_model_choice(self, "item", active_queryset(Item, include=item))
+        set_active_model_choice(
+            self,
+            "source_location",
+            active_queryset(Location, include=source_location, warehouse__is_active=True) if source_location else active_locations,
+        )
+        set_active_model_choice(
+            self,
+            "destination_location",
+            active_queryset(Location, include=destination_location, warehouse__is_active=True) if destination_location else active_locations,
+        )
+        set_active_model_choice(self, "recipient", active_queryset(Recipient, include=recipient))
 
 
 class AnalyticsFilterForm(forms.Form):
@@ -237,7 +350,7 @@ class AnalyticsFilterForm(forms.Form):
     )
     warehouse = forms.ModelChoiceField(label=_("Склад"), queryset=Warehouse.objects.filter(is_active=True), required=False)
     location = forms.ModelChoiceField(
-        label=_("Локація"), queryset=Location.objects.filter(is_active=True).select_related("warehouse"), required=False
+        label=_("Локація"), queryset=Location.objects.filter(is_active=True, warehouse__is_active=True).select_related("warehouse"), required=False
     )
     category = forms.ModelChoiceField(label=_("Категорія"), queryset=Category.objects.filter(is_active=True), required=False)
     item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.filter(is_active=True), required=False)
@@ -252,7 +365,6 @@ class AnalyticsFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
-            restrict_model_choice_to_active(field)
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
             else:
