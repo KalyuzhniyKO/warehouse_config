@@ -2,5 +2,42 @@
 {% load i18n %}
 {% block title %}{% trans "Центр допомоги" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="card content-card"><div class="card-body p-4"><h1 class="h3 mb-3">{% trans "Центр допомоги" %}</h1><p>{% trans "Документація знаходиться у каталозі docs: інструкція користувача, адміністратора та запуск складу з нуля." %}</p><div class="list-group"><a class="list-group-item list-group-item-action" href="{% url 'management_dashboard' %}">{% trans "Панель керування" %}</a><a class="list-group-item list-group-item-action" href="{% url 'analytics' %}">{% trans "Аналітика" %}</a><a class="list-group-item list-group-item-action" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></div></div></div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">{% trans "Центр допомоги" %}</h1>
+        {% if management_mode %}
+            <p class="text-muted mb-0">{% trans "Інструкції адміністратора, запуску складу, друку, штрихкодів і робочих операцій." %}</p>
+        {% else %}
+            <p class="text-muted mb-0">{% trans "Користувацька інструкція для щоденної роботи зі складом." %}</p>
+        {% endif %}
+    </div>
+    {% if management_mode %}<a class="btn btn-outline-secondary" href="{% url 'management_dashboard' %}">{% trans "Назад до керування" %}</a>{% endif %}
+</div>
+<div class="row g-4">
+    <div class="col-lg-3">
+        <div class="card content-card sticky-top" style="top: 5rem;">
+            <div class="card-body">
+                <div class="text-uppercase text-muted small fw-semibold mb-2">{% trans "Розділи" %}</div>
+                <div class="list-group list-group-flush">
+                    {% for section in help_sections %}
+                        <a class="list-group-item list-group-item-action px-0" href="#help-{{ forloop.counter }}">{{ section.title }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        {% for section in help_sections %}
+            <section id="help-{{ forloop.counter }}" class="card content-card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between gap-3 align-items-start mb-3">
+                        <h2 class="h4 mb-0">{{ section.title }}</h2>
+                        <span class="badge text-bg-light">{{ section.filename }}</span>
+                    </div>
+                    <div class="help-document small lh-lg">{{ section.content }}</div>
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

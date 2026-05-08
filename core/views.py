@@ -5,12 +5,15 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.conf import settings
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.html import format_html, linebreaks, urlize
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
@@ -45,6 +48,7 @@ from .models import (
 )
 from .permissions import (
     ANALYTICS_GROUPS,
+    MANAGEMENT_GROUPS,
     DIRECTORY_EDIT_GROUPS,
     PRINT_GROUPS,
     SETTINGS_GROUPS,
@@ -611,7 +615,8 @@ class PlaceholderPageView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ManagementDashboardView(LoginRequiredMixin, TemplateView):
+class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = MANAGEMENT_GROUPS
     template_name = "core/management/dashboard.html"
 
     def get_context_data(self, **kwargs):
@@ -627,6 +632,7 @@ class ManagementDashboardView(LoginRequiredMixin, TemplateView):
                 "can_view_analytics": user_in_groups(
                     self.request.user, ANALYTICS_GROUPS
                 ),
+                "show_technical_admin": self.request.user.is_superuser,
                 "counts": {
                     "items": Item.objects.count(),
                     "warehouses": Warehouse.objects.count(),
@@ -697,8 +703,64 @@ class ManagementSettingsView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
     template_name = "core/management/settings.html"
 
 
+HELP_SECTIONS = [
+    {
+        "title": _("Як почати склад з нуля"),
+        "filename": "START_WAREHOUSE_FROM_ZERO.md",
+        "admin_only": True,
+    },
+    {"title": _("Інструкція користувача"), "filename": "USER_GUIDE.md", "admin_only": False},
+    {"title": _("Інструкція адміністратора"), "filename": "ADMIN_GUIDE.md", "admin_only": True},
+    {"title": _("Типові помилки"), "filename": "ADMIN_GUIDE.md", "anchor": "Типові помилки", "admin_only": True},
+    {"title": _("Backup і відновлення"), "filename": "BACKUP_AND_RESTORE.md", "admin_only": True},
+    {"title": _("Принтери і друк етикеток"), "filename": "USER_GUIDE.md", "anchor": "Друк етикеток", "admin_only": True},
+    {"title": _("Штрихкоди"), "filename": "USER_GUIDE.md", "anchor": "Штрихкоди", "admin_only": False},
+    {"title": _("Прихід товару"), "filename": "USER_GUIDE.md", "anchor": "Прихід товару", "admin_only": False},
+    {"title": _("Початковий залишок"), "filename": "USER_GUIDE.md", "anchor": "Початковий залишок", "admin_only": False},
+    {"title": _("Рухи товарів"), "filename": "USER_GUIDE.md", "anchor": "Рухи товарів", "admin_only": False},
+]
+
+
+def render_markdown_document(filename):
+    document_path = settings.BASE_DIR / "docs" / filename
+    if not document_path.exists():
+        return format_html("<p class='text-muted'>{}</p>", _("Документ ще не додано."))
+    text = document_path.read_text(encoding="utf-8")
+    return mark_safe(linebreaks(urlize(text)))
+
+
 class HelpView(LoginRequiredMixin, TemplateView):
     template_name = "core/management/help.html"
+    management_mode = False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sections = HELP_SECTIONS if self.management_mode else [HELP_SECTIONS[1]]
+        context.update(
+            {
+                "management_mode": self.management_mode,
+                "help_sections": [
+                    {
+                        **section,
+                        "content": render_markdown_document(section["filename"]),
+                    }
+                    for section in sections
+                ],
+            }
+        )
+        return context
+
+
+class ManagementHelpView(GroupRequiredMixin, HelpView):
+    group_names = MANAGEMENT_GROUPS
+    management_mode = True
+
+
+class AnalyticsRedirectView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = ANALYTICS_GROUPS
+
+    def get(self, request, *args, **kwargs):
+        return redirect("management_analytics")
 
 
 def clean_analytics_filters(form):

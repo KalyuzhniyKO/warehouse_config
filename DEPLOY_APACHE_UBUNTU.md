@@ -240,3 +240,20 @@ Expected results:
 - `apache2ctl configtest` returns `Syntax OK`.
 - `curl http://127.0.0.1:8001/` returns the Django homepage through Gunicorn.
 - `curl http://10.52.83.10:8081/` returns the Django homepage through Apache2 reverse proxy.
+
+## Налаштування складності паролів
+
+Для локальної закритої мережі складу можна залишити прості паролі дозволеними:
+
+```env
+DJANGO_ENABLE_PASSWORD_VALIDATORS=false
+```
+
+Це також значення за замовчуванням, якщо змінна не задана. Якщо сайт доступний публічно або через інтернет, увімкніть стандартні валідатори Django:
+
+```env
+DJANGO_ENABLE_PASSWORD_VALIDATORS=true
+```
+
+Після зміни `.env` перезапустіть сервіс застосунку.
+

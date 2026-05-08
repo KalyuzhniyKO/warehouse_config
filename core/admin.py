@@ -26,6 +26,13 @@ from .models import (
 )
 
 
+def superuser_admin_has_permission(request):
+    return request.user.is_active and request.user.is_superuser
+
+
+admin.site.has_permission = superuser_admin_has_permission
+
+
 class IncludeCurrentRelationsAdminMixin:
     """Pass current archived relations to admin forms so existing records remain editable."""
 
