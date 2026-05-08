@@ -9,6 +9,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.db import IntegrityError, transaction
 
 from core.models import StockBalance, StockMovement
+from core.services.barcodes import ensure_item_barcode
 
 QTY_QUANT = Decimal("0.001")
 
@@ -84,7 +85,11 @@ def _create_movement(
     destination_location=None,
     recipient=None,
     comment="",
+    occurred_at=None,
 ):
+    kwargs = {}
+    if occurred_at is not None:
+        kwargs["occurred_at"] = occurred_at
     return StockMovement.objects.create(
         movement_type=movement_type,
         item=item,
@@ -93,6 +98,7 @@ def _create_movement(
         destination_location=destination_location,
         recipient=recipient,
         comment=comment,
+        **kwargs,
     )
 
 
@@ -115,10 +121,11 @@ def _decrease_balance(balance, qty):
     return balance
 
 
-def create_initial_balance(*, item, location, qty, comment=""):
+def create_initial_balance(*, item, location, qty, comment="", occurred_at=None):
     """Create an initial balance movement and increase stock at a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
+        ensure_item_barcode(item)
         balance = get_or_create_balance_locked(item, location)
         _increase_balance(balance, qty)
         movement = _create_movement(
@@ -127,14 +134,16 @@ def create_initial_balance(*, item, location, qty, comment=""):
             qty=qty,
             destination_location=location,
             comment=comment,
+            occurred_at=occurred_at,
         )
     return movement
 
 
-def receive_stock(*, item, location, qty, comment=""):
+def receive_stock(*, item, location, qty, comment="", occurred_at=None):
     """Receive stock into a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
+        ensure_item_barcode(item)
         balance = get_or_create_balance_locked(item, location)
         _increase_balance(balance, qty)
         movement = _create_movement(
@@ -143,6 +152,7 @@ def receive_stock(*, item, location, qty, comment=""):
             qty=qty,
             destination_location=location,
             comment=comment,
+            occurred_at=occurred_at,
         )
     return movement
 

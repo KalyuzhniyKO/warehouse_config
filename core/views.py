@@ -8,24 +8,35 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import CreateView, ListView, TemplateView, UpdateView, View
+from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from .forms import (
     AnalyticsFilterForm,
     CategoryForm,
     ItemForm,
+    InitialBalanceForm,
+    LabelTemplateForm,
     LocationForm,
+    PrintLabelForm,
+    PrinterForm,
     RecipientForm,
     StockBalanceFilterForm,
+    StockMovementFilterForm,
+    StockReceiveForm,
     UnitForm,
     WarehouseForm,
 )
 from .models import (
     Category,
     Item,
+    LabelTemplate,
     Location,
+    PrintJob,
+    Printer,
     Recipient,
     StockBalance,
     StockMovement,
@@ -35,11 +46,17 @@ from .models import (
 from .permissions import (
     ANALYTICS_GROUPS,
     DIRECTORY_EDIT_GROUPS,
+    PRINT_GROUPS,
+    SETTINGS_GROUPS,
+    STOCK_EDIT_GROUPS,
+    STOCK_VIEW_GROUPS,
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
     user_in_groups,
 )
 from .services import analytics as analytics_service
+from .services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from .services.stock import StockServiceError, create_initial_balance, receive_stock
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -128,8 +145,16 @@ class DirectoryCreateView(
     template_name = "core/directory_form.html"
 
     def form_valid(self, form):
-        messages.success(self.request, _("Запис успішно створено."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if isinstance(self.object, Item) and self.object.barcode_id:
+            messages.success(
+                self.request,
+                _("Номенклатуру створено. Штрихкод: %(barcode)s")
+                % {"barcode": self.object.barcode.barcode},
+            )
+        else:
+            messages.success(self.request, _("Запис успішно створено."))
+        return response
 
 
 class DirectoryUpdateView(
@@ -206,7 +231,8 @@ class DirectoryRestoreView(
         return HttpResponseRedirect(reverse(self.list_url_name))
 
 
-class StockBalanceListView(LoginRequiredMixin, ListView):
+class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = STOCK_VIEW_GROUPS
     model = StockBalance
     template_name = "core/stockbalance_list.html"
     context_object_name = "balances"
@@ -258,6 +284,209 @@ class StockBalanceListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
         return context
+
+
+class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_receive_form.html"
+    form_class = StockReceiveForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        return initial
+
+    def form_valid(self, form):
+        try:
+            movement = receive_stock(
+                item=form.cleaned_data["item"],
+                location=form.cleaned_data["location"],
+                qty=form.cleaned_data["qty"],
+                comment=form.cleaned_data["comment"],
+                occurred_at=form.cleaned_data["occurred_at"],
+            )
+        except StockServiceError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        url = reverse("stock_receive_result", kwargs={"pk": movement.pk})
+        if form.cleaned_data.get("print_label"):
+            return redirect("item_label_print", pk=movement.item_id)
+        return redirect(url)
+
+
+class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_receive_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["movement"] = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item", "item__barcode", "destination_location", "destination_location__warehouse"
+            ),
+            pk=self.kwargs["pk"],
+            movement_type=StockMovement.MovementType.IN,
+        )
+        return context
+
+
+class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/initial_balance_form.html"
+    form_class = InitialBalanceForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        return initial
+
+    def form_valid(self, form):
+        try:
+            create_initial_balance(
+                item=form.cleaned_data["item"],
+                location=form.cleaned_data["location"],
+                qty=form.cleaned_data["qty"],
+                comment=form.cleaned_data["comment"],
+                occurred_at=form.cleaned_data["occurred_at"],
+            )
+        except StockServiceError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        messages.success(self.request, _("Початковий залишок збережено."))
+        return redirect("movement_list")
+
+
+class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = STOCK_VIEW_GROUPS
+    model = StockMovement
+    template_name = "core/stockmovement_list.html"
+    context_object_name = "movements"
+    paginate_by = 50
+
+    def get_filter_form(self):
+        return StockMovementFilterForm(self.request.GET or None)
+
+    def get_queryset(self):
+        queryset = StockMovement.objects.select_related(
+            "item", "item__barcode", "source_location", "source_location__warehouse",
+            "destination_location", "destination_location__warehouse", "recipient"
+        )
+        form = self.get_filter_form()
+        if not form.is_valid():
+            return queryset
+        cd = form.cleaned_data
+        if cd.get("movement_type"):
+            queryset = queryset.filter(movement_type=cd["movement_type"])
+        if cd.get("item"):
+            queryset = queryset.filter(item=cd["item"])
+        if cd.get("warehouse"):
+            queryset = queryset.filter(
+                Q(source_location__warehouse=cd["warehouse"]) | Q(destination_location__warehouse=cd["warehouse"])
+            )
+        if cd.get("location"):
+            queryset = queryset.filter(
+                Q(source_location=cd["location"]) | Q(destination_location=cd["location"])
+            )
+        if cd.get("date_from"):
+            queryset = queryset.filter(occurred_at__date__gte=cd["date_from"])
+        if cd.get("date_to"):
+            queryset = queryset.filter(occurred_at__date__lte=cd["date_to"])
+        if cd.get("q"):
+            q = cd["q"]
+            queryset = queryset.filter(
+                Q(item__name__icontains=q) | Q(item__internal_code__icontains=q) | Q(item__barcode__barcode__icontains=q)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["filter_form"] = self.get_filter_form()
+        return context
+
+
+class ItemLabelDownloadView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = PRINT_GROUPS
+
+    def get(self, request, pk):
+        item = get_object_or_404(Item.objects.select_related("barcode"), pk=pk, is_active=True)
+        return download_item_label_pdf(item)
+
+
+class ItemLabelPrintView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = PRINT_GROUPS
+    template_name = "core/item_label_print.html"
+    form_class = PrintLabelForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.item = get_object_or_404(Item.objects.select_related("barcode"), pk=kwargs["pk"], is_active=True)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        default_template = get_default_label_template()
+        if default_template:
+            initial["label_template"] = default_template
+        printer = Printer.objects.filter(is_active=True, is_default=True).first()
+        if printer:
+            initial["printer"] = printer
+        return initial
+
+    def form_valid(self, form):
+        job = print_item_label(
+            item=self.item,
+            printer=form.cleaned_data["printer"],
+            label_template=form.cleaned_data["label_template"],
+            copies=form.cleaned_data["copies"],
+            user=self.request.user,
+        )
+        if job.status == PrintJob.Status.PRINTED:
+            messages.success(self.request, _("Етикетку відправлено на друк."))
+        else:
+            messages.error(self.request, _("Не вдалося надрукувати етикетку: %(error)s") % {"error": job.error_message})
+        return redirect("item_label_print", pk=self.item.pk)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["item"] = self.item
+        return context
+
+
+class PrinterListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = SETTINGS_GROUPS
+    model = Printer
+    template_name = "core/printer_list.html"
+    context_object_name = "printers"
+
+
+class PrinterCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
+    group_names = SETTINGS_GROUPS
+    model = Printer
+    form_class = PrinterForm
+    template_name = "core/simple_form.html"
+    success_url = reverse_lazy("printer_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Принтер збережено."))
+        return super().form_valid(form)
+
+
+class LabelTemplateListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = SETTINGS_GROUPS
+    model = LabelTemplate
+    template_name = "core/labeltemplate_list.html"
+    context_object_name = "label_templates"
+
+
+class LabelTemplateCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
+    group_names = SETTINGS_GROUPS
+    model = LabelTemplate
+    form_class = LabelTemplateForm
+    template_name = "core/simple_form.html"
+    success_url = reverse_lazy("labeltemplate_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Шаблон етикетки збережено."))
+        return super().form_valid(form)
 
 
 DIRECTORIES = {
@@ -324,6 +553,7 @@ DIRECTORIES = {
         "columns": (
             ("name", _("Назва")),
             ("internal_code", _("Внутрішній код")),
+            ("barcode_value", _("Штрихкод")),
             ("category", _("Категорія")),
             ("unit", _("Одиниця")),
         ),
@@ -341,7 +571,7 @@ DIRECTORIES = {
         "update_url_name": "warehouse_update",
         "archive_url_name": "warehouse_archive",
         "restore_url_name": "warehouse_restore",
-        "columns": (("name", _("Назва")), ("address", _("Адреса"))),
+        "columns": (("name", _("Назва")), ("barcode_value", _("Штрихкод")), ("address", _("Адреса"))),
     },
     "location": {
         "model": Location,
@@ -359,6 +589,7 @@ DIRECTORIES = {
             ("warehouse", _("Склад")),
             ("name", _("Назва")),
             ("location_type", _("Тип")),
+            ("barcode_value", _("Штрихкод")),
         ),
     },
 }

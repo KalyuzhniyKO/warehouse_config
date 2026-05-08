@@ -16,7 +16,10 @@ from .models import (
     BarcodeSequence,
     Category,
     Item,
+    LabelTemplate,
     Location,
+    PrintJob,
+    Printer,
     Recipient,
     StockBalance,
     StockMovement,
@@ -170,7 +173,7 @@ class WarehouseModelTests(TestCase):
         self.assertEqual(prefixes, {"ITM", "WH", "RCK", "LOC"})
         sequence = BarcodeSequence.objects.create(prefix=BarcodeRegistry.Prefix.RACK)
         self.assertEqual(sequence.next_number, 1)
-        self.assertEqual(sequence.padding, 8)
+        self.assertEqual(sequence.padding, 10)
 
     def test_item_internal_code_is_normalized_when_filled(self):
         item = Item.objects.create(
@@ -875,3 +878,131 @@ class ManagementAnalyticsTests(TestCase):
         response = self.client.get(reverse("help"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Центр допомоги")
+
+class WarehouseWorkflowTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        self.user = get_user_model().objects.create_user("workflow", password="pass")
+        self.user.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.client.force_login(self.user)
+        self.unit = Unit.objects.create(name="Штука workflow", symbol="wf")
+        self.item = Item.objects.create(name="Workflow item", unit=self.unit)
+        self.warehouse = Warehouse.objects.create(name="Workflow warehouse")
+        self.location = Location.objects.create(
+            warehouse=self.warehouse, name="Workflow location"
+        )
+
+    def test_item_without_barcode_gets_itm_barcode(self):
+        self.assertTrue(self.item.barcode.barcode.startswith("ITM"))
+        self.assertEqual(len(self.item.barcode.barcode), 13)
+
+    def test_warehouse_without_barcode_gets_wh_barcode(self):
+        self.assertTrue(self.warehouse.barcode.barcode.startswith("WH"))
+        self.assertEqual(len(self.warehouse.barcode.barcode), 12)
+
+    def test_location_types_get_loc_and_rck_barcodes(self):
+        rack = Location.objects.create(
+            warehouse=self.warehouse,
+            name="Workflow rack",
+            location_type=Location.LocationType.RACK,
+        )
+        self.assertTrue(self.location.barcode.barcode.startswith("LOC"))
+        self.assertTrue(rack.barcode.barcode.startswith("RCK"))
+
+    def test_receive_stock_ui_increases_balance_creates_movement_and_barcode(self):
+        self.item.barcode = None
+        self.item.save(update_fields=["barcode"])
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "7.000",
+                "comment": "UI receive",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        balance = StockBalance.objects.get(item=self.item, location=self.location)
+        movement = StockMovement.objects.get(comment="UI receive")
+        self.item.refresh_from_db()
+        self.assertEqual(balance.qty, Decimal("7.000"))
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.IN)
+        self.assertIsNotNone(self.item.barcode)
+
+    def test_initial_balance_creates_stock_movement(self):
+        response = self.client.post(
+            reverse("stock_initial"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "3.000",
+                "comment": "Initial UI",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(
+            StockMovement.objects.filter(
+                comment="Initial UI",
+                movement_type=StockMovement.MovementType.INITIAL_BALANCE,
+            ).exists()
+        )
+
+    def test_movement_page_available_and_filter_works(self):
+        from .services.stock import receive_stock
+
+        receive_stock(item=self.item, location=self.location, qty=Decimal("2.000"), comment="Find me")
+        response = self.client.get(reverse("movement_list"), {"q": "Workflow item"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Find me")
+        response = self.client.get(reverse("movement_list"), {"q": "nothing"})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Find me")
+
+    def test_pdf_label_generates(self):
+        from .services.labels import generate_item_label_pdf
+
+        pdf = generate_item_label_pdf(self.item)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertIn(b"ITM", pdf)
+
+    def test_printer_labeltemplate_and_printjob_can_be_created(self):
+        printer = Printer.objects.create(name="Test printer", system_name="TEST_PRINTER")
+        template = LabelTemplate.objects.create(name="58x40", is_default=True)
+        job = PrintJob.objects.create(
+            printer=printer,
+            item=self.item,
+            barcode=self.item.barcode.barcode,
+            label_template=template,
+            copies=1,
+            user=self.user,
+        )
+        self.assertEqual(job.status, PrintJob.Status.PENDING)
+
+    def test_lp_error_does_not_break_print_page(self):
+        from unittest.mock import patch
+
+        printer = Printer.objects.create(name="Broken printer", system_name="BROKEN", is_default=True)
+        LabelTemplate.objects.create(name="Default label", is_default=True)
+
+        class Result:
+            returncode = 1
+            stdout = ""
+            stderr = "lp failed"
+
+        with patch("core.services.labels.subprocess.run", return_value=Result()):
+            response = self.client.post(
+                reverse("item_label_print", args=[self.item.pk]),
+                {"printer": printer.pk, "label_template": LabelTemplate.objects.get().pk, "copies": 1},
+            )
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(PrintJob.objects.filter(status=PrintJob.Status.FAILED).exists())
+
+    def test_unauthorized_user_redirects_to_login(self):
+        self.client.logout()
+        response = self.client.get(reverse("stock_receive"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])

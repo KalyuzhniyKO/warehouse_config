@@ -6,6 +6,8 @@ from .models import (
     Item,
     Location,
     Recipient,
+    LabelTemplate,
+    Printer,
     StockBalance,
     StockMovement,
     Unit,
@@ -520,6 +522,146 @@ class AnalyticsFilterForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-select")
+            else:
+                field.widget.attrs.setdefault("class", "form-control")
+
+
+class StockOperationForm(forms.Form):
+    item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.none())
+    warehouse = forms.ModelChoiceField(label=_("Склад"), queryset=Warehouse.objects.none())
+    location = forms.ModelChoiceField(label=_("Локація"), queryset=Location.objects.none())
+    qty = forms.DecimalField(label=_("Кількість"), min_value=0, max_digits=18, decimal_places=3)
+    comment = forms.CharField(
+        label=_("Коментар"), required=False, widget=forms.Textarea(attrs={"rows": 3})
+    )
+    occurred_at = forms.DateTimeField(
+        label=_("Дата операції"),
+        required=True,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["item"].queryset = Item.objects.filter(is_active=True).select_related("unit")
+        self.fields["warehouse"].queryset = Warehouse.objects.filter(is_active=True)
+        self.fields["location"].queryset = Location.objects.filter(
+            is_active=True, warehouse__is_active=True
+        ).select_related("warehouse")
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-select")
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.setdefault("class", "form-check-input")
+            else:
+                field.widget.attrs.setdefault("class", "form-control")
+
+    def clean_location(self):
+        location = self.cleaned_data.get("location")
+        if location and (not location.is_active or not location.warehouse.is_active):
+            raise forms.ValidationError(ARCHIVED_CHOICE_ERROR)
+        return location
+
+    def clean(self):
+        cleaned_data = super().clean()
+        warehouse = cleaned_data.get("warehouse")
+        location = cleaned_data.get("location")
+        if warehouse and location and location.warehouse_id != warehouse.pk:
+            self.add_error("location", _("Локація має належати вибраному складу."))
+        return cleaned_data
+
+
+class StockReceiveForm(StockOperationForm):
+    print_label = forms.BooleanField(
+        label=_("Надрукувати етикетку після збереження"), required=False
+    )
+
+
+class InitialBalanceForm(StockOperationForm):
+    pass
+
+
+class StockMovementFilterForm(forms.Form):
+    movement_type = forms.ChoiceField(
+        label=_("Тип операції"),
+        choices=[("", _("Усі операції"))] + list(StockMovement.MovementType.choices),
+        required=False,
+    )
+    item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.filter(is_active=True), required=False)
+    warehouse = forms.ModelChoiceField(label=_("Склад"), queryset=Warehouse.objects.filter(is_active=True), required=False)
+    location = forms.ModelChoiceField(
+        label=_("Локація"),
+        queryset=Location.objects.filter(is_active=True, warehouse__is_active=True).select_related("warehouse"),
+        required=False,
+    )
+    date_from = forms.DateField(label=_("Дата від"), required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    date_to = forms.DateField(label=_("Дата до"), required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    q = forms.CharField(
+        label=_("Пошук"),
+        required=False,
+        widget=forms.TextInput(attrs={"placeholder": _("Назва, internal_code або barcode")}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-select")
+            else:
+                field.widget.attrs.setdefault("class", "form-control")
+
+
+class PrinterForm(BootstrapModelForm):
+    class Meta:
+        model = Printer
+        fields = ["name", "system_name", "description", "is_default", "is_active"]
+        labels = {
+            "name": _("Назва"),
+            "system_name": _("Системна назва"),
+            "description": _("Опис"),
+            "is_default": _("За замовчуванням"),
+            "is_active": _("Активний"),
+        }
+
+
+class LabelTemplateForm(BootstrapModelForm):
+    class Meta:
+        model = LabelTemplate
+        fields = [
+            "name",
+            "width_mm",
+            "height_mm",
+            "show_item_name",
+            "show_internal_code",
+            "show_barcode_text",
+            "barcode_type",
+            "is_default",
+            "is_active",
+        ]
+        labels = {
+            "name": _("Назва"),
+            "width_mm": _("Ширина, мм"),
+            "height_mm": _("Висота, мм"),
+            "show_item_name": _("Показувати назву товару"),
+            "show_internal_code": _("Показувати внутрішній код"),
+            "show_barcode_text": _("Показувати текст штрихкоду"),
+            "barcode_type": _("Тип штрихкоду"),
+            "is_default": _("За замовчуванням"),
+            "is_active": _("Активний"),
+        }
+
+
+class PrintLabelForm(forms.Form):
+    printer = forms.ModelChoiceField(label=_("Принтер"), queryset=Printer.objects.none())
+    label_template = forms.ModelChoiceField(label=_("Шаблон"), queryset=LabelTemplate.objects.none())
+    copies = forms.IntegerField(label=_("Кількість копій"), min_value=1, initial=1)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["printer"].queryset = Printer.objects.filter(is_active=True).order_by("-is_default", "name")
+        self.fields["label_template"].queryset = LabelTemplate.objects.filter(is_active=True).order_by("-is_default", "name")
         for field in self.fields.values():
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Друк етикетки" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Друк етикетки" %}</h1>
+<div class="card content-card"><div class="card-body">
+<p><strong>{% trans "Номенклатура" %}:</strong> {{ item.name }}<br><strong>{% trans "Штрихкод" %}:</strong> {{ item.barcode.barcode|default:"—" }}</p>
+<form method="post">{% csrf_token %}<div class="row g-3">{% for field in form %}<div class="col-md-4"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>{% endfor %}</div><div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">{% trans "Друкувати" %}</button><a class="btn btn-outline-primary" href="{% url 'item_label_download' item.pk %}">{% trans "Завантажити PDF" %}</a></div></form>
+</div></div>
+{% endblock %}

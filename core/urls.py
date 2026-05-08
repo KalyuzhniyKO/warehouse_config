@@ -172,26 +172,16 @@ urlpatterns = [
         name="analytics_export_xlsx",
     ),
     path("help/", views.HelpView.as_view(), name="help"),
-    path(
-        "movements/",
-        views.PlaceholderPageView.as_view(
-            title=_("Рухи товарів"),
-            description=_(
-                "Журнал операцій складу доступний через аналітику та технічну Django Admin."
-            ),
-        ),
-        name="movement_list",
-    ),
-    path(
-        "stock-receive/",
-        views.PlaceholderPageView.as_view(
-            title=_("Прихід товару"),
-            description=_(
-                "Оформлення приходу товару буде доступне у цьому робочому розділі."
-            ),
-        ),
-        name="stock_receive",
-    ),
+    path("stock/receive/", views.StockReceiveView.as_view(), name="stock_receive"),
+    path("stock/receive/<int:pk>/", views.StockReceiveResultView.as_view(), name="stock_receive_result"),
+    path("stock/initial/", views.InitialBalanceView.as_view(), name="stock_initial"),
+    path("stock/movements/", views.StockMovementListView.as_view(), name="movement_list"),
+    path("labels/item/<int:pk>/download/", views.ItemLabelDownloadView.as_view(), name="item_label_download"),
+    path("labels/item/<int:pk>/print/", views.ItemLabelPrintView.as_view(), name="item_label_print"),
+    path("settings/printers/", views.PrinterListView.as_view(), name="printer_list"),
+    path("settings/printers/create/", views.PrinterCreateView.as_view(), name="printer_create"),
+    path("settings/label-templates/", views.LabelTemplateListView.as_view(), name="labeltemplate_list"),
+    path("settings/label-templates/create/", views.LabelTemplateCreateView.as_view(), name="labeltemplate_create"),
     path(
         "management/",
         views.ManagementDashboardView.as_view(),
