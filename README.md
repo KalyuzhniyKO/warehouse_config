@@ -303,6 +303,14 @@ python manage.py collectstatic
 
 У production використовується MySQL. Локально для розробки можна залишити SQLite.
 
+Для MySQL 8 із драйвером PyMySQL обов'язково встановлюйте залежності з `requirements.txt`:
+
+```bash
+pip install -r requirements.txt
+```
+
+У цьому списку є пакет `cryptography`, який потрібен PyMySQL для MySQL 8 auth methods `caching_sha2_password` / `sha256_password`. Без нього `python manage.py migrate` може завершитися помилкою `RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods`.
+
 Приклад створення бази та користувача:
 
 ```sql
@@ -324,6 +332,8 @@ DB_PASSWORD=Warehouse_2026_StrongPass!ChangeMe
 DB_HOST=localhost
 DB_PORT=3306
 ```
+
+> **Увага:** значення `DB_PASSWORD` у `.env` має точно збігатися з паролем MySQL-користувача `DB_USER` для відповідного `DB_HOST`. Будь-яка різниця у символах, регістрі, пробілах або використання пароля від іншого MySQL-користувача призведе до помилки автентифікації під час `python manage.py migrate` та інших команд Django.
 
 > У README показані тільки приклади. Реальні секрети, паролі, ключі та токени не повинні зберігатися в Git.
 
