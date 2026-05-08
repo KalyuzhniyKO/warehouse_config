@@ -155,3 +155,64 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_REDIRECT_URL = "dashboard"
 LOGOUT_REDIRECT_URL = "login"
+
+# Logging
+# In development (DEBUG=True), logs go to the console so local startup does not
+# require /var/log/warehouse_config to exist. In production (DEBUG=False), create
+# that directory with the permissions documented in DEPLOY_APACHE_UBUNTU.md.
+LOG_DIR = Path(os.getenv("DJANGO_LOG_DIR", "/var/log/warehouse_config"))
+LOGGING_FORMAT = "{asctime} {levelname} {name}.{module}: {message}"
+
+LOGGING_HANDLERS = {
+    "console": {
+        "class": "logging.StreamHandler",
+        "formatter": "standard",
+        "level": "INFO",
+    }
+}
+
+if not DEBUG:
+    LOGGING_HANDLERS = {
+        "django_file": {
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": str(LOG_DIR / "django.log"),
+            "formatter": "standard",
+            "level": "INFO",
+        },
+        "errors_file": {
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": str(LOG_DIR / "errors.log"),
+            "formatter": "standard",
+            "level": "ERROR",
+        },
+    }
+
+LOGGING_ACTIVE_HANDLERS = ["console"] if DEBUG else ["django_file", "errors_file"]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": LOGGING_FORMAT,
+            "style": "{",
+        },
+    },
+    "handlers": LOGGING_HANDLERS,
+    "root": {
+        "handlers": LOGGING_ACTIVE_HANDLERS,
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": LOGGING_ACTIVE_HANDLERS,
+            "level": "INFO",
+            "propagate": False,
+        },
+        "core": {
+            "handlers": LOGGING_ACTIVE_HANDLERS,
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
