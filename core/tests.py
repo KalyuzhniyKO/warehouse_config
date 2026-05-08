@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from io import StringIO
 from django.urls import reverse
 
@@ -540,3 +540,25 @@ class WebInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Болт М8")
+
+
+class SwitchLanguageUrlTests(TestCase):
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def assert_switch_url(self, source_url, language_code, expected_url):
+        from .templatetags.i18n_extras import switch_language_url
+
+        request = self.factory.get(source_url)
+        self.assertEqual(switch_language_url(request, language_code), expected_url)
+
+    def test_replaces_existing_language_prefix(self):
+        self.assert_switch_url("/uk/", "ru", "/ru/")
+        self.assert_switch_url("/uk/items/", "en", "/en/items/")
+
+    def test_preserves_query_string(self):
+        self.assert_switch_url("/uk/items/?q=test", "ru", "/ru/items/?q=test")
+
+    def test_adds_language_prefix_when_missing(self):
+        self.assert_switch_url("/admin/", "ru", "/ru/admin/")
+        self.assert_switch_url("/", "ru", "/ru/")
