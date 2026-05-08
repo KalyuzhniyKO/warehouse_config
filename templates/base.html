@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n core_extras %}
 <!doctype html>
 <html lang="{{ LANGUAGE_CODE|default:'uk' }}">
 <head>
@@ -26,8 +26,10 @@
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% trans "Номенклатура" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li><li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a></li><li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'management_dashboard' %}">{% trans "Керування" %}</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">{% trans "Аналітика" %}</a></li>
+                {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'management_dashboard' %}">{% trans "Керування" %}</a></li>
+                {% endif %}
+                <li class="nav-item"><a class="nav-link" href="{% url 'help' %}">{% trans "Допомога" %}</a></li>
             </ul>
             <div class="ms-auto d-flex align-items-center gap-3 text-white">
                 {% include "includes/language_switcher.html" %}
@@ -64,10 +66,10 @@
                             <a class="sidebar-link" href="{% url 'item_list' %}">🏷️ {% trans "Друк етикеток" %}</a>
                             <a class="sidebar-link" href="{% url 'printer_list' %}">🖨️ {% trans "Принтери" %}</a>
                             <a class="sidebar-link" href="{% url 'labeltemplate_list' %}">📐 {% trans "Шаблони етикеток" %}</a>
-                            <a class="sidebar-link" href="{% url 'analytics' %}">📈 {% trans "Аналітика" %}</a>
-                            <a class="sidebar-link" href="{% url 'management_dashboard' %}">🧭 {% trans "Керування" %}</a>
+                            {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+                                <a class="sidebar-link" href="{% url 'management_dashboard' %}">🧭 {% trans "Керування" %}</a>
+                            {% endif %}
                             <a class="sidebar-link" href="{% url 'help' %}">❓ {% trans "Допомога" %}</a>
-                            <a class="sidebar-link" href="{% url 'admin:index' %}">🛠️ {% trans "Адмін-панель" %}</a>
                         </nav>
                     </div>
                 </div>

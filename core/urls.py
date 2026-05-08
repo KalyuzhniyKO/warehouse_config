@@ -160,7 +160,7 @@ urlpatterns = [
         views.StockBalanceListView.as_view(),
         name="stockbalance_list",
     ),
-    path("analytics/", views.AnalyticsView.as_view(), name="analytics"),
+    path("analytics/", views.AnalyticsRedirectView.as_view(), name="analytics"),
     path(
         "analytics/export.csv",
         views.AnalyticsCSVExportView.as_view(),
@@ -207,5 +207,15 @@ urlpatterns = [
         views.AnalyticsView.as_view(),
         name="management_analytics",
     ),
-    path("management/help/", views.HelpView.as_view(), name="management_help"),
+    path(
+        "management/analytics/export.csv",
+        views.AnalyticsCSVExportView.as_view(),
+        name="management_analytics_export_csv",
+    ),
+    path(
+        "management/analytics/export.xlsx",
+        views.AnalyticsXLSXExportView.as_view(),
+        name="management_analytics_export_xlsx",
+    ),
+    path("management/help/", views.ManagementHelpView.as_view(), name="management_help"),
 ]

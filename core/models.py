@@ -18,8 +18,8 @@ class Unit(ActiveModel):
     symbol = models.CharField(_("symbol"), max_length=20)
 
     class Meta:
-        verbose_name = _("unit")
-        verbose_name_plural = _("units")
+        verbose_name = _("Одиниця виміру")
+        verbose_name_plural = _("Одиниці виміру")
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
@@ -43,8 +43,8 @@ class Category(ActiveModel):
     )
 
     class Meta:
-        verbose_name = _("category")
-        verbose_name_plural = _("categories")
+        verbose_name = _("Категорія")
+        verbose_name_plural = _("Категорії")
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
@@ -63,8 +63,8 @@ class Recipient(ActiveModel):
     notes = models.TextField(_("notes"), blank=True)
 
     class Meta:
-        verbose_name = _("recipient")
-        verbose_name_plural = _("recipients")
+        verbose_name = _("Отримувач")
+        verbose_name_plural = _("Отримувачі")
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
@@ -80,18 +80,18 @@ class Recipient(ActiveModel):
 
 class BarcodeRegistry(ActiveModel):
     class Prefix(models.TextChoices):
-        ITEM = "ITM", _("item")
-        WAREHOUSE = "WH", _("warehouse")
+        ITEM = "ITM", _("Номенклатура")
+        WAREHOUSE = "WH", _("Склад")
         RACK = "RCK", _("rack")
-        LOCATION = "LOC", _("location")
+        LOCATION = "LOC", _("Локація")
 
     barcode = models.CharField(_("barcode"), max_length=64, unique=True)
     prefix = models.CharField(_("prefix"), max_length=3, choices=Prefix.choices)
     description = models.CharField(_("description"), max_length=255, blank=True)
 
     class Meta:
-        verbose_name = _("barcode registry entry")
-        verbose_name_plural = _("barcode registry entries")
+        verbose_name = _("Реєстр штрихкодів")
+        verbose_name_plural = _("Реєстр штрихкодів")
         ordering = ["barcode"]
 
     def clean(self):
@@ -113,8 +113,8 @@ class BarcodeSequence(ActiveModel):
     padding = models.PositiveSmallIntegerField(_("padding"), default=10)
 
     class Meta:
-        verbose_name = _("barcode sequence")
-        verbose_name_plural = _("barcode sequences")
+        verbose_name = _("Послідовність штрихкодів")
+        verbose_name_plural = _("Послідовності штрихкодів")
         ordering = ["prefix"]
 
     def __str__(self):
@@ -128,7 +128,7 @@ class Item(ActiveModel):
     )
     category = models.ForeignKey(
         Category,
-        verbose_name=_("category"),
+        verbose_name=_("Категорія"),
         on_delete=models.PROTECT,
         related_name="items",
         blank=True,
@@ -136,7 +136,7 @@ class Item(ActiveModel):
     )
     unit = models.ForeignKey(
         Unit,
-        verbose_name=_("unit"),
+        verbose_name=_("Одиниця виміру"),
         on_delete=models.PROTECT,
         related_name="items",
     )
@@ -152,8 +152,8 @@ class Item(ActiveModel):
     description = models.TextField(_("description"), blank=True)
 
     class Meta:
-        verbose_name = _("item")
-        verbose_name_plural = _("items")
+        verbose_name = _("Номенклатура")
+        verbose_name_plural = _("Номенклатура")
         ordering = ["name"]
 
     def clean(self):
@@ -193,8 +193,8 @@ class Warehouse(ActiveModel):
     address = models.TextField(_("address"), blank=True)
 
     class Meta:
-        verbose_name = _("warehouse")
-        verbose_name_plural = _("warehouses")
+        verbose_name = _("Склад")
+        verbose_name_plural = _("Склади")
         ordering = ["name"]
 
     def clean(self):
@@ -220,12 +220,12 @@ class Warehouse(ActiveModel):
 
 class Location(ActiveModel):
     class LocationType(models.TextChoices):
-        LOCATION = "location", _("location")
+        LOCATION = "location", _("Локація")
         RACK = "rack", _("rack")
 
     warehouse = models.ForeignKey(
         Warehouse,
-        verbose_name=_("warehouse"),
+        verbose_name=_("Склад"),
         on_delete=models.PROTECT,
         related_name="locations",
     )
@@ -247,8 +247,8 @@ class Location(ActiveModel):
     )
 
     class Meta:
-        verbose_name = _("location")
-        verbose_name_plural = _("locations")
+        verbose_name = _("Локація")
+        verbose_name_plural = _("Локації")
         ordering = ["warehouse__name", "name"]
 
     def clean(self):
@@ -284,21 +284,21 @@ class Location(ActiveModel):
 class StockBalance(ActiveModel):
     item = models.ForeignKey(
         Item,
-        verbose_name=_("item"),
+        verbose_name=_("Номенклатура"),
         on_delete=models.PROTECT,
         related_name="stock_balances",
     )
     location = models.ForeignKey(
         Location,
-        verbose_name=_("location"),
+        verbose_name=_("Локація"),
         on_delete=models.PROTECT,
         related_name="stock_balances",
     )
     qty = models.DecimalField(_("quantity"), max_digits=18, decimal_places=3, default=0)
 
     class Meta:
-        verbose_name = _("stock balance")
-        verbose_name_plural = _("stock balances")
+        verbose_name = _("Залишок")
+        verbose_name_plural = _("Залишки")
         ordering = ["item__name", "location__name"]
         constraints = [
             models.UniqueConstraint(
@@ -326,7 +326,7 @@ class StockMovement(ActiveModel):
     )
     item = models.ForeignKey(
         Item,
-        verbose_name=_("item"),
+        verbose_name=_("Номенклатура"),
         on_delete=models.PROTECT,
         related_name="stock_movements",
     )
@@ -349,7 +349,7 @@ class StockMovement(ActiveModel):
     )
     recipient = models.ForeignKey(
         Recipient,
-        verbose_name=_("recipient"),
+        verbose_name=_("Отримувач"),
         on_delete=models.PROTECT,
         related_name="stock_movements",
         blank=True,
@@ -359,8 +359,8 @@ class StockMovement(ActiveModel):
     comment = models.TextField(_("comment"), blank=True)
 
     class Meta:
-        verbose_name = _("stock movement")
-        verbose_name_plural = _("stock movements")
+        verbose_name = _("Рух товарів")
+        verbose_name_plural = _("Рухи товарів")
         ordering = ["-occurred_at", "-id"]
 
     def __str__(self):
@@ -374,8 +374,8 @@ class Printer(ActiveModel):
     is_default = models.BooleanField(_("default"), default=False)
 
     class Meta:
-        verbose_name = _("printer")
-        verbose_name_plural = _("printers")
+        verbose_name = _("Принтер")
+        verbose_name_plural = _("Принтери")
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
@@ -405,8 +405,8 @@ class LabelTemplate(ActiveModel):
     is_default = models.BooleanField(_("default"), default=False)
 
     class Meta:
-        verbose_name = _("label template")
-        verbose_name_plural = _("label templates")
+        verbose_name = _("Шаблон етикеток")
+        verbose_name_plural = _("Шаблони етикеток")
         ordering = ["name"]
 
     def save(self, *args, **kwargs):
@@ -426,14 +426,14 @@ class PrintJob(models.Model):
         FAILED = "failed", _("failed")
 
     printer = models.ForeignKey(
-        Printer, verbose_name=_("printer"), on_delete=models.PROTECT, related_name="print_jobs"
+        Printer, verbose_name=_("Принтер"), on_delete=models.PROTECT, related_name="print_jobs"
     )
     item = models.ForeignKey(
-        Item, verbose_name=_("item"), on_delete=models.PROTECT, related_name="print_jobs"
+        Item, verbose_name=_("Номенклатура"), on_delete=models.PROTECT, related_name="print_jobs"
     )
     barcode = models.CharField(_("barcode"), max_length=64)
     label_template = models.ForeignKey(
-        LabelTemplate, verbose_name=_("label template"), on_delete=models.PROTECT, related_name="print_jobs"
+        LabelTemplate, verbose_name=_("Шаблон етикеток"), on_delete=models.PROTECT, related_name="print_jobs"
     )
     copies = models.PositiveSmallIntegerField(_("copies"), default=1)
     status = models.CharField(
@@ -447,8 +447,8 @@ class PrintJob(models.Model):
     )
 
     class Meta:
-        verbose_name = _("print job")
-        verbose_name_plural = _("print jobs")
+        verbose_name = _("Завдання друку")
+        verbose_name_plural = _("Завдання друку")
         ordering = ["-created_at"]
 
     def __str__(self):

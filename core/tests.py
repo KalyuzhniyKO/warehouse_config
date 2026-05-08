@@ -4,8 +4,9 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from io import StringIO
 from django.urls import reverse
@@ -744,6 +745,9 @@ class ManagementAnalyticsTests(TestCase):
         self.auditor = get_user_model().objects.create_user(
             username="auditor", password="pw"
         )
+        self.superuser = get_user_model().objects.create_superuser(
+            username="root", password="pw", email="root@example.com"
+        )
         self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
         self.unit = Unit.objects.create(name="Штука", symbol="шт")
         self.category = Category.objects.create(name="Кабель")
@@ -812,7 +816,50 @@ class ManagementAnalyticsTests(TestCase):
         self.assertEqual(response.status_code, 403)
         self.client.force_login(self.auditor)
         response = self.client.get(reverse("management_analytics"))
+        self.assertEqual(response.status_code, 403)
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_analytics"))
         self.assertEqual(response.status_code, 200)
+
+    def test_storekeeper_menu_hides_management_analytics_and_admin(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Керування")
+        self.assertNotContains(response, "Аналітика")
+        self.assertNotContains(response, "Адмін-панель")
+
+    def test_warehouse_admin_menu_shows_management(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Керування")
+        self.assertNotContains(response, "Адмін-панель")
+
+    def test_warehouse_admin_opens_management_pages(self):
+        self.client.force_login(self.admin)
+        for url_name in ["management_dashboard", "management_help", "management_analytics"]:
+            response = self.client.get(reverse(url_name))
+            self.assertEqual(response.status_code, 200, url_name)
+
+    def test_superuser_sees_technical_django_admin_card(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("management_dashboard"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Технічна Django Admin")
+        self.assertContains(response, "Тільки для технічного обслуговування")
+
+    def test_storekeeper_cannot_open_analytics_urls(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("management_analytics"))
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get(reverse("analytics"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_analytics_redirects_warehouse_admin_to_management_analytics(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("analytics"))
+        self.assertRedirects(response, reverse("management_analytics"))
 
     def test_storekeeper_cannot_manage_users(self):
         self.client.force_login(self.storekeeper)
@@ -854,9 +901,9 @@ class ManagementAnalyticsTests(TestCase):
         self.assertEqual(summary["total_out"], Decimal("0.000"))
 
     def test_export_csv_works(self):
-        self.client.force_login(self.auditor)
+        self.client.force_login(self.admin)
         response = self.client.get(
-            reverse("analytics_export_csv"), {"warehouse": self.warehouse.pk}
+            reverse("management_analytics_export_csv"), {"warehouse": self.warehouse.pk}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
@@ -872,6 +919,42 @@ class ManagementAnalyticsTests(TestCase):
             "START_WAREHOUSE_FROM_ZERO.md",
         ]:
             self.assertTrue((docs / filename).exists())
+
+    def test_management_help_page_shows_instruction_sections(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_help"))
+        self.assertEqual(response.status_code, 200)
+        for text in [
+            "Як почати склад з нуля",
+            "Інструкція користувача",
+            "Інструкція адміністратора",
+            "Типові помилки",
+            "Backup і відновлення",
+            "Принтери і друк етикеток",
+            "Штрихкоди",
+            "Прихід товару",
+            "Початковий залишок",
+            "Рухи товарів",
+        ]:
+            self.assertContains(response, text)
+
+    def test_user_help_page_shows_only_user_instruction(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("help"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Інструкція користувача")
+        self.assertNotContains(response, "Інструкція адміністратора")
+        self.assertNotContains(response, "Backup і відновлення")
+
+    @override_settings(AUTH_PASSWORD_VALIDATORS=[])
+    def test_simple_passwords_are_not_blocked_when_validators_disabled(self):
+        validate_password("1", user=self.storekeeper)
+
+    def test_pr17_stock_pages_available_to_storekeeper(self):
+        self.client.force_login(self.storekeeper)
+        for url_name in ["stock_receive", "stock_initial", "movement_list", "stockbalance_list", "item_list", "help"]:
+            response = self.client.get(reverse(url_name))
+            self.assertEqual(response.status_code, 200, url_name)
 
     def test_help_page_opens(self):
         self.client.force_login(self.auditor)
