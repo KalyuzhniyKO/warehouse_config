@@ -1,0 +1,10 @@
+[Unit]
+Description=Warehouse Config MySQL backup
+Wants=network-online.target
+After=network-online.target mysql.service mysqld.service
+
+[Service]
+Type=oneshot
+User=warehouse
+Group=www-data
+ExecStart=/opt/warehouse_config/scripts/backup_mysql.sh

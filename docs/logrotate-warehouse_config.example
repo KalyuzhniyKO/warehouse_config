@@ -1,0 +1,8 @@
+/var/log/warehouse_config/*.log {
+    daily
+    rotate 30
+    compress
+    missingok
+    notifempty
+    copytruncate
+}

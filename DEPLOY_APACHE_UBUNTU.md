@@ -48,6 +48,19 @@ Copy or clone the repository into `/opt/warehouse_config`, then ensure ownership
 sudo chown -R warehouse:www-data /opt/warehouse_config
 ```
 
+Create runtime directories for Django logs, Gunicorn logs, and MySQL backups:
+
+```bash
+sudo mkdir -p /var/log/warehouse_config
+sudo mkdir -p /var/backups/warehouse_config
+sudo chown -R warehouse:www-data /var/log/warehouse_config
+sudo chown -R warehouse:www-data /var/backups/warehouse_config
+sudo chmod 750 /var/log/warehouse_config
+sudo chmod 750 /var/backups/warehouse_config
+```
+
+Django writes production logs to `/var/log/warehouse_config/django.log` and `/var/log/warehouse_config/errors.log`. Gunicorn writes access and error logs to `/var/log/warehouse_config/gunicorn-access.log` and `/var/log/warehouse_config/gunicorn-error.log`.
+
 ## 3. Create a virtual environment
 
 ```bash
@@ -136,7 +149,43 @@ The service uses this WSGI application:
 config.wsgi:application
 ```
 
-## 8. Configure Apache2 reverse proxy
+The example Gunicorn service also configures log files with these options:
+
+```text
+--access-logfile /var/log/warehouse_config/gunicorn-access.log
+--error-logfile /var/log/warehouse_config/gunicorn-error.log
+```
+
+## 8. Install daily MySQL backups
+
+The backup script stores compressed MySQL dumps in `/var/backups/warehouse_config`, writes operational logs to `/var/log/warehouse_config/backup.log`, keeps backups for 30 days, and targets RPO 24h / RTO 4h. See `docs/BACKUP_AND_RESTORE.md` for the full restore procedure.
+
+Copy and enable the systemd timer:
+
+```bash
+sudo cp docs/warehouse-backup.service.example /etc/systemd/system/warehouse-backup.service
+sudo cp docs/warehouse-backup.timer.example /etc/systemd/system/warehouse-backup.timer
+sudo systemctl daemon-reload
+sudo systemctl enable --now warehouse-backup.timer
+sudo systemctl list-timers | grep warehouse
+```
+
+Run a manual backup smoke test:
+
+```bash
+sudo systemctl start warehouse-backup.service
+sudo systemctl status warehouse-backup.service
+sudo tail -n 100 /var/log/warehouse_config/backup.log
+```
+
+## 9. Install logrotate for application logs
+
+```bash
+sudo cp docs/logrotate-warehouse_config.example /etc/logrotate.d/warehouse_config
+sudo logrotate -d /etc/logrotate.d/warehouse_config
+```
+
+## 10. Configure Apache2 reverse proxy
 
 Apache must listen on port `8081`. Add this line to `/etc/apache2/ports.conf` if it is not already present:
 
@@ -155,7 +204,7 @@ sudo systemctl reload apache2
 
 The VirtualHost proxies dynamic requests to Gunicorn at `127.0.0.1:8001` and serves collected static files from `/opt/warehouse_config/staticfiles/`.
 
-## 9. Verification commands
+## 11. Verification commands
 
 Run the Django checks:
 
