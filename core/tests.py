@@ -1,9 +1,11 @@
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from io import StringIO
 from django.urls import reverse
 
 from .models import (
@@ -62,11 +64,10 @@ class WarehouseModelTests(TestCase):
         self.assertEqual(sequence.next_number, 1)
         self.assertEqual(sequence.padding, 8)
 
-    def test_item_internal_code_is_unique_when_filled(self):
-        Item.objects.create(name="First item", internal_code="SKU-1", unit=self.unit)
+    def test_item_internal_code_is_normalized_when_filled(self):
+        item = Item.objects.create(name="First item", internal_code=" SKU-1 ", unit=self.unit)
 
-        with self.assertRaises(IntegrityError):
-            Item.objects.create(name="Second item", internal_code="SKU-1", unit=self.unit)
+        self.assertEqual(item.internal_code, "SKU-1")
 
     def test_item_internal_code_can_be_blank_for_multiple_items(self):
         first = Item.objects.create(name="First item", internal_code="", unit=self.unit)
@@ -443,6 +444,96 @@ class WebInterfaceTests(TestCase):
         )
         self.assertEqual(location_response.status_code, 302)
         self.assertTrue(Location.objects.filter(warehouse=warehouse, name="B-02").exists())
+
+    def test_cannot_create_duplicate_root_category_with_trimmed_name(self):
+        response = self.client.post(
+            reverse("category_create"),
+            {"name": " Матеріали ", "parent": "", "is_active": "on"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Категорія з такою назвою вже існує.")
+        self.assertEqual(Category.objects.filter(name__iexact="Матеріали", parent__isnull=True).count(), 1)
+
+    def test_cannot_create_duplicate_category_with_same_parent(self):
+        parent = Category.objects.create(name="Запчастини")
+        Category.objects.create(name="Електрика", parent=parent)
+
+        response = self.client.post(
+            reverse("category_create"),
+            {"name": " електрика ", "parent": parent.pk, "is_active": "on"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Категорія з такою назвою вже існує.")
+        self.assertEqual(Category.objects.filter(parent=parent).count(), 1)
+
+    def test_can_create_same_category_name_in_different_parents(self):
+        first_parent = Category.objects.create(name="Склад 1")
+        second_parent = Category.objects.create(name="Склад 2")
+        Category.objects.create(name="Кабелі", parent=first_parent)
+
+        response = self.client.post(
+            reverse("category_create"),
+            {"name": "Кабелі", "parent": second_parent.pk, "is_active": "on"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Category.objects.filter(name="Кабелі").count(), 2)
+
+    def test_archive_and_restore_actions_toggle_active_status(self):
+        unit = Unit.objects.create(name="Метр", symbol="м")
+
+        archive_response = self.client.post(reverse("unit_archive", args=[unit.pk]))
+        self.assertEqual(archive_response.status_code, 302)
+        unit.refresh_from_db()
+        self.assertFalse(unit.is_active)
+
+        restore_response = self.client.post(reverse("unit_restore", args=[unit.pk]))
+        self.assertEqual(restore_response.status_code, 302)
+        unit.refresh_from_db()
+        self.assertTrue(unit.is_active)
+
+    def test_directory_list_shows_active_by_default_and_archived_by_filter(self):
+        archived = Unit.objects.create(name="Літр", symbol="л", is_active=False)
+
+        active_response = self.client.get(reverse("unit_list"))
+        self.assertContains(active_response, self.unit.name)
+        self.assertNotContains(active_response, archived.name)
+
+        archived_response = self.client.get(reverse("unit_list"), {"status": "archived"})
+        self.assertNotContains(archived_response, self.unit.name)
+        self.assertContains(archived_response, archived.name)
+
+    def test_item_form_labels_are_ukrainian(self):
+        response = self.client.get(reverse("item_create"))
+
+        for label in ["Назва", "Внутрішній код", "Категорія", "Одиниця виміру", "Опис"]:
+            self.assertContains(response, label)
+        self.assertNotContains(response, ">Name<")
+        self.assertNotContains(response, ">Internal code<")
+
+    def test_archive_category_blocked_when_active_items_exist(self):
+        response = self.client.post(reverse("category_archive", args=[self.category.pk]))
+
+        self.category.refresh_from_db()
+        self.assertTrue(self.category.is_active)
+        self.assertEqual(response.status_code, 302)
+
+    def test_find_duplicates_command_reports_duplicates_without_changes(self):
+        first = Category.objects.create(name="Електрозапчастини")
+        second = Category.objects.create(name=" електрозапчастини ")
+        before_count = Category.objects.count()
+        out = StringIO()
+
+        call_command("find_duplicates", stdout=out)
+
+        self.assertIn("Category", out.getvalue())
+        self.assertEqual(Category.objects.count(), before_count)
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertTrue(first.is_active)
+        self.assertTrue(second.is_active)
 
     def test_stock_balance_list_opens_and_filters_by_search(self):
         response = self.client.get(reverse("stockbalance_list"), {"q": "BOLT"})

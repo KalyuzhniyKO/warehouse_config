@@ -14,13 +14,18 @@ class ActiveModel(models.Model):
 
 
 class Unit(ActiveModel):
-    name = models.CharField(_("name"), max_length=100, unique=True)
-    symbol = models.CharField(_("symbol"), max_length=20, unique=True)
+    name = models.CharField(_("name"), max_length=100)
+    symbol = models.CharField(_("symbol"), max_length=20)
 
     class Meta:
         verbose_name = _("unit")
         verbose_name_plural = _("units")
         ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        self.symbol = self.symbol.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.symbol
@@ -41,19 +46,17 @@ class Category(ActiveModel):
         verbose_name = _("category")
         verbose_name_plural = _("categories")
         ordering = ["name"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["parent", "name"],
-                name="core_category_unique_parent_name",
-            ),
-        ]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
 
 
 class Recipient(ActiveModel):
-    name = models.CharField(_("name"), max_length=200, unique=True)
+    name = models.CharField(_("name"), max_length=200)
     contact_name = models.CharField(_("contact name"), max_length=150, blank=True)
     phone = models.CharField(_("phone"), max_length=50, blank=True)
     email = models.EmailField(_("email"), blank=True)
@@ -63,6 +66,13 @@ class Recipient(ActiveModel):
         verbose_name = _("recipient")
         verbose_name_plural = _("recipients")
         ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        self.contact_name = self.contact_name.strip()
+        self.phone = self.phone.strip()
+        self.email = self.email.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -114,7 +124,7 @@ class BarcodeSequence(ActiveModel):
 class Item(ActiveModel):
     name = models.CharField(_("name"), max_length=200)
     internal_code = models.CharField(
-        _("internal code"), max_length=64, blank=True, null=True, unique=True
+        _("internal code"), max_length=64, blank=True, null=True
     )
     category = models.ForeignKey(
         Category,
@@ -152,8 +162,9 @@ class Item(ActiveModel):
             raise ValidationError({"barcode": _("Item barcode must use the ITM prefix.")})
 
     def save(self, *args, **kwargs):
-        if self.internal_code == "":
-            self.internal_code = None
+        self.name = self.name.strip()
+        if self.internal_code is not None:
+            self.internal_code = self.internal_code.strip() or None
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -161,7 +172,7 @@ class Item(ActiveModel):
 
 
 class Warehouse(ActiveModel):
-    name = models.CharField(_("name"), max_length=150, unique=True)
+    name = models.CharField(_("name"), max_length=150)
     barcode = models.OneToOneField(
         BarcodeRegistry,
         verbose_name=_("barcode"),
@@ -182,6 +193,10 @@ class Warehouse(ActiveModel):
         super().clean()
         if self.barcode_id and self.barcode.prefix != BarcodeRegistry.Prefix.WAREHOUSE:
             raise ValidationError({"barcode": _("Warehouse barcode must use the WH prefix.")})
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -219,12 +234,6 @@ class Location(ActiveModel):
         verbose_name = _("location")
         verbose_name_plural = _("locations")
         ordering = ["warehouse__name", "name"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["warehouse", "name"],
-                name="core_location_unique_warehouse_name",
-            )
-        ]
 
     def clean(self):
         super().clean()
@@ -239,6 +248,10 @@ class Location(ActiveModel):
             raise ValidationError(
                 {"barcode": _("Location barcode prefix does not match its type.")}
             )
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.warehouse} / {self.name}"
