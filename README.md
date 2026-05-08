@@ -26,20 +26,17 @@ warehouse_config/
 ├── core/
 │   ├── __init__.py
 │   ├── apps.py
-│   ├── models.py
 │   ├── views.py
 │   ├── urls.py
-│   ├── admin.py
 │   └── tests.py
-├── docs/
-│   ├── apache-warehouse.conf.example
-│   └── warehouse-gunicorn.service.example
 ├── templates/
-├── static/
+│   └── includes/
+│       └── language_switcher.html
 ├── locale/
+├── static/
 ├── requirements.txt
 ├── .env.example
-└── DEPLOY_APACHE_UBUNTU.md
+└── README.md
 ```
 
 Important Django entry points:
