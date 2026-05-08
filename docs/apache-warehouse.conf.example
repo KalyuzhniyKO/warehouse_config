@@ -1,0 +1,17 @@
+<VirtualHost *:8081>
+    ServerName 10.52.83.10
+
+    ProxyPreserveHost On
+
+    Alias /static/ /opt/warehouse_config/staticfiles/
+    <Directory /opt/warehouse_config/staticfiles/>
+        Require all granted
+    </Directory>
+
+    ProxyPass /static/ !
+    ProxyPass / http://127.0.0.1:8001/
+    ProxyPassReverse / http://127.0.0.1:8001/
+
+    ErrorLog ${APACHE_LOG_DIR}/warehouse_error.log
+    CustomLog ${APACHE_LOG_DIR}/warehouse_access.log combined
+</VirtualHost>
