@@ -1,5 +1,5 @@
 """
-URL configuration for the warehouse_config project.
+URL configuration for the config project module.
 
 The ``urlpatterns`` list routes URLs to views. For more information, see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
