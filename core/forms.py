@@ -4,6 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from .models import Category, Item, Location, Recipient, StockMovement, Unit, Warehouse
 
 
+ARCHIVED_CHOICE_ERROR = _("Не можна вибрати архівний запис.")
+
+
 DUPLICATE_MESSAGES = {
     "category": _("Категорія з такою назвою вже існує."),
     "unit_name": _("Одиниця виміру з такою назвою вже існує."),
@@ -29,12 +32,25 @@ def normalized_duplicate_exists(queryset, instance, field_name, value):
     return False
 
 
+def active_records_queryset(queryset):
+    if hasattr(queryset.model, "is_active"):
+        return queryset.filter(is_active=True)
+    return queryset
+
+
+def restrict_model_choice_to_active(field):
+    if isinstance(field, forms.ModelChoiceField):
+        field.queryset = active_records_queryset(field.queryset)
+        field.error_messages["invalid_choice"] = ARCHIVED_CHOICE_ERROR
+
+
 class BootstrapModelForm(forms.ModelForm):
     """Model form base class with Bootstrap-friendly widgets."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
+            restrict_model_choice_to_active(field)
             widget = field.widget
             if isinstance(widget, forms.CheckboxInput):
                 widget.attrs.setdefault("class", "form-check-input")
@@ -205,6 +221,7 @@ class StockBalanceFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
+            restrict_model_choice_to_active(field)
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
             else:
@@ -235,6 +252,7 @@ class AnalyticsFilterForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
+            restrict_model_choice_to_active(field)
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
             else:

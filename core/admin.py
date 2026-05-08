@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from .forms import active_records_queryset
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -14,43 +15,63 @@ from .models import (
 )
 
 
+class ActiveRelatedAdminMixin:
+    """Prevent archived records from being offered as related choices."""
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if hasattr(db_field.remote_field.model, "is_active"):
+            kwargs["queryset"] = active_records_queryset(db_field.remote_field.model.objects.all())
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if hasattr(db_field.remote_field.model, "is_active"):
+            kwargs["queryset"] = active_records_queryset(db_field.remote_field.model.objects.all())
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)
+        if {"app_label", "model_name", "field_name"}.issubset(request.GET) and hasattr(self.model, "is_active"):
+            queryset = active_records_queryset(queryset)
+        return queryset, use_distinct
+
+
 @admin.register(Unit)
-class UnitAdmin(admin.ModelAdmin):
+class UnitAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "symbol", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "symbol")
 
 
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "parent", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "parent__name")
 
 
 @admin.register(Recipient)
-class RecipientAdmin(admin.ModelAdmin):
+class RecipientAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "contact_name", "phone", "email", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "contact_name", "phone", "email")
 
 
 @admin.register(BarcodeRegistry)
-class BarcodeRegistryAdmin(admin.ModelAdmin):
+class BarcodeRegistryAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("barcode", "prefix", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("barcode", "description")
 
 
 @admin.register(BarcodeSequence)
-class BarcodeSequenceAdmin(admin.ModelAdmin):
+class BarcodeSequenceAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("prefix", "next_number", "padding", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("prefix",)
 
 
 @admin.register(Item)
-class ItemAdmin(admin.ModelAdmin):
+class ItemAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "internal_code", "category", "unit", "barcode", "is_active")
     list_filter = ("category", "unit", "is_active")
     search_fields = ("name", "internal_code", "barcode__barcode")
@@ -58,7 +79,7 @@ class ItemAdmin(admin.ModelAdmin):
 
 
 @admin.register(Warehouse)
-class WarehouseAdmin(admin.ModelAdmin):
+class WarehouseAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "barcode", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "barcode__barcode", "address")
@@ -66,7 +87,7 @@ class WarehouseAdmin(admin.ModelAdmin):
 
 
 @admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
+class LocationAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("name", "warehouse", "location_type", "barcode", "is_active")
     list_filter = ("warehouse", "location_type", "is_active")
     search_fields = ("name", "warehouse__name", "barcode__barcode")
@@ -74,7 +95,7 @@ class LocationAdmin(admin.ModelAdmin):
 
 
 @admin.register(StockBalance)
-class StockBalanceAdmin(admin.ModelAdmin):
+class StockBalanceAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = ("item", "location", "qty", "is_active")
     list_filter = ("location__warehouse", "is_active")
     search_fields = ("item__name", "item__internal_code", "location__name")
@@ -82,7 +103,7 @@ class StockBalanceAdmin(admin.ModelAdmin):
 
 
 @admin.register(StockMovement)
-class StockMovementAdmin(admin.ModelAdmin):
+class StockMovementAdmin(ActiveRelatedAdminMixin, admin.ModelAdmin):
     list_display = (
         "movement_type",
         "item",

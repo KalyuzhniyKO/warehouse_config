@@ -685,3 +685,63 @@ class InternationalizationIntegrationTests(TestCase):
         self.assertContains(response, "🇺🇦")
         self.assertContains(response, "/en/")
         self.assertContains(response, "/tr/")
+
+
+class ArchivedRelatedRecordFormTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        self.admin_user = get_user_model().objects.create_user(username="archive-admin", password="pw", is_staff=True)
+        self.admin_user.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.client.force_login(self.admin_user)
+        self.active_unit = Unit.objects.create(name="Активна штука", symbol="ашт")
+        self.archived_unit = Unit.objects.create(name="Архівна штука", symbol="аршт", is_active=False)
+        self.active_category = Category.objects.create(name="Активна категорія")
+        self.archived_category = Category.objects.create(name="Архівна категорія", is_active=False)
+        self.active_warehouse = Warehouse.objects.create(name="Активний склад")
+        self.archived_warehouse = Warehouse.objects.create(name="Архівний склад", is_active=False)
+
+    def test_archived_records_are_not_shown_in_custom_forms(self):
+        from .forms import ItemForm, LocationForm
+
+        item_form = ItemForm()
+        location_form = LocationForm()
+
+        self.assertIn(self.active_unit, item_form.fields["unit"].queryset)
+        self.assertNotIn(self.archived_unit, item_form.fields["unit"].queryset)
+        self.assertIn(self.active_category, item_form.fields["category"].queryset)
+        self.assertNotIn(self.archived_category, item_form.fields["category"].queryset)
+        self.assertIn(self.active_warehouse, location_form.fields["warehouse"].queryset)
+        self.assertNotIn(self.archived_warehouse, location_form.fields["warehouse"].queryset)
+
+    def test_archived_fk_post_is_blocked_with_ukrainian_error(self):
+        response = self.client.post(
+            reverse("item_create"),
+            {
+                "name": "Позиція з архівною одиницею",
+                "internal_code": "ARCH-FK",
+                "category": self.active_category.pk,
+                "unit": self.archived_unit.pk,
+                "description": "",
+                "is_active": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Не можна вибрати архівний запис.")
+        self.assertFalse(Item.objects.filter(internal_code="ARCH-FK").exists())
+
+    def test_admin_forms_do_not_offer_archived_related_records(self):
+        from django.contrib import admin
+        from django.test import RequestFactory
+
+        from .admin import ItemAdmin, LocationAdmin
+
+        request = RequestFactory().get("/admin/core/item/add/")
+        request.user = self.admin_user
+        item_form = ItemAdmin(Item, admin.site).get_form(request)()
+        location_form = LocationAdmin(Location, admin.site).get_form(request)()
+
+        self.assertIn(self.active_unit, item_form.fields["unit"].queryset)
+        self.assertNotIn(self.archived_unit, item_form.fields["unit"].queryset)
+        self.assertIn(self.active_warehouse, location_form.fields["warehouse"].queryset)
+        self.assertNotIn(self.archived_warehouse, location_form.fields["warehouse"].queryset)

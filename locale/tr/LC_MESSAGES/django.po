@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-08 18:49+0300\n"
+"POT-Creation-Date: 2026-05-08 19:15+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,164 +16,169 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-#: core/forms.py:8
-msgid "Категорія з такою назвою вже існує."
-msgstr ""
 
-#: core/forms.py:9
-msgid "Одиниця виміру з такою назвою вже існує."
-msgstr ""
-
-#: core/forms.py:10
-msgid "Одиниця виміру з таким позначенням вже існує."
+#: core/forms.py:7
+msgid "Не можна вибрати архівний запис."
 msgstr ""
 
 #: core/forms.py:11
-msgid "Отримувач з такою назвою вже існує."
+msgid "Категорія з такою назвою вже існує."
 msgstr ""
 
 #: core/forms.py:12
-msgid "Склад з такою назвою вже існує."
+msgid "Одиниця виміру з такою назвою вже існує."
 msgstr ""
 
 #: core/forms.py:13
-msgid "Локація з такою назвою вже існує на цьому складі."
+msgid "Одиниця виміру з таким позначенням вже існує."
 msgstr ""
 
 #: core/forms.py:14
+msgid "Отримувач з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:15
+msgid "Склад з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:16
+msgid "Локація з такою назвою вже існує на цьому складі."
+msgstr ""
+
+#: core/forms.py:17
 msgid "Номенклатура з таким внутрішнім кодом вже існує."
 msgstr ""
 
-#: core/forms.py:59 core/forms.py:79 core/forms.py:101 core/forms.py:122
-#: core/forms.py:147 core/forms.py:163 core/views.py:239 core/views.py:254
+#: core/forms.py:75 core/forms.py:95 core/forms.py:117 core/forms.py:138
+#: core/forms.py:163 core/forms.py:179 core/views.py:239 core/views.py:254
 #: core/views.py:268 core/views.py:283 core/views.py:298 core/views.py:312
 msgid "Назва"
 msgstr ""
 
-#: core/forms.py:59 core/views.py:239
+#: core/forms.py:75 core/views.py:239
 msgid "Позначення"
 msgstr ""
 
-#: core/forms.py:59 core/forms.py:79 core/forms.py:106 core/forms.py:127
-#: core/forms.py:147 core/forms.py:165 templates/core/directory_list.html:47
+#: core/forms.py:75 core/forms.py:95 core/forms.py:122 core/forms.py:143
+#: core/forms.py:163 core/forms.py:181 templates/core/directory_list.html:47
 #: templates/core/management/users.html:7
 msgid "Активний"
 msgstr ""
 
-#: core/forms.py:60
+#: core/forms.py:76
 msgid "Коротке позначення одиниці, наприклад: шт, кг, м."
 msgstr ""
 
-#: core/forms.py:79 core/views.py:254
+#: core/forms.py:95 core/views.py:254
 msgid "Батьківська категорія"
 msgstr ""
 
-#: core/forms.py:80
+#: core/forms.py:96
 msgid "Залиште порожнім для категорії верхнього рівня."
 msgstr ""
 
-#: core/forms.py:102
+#: core/forms.py:118
 msgid "Контактна особа"
 msgstr ""
 
-#: core/forms.py:103 core/views.py:268
+#: core/forms.py:119 core/views.py:268
 msgid "Телефон"
 msgstr ""
 
-#: core/forms.py:104
+#: core/forms.py:120
 msgid "Email"
 msgstr ""
 
-#: core/forms.py:105
+#: core/forms.py:121
 msgid "Примітки"
 msgstr ""
 
-#: core/forms.py:108
+#: core/forms.py:124
 msgid "Додаткова інформація про отримувача."
 msgstr ""
 
-#: core/forms.py:123 core/views.py:283 templates/core/stockbalance_list.html:30
+#: core/forms.py:139 core/views.py:283 templates/core/stockbalance_list.html:30
 msgid "Внутрішній код"
 msgstr ""
 
-#: core/forms.py:124 core/forms.py:225 core/views.py:283
+#: core/forms.py:140 core/forms.py:242 core/views.py:283
 msgid "Категорія"
 msgstr ""
 
-#: core/forms.py:125 templates/core/stockbalance_list.html:30
+#: core/forms.py:141 templates/core/stockbalance_list.html:30
 msgid "Одиниця виміру"
 msgstr ""
 
-#: core/forms.py:126
+#: core/forms.py:142
 msgid "Опис"
 msgstr ""
 
-#: core/forms.py:129
+#: core/forms.py:145
 msgid "Необов'язковий унікальний код у вашій системі обліку."
 msgstr ""
 
-#: core/forms.py:147 core/views.py:298
+#: core/forms.py:163 core/views.py:298
 msgid "Адреса"
 msgstr ""
 
-#: core/forms.py:148
+#: core/forms.py:164
 msgid "Фактична адреса або короткий опис місця розташування складу."
 msgstr ""
 
-#: core/forms.py:162 core/forms.py:185 core/forms.py:221 core/views.py:312
+#: core/forms.py:178 core/forms.py:201 core/forms.py:238 core/views.py:312
 #: core/views.py:465 templates/core/stockbalance_list.html:30
 msgid "Склад"
 msgstr ""
 
-#: core/forms.py:164
+#: core/forms.py:180
 msgid "Тип локації"
 msgstr ""
 
-#: core/forms.py:167
+#: core/forms.py:183
 msgid "Наприклад: A-01, Ряд 2, Комірка 5."
 msgstr ""
 
-#: core/forms.py:190 core/forms.py:223 core/views.py:465
+#: core/forms.py:206 core/forms.py:240 core/views.py:465
 #: templates/core/stockbalance_list.html:30
 msgid "Локація"
 msgstr ""
 
-#: core/forms.py:195 core/forms.py:226 core/views.py:274 core/views.py:361
+#: core/forms.py:211 core/forms.py:243 core/views.py:274 core/views.py:361
 #: core/views.py:465 templates/base.html:27 templates/base.html:58
 #: templates/core/dashboard.html:12 templates/core/management/dashboard.html:11
 #: templates/core/stockbalance_list.html:30
 msgid "Номенклатура"
 msgstr ""
 
-#: core/forms.py:200 core/forms.py:232
+#: core/forms.py:216 core/forms.py:249
 msgid "Пошук"
 msgstr ""
 
-#: core/forms.py:202
+#: core/forms.py:218
 msgid "Назва, внутрішній код або штрихкод"
 msgstr ""
 
-#: core/forms.py:216
+#: core/forms.py:233
 msgid "Період від"
 msgstr ""
 
-#: core/forms.py:219
+#: core/forms.py:236
 msgid "Період до"
 msgstr ""
 
-#: core/forms.py:228 core/views.py:465
+#: core/forms.py:245 core/views.py:465
 msgid "Тип операції"
 msgstr ""
 
-#: core/forms.py:228
+#: core/forms.py:245
 msgid "Усі операції"
 msgstr ""
 
-#: core/forms.py:230 core/views.py:465
+#: core/forms.py:247 core/views.py:465
 msgid "Отримувач"
 msgstr ""
 
-#: core/forms.py:232
+#: core/forms.py:249
 msgid "Назва, internal_code або barcode"
 msgstr ""
 
