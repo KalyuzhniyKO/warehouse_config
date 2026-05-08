@@ -1,0 +1,727 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-08 17:47+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && "
+"(n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && "
+"n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
+#: core/forms.py:8
+msgid "Категорія з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:9
+msgid "Одиниця виміру з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:10
+msgid "Одиниця виміру з таким позначенням вже існує."
+msgstr ""
+
+#: core/forms.py:11
+msgid "Отримувач з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:12
+msgid "Склад з такою назвою вже існує."
+msgstr ""
+
+#: core/forms.py:13
+msgid "Локація з такою назвою вже існує на цьому складі."
+msgstr ""
+
+#: core/forms.py:14
+msgid "Номенклатура з таким внутрішнім кодом вже існує."
+msgstr ""
+
+#: core/forms.py:59 core/forms.py:79 core/forms.py:101 core/forms.py:122
+#: core/forms.py:147 core/forms.py:163 core/views.py:221 core/views.py:236
+#: core/views.py:250 core/views.py:265 core/views.py:280 core/views.py:294
+msgid "Назва"
+msgstr ""
+
+#: core/forms.py:59 core/views.py:221
+msgid "Позначення"
+msgstr ""
+
+#: core/forms.py:59 core/forms.py:79 core/forms.py:106 core/forms.py:127
+#: core/forms.py:147 core/forms.py:165 templates/core/directory_list.html:47
+msgid "Активний"
+msgstr ""
+
+#: core/forms.py:60
+msgid "Коротке позначення одиниці, наприклад: шт, кг, м."
+msgstr ""
+
+#: core/forms.py:79 core/views.py:236
+msgid "Батьківська категорія"
+msgstr ""
+
+#: core/forms.py:80
+msgid "Залиште порожнім для категорії верхнього рівня."
+msgstr ""
+
+#: core/forms.py:102
+msgid "Контактна особа"
+msgstr ""
+
+#: core/forms.py:103 core/views.py:250
+msgid "Телефон"
+msgstr ""
+
+#: core/forms.py:104
+msgid "Email"
+msgstr ""
+
+#: core/forms.py:105
+msgid "Примітки"
+msgstr ""
+
+#: core/forms.py:108
+msgid "Додаткова інформація про отримувача."
+msgstr ""
+
+#: core/forms.py:123 core/views.py:265 templates/core/stockbalance_list.html:30
+msgid "Внутрішній код"
+msgstr ""
+
+#: core/forms.py:124 core/views.py:265
+msgid "Категорія"
+msgstr ""
+
+#: core/forms.py:125 templates/core/stockbalance_list.html:30
+msgid "Одиниця виміру"
+msgstr ""
+
+#: core/forms.py:126
+msgid "Опис"
+msgstr ""
+
+#: core/forms.py:129
+msgid "Необов'язковий унікальний код у вашій системі обліку."
+msgstr ""
+
+#: core/forms.py:147 core/views.py:280
+msgid "Адреса"
+msgstr ""
+
+#: core/forms.py:148
+msgid "Фактична адреса або короткий опис місця розташування складу."
+msgstr ""
+
+#: core/forms.py:162 core/forms.py:185 core/views.py:294
+#: templates/core/stockbalance_list.html:30
+msgid "Склад"
+msgstr ""
+
+#: core/forms.py:164
+msgid "Тип локації"
+msgstr ""
+
+#: core/forms.py:167
+msgid "Наприклад: A-01, Ряд 2, Комірка 5."
+msgstr ""
+
+#: core/forms.py:190 templates/core/stockbalance_list.html:30
+msgid "Локація"
+msgstr ""
+
+#: core/forms.py:195 core/views.py:256 templates/base.html:27
+#: templates/base.html:52 templates/core/dashboard.html:12
+#: templates/core/stockbalance_list.html:30
+msgid "Номенклатура"
+msgstr "Asortyment"
+
+#: core/forms.py:200
+msgid "Пошук"
+msgstr "Szukaj"
+
+#: core/forms.py:202
+msgid "Назва, внутрішній код або штрихкод"
+msgstr ""
+
+#: core/models.py:8
+msgid "active"
+msgstr ""
+
+#: core/models.py:9
+msgid "created at"
+msgstr ""
+
+#: core/models.py:10
+msgid "updated at"
+msgstr ""
+
+#: core/models.py:17 core/models.py:35 core/models.py:59 core/models.py:125
+#: core/models.py:175 core/models.py:216
+msgid "name"
+msgstr ""
+
+#: core/models.py:18
+msgid "symbol"
+msgstr ""
+
+#: core/models.py:21 core/models.py:139
+msgid "unit"
+msgstr ""
+
+#: core/models.py:22
+msgid "units"
+msgstr ""
+
+#: core/models.py:38
+msgid "parent category"
+msgstr ""
+
+#: core/models.py:46 core/models.py:131
+msgid "category"
+msgstr ""
+
+#: core/models.py:47
+msgid "categories"
+msgstr ""
+
+#: core/models.py:60
+msgid "contact name"
+msgstr ""
+
+#: core/models.py:61
+msgid "phone"
+msgstr ""
+
+#: core/models.py:62
+msgid "email"
+msgstr ""
+
+#: core/models.py:63
+msgid "notes"
+msgstr ""
+
+#: core/models.py:66 core/models.py:328
+msgid "recipient"
+msgstr ""
+
+#: core/models.py:67
+msgid "recipients"
+msgstr ""
+
+#: core/models.py:83 core/models.py:155 core/models.py:263 core/models.py:305
+msgid "item"
+msgstr ""
+
+#: core/models.py:84 core/models.py:188 core/models.py:212
+msgid "warehouse"
+msgstr ""
+
+#: core/models.py:85 core/models.py:208
+msgid "rack"
+msgstr ""
+
+#: core/models.py:86 core/models.py:207 core/models.py:234 core/models.py:269
+msgid "location"
+msgstr ""
+
+#: core/models.py:88 core/models.py:145 core/models.py:178 core/models.py:225
+msgid "barcode"
+msgstr ""
+
+#: core/models.py:89 core/models.py:110
+msgid "prefix"
+msgstr ""
+
+#: core/models.py:90 core/models.py:152
+msgid "description"
+msgstr ""
+
+#: core/models.py:93
+msgid "barcode registry entry"
+msgstr ""
+
+#: core/models.py:94
+msgid "barcode registry entries"
+msgstr ""
+
+#: core/models.py:101
+msgid "Barcode must start with the selected prefix."
+msgstr ""
+
+#: core/models.py:112
+msgid "next number"
+msgstr ""
+
+#: core/models.py:113
+msgid "padding"
+msgstr ""
+
+#: core/models.py:116
+msgid "barcode sequence"
+msgstr ""
+
+#: core/models.py:117
+msgid "barcode sequences"
+msgstr ""
+
+#: core/models.py:127
+msgid "internal code"
+msgstr ""
+
+#: core/models.py:156
+msgid "items"
+msgstr ""
+
+#: core/models.py:162
+msgid "Item barcode must use the ITM prefix."
+msgstr ""
+
+#: core/models.py:185
+msgid "address"
+msgstr ""
+
+#: core/models.py:189
+msgid "warehouses"
+msgstr ""
+
+#: core/models.py:195
+msgid "Warehouse barcode must use the WH prefix."
+msgstr ""
+
+#: core/models.py:218
+msgid "location type"
+msgstr ""
+
+#: core/models.py:235
+msgid "locations"
+msgstr ""
+
+#: core/models.py:249
+msgid "Location barcode prefix does not match its type."
+msgstr ""
+
+#: core/models.py:273 core/models.py:309
+msgid "quantity"
+msgstr ""
+
+#: core/models.py:276
+msgid "stock balance"
+msgstr ""
+
+#: core/models.py:277
+msgid "stock balances"
+msgstr ""
+
+#: core/models.py:292
+msgid "initial balance"
+msgstr ""
+
+#: core/models.py:293
+msgid "in"
+msgstr ""
+
+#: core/models.py:294
+msgid "out"
+msgstr ""
+
+#: core/models.py:295
+msgid "return"
+msgstr ""
+
+#: core/models.py:296
+msgid "write-off"
+msgstr ""
+
+#: core/models.py:297
+msgid "transfer"
+msgstr ""
+
+#: core/models.py:298
+msgid "adjustment"
+msgstr ""
+
+#: core/models.py:301
+msgid "movement type"
+msgstr ""
+
+#: core/models.py:312
+msgid "source location"
+msgstr ""
+
+#: core/models.py:320
+msgid "destination location"
+msgstr ""
+
+#: core/models.py:334
+msgid "occurred at"
+msgstr ""
+
+#: core/models.py:335
+msgid "comment"
+msgstr ""
+
+#: core/models.py:338
+msgid "stock movement"
+msgstr ""
+
+#: core/models.py:339
+msgid "stock movements"
+msgstr ""
+
+#: core/views.py:101
+msgid "Запис успішно створено."
+msgstr ""
+
+#: core/views.py:109
+msgid "Запис успішно оновлено."
+msgstr ""
+
+#: core/views.py:117
+msgid "Категорію не можна архівувати, бо вона має активні дочірні категорії."
+msgstr ""
+
+#: core/views.py:119
+msgid ""
+"Категорію не можна архівувати, бо вона використовується в активній "
+"номенклатурі."
+msgstr ""
+
+#: core/views.py:121
+msgid ""
+"Одиницю виміру не можна архівувати, бо вона використовується в активній "
+"номенклатурі."
+msgstr ""
+
+#: core/views.py:123
+msgid "Склад не можна архівувати, бо він має активні локації."
+msgstr ""
+
+#: core/views.py:125
+msgid "Локацію не можна архівувати, бо на ній є ненульові залишки."
+msgstr ""
+
+#: core/views.py:127
+msgid "Номенклатуру не можна архівувати, бо за нею є ненульові залишки."
+msgstr ""
+
+#: core/views.py:138
+msgid "Запис переміщено в архів."
+msgstr ""
+
+#: core/views.py:150
+msgid "Запис відновлено з архіву."
+msgstr ""
+
+#: core/views.py:153
+msgid "Запис не можна відновити."
+msgstr ""
+
+#: core/views.py:212 templates/base.html:54 templates/core/dashboard.html:14
+msgid "Одиниці виміру"
+msgstr "Jednostki miary"
+
+#: core/views.py:213
+msgid "Створити одиницю виміру"
+msgstr ""
+
+#: core/views.py:214
+msgid "Редагувати одиницю виміру"
+msgstr ""
+
+#: core/views.py:215
+msgid "Архівувати одиницю виміру"
+msgstr ""
+
+#: core/views.py:227 templates/base.html:53 templates/core/dashboard.html:13
+msgid "Категорії"
+msgstr "Kategorie"
+
+#: core/views.py:228
+msgid "Створити категорію"
+msgstr ""
+
+#: core/views.py:229
+msgid "Редагувати категорію"
+msgstr ""
+
+#: core/views.py:230
+msgid "Архівувати категорію"
+msgstr ""
+
+#: core/views.py:241 templates/base.html:57 templates/core/dashboard.html:17
+msgid "Отримувачі"
+msgstr "Odbiorcy"
+
+#: core/views.py:242
+msgid "Створити отримувача"
+msgstr ""
+
+#: core/views.py:243
+msgid "Редагувати отримувача"
+msgstr ""
+
+#: core/views.py:244
+msgid "Архівувати отримувача"
+msgstr ""
+
+#: core/views.py:250
+msgid "Контакт"
+msgstr ""
+
+#: core/views.py:257
+msgid "Створити номенклатуру"
+msgstr ""
+
+#: core/views.py:258
+msgid "Редагувати номенклатуру"
+msgstr ""
+
+#: core/views.py:259
+msgid "Архівувати номенклатуру"
+msgstr ""
+
+#: core/views.py:265
+msgid "Одиниця"
+msgstr ""
+
+#: core/views.py:271 templates/base.html:55 templates/core/dashboard.html:15
+msgid "Склади"
+msgstr "Magazyny"
+
+#: core/views.py:272
+msgid "Створити склад"
+msgstr ""
+
+#: core/views.py:273
+msgid "Редагувати склад"
+msgstr ""
+
+#: core/views.py:274
+msgid "Архівувати склад"
+msgstr ""
+
+#: core/views.py:285 templates/base.html:56 templates/core/dashboard.html:16
+msgid "Локації"
+msgstr "Lokalizacje"
+
+#: core/views.py:286
+msgid "Створити локацію"
+msgstr ""
+
+#: core/views.py:287
+msgid "Редагувати локацію"
+msgstr ""
+
+#: core/views.py:288
+msgid "Архівувати локацію"
+msgstr ""
+
+#: core/views.py:294
+msgid "Тип"
+msgstr ""
+
+#: templates/base.html:7 templates/base.html:20 templates/core/dashboard.html:3
+#: templates/core/directory_form.html:3 templates/core/directory_list.html:3
+#: templates/core/stockbalance_list.html:3 templates/registration/login.html:4
+msgid "Складський облік"
+msgstr "Ewidencja magazynowa"
+
+#: templates/base.html:21
+msgid "Перемкнути навігацію"
+msgstr ""
+
+#: templates/base.html:26 templates/base.html:51
+#: templates/core/dashboard.html:3 templates/core/dashboard.html:7
+msgid "Головна"
+msgstr "Strona główna"
+
+#: templates/base.html:28 templates/base.html:58
+#: templates/core/dashboard.html:18 templates/core/stockbalance_list.html:3
+#: templates/core/stockbalance_list.html:6
+msgid "Залишки"
+msgstr "Stany magazynowe"
+
+#: templates/base.html:36
+msgid "Вийти"
+msgstr "Wyloguj"
+
+#: templates/base.html:49
+msgid "Навігація"
+msgstr ""
+
+#: templates/base.html:59 templates/core/dashboard.html:19
+msgid "Адмін-панель"
+msgstr "Panel administratora"
+
+#: templates/base.html:70
+msgid "Закрити"
+msgstr ""
+
+#: templates/core/dashboard.html:8
+msgid ""
+"Оберіть розділ для роботи з довідниками складу, номенклатурою або залишками."
+msgstr ""
+
+#: templates/core/dashboard.html:12
+msgid "Товари та матеріали"
+msgstr ""
+
+#: templates/core/dashboard.html:13
+msgid "Групування номенклатури"
+msgstr ""
+
+#: templates/core/dashboard.html:14
+msgid "шт, кг, м та інші"
+msgstr ""
+
+#: templates/core/dashboard.html:15
+msgid "Місця зберігання"
+msgstr ""
+
+#: templates/core/dashboard.html:16
+msgid "Комірки та стелажі"
+msgstr ""
+
+#: templates/core/dashboard.html:17
+msgid "Підрозділи та контакти"
+msgstr ""
+
+#: templates/core/dashboard.html:18
+msgid "Кількість на локаціях"
+msgstr ""
+
+#: templates/core/dashboard.html:19
+msgid "Розширене адміністрування"
+msgstr ""
+
+#: templates/core/directory_form.html:8
+msgid "Заповніть поля українською мовою та збережіть зміни."
+msgstr ""
+
+#: templates/core/directory_form.html:34
+msgid "Скасувати"
+msgstr "Anuluj"
+
+#: templates/core/directory_form.html:35
+msgid "Зберегти"
+msgstr "Zapisz"
+
+#: templates/core/directory_list.html:8
+msgid "Керуйте активними та архівними записами довідника."
+msgstr ""
+
+#: templates/core/directory_list.html:10
+msgid "Створити"
+msgstr "Utwórz"
+
+#: templates/core/directory_list.html:16
+msgid "Пошук по назві"
+msgstr ""
+
+#: templates/core/directory_list.html:17
+msgid "Введіть назву або код"
+msgstr ""
+
+#: templates/core/directory_list.html:20 templates/core/directory_list.html:39
+msgid "Статус"
+msgstr ""
+
+#: templates/core/directory_list.html:22
+msgid "Активні"
+msgstr "Aktywne"
+
+#: templates/core/directory_list.html:23
+msgid "Архівні"
+msgstr "Archiwalne"
+
+#: templates/core/directory_list.html:24
+msgid "Усі"
+msgstr "Wszystkie"
+
+#: templates/core/directory_list.html:28
+msgid "Застосувати"
+msgstr ""
+
+#: templates/core/directory_list.html:40
+msgid "Дії"
+msgstr ""
+
+#: templates/core/directory_list.html:47
+msgid "Архівний"
+msgstr ""
+
+#: templates/core/directory_list.html:50
+msgid "Редагувати"
+msgstr "Edytuj"
+
+#: templates/core/directory_list.html:52
+msgid "Архівувати цей запис?"
+msgstr ""
+
+#: templates/core/directory_list.html:54
+msgid "Архівувати"
+msgstr "Archiwizuj"
+
+#: templates/core/directory_list.html:59
+msgid "Відновити"
+msgstr "Przywróć"
+
+#: templates/core/directory_list.html:66
+#: templates/core/stockbalance_list.html:37
+msgid "Записів поки немає"
+msgstr "Brak rekordów"
+
+#: templates/core/includes/pagination.html:3
+msgid "Навігація сторінками"
+msgstr ""
+
+#: templates/core/includes/pagination.html:6
+#: templates/core/includes/pagination.html:8
+msgid "Попередня"
+msgstr ""
+
+#: templates/core/includes/pagination.html:12
+#: templates/core/includes/pagination.html:14
+msgid "Наступна"
+msgstr ""
+
+#: templates/core/stockbalance_list.html:7
+msgid "Перегляд фактичної кількості номенклатури на локаціях."
+msgstr ""
+
+#: templates/core/stockbalance_list.html:20
+msgid "Очистити"
+msgstr ""
+
+#: templates/core/stockbalance_list.html:21
+msgid "Фільтрувати"
+msgstr ""
+
+#: templates/core/stockbalance_list.html:30
+msgid "Штрихкод"
+msgstr ""
+
+#: templates/core/stockbalance_list.html:30
+msgid "Кількість"
+msgstr ""
+
+#: templates/includes/language_switcher.html:9
+msgid "Мова"
+msgstr "Język"
+
+#: templates/registration/login.html:4 templates/registration/login.html:9
+msgid "Вхід"
+msgstr ""
+
+#: templates/registration/login.html:13
+msgid "Увійти"
+msgstr "Zaloguj"

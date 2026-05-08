@@ -36,7 +36,7 @@
 - підготовку до майбутнього друку етикеток;
 - підготовку до майбутньої роботи зі сканерами штрихкодів.
 
-Основна мова системи — українська. Додатково підтримуються російська та англійська мови.
+Основна мова системи — українська. Додатково підтримуються російська, англійська, німецька, польська, французька, іспанська, італійська, португальська та турецька мови.
 
 ## Що вже реалізовано
 
@@ -45,9 +45,9 @@
 - Django settings module: `config.settings`.
 - WSGI application: `config.wsgi:application`.
 - Основний Django-застосунок `core`.
-- Підтримка i18n для мов `uk`, `ru`, `en`.
+- Підтримка i18n для 10 мов: `uk`, `ru`, `en`, `de`, `pl`, `fr`, `es`, `it`, `pt`, `tr`.
 - Українська мова за замовчуванням.
-- URL-и через `i18n_patterns`: `/uk/`, `/ru/`, `/en/`, а також `/uk/admin/`, `/ru/admin/`, `/en/admin/`.
+- URL-и через `i18n_patterns`: `/uk/`, `/ru/`, `/en/`, `/de/`, `/pl/`, `/fr/`, `/es/`, `/it/`, `/pt/`, `/tr/` та відповідні URL-и адмін-панелі.
 - Language switcher у шаблонах.
 - Документація deployment для `Apache2 -> Gunicorn -> Django`.
 - Приклади systemd unit-файлів для Gunicorn і backup timer.
@@ -200,22 +200,30 @@ warehouse_config/
 Проєкт використовує Django i18n.
 
 - Мова за замовчуванням: українська (`uk`).
-- Доступні мови: `uk`, `ru`, `en`.
-- URL-и побудовані через `i18n_patterns`:
-  - `/uk/`
-  - `/ru/`
-  - `/en/`
-  - `/uk/admin/`
-  - `/ru/admin/`
-  - `/en/admin/`
-- У шаблонах є language switcher.
+- Підтримувані мови:
+  - `uk` — Українська
+  - `ru` — Русский
+  - `en` — English
+  - `de` — Deutsch
+  - `pl` — Polski
+  - `fr` — Français
+  - `es` — Español
+  - `it` — Italiano
+  - `pt` — Português
+  - `tr` — Türkçe
+- URL-и побудовані через `i18n_patterns`, наприклад `/uk/`, `/ru/`, `/en/`, `/de/`, а також `/uk/admin/`, `/ru/admin/`, `/en/admin/`, `/de/admin/` тощо.
+- У шаблонах є перемикач мов із прапорцями. Він передає в `set_language` URL з оновленим мовним префіксом, тому перехід з `/uk/items/?q=test` на English повертає користувача на `/en/items/?q=test`.
 
 Команди для роботи з перекладами:
 
 ```bash
-python manage.py makemessages -l uk
-python manage.py makemessages -l ru
-python manage.py makemessages -l en
+python manage.py makemessages -l uk -l ru -l en -l de -l pl -l fr -l es -l it -l pt -l tr
+python manage.py compilemessages
+```
+
+У git зберігаються тільки текстові файли перекладів `.po` у каталозі `locale/`. Скомпільовані бінарні файли `.mo` не комітяться та ігноруються через `.gitignore`; після `git pull` на сервері потрібно виконати:
+
+```bash
 python manage.py compilemessages
 ```
 

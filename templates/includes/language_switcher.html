@@ -1,19 +1,28 @@
-{% load i18n %}
+{% load i18n i18n_extras %}
+{% get_current_language as CURRENT_LANGUAGE %}
+{% get_available_languages as LANGUAGES %}
 
-<form action="{% url 'set_language' %}" method="post" class="language-switcher">
-  {% csrf_token %}
-  <input name="next" type="hidden" value="{{ request.get_full_path }}">
-  <label for="language-switcher-select">{% translate "Language" %}</label>
-  <select id="language-switcher-select" name="language" onchange="this.form.submit()">
-    {% get_current_language as CURRENT_LANGUAGE %}
-    {% get_available_languages as LANGUAGES %}
+<div class="dropdown language-switcher">
+  <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+    {% language_flag CURRENT_LANGUAGE as current_flag %}
+    <span class="me-1">{{ current_flag }}</span>
+    <span class="d-none d-sm-inline">{% trans "Мова" %}</span>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end shadow">
     {% for language_code, language_name in LANGUAGES %}
-      <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>
-        {{ language_name }}
-      </option>
+      {% language_flag language_code as flag %}
+      {% switch_language_url request language_code as next_url %}
+      <li>
+        <form action="{% url 'set_language' %}" method="post" class="m-0">
+          {% csrf_token %}
+          <input name="language" type="hidden" value="{{ language_code }}">
+          <input name="next" type="hidden" value="{{ next_url }}">
+          <button class="dropdown-item d-flex align-items-center gap-2 {% if language_code == CURRENT_LANGUAGE %}active{% endif %}" type="submit" {% if language_code == CURRENT_LANGUAGE %}aria-current="true"{% endif %}>
+            <span aria-hidden="true">{{ flag }}</span>
+            <span>{{ language_name }}</span>
+          </button>
+        </form>
+      </li>
     {% endfor %}
-  </select>
-  <noscript>
-    <button type="submit">{% translate "Change language" %}</button>
-  </noscript>
-</form>
+  </ul>
+</div>

@@ -115,9 +115,12 @@ sudo chown warehouse:www-data /opt/warehouse_config/.env
 cd /opt/warehouse_config
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py check
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py migrate
+sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py compilemessages
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py createsuperuser
 ```
+
+Supported interface languages are `uk` — Українська, `ru` — Русский, `en` — English, `de` — Deutsch, `pl` — Polski, `fr` — Français, `es` — Español, `it` — Italiano, `pt` — Português, and `tr` — Türkçe. The repository stores only gettext source files (`locale/*/LC_MESSAGES/django.po`). Compiled gettext binaries (`*.mo`) are intentionally ignored and must be generated on the server with `python manage.py compilemessages` after each `git pull` that changes translations.
 
 ## 6. Test Gunicorn manually
 
@@ -216,6 +219,7 @@ Run the Django checks:
 cd /opt/warehouse_config
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py check
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py migrate
+sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py compilemessages
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py test
 ```
