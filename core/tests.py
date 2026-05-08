@@ -1,5 +1,20 @@
-from django.test import SimpleTestCase
+from decimal import Decimal
+
+from django.core.exceptions import ValidationError
+from django.db import IntegrityError
+from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+
+from .models import (
+    BarcodeRegistry,
+    BarcodeSequence,
+    Item,
+    Location,
+    StockBalance,
+    StockMovement,
+    Unit,
+    Warehouse,
+)
 
 
 class DashboardTests(SimpleTestCase):
@@ -8,3 +23,121 @@ class DashboardTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Warehouse dashboard")
+
+
+class WarehouseModelTests(TestCase):
+    def setUp(self):
+        self.unit = Unit.objects.create(name="Piece", symbol="pcs")
+        warehouse_barcode = BarcodeRegistry.objects.create(
+            barcode="WH00000001", prefix=BarcodeRegistry.Prefix.WAREHOUSE
+        )
+        self.warehouse = Warehouse.objects.create(
+            name="Main warehouse", barcode=warehouse_barcode
+        )
+        location_barcode = BarcodeRegistry.objects.create(
+            barcode="LOC00000001", prefix=BarcodeRegistry.Prefix.LOCATION
+        )
+        self.location = Location.objects.create(
+            warehouse=self.warehouse,
+            name="A-01",
+            barcode=location_barcode,
+        )
+
+    def test_barcode_registry_keeps_barcodes_globally_unique(self):
+        BarcodeRegistry.objects.create(
+            barcode="ITM00000001", prefix=BarcodeRegistry.Prefix.ITEM
+        )
+
+        with self.assertRaises(IntegrityError):
+            BarcodeRegistry.objects.create(
+                barcode="ITM00000001", prefix=BarcodeRegistry.Prefix.ITEM
+            )
+
+    def test_barcode_registry_validates_prefix(self):
+        barcode = BarcodeRegistry(barcode="WH00000002", prefix=BarcodeRegistry.Prefix.ITEM)
+
+        with self.assertRaises(ValidationError):
+            barcode.full_clean()
+
+    def test_barcode_sequence_supports_required_prefixes(self):
+        prefixes = {choice.value for choice in BarcodeRegistry.Prefix}
+
+        self.assertEqual(prefixes, {"ITM", "WH", "RCK", "LOC"})
+        sequence = BarcodeSequence.objects.create(prefix=BarcodeRegistry.Prefix.RACK)
+        self.assertEqual(sequence.next_number, 1)
+        self.assertEqual(sequence.padding, 8)
+
+    def test_item_internal_code_is_unique_when_filled(self):
+        Item.objects.create(name="First item", internal_code="SKU-1", unit=self.unit)
+
+        with self.assertRaises(IntegrityError):
+            Item.objects.create(name="Second item", internal_code="SKU-1", unit=self.unit)
+
+    def test_item_internal_code_can_be_blank_for_multiple_items(self):
+        first = Item.objects.create(name="First item", internal_code="", unit=self.unit)
+        second = Item.objects.create(name="Second item", internal_code="", unit=self.unit)
+
+        self.assertIsNone(first.internal_code)
+        self.assertIsNone(second.internal_code)
+        self.assertEqual(Item.objects.filter(internal_code__isnull=True).count(), 2)
+
+    def test_stock_balance_quantity_precision_and_unique_location_balance(self):
+        item = Item.objects.create(name="Precise item", unit=self.unit)
+        balance = StockBalance.objects.create(
+            item=item,
+            location=self.location,
+            qty=Decimal("123456789012345.123"),
+        )
+
+        qty_field = StockBalance._meta.get_field("qty")
+        self.assertEqual(qty_field.max_digits, 18)
+        self.assertEqual(qty_field.decimal_places, 3)
+        self.assertEqual(balance.qty, Decimal("123456789012345.123"))
+        with self.assertRaises(IntegrityError):
+            StockBalance.objects.create(item=item, location=self.location, qty=Decimal("1.000"))
+
+    def test_stock_movement_has_required_types(self):
+        expected_types = {
+            "initial_balance",
+            "in",
+            "out",
+            "return",
+            "writeoff",
+            "transfer",
+            "adjustment",
+        }
+        actual_types = {choice.value for choice in StockMovement.MovementType}
+
+        self.assertEqual(actual_types, expected_types)
+
+    def test_stock_movement_can_store_transfer_between_locations(self):
+        item = Item.objects.create(name="Transfer item", unit=self.unit)
+        destination_barcode = BarcodeRegistry.objects.create(
+            barcode="RCK00000001", prefix=BarcodeRegistry.Prefix.RACK
+        )
+        destination = Location.objects.create(
+            warehouse=self.warehouse,
+            name="Rack 1",
+            location_type=Location.LocationType.RACK,
+            barcode=destination_barcode,
+        )
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            item=item,
+            qty=Decimal("5.500"),
+            source_location=self.location,
+            destination_location=destination,
+        )
+
+        self.assertEqual(movement.qty, Decimal("5.500"))
+        self.assertEqual(movement.source_location, self.location)
+        self.assertEqual(movement.destination_location, destination)
+
+    def test_models_are_active_by_default_for_soft_delete_archiving(self):
+        item = Item.objects.create(name="Active item", unit=self.unit)
+
+        self.assertTrue(item.is_active)
+        item.is_active = False
+        item.save(update_fields=["is_active"])
+        item.refresh_from_db()
+        self.assertFalse(item.is_active)
