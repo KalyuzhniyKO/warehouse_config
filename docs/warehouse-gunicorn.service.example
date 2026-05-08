@@ -1,0 +1,15 @@
+[Unit]
+Description=Warehouse Config Gunicorn daemon
+After=network.target
+
+[Service]
+User=warehouse
+Group=www-data
+WorkingDirectory=/opt/warehouse_config
+EnvironmentFile=/opt/warehouse_config/.env
+ExecStart=/opt/warehouse_config/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8001 config.wsgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
