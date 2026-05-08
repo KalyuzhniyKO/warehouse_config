@@ -1,52 +1,73 @@
 {% extends "base.html" %}
 {% load core_extras i18n %}
-
 {% block title %}{{ list_title }} · {% trans "Складський облік" %}{% endblock %}
-
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="mb-0">{{ list_title }}</h1>
-    <a class="btn btn-primary" href="{% url create_url_name %}">{% trans "Створити" %}</a>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="mb-1">{{ list_title }}</h1>
+        <div class="text-muted">{% trans "Керуйте активними та архівними записами довідника." %}</div>
+    </div>
+    <a class="btn btn-primary" href="{% url create_url_name %}">+ {% trans "Створити" %}</a>
 </div>
-<div class="table-responsive">
-    <table class="table table-striped table-hover align-middle">
-        <thead>
-        <tr>
-            {% for field_name, label in columns %}
-                <th scope="col">{{ label }}</th>
-            {% endfor %}
-            <th scope="col">{% trans "Статус" %}</th>
-            <th scope="col" class="text-end">{% trans "Дії" %}</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for object in objects %}
-            <tr class="{% if not object.is_active %}table-secondary{% endif %}">
-                {% for field_name, label in columns %}
-                    <td>{{ object|attr:field_name|default:"—" }}</td>
-                {% endfor %}
-                <td>
-                    {% if object.is_active %}
-                        <span class="badge text-bg-success">{% trans "Активний" %}</span>
-                    {% else %}
-                        <span class="badge text-bg-secondary">{% trans "Архівний" %}</span>
-                    {% endif %}
-                </td>
-                <td class="text-end">
-                    <a class="btn btn-sm btn-outline-primary" href="{% url update_url_name object.pk %}">{% trans "Редагувати" %}</a>
-                    {% if object.is_active %}
-                        <form method="post" action="{% url archive_url_name object.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <button class="btn btn-sm btn-outline-danger" type="submit">{% trans "Архівувати" %}</button>
-                        </form>
-                    {% endif %}
-                </td>
+<div class="card content-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-lg-6">
+                <label class="form-label" for="directory-search">{% trans "Пошук по назві" %}</label>
+                <input id="directory-search" class="form-control" type="search" name="q" value="{{ search_query }}" placeholder="{% trans 'Введіть назву або код' %}">
+            </div>
+            <div class="col-lg-4">
+                <label class="form-label" for="directory-status">{% trans "Статус" %}</label>
+                <select id="directory-status" class="form-select" name="status">
+                    <option value="active" {% if current_status == 'active' %}selected{% endif %}>{% trans "Активні" %}</option>
+                    <option value="archived" {% if current_status == 'archived' %}selected{% endif %}>{% trans "Архівні" %}</option>
+                    <option value="all" {% if current_status == 'all' %}selected{% endif %}>{% trans "Усі" %}</option>
+                </select>
+            </div>
+            <div class="col-lg-2 d-grid">
+                <button class="btn btn-outline-primary" type="submit">{% trans "Застосувати" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="card content-card">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                {% for field_name, label in columns %}<th scope="col">{{ label }}</th>{% endfor %}
+                <th scope="col">{% trans "Статус" %}</th>
+                <th scope="col" class="text-end">{% trans "Дії" %}</th>
             </tr>
-        {% empty %}
-            <tr><td colspan="{{ columns|length|add:2 }}" class="text-center text-muted py-4">{% trans "Записів поки немає." %}</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for object in objects %}
+                <tr class="{% if not object.is_active %}table-secondary{% endif %}">
+                    {% for field_name, label in columns %}<td>{{ object|attr:field_name|default:"—" }}</td>{% endfor %}
+                    <td>{% if object.is_active %}<span class="badge text-bg-success">{% trans "Активний" %}</span>{% else %}<span class="badge text-bg-secondary">{% trans "Архівний" %}</span>{% endif %}</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url update_url_name object.pk %}">{% trans "Редагувати" %}</a>
+                            {% if object.is_active %}
+                                <form method="post" action="{% url archive_url_name object.pk %}" class="d-inline" onsubmit="return confirm('{% trans 'Архівувати цей запис?' %}');">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">{% trans "Архівувати" %}</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{% url restore_url_name object.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-outline-success" type="submit">{% trans "Відновити" %}</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="{{ columns|length|add:2 }}" class="text-center text-muted py-5"><div class="fs-1 mb-2">🗃️</div>{% trans "Записів поки немає" %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% include "core/includes/pagination.html" %}
 {% endblock %}
