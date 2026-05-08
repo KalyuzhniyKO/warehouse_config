@@ -32,7 +32,7 @@ If you prefer to build or use packages that require MySQL headers later, install
 sudo apt install pkg-config default-libmysqlclient-dev build-essential
 ```
 
-The Python dependency list uses `PyMySQL`, so `mysqlclient` is not required by this project.
+The Python dependency list uses `PyMySQL`, so `mysqlclient` is not required by this project. For MySQL 8, PyMySQL also needs the `cryptography` package to authenticate with the default `caching_sha2_password` / `sha256_password` methods; install it through `requirements.txt` as shown below.
 
 ## 2. Create the service user and project directory
 
@@ -70,6 +70,8 @@ sudo -u warehouse /opt/warehouse_config/venv/bin/pip install --upgrade pip
 sudo -u warehouse /opt/warehouse_config/venv/bin/pip install -r requirements.txt
 ```
 
+Do not skip `pip install -r requirements.txt`: it installs Django, PyMySQL, Gunicorn, and `cryptography`. Without `cryptography`, `python manage.py migrate` against MySQL 8 can fail with `RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods`.
+
 ## 4. Configure environment variables
 
 Create `/opt/warehouse_config/.env` from the example file:
@@ -97,6 +99,8 @@ DB_PASSWORD=change-me
 DB_HOST=localhost
 DB_PORT=3306
 ```
+
+The `DB_PASSWORD` value in `.env` must exactly match the password of the MySQL user named in `DB_USER` for the configured host. A mismatch in characters, letter case, whitespace, or using a password from another MySQL account will cause authentication failures during `python manage.py migrate` and other Django database commands.
 
 Keep `.env` private:
 
