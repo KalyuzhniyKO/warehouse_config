@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Початковий залишок" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Початковий залишок" %}</h1>
+<form method="post" class="card content-card"><div class="card-body">
+{% csrf_token %}{{ form.non_field_errors }}
+<div class="row g-3">{% for field in form %}<div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>{% endfor %}</div>
+<div class="mt-4"><button class="btn btn-primary" type="submit">{% trans "Зберегти початковий залишок" %}</button></div>
+</div></form>
+{% endblock %}

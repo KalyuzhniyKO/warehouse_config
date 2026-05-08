@@ -3,16 +3,21 @@ from django.contrib import admin
 from .forms import (
     CategoryForm,
     ItemForm,
+    LabelTemplateForm,
     LocationForm,
     StockBalanceAdminForm,
     StockMovementAdminForm,
+    PrinterForm,
 )
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
     Category,
     Item,
+    LabelTemplate,
     Location,
+    PrintJob,
+    Printer,
     Recipient,
     StockBalance,
     StockMovement,
@@ -128,3 +133,27 @@ class StockMovementAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
         "comment",
     )
     date_hierarchy = "occurred_at"
+
+
+@admin.register(Printer)
+class PrinterAdmin(admin.ModelAdmin):
+    form = PrinterForm
+    list_display = ("name", "system_name", "is_default", "is_active")
+    list_filter = ("is_default", "is_active")
+    search_fields = ("name", "system_name")
+
+
+@admin.register(LabelTemplate)
+class LabelTemplateAdmin(admin.ModelAdmin):
+    form = LabelTemplateForm
+    list_display = ("name", "width_mm", "height_mm", "barcode_type", "is_default", "is_active")
+    list_filter = ("is_default", "is_active", "barcode_type")
+    search_fields = ("name",)
+
+
+@admin.register(PrintJob)
+class PrintJobAdmin(admin.ModelAdmin):
+    list_display = ("item", "printer", "copies", "status", "created_at", "printed_at")
+    list_filter = ("status", "printer", "created_at")
+    search_fields = ("item__name", "barcode", "printer__name", "error_message")
+    readonly_fields = ("created_at", "printed_at")

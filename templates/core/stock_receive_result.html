@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Результат приходу" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Прихід товару збережено" %}</h1>
+<div class="card content-card"><div class="card-body">
+<dl class="row">
+<dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
+<dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
+<dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ movement.destination_location.warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ movement.destination_location }}</dd>
+<dt class="col-sm-3">{% trans "Штрихкод" %}</dt><dd class="col-sm-9">{{ movement.item.barcode.barcode }}</dd>
+</dl>
+<div class="d-flex gap-2"><a class="btn btn-primary" href="{% url 'item_label_print' movement.item.pk %}">{% trans "Надрукувати етикетку" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_receive' %}">{% trans "Новий прихід" %}</a></div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Шаблони етикеток" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3"><h1>{% trans "Шаблони етикеток" %}</h1><a class="btn btn-primary" href="{% url 'labeltemplate_create' %}">+ {% trans "Створити" %}</a></div>
+<div class="card content-card"><table class="table mb-0"><thead><tr><th>{% trans "Назва" %}</th><th>{% trans "Розмір" %}</th><th>{% trans "Тип штрихкоду" %}</th><th>{% trans "За замовчуванням" %}</th></tr></thead><tbody>{% for template in label_templates %}<tr><td>{{ template.name }}</td><td>{{ template.width_mm }}×{{ template.height_mm }} мм</td><td>{{ template.get_barcode_type_display }}</td><td>{{ template.is_default|yesno }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-4">{% trans "Записів поки немає" %}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

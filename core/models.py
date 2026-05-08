@@ -110,7 +110,7 @@ class BarcodeSequence(ActiveModel):
         _("prefix"), max_length=3, choices=BarcodeRegistry.Prefix.choices, unique=True
     )
     next_number = models.PositiveBigIntegerField(_("next number"), default=1)
-    padding = models.PositiveSmallIntegerField(_("padding"), default=8)
+    padding = models.PositiveSmallIntegerField(_("padding"), default=10)
 
     class Meta:
         verbose_name = _("barcode sequence")
@@ -166,6 +166,14 @@ class Item(ActiveModel):
         if self.internal_code is not None:
             self.internal_code = self.internal_code.strip() or None
         super().save(*args, **kwargs)
+        if not self.barcode_id:
+            from core.services.barcodes import ensure_item_barcode
+
+            ensure_item_barcode(self)
+
+    @property
+    def barcode_value(self):
+        return self.barcode.barcode if self.barcode_id else ""
 
     def __str__(self):
         return self.name
@@ -197,6 +205,14 @@ class Warehouse(ActiveModel):
     def save(self, *args, **kwargs):
         self.name = self.name.strip()
         super().save(*args, **kwargs)
+        if not self.barcode_id:
+            from core.services.barcodes import ensure_warehouse_barcode
+
+            ensure_warehouse_barcode(self)
+
+    @property
+    def barcode_value(self):
+        return self.barcode.barcode if self.barcode_id else ""
 
     def __str__(self):
         return self.name
@@ -252,6 +268,14 @@ class Location(ActiveModel):
     def save(self, *args, **kwargs):
         self.name = self.name.strip()
         super().save(*args, **kwargs)
+        if not self.barcode_id:
+            from core.services.barcodes import ensure_location_barcode
+
+            ensure_location_barcode(self)
+
+    @property
+    def barcode_value(self):
+        return self.barcode.barcode if self.barcode_id else ""
 
     def __str__(self):
         return f"{self.warehouse} / {self.name}"
@@ -341,3 +365,91 @@ class StockMovement(ActiveModel):
 
     def __str__(self):
         return f"{self.get_movement_type_display()} {self.item}: {self.qty}"
+
+
+class Printer(ActiveModel):
+    name = models.CharField(_("name"), max_length=150)
+    system_name = models.CharField(_("system name"), max_length=150, unique=True)
+    description = models.TextField(_("description"), blank=True)
+    is_default = models.BooleanField(_("default"), default=False)
+
+    class Meta:
+        verbose_name = _("printer")
+        verbose_name_plural = _("printers")
+        ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        self.system_name = self.system_name.strip()
+        super().save(*args, **kwargs)
+        if self.is_default:
+            Printer.objects.exclude(pk=self.pk).update(is_default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class LabelTemplate(ActiveModel):
+    class BarcodeType(models.TextChoices):
+        CODE128 = "code128", _("Code 128")
+
+    name = models.CharField(_("name"), max_length=150)
+    width_mm = models.PositiveSmallIntegerField(_("width, mm"), default=58)
+    height_mm = models.PositiveSmallIntegerField(_("height, mm"), default=40)
+    show_item_name = models.BooleanField(_("show item name"), default=True)
+    show_internal_code = models.BooleanField(_("show internal code"), default=True)
+    show_barcode_text = models.BooleanField(_("show barcode text"), default=True)
+    barcode_type = models.CharField(
+        _("barcode type"), max_length=32, choices=BarcodeType.choices, default=BarcodeType.CODE128
+    )
+    is_default = models.BooleanField(_("default"), default=False)
+
+    class Meta:
+        verbose_name = _("label template")
+        verbose_name_plural = _("label templates")
+        ordering = ["name"]
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip()
+        super().save(*args, **kwargs)
+        if self.is_default:
+            LabelTemplate.objects.exclude(pk=self.pk).update(is_default=False)
+
+    def __str__(self):
+        return self.name
+
+
+class PrintJob(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", _("pending")
+        PRINTED = "printed", _("printed")
+        FAILED = "failed", _("failed")
+
+    printer = models.ForeignKey(
+        Printer, verbose_name=_("printer"), on_delete=models.PROTECT, related_name="print_jobs"
+    )
+    item = models.ForeignKey(
+        Item, verbose_name=_("item"), on_delete=models.PROTECT, related_name="print_jobs"
+    )
+    barcode = models.CharField(_("barcode"), max_length=64)
+    label_template = models.ForeignKey(
+        LabelTemplate, verbose_name=_("label template"), on_delete=models.PROTECT, related_name="print_jobs"
+    )
+    copies = models.PositiveSmallIntegerField(_("copies"), default=1)
+    status = models.CharField(
+        _("status"), max_length=20, choices=Status.choices, default=Status.PENDING
+    )
+    error_message = models.TextField(_("error message"), blank=True)
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)
+    printed_at = models.DateTimeField(_("printed at"), blank=True, null=True)
+    user = models.ForeignKey(
+        "auth.User", verbose_name=_("user"), on_delete=models.SET_NULL, blank=True, null=True, related_name="print_jobs"
+    )
+
+    class Meta:
+        verbose_name = _("print job")
+        verbose_name_plural = _("print jobs")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.item} × {self.copies} ({self.get_status_display()})"

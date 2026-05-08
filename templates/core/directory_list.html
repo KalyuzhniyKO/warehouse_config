@@ -47,7 +47,7 @@
                     <td>{% if object.is_active %}<span class="badge text-bg-success">{% trans "Активний" %}</span>{% else %}<span class="badge text-bg-secondary">{% trans "Архівний" %}</span>{% endif %}</td>
                     <td class="text-end">
                         <div class="d-inline-flex flex-wrap gap-2 justify-content-end">
-                            <a class="btn btn-sm btn-outline-primary" href="{% url update_url_name object.pk %}">{% trans "Редагувати" %}</a>
+                            {% if list_url_name == 'item_list' %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'item_label_print' object.pk %}">{% trans "Друк етикетки" %}</a>{% endif %}<a class="btn btn-sm btn-outline-primary" href="{% url update_url_name object.pk %}">{% trans "Редагувати" %}</a>
                             {% if object.is_active %}
                                 <form method="post" action="{% url archive_url_name object.pk %}" class="d-inline" onsubmit="return confirm('{% trans 'Архівувати цей запис?' %}');">
                                     {% csrf_token %}

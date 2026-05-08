@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Принтери" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-3"><h1>{% trans "Принтери" %}</h1><a class="btn btn-primary" href="{% url 'printer_create' %}">+ {% trans "Створити" %}</a></div>
+<div class="card content-card"><table class="table mb-0"><thead><tr><th>{% trans "Назва" %}</th><th>{% trans "Системна назва" %}</th><th>{% trans "За замовчуванням" %}</th><th>{% trans "Активний" %}</th></tr></thead><tbody>{% for printer in printers %}<tr><td>{{ printer.name }}</td><td>{{ printer.system_name }}</td><td>{{ printer.is_default|yesno }}</td><td>{{ printer.is_active|yesno }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-muted py-4">{% trans "Записів поки немає" %}</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}
