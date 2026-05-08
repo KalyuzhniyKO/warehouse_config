@@ -1,4 +1,5 @@
 from django.urls import path
+from django.utils.translation import gettext_lazy as _
 
 from . import views
 
@@ -35,4 +36,17 @@ urlpatterns = [
     path("locations/<int:pk>/archive/", views.directory_view(views.DirectoryArchiveView, "location"), name="location_archive"),
     path("locations/<int:pk>/restore/", views.directory_view(views.DirectoryRestoreView, "location"), name="location_restore"),
     path("stock-balances/", views.StockBalanceListView.as_view(), name="stockbalance_list"),
+
+    path("analytics/", views.AnalyticsView.as_view(), name="analytics"),
+    path("analytics/export.csv", views.AnalyticsCSVExportView.as_view(), name="analytics_export_csv"),
+    path("analytics/export.xlsx", views.AnalyticsXLSXExportView.as_view(), name="analytics_export_xlsx"),
+    path("help/", views.HelpView.as_view(), name="help"),
+    path("movements/", views.PlaceholderPageView.as_view(title=_("Рухи товарів"), description=_("Журнал операцій складу доступний через аналітику та технічну Django Admin.")), name="movement_list"),
+    path("stock-receive/", views.PlaceholderPageView.as_view(title=_("Прихід товару"), description=_("Оформлення приходу товару буде доступне у цьому робочому розділі.")), name="stock_receive"),
+    path("management/", views.ManagementDashboardView.as_view(), name="management_dashboard"),
+    path("management/directories/", views.ManagementDirectoriesView.as_view(), name="management_directories"),
+    path("management/users/", views.ManagementUsersView.as_view(), name="management_users"),
+    path("management/settings/", views.ManagementSettingsView.as_view(), name="management_settings"),
+    path("management/analytics/", views.AnalyticsView.as_view(), name="management_analytics"),
+    path("management/help/", views.HelpView.as_view(), name="management_help"),
 ]

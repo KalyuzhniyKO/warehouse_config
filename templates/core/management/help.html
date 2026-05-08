@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Інструкції" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="card content-card mb-4"><div class="card-body p-4 p-xl-5"><span class="badge text-bg-info mb-3">{% trans "Інструкції" %}</span><h1>{% trans "Центр допомоги" %}</h1><p class="lead text-muted mb-0">{% trans "Короткі підказки та посилання на повну документацію українською мовою." %}</p></div></div>
+<div class="row g-3">
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">🚀</div><h2 class="h5">{% trans "Як почати склад з нуля" %}</h2><p class="text-muted">docs/START_WAREHOUSE_FROM_ZERO.md</p><ol class="small"><li>{% trans "Створіть адміністратора." %}</li><li>{% trans "Запустіть init_roles." %}</li><li>{% trans "Заповніть довідники та початкові залишки." %}</li></ol></div></div></div>
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">👷</div><h2 class="h5">{% trans "Інструкція користувача" %}</h2><p class="text-muted">docs/USER_GUIDE.md</p><p>{% trans "Для комірника: приймання, видача, переміщення, списання, залишки та друк етикеток." %}</p></div></div></div>
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">🛡️</div><h2 class="h5">{% trans "Інструкція адміністратора" %}</h2><p class="text-muted">docs/ADMIN_GUIDE.md</p><p>{% trans "Користувачі, ролі, backup, CUPS, логи та типові проблеми." %}</p></div></div></div>
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">⚠️</div><h2 class="h5">{% trans "Типові помилки" %}</h2><p>{% trans "Перевірте права, активність довідників, доступність принтера і коректність фільтрів." %}</p></div></div></div>
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">🔄</div><h2 class="h5">{% trans "Оновлення сервера" %}</h2><p>{% trans "Перед оновленням зробіть backup, застосуйте міграції, зберіть статику і перезапустіть сервіс." %}</p></div></div></div>
+  <div class="col-md-6 col-xl-4"><div class="card content-card h-100"><div class="card-body"><div class="fs-2">💾</div><h2 class="h5">{% trans "Backup і відновлення" %}</h2><p>{% trans "Використовуйте штатні дампи бази даних і перевіряйте відновлення на тестовому середовищі." %}</p></div></div></div>
+</div>
+{% endblock %}

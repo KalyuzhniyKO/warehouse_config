@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Аналітика" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4"><div><h1>{% trans "Аналітика" %}</h1><p class="text-muted mb-0">{% trans "Прихід, видача, списання, переміщення, повернення та залишки." %}</p></div><div class="d-flex gap-2"><a class="btn btn-outline-success" href="{% url 'analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт CSV" %}</a><a class="btn btn-outline-success" href="{% url 'analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт XLSX" %}</a></div></div>
+<div class="card content-card mb-4"><div class="card-body"><form method="get" class="row g-3 align-items-end">{% for field in filter_form %}<div class="col-md-6 col-xl-3"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endfor %}<div class="col-md-6 col-xl-3 d-grid"><button class="btn btn-primary" type="submit">{% trans "Застосувати фільтр" %}</button></div><div class="col-md-6 col-xl-3 d-grid"><a class="btn btn-outline-secondary" href="{% url 'analytics' %}">{% trans "Скинути" %}</a></div></form></div></div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Прихід" %}</div><div class="h3">{{ movement_summary.total_in }}</div></div></div></div>
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Видача" %}</div><div class="h3">{{ movement_summary.total_out }}</div></div></div></div>
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Списання" %}</div><div class="h3">{{ movement_summary.total_writeoff }}</div></div></div></div>
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Повернення" %}</div><div class="h3">{{ movement_summary.total_returns }}</div></div></div></div>
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Переміщення" %}</div><div class="h3">{{ movement_summary.total_transfers }}</div></div></div></div>
+  <div class="col-md-4 col-xl-2"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Унікальні товари" %}</div><div class="h3">{{ movement_summary.unique_items }}</div></div></div></div>
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card content-card"><div class="card-body"><span class="badge text-bg-success">{% trans "Із залишком" %}</span><div class="display-6">{{ stock_summary.positive_positions }}</div></div></div></div>
+  <div class="col-md-4"><div class="card content-card"><div class="card-body"><span class="badge text-bg-secondary">{% trans "Нульовий залишок" %}</span><div class="display-6">{{ stock_summary.zero_positions }}</div></div></div></div>
+  <div class="col-md-4"><div class="card content-card"><div class="card-body"><span class="badge text-bg-danger">{% trans "Від’ємний залишок" %}</span><div class="display-6">{{ stock_summary.negative_positions }}</div></div></div></div>
+</div>
+<div class="row g-3 mb-4"><div class="col-xl-8"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Прихід / видача / списання по днях" %}</h2><canvas id="dayChart" height="120"></canvas></div></div></div><div class="col-xl-4"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Рухи по типах операцій" %}</h2><canvas id="typeChart" height="180"></canvas></div></div></div></div>
+<div class="row g-3">
+  <div class="col-xl-6"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Топ-10 товарів за видачею" %}</h2><table class="table table-sm"><tbody>{% for row in top_out %}<tr><td>{{ row.item__name }} <span class="text-muted">{{ row.item__internal_code|default:"" }}</span></td><td class="text-end">{{ row.total_qty }}</td></tr>{% empty %}<tr><td class="text-muted">{% trans "Немає даних" %}</td></tr>{% endfor %}</tbody></table><canvas id="topOutChart" height="120"></canvas></div></div></div>
+  <div class="col-xl-6"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Топ-10 товарів за приходом" %}</h2><table class="table table-sm"><tbody>{% for row in top_in %}<tr><td>{{ row.item__name }} <span class="text-muted">{{ row.item__internal_code|default:"" }}</span></td><td class="text-end">{{ row.total_qty }}</td></tr>{% empty %}<tr><td class="text-muted">{% trans "Немає даних" %}</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-xl-6"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Топ-10 отримувачів" %}</h2><table class="table table-sm"><tbody>{% for row in top_recipients %}<tr><td>{{ row.recipient__name }}</td><td class="text-end">{{ row.total_qty }}</td></tr>{% empty %}<tr><td class="text-muted">{% trans "Немає даних" %}</td></tr>{% endfor %}</tbody></table></div></div></div>
+  <div class="col-xl-6"><div class="card content-card"><div class="card-body"><h2 class="h5">{% trans "Залишки по складах" %}</h2><canvas id="warehouseChart" height="120"></canvas></div></div></div>
+</div>
+{{ day_chart_json|json_script:"day-chart-data" }}{{ type_chart_json|json_script:"type-chart-data" }}{{ warehouse_chart_json|json_script:"warehouse-chart-data" }}{{ top_out_chart_json|json_script:"top-out-chart-data" }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+function dataFrom(id){ return JSON.parse(JSON.parse(document.getElementById(id).textContent)); }
+const dayData=dataFrom('day-chart-data'); new Chart(document.getElementById('dayChart'),{type:'line',data:{labels:dayData.labels,datasets:[{label:'{% trans "Прихід" %}',data:dayData.in},{label:'{% trans "Видача" %}',data:dayData.out},{label:'{% trans "Списання" %}',data:dayData.writeoff}]}});
+const typeData=dataFrom('type-chart-data'); new Chart(document.getElementById('typeChart'),{type:'doughnut',data:{labels:typeData.labels,datasets:[{data:typeData.values}]}});
+const whData=dataFrom('warehouse-chart-data'); new Chart(document.getElementById('warehouseChart'),{type:'bar',data:{labels:whData.labels,datasets:[{label:'{% trans "Залишки" %}',data:whData.values}]}});
+const topOut=dataFrom('top-out-chart-data'); new Chart(document.getElementById('topOutChart'),{type:'bar',data:{labels:topOut.labels,datasets:[{label:'{% trans "Видача" %}',data:topOut.values}]}});
+</script>
+{% endblock %}

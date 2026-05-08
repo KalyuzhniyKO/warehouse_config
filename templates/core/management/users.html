@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Користувачі та ролі" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1>{% trans "Користувачі та ролі" %}</h1><a class="btn btn-outline-secondary" href="{% url 'admin:auth_user_add' %}">{% trans "Створити у Django Admin" %}</a></div>
+<div class="card content-card mb-4"><div class="card-body"><h2 class="h5">{% trans "Ролі" %}</h2>{% for group in groups %}<span class="badge text-bg-secondary me-2">{{ group.name }}</span>{% empty %}<span class="text-muted">{% trans "Запустіть python manage.py init_roles" %}</span>{% endfor %}</div></div>
+<div class="card content-card"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>{% trans "Користувач" %}</th><th>Email</th><th>{% trans "Ролі" %}</th><th>{% trans "Статус" %}</th></tr></thead><tbody>{% for account in users %}<tr><td>{{ account.username }}</td><td>{{ account.email|default:"—" }}</td><td>{% for group in account.groups.all %}<span class="badge text-bg-primary me-1">{{ group.name }}</span>{% empty %}<span class="text-muted">—</span>{% endfor %}</td><td>{% if account.is_active %}<span class="badge text-bg-success">{% trans "Активний" %}</span>{% else %}<span class="badge text-bg-secondary">{% trans "Вимкнений" %}</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div></div>
+{% endblock %}

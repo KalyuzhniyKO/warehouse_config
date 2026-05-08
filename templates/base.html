@@ -25,7 +25,13 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-lg-none">
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% trans "Номенклатура" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'analytics' %}">{% trans "Аналітика" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'management_dashboard' %}">{% trans "Керування" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'help' %}">{% trans "Інструкції" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">{% trans "Адмін-панель Django" %}</a></li>
             </ul>
             <div class="ms-auto d-flex align-items-center gap-3 text-white">
                 {% include "includes/language_switcher.html" %}
@@ -50,13 +56,19 @@
                         <nav class="d-grid gap-1">
                             <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Головна" %}</a>
                             <a class="sidebar-link" href="{% url 'item_list' %}">📦 {% trans "Номенклатура" %}</a>
+                            <a class="sidebar-link" href="{% url 'stock_receive' %}">➕ {% trans "Прихід товару" %}</a>
+                            <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
+                            <a class="sidebar-link" href="{% url 'movement_list' %}">🔄 {% trans "Рухи товарів" %}</a>
+                            <a class="sidebar-link" href="{% url 'analytics' %}">📈 {% trans "Аналітика" %}</a>
+                            <a class="sidebar-link" href="{% url 'management_dashboard' %}">⚙️ {% trans "Керування" %}</a>
+                            <a class="sidebar-link" href="{% url 'help' %}">📚 {% trans "Інструкції" %}</a>
+                            <hr class="my-2">
                             <a class="sidebar-link" href="{% url 'category_list' %}">🗂️ {% trans "Категорії" %}</a>
                             <a class="sidebar-link" href="{% url 'unit_list' %}">⚖️ {% trans "Одиниці виміру" %}</a>
                             <a class="sidebar-link" href="{% url 'warehouse_list' %}">🏭 {% trans "Склади" %}</a>
                             <a class="sidebar-link" href="{% url 'location_list' %}">📍 {% trans "Локації" %}</a>
                             <a class="sidebar-link" href="{% url 'recipient_list' %}">👥 {% trans "Отримувачі" %}</a>
-                            <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
-                            <a class="sidebar-link" href="{% url 'admin:index' %}">🛠️ {% trans "Адмін-панель" %}</a>
+                            <a class="sidebar-link" href="{% url 'admin:index' %}">🛠️ {% trans "Адмін-панель Django" %}</a>
                         </nav>
                     </div>
                 </div>

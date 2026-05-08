@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ title }} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="card content-card">
+  <div class="card-body p-4 p-xl-5">
+    <span class="badge text-bg-info mb-3">{% trans "Робочий розділ" %}</span>
+    <h1>{{ title }}</h1>
+    <p class="lead text-muted mb-0">{{ description }}</p>
+  </div>
+</div>
+{% endblock %}

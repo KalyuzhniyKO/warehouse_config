@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Керування" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="card content-card mb-4"><div class="card-body p-4 p-xl-5">
+  <span class="badge text-bg-primary mb-3">{% trans "Керування" %}</span>
+  <h1 class="mb-2">{% trans "Панель адміністратора складу" %}</h1>
+  <p class="lead text-muted mb-0">{% trans "Єдине місце для довідників, користувачів, аналітики, налаштувань та інструкцій." %}</p>
+</div></div>
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Номенклатура" %}</div><div class="display-6">{{ counts.items }}</div></div></div></div>
+  <div class="col-md-3"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Склади" %}</div><div class="display-6">{{ counts.warehouses }}</div></div></div></div>
+  <div class="col-md-3"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Локації" %}</div><div class="display-6">{{ counts.locations }}</div></div></div></div>
+  <div class="col-md-3"><div class="card content-card h-100"><div class="card-body"><div class="text-muted">{% trans "Користувачі" %}</div><div class="display-6">{{ counts.users }}</div></div></div></div>
+</div>
+<div class="row g-3">
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_directories' %}"><div class="card-body"><div class="fs-2">🗂️</div><h2 class="h5">{% trans "Довідники" %}</h2><p class="text-muted mb-0">{% trans "Номенклатура, категорії, склади, локації, отримувачі." %}</p></div></a></div>
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_users' %}"><div class="card-body"><div class="fs-2">👤</div><h2 class="h5">{% trans "Користувачі та ролі" %}</h2><p class="text-muted mb-0">{% trans "Групи: Адміністратор складу, Комірник, Перегляд / аудитор." %}</p></div></a></div>
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_analytics' %}"><div class="card-body"><div class="fs-2">📈</div><h2 class="h5">{% trans "Аналітика" %}</h2><p class="text-muted mb-0">{% trans "Прихід, видача, списання, переміщення та залишки." %}</p></div></a></div>
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_settings' %}"><div class="card-body"><div class="fs-2">⚙️</div><h2 class="h5">{% trans "Налаштування" %}</h2><p class="text-muted mb-0">{% trans "Параметри системи та технічні посилання." %}</p></div></a></div>
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_help' %}"><div class="card-body"><div class="fs-2">📚</div><h2 class="h5">{% trans "Інструкції" %}</h2><p class="text-muted mb-0">{% trans "Документація для користувачів і адміністраторів." %}</p></div></a></div>
+  <div class="col-md-6 col-xl-4"><a class="card content-card h-100 text-decoration-none" href="{% url 'admin:index' %}"><div class="card-body"><div class="fs-2">🛠️</div><h2 class="h5">{% trans "Адмін-панель Django" %}</h2><p class="text-muted mb-0">{% trans "Технічний резерв за адресою /admin/." %}</p></div></a></div>
+</div>
+{% endblock %}
