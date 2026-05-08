@@ -8,6 +8,7 @@ from django.test import RequestFactory, TestCase
 from io import StringIO
 from django.urls import reverse
 
+from .forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -20,6 +21,109 @@ from .models import (
     Unit,
     Warehouse,
 )
+
+
+class ActiveChoiceFormTests(TestCase):
+    def setUp(self):
+        self.active_category = Category.objects.create(name="Активна категорія")
+        self.archived_category = Category.objects.create(
+            name="Архівна категорія", is_active=False
+        )
+        self.active_unit = Unit.objects.create(name="Штука", symbol="шт")
+        self.archived_unit = Unit.objects.create(
+            name="Архівна штука", symbol="арх", is_active=False
+        )
+        self.active_warehouse = Warehouse.objects.create(name="Активний склад")
+        self.archived_warehouse = Warehouse.objects.create(
+            name="Архівний склад", is_active=False
+        )
+
+    def test_archived_category_is_hidden_from_item_form_category_queryset(self):
+        form = ItemForm()
+
+        self.assertIn(self.active_category, form.fields["category"].queryset)
+        self.assertNotIn(self.archived_category, form.fields["category"].queryset)
+
+    def test_archived_unit_is_hidden_from_item_form_unit_queryset(self):
+        form = ItemForm()
+
+        self.assertIn(self.active_unit, form.fields["unit"].queryset)
+        self.assertNotIn(self.archived_unit, form.fields["unit"].queryset)
+
+    def test_archived_warehouse_is_hidden_from_location_form_warehouse_queryset(self):
+        form = LocationForm()
+
+        self.assertIn(self.active_warehouse, form.fields["warehouse"].queryset)
+        self.assertNotIn(self.archived_warehouse, form.fields["warehouse"].queryset)
+
+    def test_archived_category_is_hidden_from_category_form_parent_queryset(self):
+        form = CategoryForm()
+
+        self.assertIn(self.active_category, form.fields["parent"].queryset)
+        self.assertNotIn(self.archived_category, form.fields["parent"].queryset)
+
+    def test_category_form_excludes_itself_from_parent_queryset(self):
+        form = CategoryForm(instance=self.active_category)
+
+        self.assertNotIn(self.active_category, form.fields["parent"].queryset)
+
+    def test_item_form_rejects_posted_archived_category(self):
+        form = ItemForm(
+            data={
+                "name": "Болт",
+                "internal_code": "BOLT-1",
+                "category": self.archived_category.pk,
+                "unit": self.active_unit.pk,
+                "description": "",
+                "is_active": "on",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("Не можна вибрати архівний запис.", form.errors["category"])
+
+    def test_active_category_and_unit_are_available_for_item_form(self):
+        form = ItemForm(
+            data={
+                "name": "Гайка",
+                "internal_code": "NUT-1",
+                "category": self.active_category.pk,
+                "unit": self.active_unit.pk,
+                "description": "",
+                "is_active": "on",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_stock_balance_filter_uses_only_active_references(self):
+        active_location = Location.objects.create(
+            warehouse=self.active_warehouse, name="Активна локація"
+        )
+        archived_location = Location.objects.create(
+            warehouse=self.active_warehouse, name="Архівна локація", is_active=False
+        )
+        location_in_archived_warehouse = Location.objects.create(
+            warehouse=self.archived_warehouse, name="Локація архівного складу"
+        )
+        active_item = Item.objects.create(
+            name="Активна номенклатура", unit=self.active_unit
+        )
+        archived_item = Item.objects.create(
+            name="Архівна номенклатура", unit=self.active_unit, is_active=False
+        )
+
+        form = StockBalanceFilterForm()
+
+        self.assertIn(self.active_warehouse, form.fields["warehouse"].queryset)
+        self.assertNotIn(self.archived_warehouse, form.fields["warehouse"].queryset)
+        self.assertIn(active_location, form.fields["location"].queryset)
+        self.assertNotIn(archived_location, form.fields["location"].queryset)
+        self.assertNotIn(
+            location_in_archived_warehouse, form.fields["location"].queryset
+        )
+        self.assertIn(active_item, form.fields["item"].queryset)
+        self.assertNotIn(archived_item, form.fields["item"].queryset)
 
 
 class WarehouseModelTests(TestCase):
@@ -51,7 +155,9 @@ class WarehouseModelTests(TestCase):
             )
 
     def test_barcode_registry_validates_prefix(self):
-        barcode = BarcodeRegistry(barcode="WH00000002", prefix=BarcodeRegistry.Prefix.ITEM)
+        barcode = BarcodeRegistry(
+            barcode="WH00000002", prefix=BarcodeRegistry.Prefix.ITEM
+        )
 
         with self.assertRaises(ValidationError):
             barcode.full_clean()
@@ -65,13 +171,17 @@ class WarehouseModelTests(TestCase):
         self.assertEqual(sequence.padding, 8)
 
     def test_item_internal_code_is_normalized_when_filled(self):
-        item = Item.objects.create(name="First item", internal_code=" SKU-1 ", unit=self.unit)
+        item = Item.objects.create(
+            name="First item", internal_code=" SKU-1 ", unit=self.unit
+        )
 
         self.assertEqual(item.internal_code, "SKU-1")
 
     def test_item_internal_code_can_be_blank_for_multiple_items(self):
         first = Item.objects.create(name="First item", internal_code="", unit=self.unit)
-        second = Item.objects.create(name="Second item", internal_code="", unit=self.unit)
+        second = Item.objects.create(
+            name="Second item", internal_code="", unit=self.unit
+        )
 
         self.assertIsNone(first.internal_code)
         self.assertIsNone(second.internal_code)
@@ -90,7 +200,9 @@ class WarehouseModelTests(TestCase):
         self.assertEqual(qty_field.decimal_places, 3)
         self.assertEqual(balance.qty, Decimal("123456789012345.123"))
         with self.assertRaises(IntegrityError):
-            StockBalance.objects.create(item=item, location=self.location, qty=Decimal("1.000"))
+            StockBalance.objects.create(
+                item=item, location=self.location, qty=Decimal("1.000")
+            )
 
     def test_stock_movement_has_required_types(self):
         expected_types = {
@@ -357,7 +469,10 @@ class WebInterfaceTests(TestCase):
         self.category = Category.objects.create(name="Матеріали")
         self.recipient = Recipient.objects.create(name="Цех 1")
         self.item = Item.objects.create(
-            name="Болт М8", internal_code="BOLT-M8", category=self.category, unit=self.unit
+            name="Болт М8",
+            internal_code="BOLT-M8",
+            category=self.category,
+            unit=self.unit,
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
         self.location = Location.objects.create(warehouse=self.warehouse, name="A-01")
@@ -425,6 +540,39 @@ class WebInterfaceTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Item.objects.filter(internal_code="NUT-M8").exists())
 
+    def test_item_create_page_hides_archived_categories(self):
+        archived_category = Category.objects.create(
+            name="Архівна категорія UI", is_active=False
+        )
+
+        response = self.client.get(reverse("item_create"), HTTP_ACCEPT_LANGUAGE="uk")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.category.name)
+        self.assertNotContains(response, archived_category.name)
+
+    def test_item_create_page_rejects_archived_category_post(self):
+        archived_category = Category.objects.create(
+            name="Архівна категорія POST", is_active=False
+        )
+
+        response = self.client.post(
+            reverse("item_create"),
+            {
+                "name": "Шайба М8",
+                "internal_code": "WASHER-M8",
+                "category": archived_category.pk,
+                "unit": self.unit.pk,
+                "description": "",
+                "is_active": "on",
+            },
+            HTTP_ACCEPT_LANGUAGE="uk",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Не можна вибрати архівний запис.")
+        self.assertFalse(Item.objects.filter(internal_code="WASHER-M8").exists())
+
     def test_warehouse_and_location_can_be_created_through_web(self):
         warehouse_response = self.client.post(
             reverse("warehouse_create"),
@@ -443,7 +591,9 @@ class WebInterfaceTests(TestCase):
             },
         )
         self.assertEqual(location_response.status_code, 302)
-        self.assertTrue(Location.objects.filter(warehouse=warehouse, name="B-02").exists())
+        self.assertTrue(
+            Location.objects.filter(warehouse=warehouse, name="B-02").exists()
+        )
 
     def test_cannot_create_duplicate_root_category_with_trimmed_name(self):
         response = self.client.post(
@@ -453,7 +603,12 @@ class WebInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Категорія з такою назвою вже існує.")
-        self.assertEqual(Category.objects.filter(name__iexact="Матеріали", parent__isnull=True).count(), 1)
+        self.assertEqual(
+            Category.objects.filter(
+                name__iexact="Матеріали", parent__isnull=True
+            ).count(),
+            1,
+        )
 
     def test_cannot_create_duplicate_category_with_same_parent(self):
         parent = Category.objects.create(name="Запчастини")
@@ -501,7 +656,9 @@ class WebInterfaceTests(TestCase):
         self.assertContains(active_response, self.unit.name)
         self.assertNotContains(active_response, archived.name)
 
-        archived_response = self.client.get(reverse("unit_list"), {"status": "archived"})
+        archived_response = self.client.get(
+            reverse("unit_list"), {"status": "archived"}
+        )
         self.assertNotContains(archived_response, self.unit.name)
         self.assertContains(archived_response, archived.name)
 
@@ -514,7 +671,9 @@ class WebInterfaceTests(TestCase):
         self.assertNotContains(response, ">Internal code<")
 
     def test_archive_category_blocked_when_active_items_exist(self):
-        response = self.client.post(reverse("category_archive", args=[self.category.pk]))
+        response = self.client.post(
+            reverse("category_archive", args=[self.category.pk])
+        )
 
         self.category.refresh_from_db()
         self.assertTrue(self.category.is_active)
