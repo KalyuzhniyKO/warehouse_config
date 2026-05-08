@@ -656,3 +656,32 @@ class ManagementAnalyticsTests(TestCase):
         response = self.client.get(reverse("help"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Центр допомоги")
+
+
+class InternationalizationIntegrationTests(TestCase):
+    def test_project_exposes_ten_languages(self):
+        from django.conf import settings
+
+        self.assertEqual(
+            [code for code, _name in settings.LANGUAGES],
+            ["uk", "ru", "en", "de", "pl", "fr", "es", "it", "pt", "tr"],
+        )
+
+    def test_switch_language_url_replaces_prefix_and_keeps_query_string(self):
+        from django.test import RequestFactory
+
+        from .templatetags.i18n_extras import switch_language_url
+
+        request = RequestFactory().get("/uk/stock-balances/?q=BOLT")
+
+        self.assertEqual(switch_language_url(request, "de"), "/de/stock-balances/?q=BOLT")
+
+    def test_language_switcher_uses_flags_and_switch_urls(self):
+        user = get_user_model().objects.create_user(username="lang-user", password="pw")
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertContains(response, "🇺🇦")
+        self.assertContains(response, "/en/")
+        self.assertContains(response, "/tr/")

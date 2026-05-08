@@ -1,19 +1,22 @@
-{% load i18n %}
-
-<form action="{% url 'set_language' %}" method="post" class="language-switcher">
-  {% csrf_token %}
-  <input name="next" type="hidden" value="{{ request.get_full_path }}">
-  <label for="language-switcher-select">{% translate "Language" %}</label>
-  <select id="language-switcher-select" name="language" onchange="this.form.submit()">
-    {% get_current_language as CURRENT_LANGUAGE %}
-    {% get_available_languages as LANGUAGES %}
-    {% for language_code, language_name in LANGUAGES %}
-      <option value="{{ language_code }}"{% if language_code == CURRENT_LANGUAGE %} selected{% endif %}>
-        {{ language_name }}
-      </option>
-    {% endfor %}
-  </select>
-  <noscript>
-    <button type="submit">{% translate "Change language" %}</button>
-  </noscript>
-</form>
+{% load i18n i18n_extras %}
+{% get_current_language as CURRENT_LANGUAGE %}
+{% get_available_languages as LANGUAGES %}
+{% language_flag CURRENT_LANGUAGE as current_flag %}
+<div class="dropdown language-switcher">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" id="languageSwitcher" data-bs-toggle="dropdown" aria-expanded="false">
+        <span aria-hidden="true">{{ current_flag }}</span>
+        <span class="d-none d-md-inline">{% trans "Мова" %}</span>
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageSwitcher">
+        {% for language_code, language_name in LANGUAGES %}
+            {% language_flag language_code as flag %}
+            {% switch_language_url request language_code as next_url %}
+            <li>
+                <a class="dropdown-item d-flex align-items-center gap-2 {% if language_code == CURRENT_LANGUAGE %}active{% endif %}" href="{{ next_url }}" hreflang="{{ language_code }}">
+                    <span aria-hidden="true">{{ flag }}</span>
+                    <span>{{ language_name }}</span>
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
