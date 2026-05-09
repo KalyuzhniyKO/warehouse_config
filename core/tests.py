@@ -1,5 +1,6 @@
 from decimal import Decimal
 from pathlib import Path
+from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
@@ -9,7 +10,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
-from io import StringIO
+from io import BytesIO, StringIO
 from django.urls import reverse
 
 from .forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm
@@ -1182,6 +1183,112 @@ class InventoryInterfaceTests(TestCase):
         inventory_count.refresh_from_db()
         self.assertEqual(complete_response.status_code, 403)
         self.assertEqual(inventory_count.status, InventoryCount.Status.IN_PROGRESS)
+
+
+    def test_csv_export_is_available_for_admin_and_contains_inventory_data_and_bom(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("7.000")
+        line.comment = "Found surplus"
+        line.save(update_fields=["actual_qty", "comment", "updated_at"])
+
+        response = self.client.get(reverse("inventory_export_csv", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content[:3], b"\xef\xbb\xbf")
+        content = response.content.decode("utf-8-sig")
+        self.assertIn(inventory_count.number, content)
+        self.assertIn("Inventory UI item", content)
+        self.assertIn("Found surplus", content)
+        self.assertIn('filename="inventory_%s.csv"' % inventory_count.number, response["Content-Disposition"])
+
+    def test_xlsx_export_returns_file_when_openpyxl_is_available(self):
+        from openpyxl import load_workbook
+
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+
+        response = self.client.get(reverse("inventory_export_xlsx", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('filename="inventory_%s.xlsx"' % inventory_count.number, response["Content-Disposition"])
+        workbook = load_workbook(BytesIO(response.content), data_only=True)
+        sheet = workbook.active
+        self.assertIn(sheet.title, {"Inventory", "Інвентаризація"})
+        self.assertEqual(sheet["A2"].value, inventory_count.number)
+        self.assertEqual(sheet["E2"].value, "Inventory UI item")
+        self.assertIsInstance(sheet["I2"].value, (int, float))
+
+    def test_xlsx_export_returns_service_unavailable_when_openpyxl_is_missing(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        original_import = __import__
+
+        def import_without_openpyxl(name, *args, **kwargs):
+            if name.startswith("openpyxl"):
+                raise ImportError("openpyxl unavailable")
+            return original_import(name, *args, **kwargs)
+
+        with mock.patch("builtins.__import__", side_effect=import_without_openpyxl):
+            response = self.client.get(reverse("inventory_export_xlsx", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 503)
+        self.assertContains(response, "openpyxl", status_code=503)
+
+    def test_auditor_can_export_inventory_but_cannot_create_or_edit_it(self):
+        inventory_count = self.create_inventory()
+        self.login(self.auditor)
+
+        csv_response = self.client.get(reverse("inventory_export_csv", args=[inventory_count.pk]))
+        create_response = self.client.post(
+            reverse("inventory_create"),
+            {"warehouse": self.warehouse.pk, "location": "", "comment": "Forbidden"},
+        )
+        count_response = self.client.get(reverse("inventory_count", args=[inventory_count.pk]))
+        complete_response = self.client.post(reverse("inventory_complete", args=[inventory_count.pk]))
+
+        inventory_count.refresh_from_db()
+        self.assertEqual(csv_response.status_code, 200)
+        self.assertEqual(create_response.status_code, 403)
+        self.assertEqual(count_response.status_code, 403)
+        self.assertEqual(complete_response.status_code, 403)
+        self.assertEqual(inventory_count.status, InventoryCount.Status.IN_PROGRESS)
+
+    def test_detail_page_shows_inventory_summary(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("7.000")
+        line.save(update_fields=["actual_qty", "updated_at"])
+        other_item = Item.objects.create(name="Shortage item", unit=self.unit)
+        InventoryCountLine.objects.create(
+            inventory_count=inventory_count,
+            item=other_item,
+            location=self.location,
+            expected_qty=Decimal("4.000"),
+            actual_qty=Decimal("1.000"),
+        )
+
+        response = self.client.get(reverse("inventory_detail", args=[inventory_count.pk]))
+
+        self.assertContains(response, "Всього рядків")
+        self.assertContains(response, "Кількість розбіжностей")
+        self.assertContains(response, "Сума надлишків")
+        self.assertContains(response, "Сума нестач")
+        self.assertEqual(response.context["inventory_summary"]["total_lines"], 2)
+        self.assertEqual(response.context["inventory_summary"]["difference_lines"], 2)
+        self.assertEqual(response.context["inventory_summary"]["total_surplus"], Decimal("2.000"))
+        self.assertEqual(response.context["inventory_summary"]["total_shortage"], Decimal("3.000"))
+
+    def test_inventory_list_shows_status_badges(self):
+        self.login(self.admin)
+        self.create_inventory()
+
+        response = self.client.get(reverse("inventory_list"))
+
+        self.assertContains(response, "badge text-bg-primary")
+        self.assertContains(response, InventoryCount.Status.IN_PROGRESS.label)
 
     def test_complete_inventory_post_adjusts_stock_and_redirects(self):
         self.login(self.storekeeper)

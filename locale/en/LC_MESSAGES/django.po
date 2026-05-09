@@ -876,3 +876,50 @@ msgstr "Cannot complete a cancelled inventory count."
 
 msgid "Коригування за інвентаризацією"
 msgstr "Inventory count adjustment"
+
+msgid "Експорт CSV"
+msgstr "Export CSV"
+
+
+msgid "Експорт XLSX"
+msgstr "Export XLSX"
+
+
+msgid "Всього рядків"
+msgstr "Total lines"
+
+
+msgid "Кількість розбіжностей"
+msgstr "Difference lines"
+
+
+msgid "Сума надлишків"
+msgstr "Total surplus"
+
+
+msgid "Сума нестач"
+msgstr "Total shortage"
+
+
+msgid "XLSX export requires openpyxl."
+msgstr "XLSX export requires openpyxl."
+
+
+msgid "Номер інвентаризації"
+msgstr "Inventory number"
+
+
+msgid "Локація інвентаризації"
+msgstr "Inventory location"
+
+
+msgid "Internal code"
+msgstr "Internal code"
+
+
+msgid "Barcode"
+msgstr "Barcode"
+
+
+msgid "Коментар рядка"
+msgstr "Line comment"

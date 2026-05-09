@@ -4,7 +4,11 @@
 {% block content %}
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <h1 class="mb-0">{% trans "Інвентаризація" %} {{ inventory_count.number }}</h1>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        {% if can_export_inventory %}
+            <a class="btn btn-outline-success" href="{% url 'inventory_export_csv' inventory_count.pk %}">{% trans "Експорт CSV" %}</a>
+            <a class="btn btn-outline-success" href="{% url 'inventory_export_xlsx' inventory_count.pk %}">{% trans "Експорт XLSX" %}</a>
+        {% endif %}
         {% if can_edit_inventory and inventory_count.status == "in_progress" %}<a class="btn btn-primary" href="{% url 'inventory_count' inventory_count.pk %}">{% trans "Підрахунок" %}</a>{% endif %}
         {% if can_complete_inventory and inventory_count.status == "in_progress" %}
             <form method="post" action="{% url 'inventory_complete' inventory_count.pk %}" class="d-inline">
@@ -27,5 +31,31 @@
         <dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ inventory_count.comment|linebreaksbr|default:"—" }}</dd>
     </dl>
 </div></div>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card content-card h-100"><div class="card-body">
+            <div class="text-muted small">{% trans "Всього рядків" %}</div>
+            <div class="fs-4 fw-semibold">{{ inventory_summary.total_lines }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card content-card h-100"><div class="card-body">
+            <div class="text-muted small">{% trans "Кількість розбіжностей" %}</div>
+            <div class="fs-4 fw-semibold">{{ inventory_summary.difference_lines }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card content-card h-100"><div class="card-body">
+            <div class="text-muted small">{% trans "Сума надлишків" %}</div>
+            <div class="fs-4 fw-semibold text-success">{{ inventory_summary.total_surplus }}</div>
+        </div></div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card content-card h-100"><div class="card-body">
+            <div class="text-muted small">{% trans "Сума нестач" %}</div>
+            <div class="fs-4 fw-semibold text-danger">{{ inventory_summary.total_shortage }}</div>
+        </div></div>
+    </div>
+</div>
 {% include "core/inventory_line_table.html" with lines=lines editable=False %}
 {% endblock %}
