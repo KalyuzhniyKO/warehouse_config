@@ -63,7 +63,12 @@ from .permissions import (
     user_in_groups,
 )
 from .services import analytics as analytics_service
-from .services.inventory import create_inventory_count, update_inventory_line_actual_qty
+from .services.inventory import (
+    InventoryServiceError,
+    complete_inventory_count,
+    create_inventory_count,
+    update_inventory_line_actual_qty,
+)
 from .services.labels import download_item_label_pdf, get_default_label_template, print_item_label
 from .services.stock import InsufficientStockError, StockServiceError, create_initial_balance, issue_stock, receive_stock
 
@@ -292,7 +297,25 @@ class InventoryDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
             "item", "item__barcode", "location", "location__warehouse"
         )
         context["can_edit_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
+        context["can_complete_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
         return context
+
+
+class InventoryCompleteView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = STOCK_EDIT_GROUPS
+
+    def post(self, request, pk):
+        inventory_count = get_object_or_404(InventoryCount, pk=pk)
+        try:
+            complete_inventory_count(inventory_count=inventory_count, user=request.user)
+        except InventoryServiceError as exc:
+            messages.error(request, exc)
+        else:
+            messages.success(
+                request,
+                _("Інвентаризацію завершено. Залишки скориговано."),
+            )
+        return redirect("inventory_detail", pk=pk)
 
 
 class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
@@ -556,7 +579,8 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     def get_queryset(self):
         queryset = StockMovement.objects.select_related(
             "item", "item__barcode", "source_location", "source_location__warehouse",
-            "destination_location", "destination_location__warehouse", "recipient"
+            "destination_location", "destination_location__warehouse", "recipient",
+            "inventory_count"
         )
         form = self.get_filter_form()
         if not form.is_valid():

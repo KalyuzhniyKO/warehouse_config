@@ -6,6 +6,12 @@
     <h1 class="mb-0">{% trans "Інвентаризація" %} {{ inventory_count.number }}</h1>
     <div class="d-flex gap-2">
         {% if can_edit_inventory and inventory_count.status == "in_progress" %}<a class="btn btn-primary" href="{% url 'inventory_count' inventory_count.pk %}">{% trans "Підрахунок" %}</a>{% endif %}
+        {% if can_complete_inventory and inventory_count.status == "in_progress" %}
+            <form method="post" action="{% url 'inventory_complete' inventory_count.pk %}" class="d-inline">
+                {% csrf_token %}
+                <button class="btn btn-success" type="submit">{% trans "Завершити інвентаризацію" %}</button>
+            </form>
+        {% endif %}
         <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
     </div>
 </div>

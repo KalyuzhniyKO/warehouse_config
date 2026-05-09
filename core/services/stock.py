@@ -89,6 +89,7 @@ def _create_movement(
     issue_reason="",
     department="",
     document_number="",
+    inventory_count=None,
 ):
     kwargs = {}
     if occurred_at is not None:
@@ -104,6 +105,7 @@ def _create_movement(
         issue_reason=issue_reason,
         department=department,
         document_number=document_number,
+        inventory_count=inventory_count,
         **kwargs,
     )
 
@@ -251,26 +253,51 @@ def transfer_stock(*, item, source_location, target_location, qty, comment=""):
     return movement
 
 
-def adjust_stock(*, item, location, target_qty, comment=""):
-    """Set a balance to *target_qty* and create an adjustment movement."""
-    target_qty = normalize_decimal_qty(target_qty)
-    if target_qty < 0:
-        raise InvalidQuantityError("Target quantity cannot be negative.")
+def adjust_stock(
+    *,
+    item,
+    location,
+    quantity_delta=None,
+    warehouse=None,
+    user=None,
+    comment="",
+    occurred_at=None,
+    inventory_count=None,
+    target_qty=None,
+):
+    """Adjust a stock balance by delta and create an adjustment movement.
+
+    ``target_qty`` is kept as a compatibility path for existing callers. New
+    code should pass ``quantity_delta`` so the movement quantity represents the
+    absolute adjustment amount.
+    """
+    if warehouse is not None and location.warehouse_id != warehouse.pk:
+        raise StockServiceError("Location does not belong to the selected warehouse.")
 
     with transaction.atomic():
         balance = get_or_create_balance_locked(item, location)
-        current_qty = normalize_decimal_qty(balance.qty)
-        difference = normalize_decimal_qty(target_qty - current_qty)
-        if difference > 0:
-            _increase_balance(balance, difference)
-        elif difference < 0:
-            _decrease_balance(balance, abs(difference))
+        if target_qty is not None:
+            target_qty = normalize_decimal_qty(target_qty)
+            if target_qty < 0:
+                raise InvalidQuantityError("Target quantity cannot be negative.")
+            quantity_delta = target_qty - normalize_decimal_qty(balance.qty)
+        elif quantity_delta is None:
+            raise InvalidQuantityError("Quantity delta is required.")
+
+        quantity_delta = normalize_decimal_qty(quantity_delta)
+        if quantity_delta > 0:
+            _increase_balance(balance, quantity_delta)
+        elif quantity_delta < 0:
+            _decrease_balance(balance, abs(quantity_delta))
+
         movement = _create_movement(
             movement_type=StockMovement.MovementType.ADJUSTMENT,
             item=item,
-            qty=abs(difference),
-            source_location=location if difference < 0 else None,
-            destination_location=location if difference >= 0 else None,
+            qty=abs(quantity_delta),
+            source_location=location if quantity_delta < 0 else None,
+            destination_location=location if quantity_delta >= 0 else None,
             comment=comment,
+            occurred_at=occurred_at,
+            inventory_count=inventory_count,
         )
     return movement

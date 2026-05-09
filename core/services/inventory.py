@@ -4,12 +4,25 @@ from decimal import Decimal
 
 from django.db import IntegrityError, transaction
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from core.models import InventoryCount, InventoryCountLine, StockBalance
-from core.services.stock import normalize_decimal_qty
+from core.services.stock import adjust_stock, normalize_decimal_qty
 
 INVENTORY_NUMBER_PREFIX = "INV-"
 INVENTORY_NUMBER_PADDING = 10
+
+
+class InventoryServiceError(ValueError):
+    """Base exception for inventory count service validation errors."""
+
+
+class InventoryAlreadyCompletedError(InventoryServiceError):
+    """Raised when a completed inventory count is completed again."""
+
+
+class InventoryCancelledError(InventoryServiceError):
+    """Raised when a cancelled inventory count is completed."""
 
 
 def generate_inventory_number():
@@ -94,3 +107,55 @@ def update_inventory_line_actual_qty(*, line, actual_qty, user=None, comment=Non
         update_fields.append("comment")
     line.save(update_fields=update_fields)
     return line
+
+
+def _raise_for_non_completable_status(inventory_count):
+    if inventory_count.status == InventoryCount.Status.COMPLETED:
+        raise InventoryAlreadyCompletedError(_("Інвентаризацію вже завершено."))
+    if inventory_count.status == InventoryCount.Status.CANCELLED:
+        raise InventoryCancelledError(
+            _("Неможливо завершити скасовану інвентаризацію.")
+        )
+    raise InventoryServiceError(
+        _("Only inventory counts in progress can be completed.")
+    )
+
+
+def complete_inventory_count(*, inventory_count, user=None):
+    """Complete an inventory count and adjust stock balances to actual quantities."""
+    with transaction.atomic():
+        locked_inventory_count = (
+            InventoryCount.objects.select_for_update()
+            .select_related("warehouse")
+            .get(pk=inventory_count.pk)
+        )
+        if locked_inventory_count.status != InventoryCount.Status.IN_PROGRESS:
+            _raise_for_non_completable_status(locked_inventory_count)
+
+        lines = locked_inventory_count.lines.select_related(
+            "item", "location", "location__warehouse"
+        ).order_by("pk")
+        for line in lines:
+            actual_qty = line.actual_qty
+            if actual_qty is None:
+                actual_qty = line.expected_qty
+            difference_qty = normalize_decimal_qty(actual_qty - line.expected_qty)
+            if difference_qty == 0:
+                continue
+            adjust_stock(
+                item=line.item,
+                warehouse=locked_inventory_count.warehouse,
+                location=line.location,
+                quantity_delta=difference_qty,
+                user=user,
+                comment=_("Коригування за інвентаризацією"),
+                inventory_count=locked_inventory_count,
+            )
+
+        locked_inventory_count.status = InventoryCount.Status.COMPLETED
+        locked_inventory_count.completed_at = timezone.now()
+        locked_inventory_count.approved_by = user
+        locked_inventory_count.save(
+            update_fields=["status", "completed_at", "approved_by", "updated_at"]
+        )
+    return locked_inventory_count
