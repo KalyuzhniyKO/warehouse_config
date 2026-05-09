@@ -725,5 +725,5 @@ msgid "Увійти"
 msgstr "Log in"
 
 #: templates/base.html:2 templates/registration/login.html:4
-msgid "Yantos · Складський облік"
-msgstr "Yantos · Warehouse accounting"
+msgid "YANTOS · Складський облік"
+msgstr "YANTOS · Warehouse accounting"
