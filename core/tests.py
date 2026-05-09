@@ -888,6 +888,148 @@ class WebInterfaceTests(TestCase):
         self.assertContains(response, "Болт М8")
 
 
+class InventoryInterfaceTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        User = get_user_model()
+        self.admin = User.objects.create_user(username="inventory-admin", password="pw")
+        self.admin.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.storekeeper = User.objects.create_user(username="inventory-storekeeper", password="pw")
+        self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        self.auditor = User.objects.create_user(username="inventory-auditor", password="pw")
+        self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
+        self.no_access = User.objects.create_user(username="inventory-no-access", password="pw")
+        self.unit = Unit.objects.create(name="Piece", symbol="pcs")
+        self.warehouse = Warehouse.objects.create(name="Inventory UI warehouse")
+        self.location = Location.objects.create(warehouse=self.warehouse, name="INV-A-01")
+        self.item_barcode = BarcodeRegistry.objects.create(
+            barcode="ITM9990000001", prefix=BarcodeRegistry.Prefix.ITEM
+        )
+        self.item = Item.objects.create(
+            name="Inventory UI item",
+            internal_code="INV-ITEM-1",
+            unit=self.unit,
+            barcode=self.item_barcode,
+        )
+        self.balance = StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("5.000")
+        )
+
+    def login(self, user):
+        self.client.force_login(user)
+
+    def create_inventory(self):
+        from .services.inventory import create_inventory_count
+
+        return create_inventory_count(warehouse=self.warehouse, user=self.admin)
+
+    def test_admin_sees_inventory_menu_item(self):
+        self.login(self.admin)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertContains(response, "Інвентаризація")
+
+    def test_storekeeper_sees_inventory_menu_item(self):
+        self.login(self.storekeeper)
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertContains(response, "Інвентаризація")
+
+    def test_auditor_does_not_see_new_inventory_button(self):
+        self.login(self.auditor)
+
+        response = self.client.get(reverse("inventory_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Нова інвентаризація")
+
+    def test_inventory_list_opens_for_authorized_stock_user(self):
+        self.login(self.admin)
+
+        response = self.client.get(reverse("inventory_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_inventory_form_creates_count_lines_and_redirects_to_count(self):
+        self.login(self.admin)
+
+        response = self.client.post(
+            reverse("inventory_create"),
+            {"warehouse": self.warehouse.pk, "location": "", "comment": "UI count"},
+        )
+
+        inventory_count = InventoryCount.objects.get()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("inventory_count", args=[inventory_count.pk]))
+        self.assertEqual(inventory_count.comment, "UI count")
+        self.assertEqual(inventory_count.lines.count(), 1)
+
+    def test_count_page_saves_actual_qty_and_difference(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+
+        response = self.client.post(
+            reverse("inventory_count", args=[inventory_count.pk]),
+            {f"line-{line.pk}-actual_qty": "7.000", f"line-{line.pk}-comment": "Found surplus"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        line.refresh_from_db()
+        self.assertEqual(line.actual_qty, Decimal("7.000"))
+        self.assertEqual(line.difference_qty, Decimal("2.000"))
+        self.assertEqual(line.comment, "Found surplus")
+
+    def test_search_by_barcode_filters_count_lines(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        other_item = Item.objects.create(name="Other inventory item", unit=self.unit)
+        InventoryCountLine.objects.create(
+            inventory_count=inventory_count,
+            item=other_item,
+            location=self.location,
+            barcode="ITM-NOT-MATCHED",
+            expected_qty=Decimal("1.000"),
+        )
+
+        response = self.client.get(
+            reverse("inventory_count", args=[inventory_count.pk]), {"q": "ITM9990000001"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Inventory UI item")
+        self.assertNotContains(response, "Other inventory item")
+
+    def test_count_page_does_not_change_stock_balance_or_create_movement(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+        before_balance = self.balance.qty
+        before_movements = StockMovement.objects.count()
+
+        self.client.post(
+            reverse("inventory_count", args=[inventory_count.pk]),
+            {f"line-{line.pk}-actual_qty": "2.000", f"line-{line.pk}-comment": "Short"},
+        )
+
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, before_balance)
+        self.assertEqual(StockMovement.objects.count(), before_movements)
+
+    def test_user_without_rights_cannot_create_inventory(self):
+        self.login(self.no_access)
+
+        response = self.client.post(
+            reverse("inventory_create"),
+            {"warehouse": self.warehouse.pk, "location": "", "comment": "Forbidden"},
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(InventoryCount.objects.count(), 0)
+
+
 class SwitchLanguageUrlTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()

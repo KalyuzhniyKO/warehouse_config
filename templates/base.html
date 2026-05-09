@@ -99,7 +99,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-lg-none">
                 <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% trans "Номенклатура" %}</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li><li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a></li><li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li>{% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}<li class="nav-item"><a class="nav-link" href="{% url 'inventory_list' %}">{% trans "Інвентаризація" %}</a></li>{% endif %}<li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a></li><li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></li>
                 {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'management_dashboard' %}">{% trans "Керування" %}</a></li>
                 {% endif %}
@@ -136,6 +136,9 @@
                                 <a class="sidebar-link" href="{% url 'recipient_list' %}">👥 {% trans "Отримувачі" %}</a>
                             {% endif %}
                             <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
+                            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+                                <a class="sidebar-link" href="{% url 'inventory_list' %}">🧮 {% trans "Інвентаризація" %}</a>
+                            {% endif %}
                             <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Прихід товару" %}</a>
                             {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
                                 <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Видача товару" %}</a>

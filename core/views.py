@@ -22,6 +22,8 @@ from .forms import (
     CategoryForm,
     ItemForm,
     InitialBalanceForm,
+    InventoryCountCreateForm,
+    InventoryCountLineForm,
     LabelTemplateForm,
     LocationForm,
     PrintLabelForm,
@@ -36,6 +38,7 @@ from .forms import (
 )
 from .models import (
     Category,
+    InventoryCount,
     Item,
     LabelTemplate,
     Location,
@@ -60,6 +63,7 @@ from .permissions import (
     user_in_groups,
 )
 from .services import analytics as analytics_service
+from .services.inventory import create_inventory_count, update_inventory_line_actual_qty
 from .services.labels import download_item_label_pdf, get_default_label_template, print_item_label
 from .services.stock import InsufficientStockError, StockServiceError, create_initial_balance, issue_stock, receive_stock
 
@@ -234,6 +238,132 @@ class DirectoryRestoreView(
             )
             messages.error(request, message)
         return HttpResponseRedirect(reverse(self.list_url_name))
+
+
+class InventoryListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = STOCK_VIEW_GROUPS
+    model = InventoryCount
+    template_name = "core/inventory_list.html"
+    context_object_name = "inventory_counts"
+    paginate_by = 50
+
+    def get_queryset(self):
+        return InventoryCount.objects.select_related(
+            "warehouse", "location", "created_by"
+        ).order_by("-started_at", "-id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["can_edit_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
+        return context
+
+
+class InventoryCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/inventory_create.html"
+    form_class = InventoryCountCreateForm
+
+    def form_valid(self, form):
+        inventory_count = create_inventory_count(
+            warehouse=form.cleaned_data["warehouse"],
+            location=form.cleaned_data["location"],
+            user=self.request.user,
+            comment=form.cleaned_data["comment"],
+        )
+        messages.success(self.request, _("Інвентаризацію створено."))
+        return redirect("inventory_count", pk=inventory_count.pk)
+
+
+class InventoryDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_VIEW_GROUPS
+    template_name = "core/inventory_detail.html"
+
+    def get_inventory_count(self):
+        return get_object_or_404(
+            InventoryCount.objects.select_related("warehouse", "location", "created_by"),
+            pk=self.kwargs["pk"],
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inventory_count = self.get_inventory_count()
+        context["inventory_count"] = inventory_count
+        context["lines"] = inventory_count.lines.select_related(
+            "item", "item__barcode", "location", "location__warehouse"
+        )
+        context["can_edit_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
+        return context
+
+
+class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/inventory_count.html"
+
+    def get_inventory_count(self):
+        return get_object_or_404(
+            InventoryCount.objects.select_related("warehouse", "location", "created_by"),
+            pk=self.kwargs["pk"],
+            status=InventoryCount.Status.IN_PROGRESS,
+        )
+
+    def get_lines(self, inventory_count):
+        queryset = inventory_count.lines.select_related(
+            "item", "item__barcode", "location", "location__warehouse"
+        )
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(
+                Q(item__name__icontains=query)
+                | Q(item__internal_code__icontains=query)
+                | Q(barcode__icontains=query)
+                | Q(item__barcode__barcode__icontains=query)
+                | Q(location__name__icontains=query)
+                | Q(location__barcode__barcode__icontains=query)
+            )
+        return queryset
+
+    def build_line_forms(self, lines, data=None):
+        return [
+            InventoryCountLineForm(data=data, instance=line, prefix=f"line-{line.pk}")
+            for line in lines
+        ]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        inventory_count = kwargs.get("inventory_count") or self.get_inventory_count()
+        lines = list(kwargs.get("lines") or self.get_lines(inventory_count))
+        context["inventory_count"] = inventory_count
+        context["lines"] = lines
+        context["line_forms"] = kwargs.get("line_forms") or self.build_line_forms(lines)
+        context["search_query"] = self.request.GET.get("q", "").strip()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        inventory_count = self.get_inventory_count()
+        lines = list(self.get_lines(inventory_count))
+        line_forms = self.build_line_forms(lines, data=request.POST)
+        if not all(form.is_valid() for form in line_forms):
+            return self.render_to_response(
+                self.get_context_data(
+                    inventory_count=inventory_count, lines=lines, line_forms=line_forms
+                )
+            )
+        for form in line_forms:
+            actual_qty = form.cleaned_data.get("actual_qty")
+            if actual_qty is None:
+                continue
+            update_inventory_line_actual_qty(
+                line=form.instance,
+                actual_qty=actual_qty,
+                user=request.user,
+                comment=form.cleaned_data.get("comment", ""),
+            )
+        messages.success(request, _("Підрахунок збережено."))
+        url = reverse("inventory_count", kwargs={"pk": inventory_count.pk})
+        query = request.GET.urlencode()
+        if query:
+            url = f"{url}?{query}"
+        return redirect(url)
 
 
 class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):

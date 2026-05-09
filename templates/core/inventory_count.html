@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Підрахунок" %} {{ inventory_count.number }} · {% trans "Інвентаризація" %}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <h1 class="mb-0">{% trans "Підрахунок" %} {{ inventory_count.number }}</h1>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'inventory_detail' inventory_count.pk %}">{% trans "Назад до інвентаризації" %}</a>
+        <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
+    </div>
+</div>
+<form method="get" class="card content-card mb-4"><div class="card-body">
+    <label class="form-label" for="inventory-search">{% trans "Сканувати штрихкод" %}</label>
+    <div class="input-group">
+        <input id="inventory-search" class="form-control" type="search" name="q" value="{{ search_query }}" placeholder="{% trans 'Назва, internal_code, barcode або локація' %}">
+        <button class="btn btn-primary" type="submit">{% trans "Пошук" %}</button>
+        <a class="btn btn-outline-secondary" href="{% url 'inventory_count' inventory_count.pk %}">{% trans "Очистити" %}</a>
+    </div>
+</div></form>
+<form method="post">
+{% csrf_token %}
+<div class="card content-card">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead class="table-light">
+            <tr>
+                <th scope="col">{% trans "Номенклатура" %}</th>
+                <th scope="col">{% trans "Штрихкод" %}</th>
+                <th scope="col">{% trans "Локація" %}</th>
+                <th scope="col" class="text-end">{% trans "Облікова кількість" %}</th>
+                <th scope="col">{% trans "Фактична кількість" %}</th>
+                <th scope="col" class="text-end">{% trans "Різниця" %}</th>
+                <th scope="col">{% trans "Коментар" %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for form in line_forms %}
+                {% with line=form.instance %}
+                <tr>
+                    <td class="fw-semibold">{{ line.item.name }}<div class="text-muted small">{{ line.item.internal_code|default:"" }}</div></td>
+                    <td>{{ line.barcode|default:"—" }}</td>
+                    <td>{{ line.location.name }}</td>
+                    <td class="text-end">{{ line.expected_qty }}</td>
+                    <td>{{ form.actual_qty }}<div class="text-danger small">{{ form.actual_qty.errors }}</div></td>
+                    <td class="text-end">
+                        {% if line.difference_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.difference_qty }}</span>
+                        {% elif line.difference_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.difference_qty }}</span>
+                        {% else %}<span class="badge text-bg-secondary">{{ line.difference_qty }}</span>{% endif %}
+                    </td>
+                    <td>{{ form.comment }}<div class="text-danger small">{{ form.comment.errors }}</div></td>
+                </tr>
+                {% endwith %}
+            {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-5"><div class="fs-1 mb-2">📭</div>{% trans "Записів поки немає" %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mt-4 d-flex flex-wrap gap-2">
+    <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
+    <a class="btn btn-outline-secondary" href="{% url 'inventory_detail' inventory_count.pk %}">{% trans "Назад до інвентаризації" %}</a>
+    <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
+</div>
+</form>
+{% endblock %}
