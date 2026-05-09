@@ -1067,7 +1067,33 @@ class WarehouseWorkflowTests(TestCase):
 
         pdf = generate_item_label_pdf(self.item)
         self.assertTrue(pdf.startswith(b"%PDF"))
-        self.assertIn(b"ITM", pdf)
+        self.assertGreater(len(pdf), 1000)
+        self.assertEqual(self.item.barcode.barcode, "ITM0000000001")
+
+    def test_pdf_label_generates_with_cyrillic_name(self):
+        from unittest.mock import patch
+
+        from .services import labels
+
+        regular_path, _bold_path = labels._discover_label_ttf_fonts()
+        if not regular_path:
+            self.skipTest("Unicode TTF font is not available in this environment")
+
+        self.item.name = "Кінцевий вимикач"
+        self.item.save(update_fields=["name"])
+
+        with patch(
+            "core.services.labels._fallback_pdf",
+            side_effect=AssertionError("fallback must not be used"),
+        ):
+            pdf = labels.generate_item_label_pdf(self.item)
+
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertGreater(len(pdf), 1000)
+        self.assertEqual(
+            labels._get_label_font_names(needs_unicode=True),
+            ("WarehouseSans", "WarehouseSansBold"),
+        )
 
     def test_printer_labeltemplate_and_printjob_can_be_created(self):
         printer = Printer.objects.create(name="Test printer", system_name="TEST_PRINTER")
