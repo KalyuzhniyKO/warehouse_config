@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.forms.models import model_to_dict
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -245,6 +245,106 @@ class DirectoryRestoreView(
         return HttpResponseRedirect(reverse(self.list_url_name))
 
 
+def get_inventory_export_queryset(inventory_count):
+    return inventory_count.lines.select_related(
+        "item", "item__barcode", "location", "location__warehouse"
+    ).order_by("item__name", "location__name", "id")
+
+
+def inventory_line_export_row(inventory_count, line):
+    return [
+        inventory_count.number,
+        inventory_count.get_status_display(),
+        inventory_count.warehouse.name,
+        inventory_count.location.name if inventory_count.location else "",
+        line.item.name,
+        line.item.internal_code,
+        line.barcode or (line.item.barcode.barcode if line.item.barcode_id else ""),
+        line.location.name,
+        line.expected_qty,
+        line.actual_qty if line.actual_qty is not None else "",
+        line.difference_qty,
+        line.comment,
+    ]
+
+
+INVENTORY_EXPORT_HEADERS = [
+    _("Номер інвентаризації"),
+    _("Статус"),
+    _("Склад"),
+    _("Локація інвентаризації"),
+    _("Номенклатура"),
+    _("Internal code"),
+    _("Barcode"),
+    _("Локація"),
+    _("Облікова кількість"),
+    _("Фактична кількість"),
+    _("Різниця"),
+    _("Коментар рядка"),
+]
+
+
+class InventoryCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = STOCK_VIEW_GROUPS
+
+    def get(self, request, pk, *args, **kwargs):
+        inventory_count = get_object_or_404(
+            InventoryCount.objects.select_related("warehouse", "location"), pk=pk
+        )
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = (
+            f'attachment; filename="inventory_{inventory_count.number}.csv"'
+        )
+        response.write("\ufeff")
+        writer = csv.writer(response)
+        writer.writerow(INVENTORY_EXPORT_HEADERS)
+        for line in get_inventory_export_queryset(inventory_count):
+            writer.writerow(inventory_line_export_row(inventory_count, line))
+        return response
+
+
+class InventoryXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = STOCK_VIEW_GROUPS
+
+    def get(self, request, pk, *args, **kwargs):
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Font
+        except ImportError:
+            return HttpResponse(_("XLSX export requires openpyxl."), status=503)
+
+        inventory_count = get_object_or_404(
+            InventoryCount.objects.select_related("warehouse", "location"), pk=pk
+        )
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Inventory"
+        sheet.append([str(header) for header in INVENTORY_EXPORT_HEADERS])
+        for cell in sheet[1]:
+            cell.font = Font(bold=True)
+
+        for line in get_inventory_export_queryset(inventory_count):
+            row = inventory_line_export_row(inventory_count, line)
+            row[8] = float(line.expected_qty)
+            row[9] = float(line.actual_qty) if line.actual_qty is not None else None
+            row[10] = float(line.difference_qty)
+            sheet.append(row)
+
+        widths = [22, 14, 24, 24, 32, 18, 18, 24, 18, 18, 14, 32]
+        for index, width in enumerate(widths, start=1):
+            column_letter = sheet.cell(row=1, column=index).column_letter
+            sheet.column_dimensions[column_letter].width = width
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="inventory_{inventory_count.number}.xlsx"'
+        )
+        workbook.save(response)
+        return response
+
+
 class InventoryListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     group_names = STOCK_VIEW_GROUPS
     model = InventoryCount
@@ -293,11 +393,31 @@ class InventoryDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         inventory_count = self.get_inventory_count()
         context["inventory_count"] = inventory_count
-        context["lines"] = inventory_count.lines.select_related(
+        lines = inventory_count.lines.select_related(
             "item", "item__barcode", "location", "location__warehouse"
         )
-        context["can_edit_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
-        context["can_complete_inventory"] = user_in_groups(self.request.user, STOCK_EDIT_GROUPS)
+        summary = inventory_count.lines.aggregate(
+            total_lines=Count("id"),
+            difference_lines=Count("id", filter=~Q(difference_qty=0)),
+            total_surplus=Sum("difference_qty", filter=Q(difference_qty__gt=0)),
+            total_shortage=Sum("difference_qty", filter=Q(difference_qty__lt=0)),
+        )
+        context["lines"] = lines
+        context["inventory_summary"] = {
+            "total_lines": summary["total_lines"] or 0,
+            "difference_lines": summary["difference_lines"] or 0,
+            "total_surplus": summary["total_surplus"] or 0,
+            "total_shortage": abs(summary["total_shortage"] or 0),
+        }
+        context["can_export_inventory"] = user_in_groups(
+            self.request.user, STOCK_VIEW_GROUPS
+        )
+        context["can_edit_inventory"] = user_in_groups(
+            self.request.user, STOCK_EDIT_GROUPS
+        )
+        context["can_complete_inventory"] = user_in_groups(
+            self.request.user, STOCK_EDIT_GROUPS
+        )
         return context
 
 

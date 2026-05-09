@@ -32,7 +32,13 @@
                     <td class="fw-semibold">{{ inventory.number }}</td>
                     <td>{{ inventory.warehouse.name }}</td>
                     <td>{{ inventory.location.name|default:"—" }}</td>
-                    <td>{{ inventory.get_status_display }}</td>
+                    <td>
+                        {% if inventory.status == "draft" %}<span class="badge text-bg-secondary">{{ inventory.get_status_display }}</span>
+                        {% elif inventory.status == "in_progress" %}<span class="badge text-bg-primary">{{ inventory.get_status_display }}</span>
+                        {% elif inventory.status == "completed" %}<span class="badge text-bg-success">{{ inventory.get_status_display }}</span>
+                        {% elif inventory.status == "cancelled" %}<span class="badge text-bg-danger">{{ inventory.get_status_display }}</span>
+                        {% else %}<span class="badge text-bg-light">{{ inventory.get_status_display }}</span>{% endif %}
+                    </td>
                     <td>{{ inventory.started_at|date:"SHORT_DATETIME_FORMAT" }}</td>
                     <td>{{ inventory.completed_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</td>
                     <td>{{ inventory.created_by|default:"—" }}</td>
