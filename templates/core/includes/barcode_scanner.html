@@ -1,0 +1,95 @@
+{% load i18n %}
+<div class="card content-card mb-4 barcode-scanner-card" data-barcode-scanner data-barcode-mode="{{ barcode_scanner_mode|default:'operation' }}" data-lookup-url="{% url 'barcode_lookup' %}" data-not-found-message="{% trans 'Штрихкод не знайдено.' %}" data-item-found-message="{% trans 'Товар знайдено.' %}" data-location-found-message="{% trans 'Локацію знайдено.' %}" data-warehouse-found-message="{% trans 'Склад знайдено.' %}" data-inventory-item-missing-message="{% trans 'Товар не знайдено у цій інвентаризації.' %}">
+    <div class="card-body">
+        <label class="form-label" for="{{ barcode_scanner_id|default:'barcode-scanner' }}">{% trans "Сканувати штрихкод" %}</label>
+        <input id="{{ barcode_scanner_id|default:'barcode-scanner' }}" class="form-control" type="text" inputmode="text" autocomplete="off" data-barcode-input placeholder="{% trans 'Сканувати штрихкод' %}">
+        <div class="mt-3 d-none" data-barcode-alert role="alert"></div>
+    </div>
+</div>
+<script>
+(function () {
+    function showAlert(container, message, level) {
+        var alertBox = container.querySelector("[data-barcode-alert]");
+        if (!alertBox) return;
+        alertBox.className = "mt-3 alert alert-" + (level || "info");
+        alertBox.textContent = message;
+    }
+
+    function setSelectValue(name, value) {
+        var field = document.querySelector('[name="' + name + '"]');
+        if (!field) return false;
+        field.value = String(value);
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+        return field.value === String(value);
+    }
+
+    function handleOperationResult(container, data) {
+        if (data.type === "item") {
+            setSelectValue("item", data.id);
+            showAlert(container, container.dataset.itemFoundMessage + " " + data.name, "success");
+            return;
+        }
+        if (data.type === "warehouse") {
+            setSelectValue("warehouse", data.id);
+            showAlert(container, container.dataset.warehouseFoundMessage + " " + data.name, "success");
+            return;
+        }
+        if (data.type === "location") {
+            setSelectValue("warehouse", data.warehouse_id);
+            setSelectValue("location", data.id);
+            showAlert(container, container.dataset.locationFoundMessage + " " + data.warehouse_name + " / " + data.name, "success");
+        }
+    }
+
+    function handleInventoryResult(container, data) {
+        if (data.type !== "item") {
+            handleOperationResult(container, data);
+            return;
+        }
+        var row = document.querySelector('[data-inventory-item-id="' + data.id + '"]');
+        if (!row) {
+            showAlert(container, container.dataset.inventoryItemMissingMessage, "warning");
+            return;
+        }
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        row.classList.add("table-warning");
+        window.setTimeout(function () { row.classList.remove("table-warning"); }, 2500);
+        var qtyInput = row.querySelector('input[name$="-actual_qty"]');
+        if (qtyInput) {
+            qtyInput.focus();
+            qtyInput.select();
+        }
+        showAlert(container, container.dataset.itemFoundMessage + " " + data.name, "success");
+    }
+
+    document.querySelectorAll("[data-barcode-scanner]").forEach(function (container) {
+        var input = container.querySelector("[data-barcode-input]");
+        if (!input) return;
+        input.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            var barcode = input.value.trim();
+            if (!barcode) return;
+            fetch(container.dataset.lookupUrl + "?barcode=" + encodeURIComponent(barcode), {
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    if (!data.found) {
+                        showAlert(container, data.message || container.dataset.notFoundMessage, "warning");
+                        return;
+                    }
+                    if (container.dataset.barcodeMode === "inventory") {
+                        handleInventoryResult(container, data);
+                    } else {
+                        handleOperationResult(container, data);
+                    }
+                    input.value = "";
+                })
+                .catch(function () {
+                    showAlert(container, container.dataset.notFoundMessage, "danger");
+                });
+        });
+    });
+})();
+</script>

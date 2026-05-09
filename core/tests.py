@@ -1848,6 +1848,109 @@ class WarehouseWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(PrintJob.objects.filter(status=PrintJob.Status.FAILED).exists())
 
+    def test_barcode_lookup_finds_item(self):
+        response = self.client.get(
+            reverse("barcode_lookup"), {"barcode": self.item.barcode.barcode}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "found": True,
+                "type": "item",
+                "id": self.item.pk,
+                "name": self.item.name,
+                "internal_code": self.item.internal_code or "",
+                "barcode": self.item.barcode.barcode,
+            },
+        )
+
+    def test_barcode_lookup_finds_warehouse(self):
+        response = self.client.get(
+            reverse("barcode_lookup"), {"barcode": self.warehouse.barcode.barcode}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "found": True,
+                "type": "warehouse",
+                "id": self.warehouse.pk,
+                "name": self.warehouse.name,
+                "barcode": self.warehouse.barcode.barcode,
+            },
+        )
+
+    def test_barcode_lookup_finds_location(self):
+        response = self.client.get(
+            reverse("barcode_lookup"), {"barcode": self.location.barcode.barcode}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "found": True,
+                "type": "location",
+                "id": self.location.pk,
+                "name": self.location.name,
+                "warehouse_id": self.warehouse.pk,
+                "warehouse_name": self.warehouse.name,
+                "barcode": self.location.barcode.barcode,
+            },
+        )
+
+    def test_barcode_lookup_returns_not_found_for_unknown_barcode(self):
+        response = self.client.get(reverse("barcode_lookup"), {"barcode": "UNKNOWN"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {"found": False, "message": "Штрихкод не знайдено."},
+        )
+
+    def test_anonymous_user_cannot_access_barcode_lookup(self):
+        self.client.logout()
+
+        response = self.client.get(
+            reverse("barcode_lookup"), {"barcode": self.item.barcode.barcode}
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("login"), response["Location"])
+
+    def test_receive_page_contains_barcode_scanner_field(self):
+        response = self.client.get(reverse("stock_receive"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "receive-barcode-scanner")
+        self.assertContains(response, "Сканувати штрихкод")
+
+    def test_issue_page_contains_barcode_scanner_field(self):
+        response = self.client.get(reverse("stock_issue"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "issue-barcode-scanner")
+        self.assertContains(response, "Сканувати штрихкод")
+
+    def test_inventory_count_page_contains_barcode_scanner_field(self):
+        from .services.inventory import create_inventory_count
+
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("1.000")
+        )
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, user=self.user
+        )
+
+        response = self.client.get(reverse("inventory_count", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "inventory-barcode-scanner")
+        self.assertContains(response, "Сканувати штрихкод")
+
     def test_unauthorized_user_redirects_to_login(self):
         self.client.logout()
         response = self.client.get(reverse("stock_receive"))
