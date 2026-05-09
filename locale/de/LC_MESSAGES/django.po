@@ -1229,3 +1229,7 @@ msgstr "Anmelden"
 
 #~ msgid "Адмін-панель"
 #~ msgstr "Adminbereich"
+
+#: templates/base.html:2 templates/registration/login.html:4
+msgid "Yantos · Складський облік"
+msgstr "Yantos · Warehouse accounting"

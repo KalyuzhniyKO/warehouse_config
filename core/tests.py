@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
@@ -495,6 +496,22 @@ class WebInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+    def test_localized_home_pages_show_yantos_brand(self):
+        for path in ["/uk/", "/ru/"]:
+            with self.subTest(path=path):
+                response = self.client.get(path)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Yantos")
+
+    def test_base_navbar_uses_yantos_theme_instead_of_bootstrap_primary(self):
+        template = Path("templates/base.html").read_text()
+
+        self.assertNotIn("navbar-dark bg-primary", template)
+        self.assertNotIn("bg-primary", template)
+        self.assertIn("yantos-navbar", template)
+        self.assertIn('brand-name">Yantos</span>', template)
 
     def test_directory_list_pages_are_available_for_logged_in_user(self):
         url_names = [
