@@ -789,3 +789,27 @@ msgstr "Balance after operation"
 
 msgid "Видача зі складу"
 msgstr "Issue from warehouse"
+
+msgid "Inventory count"
+msgstr "Inventory count"
+
+msgid "Inventory counts"
+msgstr "Inventory counts"
+
+msgid "Inventory count line"
+msgstr "Inventory count line"
+
+msgid "Inventory count lines"
+msgstr "Inventory count lines"
+
+msgid "Draft"
+msgstr "Draft"
+
+msgid "In progress"
+msgstr "In progress"
+
+msgid "Completed"
+msgstr "Completed"
+
+msgid "Cancelled"
+msgstr "Cancelled"

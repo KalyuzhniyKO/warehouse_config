@@ -792,3 +792,27 @@ msgstr "Залишок після операції"
 
 msgid "Видача зі складу"
 msgstr "Видача зі складу"
+
+msgid "Inventory count"
+msgstr "Інвентаризація"
+
+msgid "Inventory counts"
+msgstr "Інвентаризації"
+
+msgid "Inventory count line"
+msgstr "Рядок інвентаризації"
+
+msgid "Inventory count lines"
+msgstr "Рядки інвентаризації"
+
+msgid "Draft"
+msgstr "Чернетка"
+
+msgid "In progress"
+msgstr "В процесі"
+
+msgid "Completed"
+msgstr "Завершена"
+
+msgid "Cancelled"
+msgstr "Скасована"
