@@ -861,3 +861,18 @@ msgstr "Back to inventory count"
 #: inventory-ui
 msgid "До списку інвентаризацій"
 msgstr "Back to inventory list"
+
+msgid "Завершити інвентаризацію"
+msgstr "Complete inventory count"
+
+msgid "Інвентаризацію завершено. Залишки скориговано."
+msgstr "Inventory count completed. Stock balances adjusted."
+
+msgid "Інвентаризацію вже завершено."
+msgstr "Inventory count is already completed."
+
+msgid "Неможливо завершити скасовану інвентаризацію."
+msgstr "Cannot complete a cancelled inventory count."
+
+msgid "Коригування за інвентаризацією"
+msgstr "Inventory count adjustment"

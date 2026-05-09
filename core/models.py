@@ -477,6 +477,14 @@ class StockMovement(ActiveModel):
         blank=True,
         null=True,
     )
+    inventory_count = models.ForeignKey(
+        "core.InventoryCount",
+        verbose_name=_("Inventory count"),
+        on_delete=models.SET_NULL,
+        related_name="stock_movements",
+        blank=True,
+        null=True,
+    )
     issue_reason = models.CharField(
         _("Тип видачі"),
         max_length=20,

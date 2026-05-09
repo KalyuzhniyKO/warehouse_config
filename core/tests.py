@@ -610,6 +610,135 @@ class InventoryServiceTests(TestCase):
 
         self.assertEqual(StockMovement.objects.count(), 0)
 
+    def test_complete_inventory_count_creates_adjustment_for_surplus(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("8.250")
+        line.save(update_fields=["actual_qty", "updated_at"])
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        movement = StockMovement.objects.get()
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.ADJUSTMENT)
+        self.assertEqual(movement.qty, Decimal("0.750"))
+        self.assertEqual(movement.destination_location, self.location)
+        self.assertEqual(movement.inventory_count, inventory_count)
+
+    def test_complete_inventory_count_creates_adjustment_for_shortage(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("5.000")
+        line.save(update_fields=["actual_qty", "updated_at"])
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        movement = StockMovement.objects.get()
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.ADJUSTMENT)
+        self.assertEqual(movement.qty, Decimal("2.500"))
+        self.assertEqual(movement.source_location, self.location)
+        self.assertEqual(movement.inventory_count, inventory_count)
+
+    def test_complete_inventory_count_updates_stock_balance(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("9.000")
+        line.save(update_fields=["actual_qty", "updated_at"])
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, Decimal("9.000"))
+
+    def test_complete_inventory_count_ignores_empty_actual_qty(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, Decimal("7.500"))
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_complete_inventory_count_ignores_zero_difference(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+        line.actual_qty = line.expected_qty
+        line.save(update_fields=["actual_qty", "updated_at"])
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_complete_inventory_count_marks_completed(self):
+        from .services.inventory import complete_inventory_count, create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+
+        completed = complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.assertEqual(completed.status, InventoryCount.Status.COMPLETED)
+        self.assertIsNotNone(completed.completed_at)
+        self.assertEqual(completed.approved_by, self.user)
+
+    def test_complete_inventory_count_rejects_repeated_completion(self):
+        from .services.inventory import (
+            InventoryAlreadyCompletedError,
+            complete_inventory_count,
+            create_inventory_count,
+        )
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("8.000")
+        line.save(update_fields=["actual_qty", "updated_at"])
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        with self.assertRaises(InventoryAlreadyCompletedError):
+            complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.assertEqual(StockMovement.objects.count(), 1)
+
+    def test_complete_inventory_count_rejects_cancelled_count(self):
+        from .services.inventory import (
+            InventoryCancelledError,
+            complete_inventory_count,
+            create_inventory_count,
+        )
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        inventory_count.status = InventoryCount.Status.CANCELLED
+        inventory_count.save(update_fields=["status", "updated_at"])
+
+        with self.assertRaises(InventoryCancelledError):
+            complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.assertEqual(StockMovement.objects.count(), 0)
+
     def test_line_save_sets_zero_difference_when_actual_qty_is_empty(self):
         inventory_count = InventoryCount.objects.create(
             number="INV-0000000001",
@@ -1017,6 +1146,74 @@ class InventoryInterfaceTests(TestCase):
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.qty, before_balance)
         self.assertEqual(StockMovement.objects.count(), before_movements)
+
+    def test_completed_count_page_does_not_allow_editing(self):
+        from .services.inventory import complete_inventory_count
+
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        complete_inventory_count(inventory_count=inventory_count, user=self.admin)
+
+        response = self.client.get(reverse("inventory_count", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_admin_and_storekeeper_see_complete_button(self):
+        inventory_count = self.create_inventory()
+
+        self.login(self.admin)
+        admin_response = self.client.get(reverse("inventory_detail", args=[inventory_count.pk]))
+        self.assertContains(admin_response, "Завершити інвентаризацію")
+
+        self.login(self.storekeeper)
+        storekeeper_response = self.client.get(reverse("inventory_detail", args=[inventory_count.pk]))
+        self.assertContains(storekeeper_response, "Завершити інвентаризацію")
+
+    def test_auditor_cannot_complete_inventory(self):
+        self.login(self.auditor)
+        inventory_count = self.create_inventory()
+
+        detail_response = self.client.get(reverse("inventory_detail", args=[inventory_count.pk]))
+        self.assertNotContains(detail_response, "Завершити інвентаризацію")
+        complete_response = self.client.post(
+            reverse("inventory_complete", args=[inventory_count.pk])
+        )
+
+        inventory_count.refresh_from_db()
+        self.assertEqual(complete_response.status_code, 403)
+        self.assertEqual(inventory_count.status, InventoryCount.Status.IN_PROGRESS)
+
+    def test_complete_inventory_post_adjusts_stock_and_redirects(self):
+        self.login(self.storekeeper)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("6.500")
+        line.save(update_fields=["actual_qty", "updated_at"])
+
+        response = self.client.post(reverse("inventory_complete", args=[inventory_count.pk]))
+
+        inventory_count.refresh_from_db()
+        self.balance.refresh_from_db()
+        movement = StockMovement.objects.get()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], reverse("inventory_detail", args=[inventory_count.pk]))
+        self.assertEqual(inventory_count.status, InventoryCount.Status.COMPLETED)
+        self.assertIsNotNone(inventory_count.completed_at)
+        self.assertEqual(inventory_count.approved_by, self.storekeeper)
+        self.assertEqual(self.balance.qty, Decimal("6.500"))
+        self.assertEqual(movement.inventory_count, inventory_count)
+
+    def test_movements_list_shows_inventory_number_for_adjustment(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        line = inventory_count.lines.get()
+        line.actual_qty = Decimal("6.000")
+        line.save(update_fields=["actual_qty", "updated_at"])
+        self.client.post(reverse("inventory_complete", args=[inventory_count.pk]))
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertContains(response, inventory_count.number)
 
     def test_user_without_rights_cannot_create_inventory(self):
         self.login(self.no_access)
