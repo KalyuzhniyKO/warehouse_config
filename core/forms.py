@@ -579,6 +579,42 @@ class StockReceiveForm(StockOperationForm):
     )
 
 
+class StockIssueForm(StockOperationForm):
+    issue_reason = forms.ChoiceField(
+        label=_("Тип видачі"), choices=StockMovement.IssueReason.choices
+    )
+    department = forms.CharField(label=_("Цех / підрозділ"), required=False)
+    recipient = forms.ModelChoiceField(
+        label=_("Отримувач / відповідальний"),
+        queryset=Recipient.objects.none(),
+        required=False,
+    )
+    document_number = forms.CharField(label=_("Номер документа"), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["recipient"].queryset = Recipient.objects.filter(is_active=True)
+        self.fields["issue_reason"].initial = StockMovement.IssueReason.OTHER
+        self.order_fields([
+            "item",
+            "warehouse",
+            "location",
+            "qty",
+            "issue_reason",
+            "department",
+            "recipient",
+            "document_number",
+            "comment",
+            "occurred_at",
+        ])
+
+    def clean_department(self):
+        return normalize_text(self.cleaned_data.get("department"))
+
+    def clean_document_number(self):
+        return normalize_text(self.cleaned_data.get("document_number"))
+
+
 class InitialBalanceForm(StockOperationForm):
     pass
 
@@ -598,6 +634,13 @@ class StockMovementFilterForm(forms.Form):
     )
     date_from = forms.DateField(label=_("Дата від"), required=False, widget=forms.DateInput(attrs={"type": "date"}))
     date_to = forms.DateField(label=_("Дата до"), required=False, widget=forms.DateInput(attrs={"type": "date"}))
+    issue_reason = forms.ChoiceField(
+        label=_("Тип видачі"),
+        choices=[("", _("Усі типи видачі"))] + list(StockMovement.IssueReason.choices),
+        required=False,
+    )
+    department = forms.CharField(label=_("Цех / підрозділ"), required=False)
+    document_number = forms.CharField(label=_("Номер документа"), required=False)
     q = forms.CharField(
         label=_("Пошук"),
         required=False,

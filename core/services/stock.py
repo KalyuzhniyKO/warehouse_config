@@ -86,6 +86,9 @@ def _create_movement(
     recipient=None,
     comment="",
     occurred_at=None,
+    issue_reason="",
+    department="",
+    document_number="",
 ):
     kwargs = {}
     if occurred_at is not None:
@@ -98,6 +101,9 @@ def _create_movement(
         destination_location=destination_location,
         recipient=recipient,
         comment=comment,
+        issue_reason=issue_reason,
+        department=department,
+        document_number=document_number,
         **kwargs,
     )
 
@@ -157,10 +163,19 @@ def receive_stock(*, item, location, qty, comment="", occurred_at=None):
     return movement
 
 
-def issue_stock(*, item, location, qty, recipient, comment=""):
-    """Issue stock from a location to a required recipient."""
-    if recipient is None:
-        raise MissingRecipientError("Recipient is required for stock issue.")
+def issue_stock(
+    *,
+    item,
+    location,
+    qty,
+    recipient=None,
+    issue_reason=StockMovement.IssueReason.OTHER,
+    department="",
+    document_number="",
+    comment="",
+    occurred_at=None,
+):
+    """Issue stock from a location and record the business reason."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
         balance = get_or_create_balance_locked(item, location)
@@ -172,6 +187,10 @@ def issue_stock(*, item, location, qty, recipient, comment=""):
             source_location=location,
             recipient=recipient,
             comment=comment,
+            occurred_at=occurred_at,
+            issue_reason=issue_reason,
+            department=(department or "").strip(),
+            document_number=(document_number or "").strip(),
         )
     return movement
 

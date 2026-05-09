@@ -28,6 +28,7 @@ from .forms import (
     PrinterForm,
     RecipientForm,
     StockBalanceFilterForm,
+    StockIssueForm,
     StockMovementFilterForm,
     StockReceiveForm,
     UnitForm,
@@ -60,7 +61,7 @@ from .permissions import (
 )
 from .services import analytics as analytics_service
 from .services.labels import download_item_label_pdf, get_default_label_template, print_item_label
-from .services.stock import StockServiceError, create_initial_balance, receive_stock
+from .services.stock import InsufficientStockError, StockServiceError, create_initial_balance, issue_stock, receive_stock
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -334,6 +335,58 @@ class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         return context
 
 
+class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_issue_form.html"
+    form_class = StockIssueForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        return initial
+
+    def form_valid(self, form):
+        try:
+            movement = issue_stock(
+                item=form.cleaned_data["item"],
+                location=form.cleaned_data["location"],
+                qty=form.cleaned_data["qty"],
+                recipient=form.cleaned_data["recipient"],
+                issue_reason=form.cleaned_data["issue_reason"],
+                department=form.cleaned_data["department"],
+                document_number=form.cleaned_data["document_number"],
+                comment=form.cleaned_data["comment"],
+                occurred_at=form.cleaned_data["occurred_at"],
+            )
+        except InsufficientStockError:
+            form.add_error(None, _("Недостатньо залишку для видачі."))
+            return self.form_invalid(form)
+        except StockServiceError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        return redirect("stock_issue_result", pk=movement.pk)
+
+
+class StockIssueResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_issue_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        movement = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item", "source_location", "source_location__warehouse", "recipient"
+            ),
+            pk=self.kwargs["pk"],
+            movement_type=StockMovement.MovementType.OUT,
+        )
+        context["movement"] = movement
+        context["balance_after"] = get_object_or_404(
+            StockBalance, item=movement.item, location=movement.source_location
+        ).qty
+        return context
+
+
 class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/initial_balance_form.html"
@@ -395,6 +448,12 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             queryset = queryset.filter(occurred_at__date__gte=cd["date_from"])
         if cd.get("date_to"):
             queryset = queryset.filter(occurred_at__date__lte=cd["date_to"])
+        if cd.get("issue_reason"):
+            queryset = queryset.filter(issue_reason=cd["issue_reason"])
+        if cd.get("department"):
+            queryset = queryset.filter(department__icontains=cd["department"])
+        if cd.get("document_number"):
+            queryset = queryset.filter(document_number__icontains=cd["document_number"])
         if cd.get("q"):
             q = cd["q"]
             queryset = queryset.filter(

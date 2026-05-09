@@ -127,16 +127,21 @@ class StockMovementAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
         "source_location",
         "destination_location",
         "recipient",
+        "issue_reason",
+        "department",
+        "document_number",
         "occurred_at",
         "is_active",
     )
-    list_filter = ("movement_type", "is_active", "occurred_at")
+    list_filter = ("movement_type", "issue_reason", "is_active", "occurred_at")
     search_fields = (
         "item__name",
         "item__internal_code",
         "source_location__name",
         "destination_location__name",
         "recipient__name",
+        "department",
+        "document_number",
         "comment",
     )
     date_hierarchy = "occurred_at"

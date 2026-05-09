@@ -301,12 +301,33 @@ class StockServiceTests(TestCase):
             location=self.source_location,
             qty=Decimal("3.250"),
             recipient=self.recipient,
+            issue_reason=StockMovement.IssueReason.SALE,
         )
 
         self.assertEqual(self.get_balance_qty(), Decimal("6.750"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
         self.assertEqual(movement.recipient, self.recipient)
+        self.assertEqual(movement.issue_reason, StockMovement.IssueReason.SALE)
         self.assertEqual(StockMovement.objects.count(), 2)
+
+    def test_issue_stock_stores_repair_reason_and_department(self):
+        from .services.stock import issue_stock, receive_stock
+
+        receive_stock(
+            item=self.item, location=self.source_location, qty=Decimal("4.000")
+        )
+        movement = issue_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+            issue_reason=StockMovement.IssueReason.REPAIR,
+            department="  Repair shop  ",
+            document_number="REQ-7",
+        )
+
+        self.assertEqual(movement.issue_reason, StockMovement.IssueReason.REPAIR)
+        self.assertEqual(movement.department, "Repair shop")
+        self.assertEqual(movement.document_number, "REQ-7")
 
     def test_cannot_issue_more_than_available(self):
         from .services.stock import InsufficientStockError, issue_stock, receive_stock
@@ -788,7 +809,7 @@ class ManagementAnalyticsTests(TestCase):
             warehouse=self.other_warehouse, name="B1"
         )
         self.recipient = Recipient.objects.create(name="Цех 1")
-        StockBalance.objects.create(
+        self.balance = StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("7.000")
         )
         StockBalance.objects.create(
@@ -970,9 +991,122 @@ class ManagementAnalyticsTests(TestCase):
 
     def test_pr17_stock_pages_available_to_storekeeper(self):
         self.client.force_login(self.storekeeper)
-        for url_name in ["stock_receive", "stock_initial", "movement_list", "stockbalance_list", "item_list", "help"]:
+        for url_name in ["stock_receive", "stock_issue", "stock_initial", "movement_list", "stockbalance_list", "item_list", "help"]:
             response = self.client.get(reverse(url_name))
             self.assertEqual(response.status_code, 200, url_name)
+
+
+    def test_storekeeper_sees_stock_issue_but_not_recipients_in_main_menu(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Видача товару")
+        self.assertNotContains(response, "Отримувачі")
+
+    def test_stock_issue_page_available_to_storekeeper(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("stock_issue"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Видача товару")
+
+    def test_stock_issue_post_decreases_balance_and_creates_out_movement(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "2.000",
+                "issue_reason": StockMovement.IssueReason.SALE,
+                "department": "Sales",
+                "recipient": self.recipient.pk,
+                "document_number": "SO-1",
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.balance.refresh_from_db()
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(self.balance.qty, Decimal("5.000"))
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
+        self.assertEqual(movement.issue_reason, StockMovement.IssueReason.SALE)
+
+    def test_stock_issue_post_stores_repair_reason_and_department(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.REPAIR,
+                "department": "Ремонтний цех",
+                "recipient": "",
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T11:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(movement.issue_reason, StockMovement.IssueReason.REPAIR)
+        self.assertEqual(movement.department, "Ремонтний цех")
+
+    def test_stock_issue_rejects_quantity_greater_than_balance(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "99.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "recipient": "",
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T12:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Недостатньо залишку для видачі")
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, Decimal("7.000"))
+
+    def test_movements_show_translated_issue_reason(self):
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            issue_reason=StockMovement.IssueReason.SALE,
+            department="Цех 1",
+            document_number="DOC-1",
+        )
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("movement_list"), HTTP_ACCEPT_LANGUAGE="uk")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Продаж")
+        self.assertContains(response, "Цех 1")
+        self.assertContains(response, "DOC-1")
+
+    def test_auditor_cannot_create_stock_issue(self):
+        self.client.force_login(self.auditor)
+        response = self.client.get(reverse("stock_issue"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse("stock_issue"), {})
+        self.assertEqual(response.status_code, 403)
 
     def test_help_page_opens(self):
         self.client.force_login(self.auditor)
