@@ -58,7 +58,9 @@
                             <a class="sidebar-link" href="{% url 'unit_list' %}">⚖️ {% trans "Одиниці виміру" %}</a>
                             <a class="sidebar-link" href="{% url 'warehouse_list' %}">🏭 {% trans "Склади" %}</a>
                             <a class="sidebar-link" href="{% url 'location_list' %}">📍 {% trans "Локації" %}</a>
-                            <a class="sidebar-link" href="{% url 'recipient_list' %}">👥 {% trans "Отримувачі" %}</a>
+                            {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+                                <a class="sidebar-link" href="{% url 'recipient_list' %}">👥 {% trans "Отримувачі" %}</a>
+                            {% endif %}
                             <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
                             <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Прихід товару" %}</a>
                             <a class="sidebar-link" href="{% url 'stock_initial' %}">🧾 {% trans "Початковий залишок" %}</a>

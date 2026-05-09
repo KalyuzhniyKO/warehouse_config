@@ -321,31 +321,31 @@ msgstr ""
 
 #: core/models.py:292
 msgid "initial balance"
-msgstr ""
+msgstr "Initial balance"
 
 #: core/models.py:293
 msgid "in"
-msgstr ""
+msgstr "Incoming"
 
 #: core/models.py:294
 msgid "out"
-msgstr ""
+msgstr "Outgoing"
 
 #: core/models.py:295
 msgid "return"
-msgstr ""
+msgstr "Return"
 
 #: core/models.py:296
 msgid "write-off"
-msgstr ""
+msgstr "Write-off"
 
 #: core/models.py:297
 msgid "transfer"
-msgstr ""
+msgstr "Transfer"
 
 #: core/models.py:298
 msgid "adjustment"
-msgstr ""
+msgstr "Adjustment"
 
 #: core/models.py:301
 msgid "movement type"

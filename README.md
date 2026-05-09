@@ -387,6 +387,37 @@ docs/logrotate-warehouse_config.example
 
 У локальній розробці при `DJANGO_DEBUG=True` Django може писати логи в консоль, щоб не вимагати наявності `/var/log/warehouse_config`.
 
+## Internationalisation (i18n) - Updated Translations
+
+Перевір: **branch** `fix-i18n-from-main` — виправлення системи локалізації та заповнення пустих перекладів.
+
+### Зміни:
+- **Російська мова (`locale/ru/LC_MESSAGES/django.po`)**: заповнено всі критичні пусті `msgstr` перекладів:
+  - Повідомлення про валідацію форм (дублікати назв сутностей).
+  - Типи вкладискладських операцій: `initial balance` → "Начальный баланс", `in` → "Прихід", `out` → "Відпуск", `return` → "Вернення", `write-off` → "Списання", `transfer` → "Перенесення", `adjustment` → "Коригування".
+  - Назви полів моделей для Django Admin.
+  - Мітки форм, шаблонів та UI-компонентів.
+  - Повідомлення про успіх/помилку з views.
+
+- **Українська мова (`locale/uk/LC_MESSAGES/django.po`)**: виправлено типи операцій, які були помилково заповнені англійськими термінами замість українських. Додано правильні переклади:
+  - `initial balance` → "Початковий баланс", `in` → "Прихід", `out` → "Видача", та ін.
+
+- **Англійська мова (`locale/en/LC_MESSAGES/django.po`)**: заповнено типи операцій:
+  - `initial balance` → "Initial balance", `in` → "Incoming", `out` → "Outgoing", `return` → "Return", `write-off` → "Write-off", `transfer` → "Transfer", `adjustment` → "Adjustment".
+
+- **Шаблони (`templates/base.html`)**: приховано пункт меню **«Отримувачі»** для звичайних користувачів. Ссилка видима тільки для суперюзера та користувачів групи "Адміністратор складу".
+
+- **Довідка**: всі типи операцій (`get_movement_type_display`) вже правильно використовуються у `templates/core/stockmovement_list.html` для відображення читаних назв операцій замість "сирих" значень бази даних.
+
+### Перевірки перед commit:
+```bash
+python -m compileall manage.py config core
+python manage.py check
+python manage.py test
+python manage.py makemigrations --check --dry-run
+python manage.py compilemessages
+```
+
 ## Перевірки
 
 Базові команди перед комітом або deployment:
