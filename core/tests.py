@@ -17,6 +17,8 @@ from .models import (
     BarcodeRegistry,
     BarcodeSequence,
     Category,
+    InventoryCount,
+    InventoryCountLine,
     Item,
     LabelTemplate,
     Location,
@@ -485,6 +487,144 @@ class StockServiceTests(TestCase):
 
         self.assertEqual(self.get_balance_qty(), Decimal("1.235"))
         self.assertEqual(movement.qty, Decimal("1.235"))
+
+
+class InventoryServiceTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="inventory-user", password="test-password"
+        )
+        self.unit = Unit.objects.create(name="Piece", symbol="pcs")
+        self.warehouse = Warehouse.objects.create(name="Inventory warehouse")
+        self.other_warehouse = Warehouse.objects.create(name="Other warehouse")
+        self.location = Location.objects.create(warehouse=self.warehouse, name="A-01")
+        self.other_location = Location.objects.create(
+            warehouse=self.warehouse, name="B-01"
+        )
+        self.foreign_location = Location.objects.create(
+            warehouse=self.other_warehouse, name="C-01"
+        )
+        self.item = Item.objects.create(name="Counted item", unit=self.unit)
+        self.second_item = Item.objects.create(name="Second counted item", unit=self.unit)
+        self.foreign_item = Item.objects.create(name="Foreign item", unit=self.unit)
+        self.balance = StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.500")
+        )
+        self.second_balance = StockBalance.objects.create(
+            item=self.second_item, location=self.other_location, qty=Decimal("2.250")
+        )
+        StockBalance.objects.create(
+            item=self.foreign_item,
+            location=self.foreign_location,
+            qty=Decimal("9.000"),
+        )
+
+    def test_inventory_count_can_be_created_with_sequential_number(self):
+        from .services.inventory import create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, user=self.user, comment="Cycle count"
+        )
+
+        self.assertEqual(inventory_count.number, "INV-0000000001")
+        self.assertEqual(inventory_count.status, InventoryCount.Status.IN_PROGRESS)
+        self.assertEqual(inventory_count.warehouse, self.warehouse)
+        self.assertEqual(inventory_count.created_by, self.user)
+        self.assertEqual(inventory_count.comment, "Cycle count")
+
+    def test_create_inventory_count_creates_lines_from_current_stock_balances(self):
+        from .services.inventory import create_inventory_count
+
+        inventory_count = create_inventory_count(warehouse=self.warehouse)
+
+        lines = inventory_count.lines.order_by("item__name")
+        self.assertEqual(lines.count(), 2)
+        self.assertEqual(
+            [line.expected_qty for line in lines],
+            [Decimal("7.500"), Decimal("2.250")],
+        )
+        self.assertTrue(all(line.actual_qty is None for line in lines))
+        self.assertEqual(
+            set(lines.values_list("location", flat=True)),
+            {self.location.pk, self.other_location.pk},
+        )
+
+    def test_create_inventory_count_for_location_uses_only_that_location(self):
+        from .services.inventory import create_inventory_count
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+
+        line = inventory_count.lines.get()
+        self.assertEqual(line.location, self.location)
+        self.assertEqual(line.item, self.item)
+        self.assertEqual(line.expected_qty, self.balance.qty)
+        self.assertIsNone(line.actual_qty)
+
+    def test_update_inventory_line_actual_qty_calculates_difference(self):
+        from .services.inventory import (
+            create_inventory_count,
+            update_inventory_line_actual_qty,
+        )
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+
+        update_inventory_line_actual_qty(
+            line=line,
+            actual_qty=Decimal("6.000"),
+            user=self.user,
+            comment="Found shortage",
+        )
+
+        line.refresh_from_db()
+        self.assertEqual(line.actual_qty, Decimal("6.000"))
+        self.assertEqual(line.difference_qty, Decimal("-1.500"))
+        self.assertEqual(line.counted_by, self.user)
+        self.assertIsNotNone(line.counted_at)
+        self.assertEqual(line.comment, "Found shortage")
+
+    def test_update_inventory_line_actual_qty_does_not_change_stock_balance(self):
+        from .services.inventory import (
+            create_inventory_count,
+            update_inventory_line_actual_qty,
+        )
+
+        inventory_count = create_inventory_count(
+            warehouse=self.warehouse, location=self.location
+        )
+        line = inventory_count.lines.get()
+
+        update_inventory_line_actual_qty(line=line, actual_qty=Decimal("1.000"))
+
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, Decimal("7.500"))
+
+    def test_create_inventory_count_does_not_create_stock_movements(self):
+        from .services.inventory import create_inventory_count
+
+        create_inventory_count(warehouse=self.warehouse)
+
+        self.assertEqual(StockMovement.objects.count(), 0)
+
+    def test_line_save_sets_zero_difference_when_actual_qty_is_empty(self):
+        inventory_count = InventoryCount.objects.create(
+            number="INV-0000000001",
+            warehouse=self.warehouse,
+            status=InventoryCount.Status.IN_PROGRESS,
+        )
+        line = InventoryCountLine.objects.create(
+            inventory_count=inventory_count,
+            item=self.item,
+            location=self.location,
+            expected_qty=Decimal("7.500"),
+            actual_qty=None,
+        )
+
+        self.assertEqual(line.difference_qty, Decimal("0"))
 
 
 class WebInterfaceTests(TestCase):

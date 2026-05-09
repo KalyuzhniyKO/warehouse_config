@@ -13,6 +13,8 @@ from .models import (
     BarcodeRegistry,
     BarcodeSequence,
     Category,
+    InventoryCount,
+    InventoryCountLine,
     Item,
     LabelTemplate,
     Location,
@@ -107,6 +109,41 @@ class LocationAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
     list_filter = ("warehouse", "location_type", "is_active")
     search_fields = ("name", "warehouse__name", "barcode__barcode")
     autocomplete_fields = ("barcode",)
+
+
+@admin.register(InventoryCount)
+class InventoryCountAdmin(admin.ModelAdmin):
+    list_display = (
+        "number",
+        "warehouse",
+        "location",
+        "status",
+        "started_at",
+        "completed_at",
+        "created_by",
+    )
+    list_filter = ("status", "warehouse", "started_at")
+    search_fields = ("number", "warehouse__name", "location__name", "comment")
+
+
+@admin.register(InventoryCountLine)
+class InventoryCountLineAdmin(admin.ModelAdmin):
+    list_display = (
+        "inventory_count",
+        "item",
+        "location",
+        "expected_qty",
+        "actual_qty",
+        "difference_qty",
+    )
+    list_filter = ("inventory_count__status", "location__warehouse")
+    search_fields = (
+        "inventory_count__number",
+        "item__name",
+        "item__internal_code",
+        "location__name",
+        "barcode",
+    )
 
 
 @admin.register(StockBalance)
