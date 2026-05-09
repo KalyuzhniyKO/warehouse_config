@@ -9,8 +9,9 @@
         <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
     </div>
 </div>
+{% with barcode_scanner_mode="inventory" barcode_scanner_id="inventory-barcode-scanner" %}{% include "core/includes/barcode_scanner.html" %}{% endwith %}
 <form method="get" class="card content-card mb-4"><div class="card-body">
-    <label class="form-label" for="inventory-search">{% trans "Сканувати штрихкод" %}</label>
+    <label class="form-label" for="inventory-search">{% trans "Пошук" %}</label>
     <div class="input-group">
         <input id="inventory-search" class="form-control" type="search" name="q" value="{{ search_query }}" placeholder="{% trans 'Назва, internal_code, barcode або локація' %}">
         <button class="btn btn-primary" type="submit">{% trans "Пошук" %}</button>
@@ -36,7 +37,7 @@
             <tbody>
             {% for form in line_forms %}
                 {% with line=form.instance %}
-                <tr>
+                <tr data-inventory-item-id="{{ line.item_id }}">
                     <td class="fw-semibold">{{ line.item.name }}<div class="text-muted small">{{ line.item.internal_code|default:"" }}</div></td>
                     <td>{{ line.barcode|default:"—" }}</td>
                     <td>{{ line.location.name }}</td>

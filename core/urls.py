@@ -155,6 +155,7 @@ urlpatterns = [
         views.directory_view(views.DirectoryRestoreView, "location"),
         name="location_restore",
     ),
+    path("stock/barcode/lookup/", views.barcode_lookup, name="barcode_lookup"),
     path(
         "stock-balances/",
         views.StockBalanceListView.as_view(),

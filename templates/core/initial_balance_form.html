@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block title %}{% trans "Початковий залишок" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
+{% with barcode_scanner_id="initial-barcode-scanner" %}{% include "core/includes/barcode_scanner.html" %}{% endwith %}
 <h1 class="mb-3">{% trans "Початковий залишок" %}</h1>
 <form method="post" class="card content-card"><div class="card-body">
 {% csrf_token %}{{ form.non_field_errors }}

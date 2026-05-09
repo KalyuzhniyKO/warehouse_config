@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block title %}{% trans "Видача товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
+{% with barcode_scanner_id="issue-barcode-scanner" %}{% include "core/includes/barcode_scanner.html" %}{% endwith %}
 <h1 class="mb-3">{% trans "Видача товару" %}</h1>
 <form method="post" class="card content-card"><div class="card-body">
 {% csrf_token %}{{ form.non_field_errors }}

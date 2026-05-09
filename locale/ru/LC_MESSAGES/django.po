@@ -925,3 +925,23 @@ msgstr "Штрихкод"
 
 msgid "Коментар рядка"
 msgstr "Комментарий строки"
+
+#: barcode-scanner
+msgid "Штрихкод не знайдено."
+msgstr "Штрихкод не найден."
+
+#: barcode-scanner
+msgid "Товар знайдено."
+msgstr "Товар найден."
+
+#: barcode-scanner
+msgid "Локацію знайдено."
+msgstr "Локация найдена."
+
+#: barcode-scanner
+msgid "Склад знайдено."
+msgstr "Склад найден."
+
+#: barcode-scanner
+msgid "Товар не знайдено у цій інвентаризації."
+msgstr "Товар не найден в этой инвентаризации."
