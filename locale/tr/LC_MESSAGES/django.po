@@ -1229,3 +1229,7 @@ msgstr "Oturum aç"
 
 #~ msgid "Адмін-панель"
 #~ msgstr "Yönetim paneli"
+
+#: templates/base.html:2 templates/registration/login.html:4
+msgid "Yantos · Складський облік"
+msgstr "Yantos · Warehouse accounting"
