@@ -727,3 +727,65 @@ msgstr "Log in"
 #: templates/base.html:2 templates/registration/login.html:4
 msgid "YANTOS · Складський облік"
 msgstr "YANTOS · Warehouse accounting"
+
+msgid "Видача товару"
+msgstr "Stock issue"
+
+
+msgid "Тип видачі"
+msgstr "Issue type"
+
+
+msgid "Продаж"
+msgstr "Sale"
+
+
+msgid "Ремонтні роботи"
+msgstr "Repair works"
+
+
+msgid "Виробничі потреби"
+msgstr "Production needs"
+
+
+msgid "Інше"
+msgstr "Other"
+
+
+msgid "Цех / підрозділ"
+msgstr "Workshop / department"
+
+
+msgid "Номер документа"
+msgstr "Document number"
+
+
+msgid "Недостатньо залишку для видачі."
+msgstr "Not enough stock to issue."
+
+
+msgid "Недостатньо залишку для видачі"
+msgstr "Not enough stock to issue"
+
+
+msgid "Нова видача"
+msgstr "New issue"
+
+
+msgid "Усі типи видачі"
+msgstr "All issue types"
+
+
+msgid "Отримувач / відповідальний"
+msgstr "Recipient / responsible person"
+
+
+msgid "Документ"
+msgstr "Document"
+
+
+msgid "Залишок після операції"
+msgstr "Balance after operation"
+
+msgid "Видача зі складу"
+msgstr "Issue from warehouse"

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Видача товару" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Видача товару" %}</h1>
+<div class="card content-card"><div class="card-body">
+<dl class="row">
+<dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
+<dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
+<dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ movement.source_location.warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ movement.source_location }}</dd>
+<dt class="col-sm-3">{% trans "Тип видачі" %}</dt><dd class="col-sm-9">{{ movement.get_issue_reason_display|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Цех / підрозділ" %}</dt><dd class="col-sm-9">{{ movement.department|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Документ" %}</dt><dd class="col-sm-9">{{ movement.document_number|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Залишок після операції" %}</dt><dd class="col-sm-9">{{ balance_after }}</dd>
+</dl>
+<div class="d-flex gap-2"><a class="btn btn-primary" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a><a class="btn btn-outline-primary" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></div>
+</div></div>
+{% endblock %}

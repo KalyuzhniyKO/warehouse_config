@@ -137,6 +137,9 @@
                             {% endif %}
                             <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
                             <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Прихід товару" %}</a>
+                            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+                                <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Видача товару" %}</a>
+                            {% endif %}
                             <a class="sidebar-link" href="{% url 'stock_initial' %}">🧾 {% trans "Початковий залишок" %}</a>
                             <a class="sidebar-link" href="{% url 'movement_list' %}">🔁 {% trans "Рухи товарів" %}</a>
                             <a class="sidebar-link" href="{% url 'item_list' %}">🏷️ {% trans "Друк етикеток" %}</a>

@@ -14,8 +14,13 @@
     <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'unit_list' %}"><div class="card-body"><div class="fs-2">⚖️</div><h2 class="h5 mt-2">{% trans "Одиниці виміру" %}</h2><p class="text-muted mb-0">{% trans "шт, кг, м та інші" %}</p></div></a></div>
     <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'warehouse_list' %}"><div class="card-body"><div class="fs-2">🏭</div><h2 class="h5 mt-2">{% trans "Склади" %}</h2><p class="text-muted mb-0">{% trans "Місця зберігання" %}</p></div></a></div>
     <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'location_list' %}"><div class="card-body"><div class="fs-2">📍</div><h2 class="h5 mt-2">{% trans "Локації" %}</h2><p class="text-muted mb-0">{% trans "Комірки та стелажі" %}</p></div></a></div>
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'recipient_list' %}"><div class="card-body"><div class="fs-2">👥</div><h2 class="h5 mt-2">{% trans "Отримувачі" %}</h2><p class="text-muted mb-0">{% trans "Підрозділи та контакти" %}</p></div></a></div>
+    {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+        <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'recipient_list' %}"><div class="card-body"><div class="fs-2">👥</div><h2 class="h5 mt-2">{% trans "Отримувачі" %}</h2><p class="text-muted mb-0">{% trans "Підрозділи та контакти" %}</p></div></a></div>
+    {% endif %}
     <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'stockbalance_list' %}"><div class="card-body"><div class="fs-2">📊</div><h2 class="h5 mt-2">{% trans "Залишки" %}</h2><p class="text-muted mb-0">{% trans "Кількість на локаціях" %}</p></div></a></div>
+    {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+        <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'stock_issue' %}"><div class="card-body"><div class="fs-2">📤</div><h2 class="h5 mt-2">{% trans "Видача товару" %}</h2><p class="text-muted mb-0">{% trans "Видача зі складу" %}</p></div></a></div>
+    {% endif %}
     {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
         <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_dashboard' %}"><div class="card-body"><div class="fs-2">🧭</div><h2 class="h5 mt-2">{% trans "Керування" %}</h2><p class="text-muted mb-0">{% trans "Панель керування складом" %}</p></div></a></div>
     {% endif %}

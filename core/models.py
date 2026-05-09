@@ -312,6 +312,12 @@ class StockBalance(ActiveModel):
 
 
 class StockMovement(ActiveModel):
+    class IssueReason(models.TextChoices):
+        SALE = "sale", _("Продаж")
+        REPAIR = "repair", _("Ремонтні роботи")
+        PRODUCTION = "production", _("Виробничі потреби")
+        OTHER = "other", _("Інше")
+
     class MovementType(models.TextChoices):
         INITIAL_BALANCE = "initial_balance", _("initial balance")
         IN = "in", _("in")
@@ -355,6 +361,14 @@ class StockMovement(ActiveModel):
         blank=True,
         null=True,
     )
+    issue_reason = models.CharField(
+        _("Тип видачі"),
+        max_length=20,
+        choices=IssueReason.choices,
+        blank=True,
+    )
+    department = models.CharField(_("Цех / підрозділ"), max_length=200, blank=True)
+    document_number = models.CharField(_("Номер документа"), max_length=100, blank=True)
     occurred_at = models.DateTimeField(_("occurred at"), default=timezone.now)
     comment = models.TextField(_("comment"), blank=True)
 
