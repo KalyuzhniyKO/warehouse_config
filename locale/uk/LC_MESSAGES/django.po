@@ -816,3 +816,51 @@ msgstr "Завершена"
 
 msgid "Cancelled"
 msgstr "Скасована"
+
+#: inventory-ui
+msgid "Інвентаризація"
+msgstr "Інвентаризація"
+
+#: inventory-ui
+msgid "Нова інвентаризація"
+msgstr "Нова інвентаризація"
+
+#: inventory-ui
+msgid "Створити інвентаризацію"
+msgstr "Створити інвентаризацію"
+
+#: inventory-ui
+msgid "Підрахунок"
+msgstr "Підрахунок"
+
+#: inventory-ui
+msgid "Облікова кількість"
+msgstr "Облікова кількість"
+
+#: inventory-ui
+msgid "Фактична кількість"
+msgstr "Фактична кількість"
+
+#: inventory-ui
+msgid "Різниця"
+msgstr "Різниця"
+
+#: inventory-ui
+msgid "Надлишок"
+msgstr "Надлишок"
+
+#: inventory-ui
+msgid "Нестача"
+msgstr "Нестача"
+
+#: inventory-ui
+msgid "Сканувати штрихкод"
+msgstr "Сканувати штрихкод"
+
+#: inventory-ui
+msgid "Назад до інвентаризації"
+msgstr "Назад до інвентаризації"
+
+#: inventory-ui
+msgid "До списку інвентаризацій"
+msgstr "До списку інвентаризацій"

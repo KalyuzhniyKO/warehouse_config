@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ inventory_count.number }} · {% trans "Інвентаризація" %}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <h1 class="mb-0">{% trans "Інвентаризація" %} {{ inventory_count.number }}</h1>
+    <div class="d-flex gap-2">
+        {% if can_edit_inventory and inventory_count.status == "in_progress" %}<a class="btn btn-primary" href="{% url 'inventory_count' inventory_count.pk %}">{% trans "Підрахунок" %}</a>{% endif %}
+        <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
+    </div>
+</div>
+<div class="card content-card mb-4"><div class="card-body">
+    <dl class="row mb-0">
+        <dt class="col-sm-3">{% trans "Номер" %}</dt><dd class="col-sm-9">{{ inventory_count.number }}</dd>
+        <dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ inventory_count.warehouse.name }}</dd>
+        <dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ inventory_count.location.name|default:"—" }}</dd>
+        <dt class="col-sm-3">{% trans "Статус" %}</dt><dd class="col-sm-9">{{ inventory_count.get_status_display }}</dd>
+        <dt class="col-sm-3">{% trans "Дата початку" %}</dt><dd class="col-sm-9">{{ inventory_count.started_at|date:"SHORT_DATETIME_FORMAT" }}</dd>
+        <dt class="col-sm-3">{% trans "Дата завершення" %}</dt><dd class="col-sm-9">{{ inventory_count.completed_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</dd>
+        <dt class="col-sm-3">{% trans "Створив" %}</dt><dd class="col-sm-9">{{ inventory_count.created_by|default:"—" }}</dd>
+        <dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ inventory_count.comment|linebreaksbr|default:"—" }}</dd>
+    </dl>
+</div></div>
+{% include "core/inventory_line_table.html" with lines=lines editable=False %}
+{% endblock %}
