@@ -276,6 +276,28 @@ class DashboardPermissionTests(TestCase):
         self.assertIn(f'<form class="row g-2 align-items-end" method="get" action="{reverse("item_list")}"', html)
         self.assertIn('type="search" name="q"', html)
 
+    def test_storekeeper_quick_item_search_targets_item_list_q_parameter(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertIn('method="get"', html)
+        self.assertIn(f'action="{reverse("item_list")}"', html)
+        self.assertIn('name="q"', html)
+
+    def test_storekeeper_item_list_search_finds_item_by_barcode(self):
+        unit = Unit.objects.create(name="Штука", symbol="шт")
+        item = Item.objects.create(
+            name="Кабель ВВГ", internal_code="CBL-1", unit=unit
+        )
+
+        response = self.dashboard_for(
+            self.storekeeper, f'{reverse("item_list")}?q={item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, item.name)
+        self.assertContains(response, item.barcode.barcode)
+
     def test_storekeeper_workplace_primary_cards_are_links(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
         html = response.content.decode()
