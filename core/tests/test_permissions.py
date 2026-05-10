@@ -249,6 +249,8 @@ class DashboardPermissionTests(TestCase):
             "Провести інвентаризацію",
             "Перевірити залишки",
             "Надрукувати етикетку",
+            "Пошук товару",
+            "Допомога",
         ]:
             self.assertContains(response, label)
         for label in [
@@ -261,8 +263,34 @@ class DashboardPermissionTests(TestCase):
             "Отримувачі",
             "Довідники",
             "Початкові залишки",
+            "Знайти товар",
+            "Відкрити",
         ]:
             self.assertNotContains(response, label)
+
+    def test_storekeeper_workplace_has_quick_item_search(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertContains(response, "Назва, внутрішній код або штрихкод")
+        self.assertIn(f'<form class="row g-2 align-items-end" method="get" action="{reverse("item_list")}"', html)
+        self.assertIn('type="search" name="q"', html)
+
+    def test_storekeeper_workplace_primary_cards_are_links(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        for label, url_name in [
+            ("Прийняти товар", "stock_receive"),
+            ("Видати товар", "stock_issue"),
+            ("Перемістити товар", "stock_transfer"),
+            ("Списати товар", "stock_writeoff"),
+        ]:
+            self.assertIn(
+                f'<a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{reverse(url_name)}"',
+                html,
+            )
+            self.assertIn(label, html)
 
     def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")

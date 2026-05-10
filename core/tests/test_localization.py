@@ -163,6 +163,9 @@ class DashboardLocalizationTests(TestCase):
             "Run inventory count",
             "Check stock",
             "Print label",
+            "Item search",
+            "Search",
+            "Help",
         ]:
             self.assertIn(phrase, html)
         for phrase in [
@@ -174,6 +177,10 @@ class DashboardLocalizationTests(TestCase):
             "Провести інвентаризацію",
             "Перевірити залишки",
             "Надрукувати етикетку",
+            "Пошук товару",
+            "Назва, внутрішній код або штрихкод",
+            "Знайти",
+            "Допомога",
         ]:
             self.assertNotIn(phrase, html)
 
@@ -191,6 +198,10 @@ class DashboardLocalizationTests(TestCase):
             "Провести інвентаризацію",
             "Перевірити залишки",
             "Надрукувати етикетку",
+            "Пошук товару",
+            "Назва, внутрішній код або штрихкод",
+            "Знайти",
+            "Допомога",
         ]:
             self.assertIn(phrase, html)
         for phrase in [
@@ -202,6 +213,9 @@ class DashboardLocalizationTests(TestCase):
             "Run inventory count",
             "Check stock",
             "Print label",
+            "Item search",
+            "Search",
+            "Help",
         ]:
             self.assertNotIn(phrase, html)
 

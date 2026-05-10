@@ -16,34 +16,48 @@
         transition: transform .15s ease, box-shadow .15s ease;
     }
     .storekeeper-action-card:hover,
-    .storekeeper-action-card:focus-within {
+    .storekeeper-action-card:focus {
         transform: translateY(-.15rem);
         box-shadow: 0 1rem 2rem rgba(15, 23, 42, .12);
     }
+    .storekeeper-action-card:focus {
+        outline: .2rem solid rgba(255, 193, 7, .45);
+        outline-offset: .15rem;
+    }
     .storekeeper-action-icon {
-        width: 3rem;
-        height: 3rem;
+        width: 2.75rem;
+        height: 2.75rem;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         border-radius: .85rem;
         background: var(--yantos-yellow-soft);
-        font-size: 1.65rem;
+        font-size: 1.5rem;
     }
     .storekeeper-action-title {
         font-size: 1.05rem;
         line-height: 1.2;
     }
-    .storekeeper-action-button {
-        font-size: .95rem;
-        padding: .45rem .85rem;
-    }
 </style>
 
 <div class="card content-card storekeeper-hero mb-3">
     <div class="card-body p-3 p-xl-4">
-        <h1 class="fs-3 fw-bold mb-2">{% trans "Робоче місце комірника" %}</h1>
-        <p class="text-muted mb-0">{% trans "Оберіть дію, яку потрібно виконати на складі." %}</p>
+        <div class="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-start mb-3">
+            <div>
+                <h1 class="fs-3 fw-bold mb-2">{% trans "Робоче місце комірника" %}</h1>
+                <p class="text-muted mb-0">{% trans "Оберіть дію, яку потрібно виконати на складі." %}</p>
+            </div>
+            <a class="btn btn-outline-secondary btn-sm align-self-start" href="{% url 'help' %}">{% trans "Допомога" %}</a>
+        </div>
+        <form class="row g-2 align-items-end" method="get" action="{% url 'item_list' %}" role="search">
+            <div class="col-12 col-lg">
+                <label class="form-label fw-semibold" for="storekeeper-item-search">{% trans "Пошук товару" %}</label>
+                <input class="form-control" id="storekeeper-item-search" type="search" name="q" placeholder="{% trans 'Назва, внутрішній код або штрихкод' %}">
+            </div>
+            <div class="col-12 col-lg-auto">
+                <button class="btn btn-primary w-100" type="submit">{% trans "Знайти" %}</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -51,94 +65,67 @@
     <h2 id="storekeeper-actions-heading" class="visually-hidden">{% trans "Робоче місце комірника" %}</h2>
     <div class="row g-3">
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'stock_receive' %}" aria-label="{% trans 'Прихід товару' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">📥</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Прийняти товар" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Прийміть товар на склад або локацію." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'stock_receive' %}" aria-label="{% trans 'Прихід товару' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Прийміть товар на склад або локацію." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'stock_issue' %}" aria-label="{% trans 'Видача товару' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">📤</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Видати товар" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Оформіть видачу товарів зі складу." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'stock_issue' %}" aria-label="{% trans 'Видача товару' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Оформіть видачу товарів зі складу." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'stock_transfer' %}" aria-label="{% trans 'Переміщення товару' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">🔀</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Перемістити товар" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Перемістіть товар між складами або локаціями." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'stock_transfer' %}" aria-label="{% trans 'Переміщення товару' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Перемістіть товар між складами або локаціями." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'stock_writeoff' %}" aria-label="{% trans 'Списання товару' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">🗑️</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Списати товар" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Списуйте товар, який використано, зіпсовано або втрачено." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'stock_writeoff' %}" aria-label="{% trans 'Списання товару' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Списуйте товар, який використано, зіпсовано або втрачено." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'inventory_list' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">🧮</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Провести інвентаризацію" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Проведіть або перегляньте перерахунок складу." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Проведіть або перегляньте перерахунок складу." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'stockbalance_list' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">📊</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Перевірити залишки" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Перевірте фактичну кількість на локаціях." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Перевірте фактичну кількість на локаціях." %}</p>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
-                    <div class="storekeeper-action-icon mb-3" aria-hidden="true">🔎</div>
-                    <h3 class="storekeeper-action-title fw-bold">{% trans "Знайти товар" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Знайдіть номенклатуру за назвою або кодом." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
+            <a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{% url 'item_list' %}">
+                <div class="card-body p-3 d-flex flex-column">
                     <div class="storekeeper-action-icon mb-3" aria-hidden="true">🏷️</div>
                     <h3 class="storekeeper-action-title fw-bold">{% trans "Надрукувати етикетку" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Виберіть номенклатуру для друку етикетки." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a>
+                    <p class="text-muted mb-0">{% trans "Виберіть номенклатуру для друку етикетки." %}</p>
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-lg-4 col-xl-3">
-            <div class="card storekeeper-action-card">
-                <div class="card-body p-3 p-xl-4 d-flex flex-column">
-                    <div class="storekeeper-action-icon mb-3" aria-hidden="true">❓</div>
-                    <h3 class="storekeeper-action-title fw-bold">{% trans "Допомога" %}</h3>
-                    <p class="text-muted flex-grow-1">{% trans "Інструкції для роботи із системою." %}</p>
-                    <a class="btn btn-primary btn-sm storekeeper-action-button mt-auto" href="{% url 'help' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
+            </a>
         </div>
     </div>
 </section>
