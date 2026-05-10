@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -670,6 +672,75 @@ class StockIssueForm(StockOperationForm):
 
     def clean_document_number(self):
         return normalize_text(self.cleaned_data.get("document_number"))
+
+
+class StockTransferForm(forms.Form):
+    item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.none())
+    source_warehouse = forms.ModelChoiceField(
+        label=_("Склад-відправник"), queryset=Warehouse.objects.none()
+    )
+    source_location = forms.ModelChoiceField(
+        label=_("Локація-відправник"), queryset=Location.objects.none()
+    )
+    destination_warehouse = forms.ModelChoiceField(
+        label=_("Склад-отримувач"), queryset=Warehouse.objects.none()
+    )
+    destination_location = forms.ModelChoiceField(
+        label=_("Локація-отримувач"), queryset=Location.objects.none()
+    )
+    qty = forms.DecimalField(
+        label=_("Кількість"), min_value=Decimal("0.001"), max_digits=18, decimal_places=3
+    )
+    comment = forms.CharField(
+        label=_("Коментар"), required=False, widget=forms.Textarea(attrs={"rows": 3})
+    )
+    occurred_at = forms.DateTimeField(
+        label=_("Дата операції"),
+        required=True,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["item"].queryset = Item.objects.filter(is_active=True).select_related("unit")
+        self.fields["source_warehouse"].queryset = Warehouse.objects.filter(is_active=True)
+        self.fields["destination_warehouse"].queryset = Warehouse.objects.filter(is_active=True)
+        location_queryset = Location.objects.filter(
+            is_active=True, warehouse__is_active=True
+        ).select_related("warehouse")
+        self.fields["source_location"].queryset = location_queryset
+        self.fields["destination_location"].queryset = location_queryset
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-select")
+            else:
+                field.widget.attrs.setdefault("class", "form-control")
+
+    def clean(self):
+        cleaned_data = super().clean()
+        source_warehouse = cleaned_data.get("source_warehouse")
+        source_location = cleaned_data.get("source_location")
+        destination_warehouse = cleaned_data.get("destination_warehouse")
+        destination_location = cleaned_data.get("destination_location")
+
+        if source_warehouse and source_location and source_location.warehouse_id != source_warehouse.pk:
+            self.add_error(
+                "source_location", _("Локація має належати вибраному складу.")
+            )
+        if (
+            destination_warehouse
+            and destination_location
+            and destination_location.warehouse_id != destination_warehouse.pk
+        ):
+            self.add_error(
+                "destination_location", _("Локація має належати вибраному складу.")
+            )
+        if source_location and destination_location and source_location == destination_location:
+            self.add_error(
+                "destination_location",
+                _("Неможливо перемістити товар у ту саму локацію."),
+            )
+        return cleaned_data
 
 
 class InitialBalanceForm(StockOperationForm):

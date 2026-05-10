@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Переміщення виконано" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Переміщення виконано" %}</h1>
+<div class="card content-card"><div class="card-body">
+<dl class="row">
+<dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
+<dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
+<dt class="col-sm-3">{% trans "Склад-відправник" %}</dt><dd class="col-sm-9">{{ movement.source_location.warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація-відправник" %}</dt><dd class="col-sm-9">{{ movement.source_location }}</dd>
+<dt class="col-sm-3">{% trans "Склад-отримувач" %}</dt><dd class="col-sm-9">{{ movement.destination_location.warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація-отримувач" %}</dt><dd class="col-sm-9">{{ movement.destination_location }}</dd>
+<dt class="col-sm-3">{% trans "Дата операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i" }}</dd>
+<dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ movement.comment|default:"—" }}</dd>
+</dl>
+<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_transfer' %}">{% trans "Нове переміщення" %}</a><a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a><a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a></div>
+</div></div>
+{% endblock %}

@@ -230,7 +230,7 @@ def writeoff_stock(*, item, location, qty, comment=""):
     return movement
 
 
-def transfer_stock(*, item, source_location, target_location, qty, comment=""):
+def transfer_stock(*, item, source_location, target_location, qty, comment="", occurred_at=None):
     """Transfer stock between two different locations in a single transaction."""
     if source_location == target_location:
         raise SameLocationTransferError(
@@ -249,6 +249,7 @@ def transfer_stock(*, item, source_location, target_location, qty, comment=""):
             source_location=source_location,
             destination_location=target_location,
             comment=comment,
+            occurred_at=occurred_at,
         )
     return movement
 

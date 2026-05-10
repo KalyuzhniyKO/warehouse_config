@@ -13,7 +13,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 
-from .forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm
+from .forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
 from .models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -428,6 +428,46 @@ class StockServiceTests(TestCase):
 
         self.assertEqual(self.get_balance_qty(self.source_location), Decimal("3.000"))
         self.assertEqual(StockMovement.objects.count(), 1)
+
+    def test_cannot_transfer_more_than_available(self):
+        from .services.stock import InsufficientStockError, receive_stock, transfer_stock
+
+        receive_stock(
+            item=self.item, location=self.source_location, qty=Decimal("2.000")
+        )
+
+        with self.assertRaises(InsufficientStockError):
+            transfer_stock(
+                item=self.item,
+                source_location=self.source_location,
+                target_location=self.target_location,
+                qty=Decimal("2.001"),
+            )
+
+        self.assertEqual(self.get_balance_qty(self.source_location), Decimal("2.000"))
+        self.assertFalse(
+            StockBalance.objects.filter(
+                item=self.item, location=self.target_location, qty__gt=0
+            ).exists()
+        )
+        self.assertEqual(StockMovement.objects.count(), 1)
+
+    def test_transfer_records_passed_occurred_at(self):
+        from .services.stock import receive_stock, transfer_stock
+
+        occurred_at = timezone.make_aware(timezone.datetime(2026, 1, 15, 10, 30))
+        receive_stock(
+            item=self.item, location=self.source_location, qty=Decimal("4.000")
+        )
+        movement = transfer_stock(
+            item=self.item,
+            source_location=self.source_location,
+            target_location=self.target_location,
+            qty=Decimal("1.000"),
+            occurred_at=occurred_at,
+        )
+
+        self.assertEqual(movement.occurred_at, occurred_at)
 
     def test_adjust_stock_sets_target_quantity_and_creates_movement(self):
         from .services.stock import adjust_stock, receive_stock
@@ -1686,7 +1726,7 @@ class ManagementAnalyticsTests(TestCase):
         self.assertContains(response, "Цех 1")
         self.assertContains(response, "DOC-1")
 
-    def test_auditor_cannot_create_stock_issue(self):
+    def test_auditor_cannot_create_stock_issue_or_transfer(self):
         self.client.force_login(self.auditor)
         response = self.client.get(reverse("stock_issue"))
         self.assertEqual(response.status_code, 403)
@@ -1694,11 +1734,81 @@ class ManagementAnalyticsTests(TestCase):
         response = self.client.post(reverse("stock_issue"), {})
         self.assertEqual(response.status_code, 403)
 
+        response = self.client.get(reverse("stock_transfer"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse("stock_transfer"), {})
+        self.assertEqual(response.status_code, 403)
+
     def test_help_page_opens(self):
         self.client.force_login(self.auditor)
         response = self.client.get(reverse("help"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Центр допомоги")
+
+class StockTransferFormTests(TestCase):
+    def setUp(self):
+        self.unit = Unit.objects.create(name="Form unit", symbol="fu")
+        self.item = Item.objects.create(name="Form item", unit=self.unit)
+        self.source_warehouse = Warehouse.objects.create(name="Form source warehouse")
+        self.destination_warehouse = Warehouse.objects.create(name="Form destination warehouse")
+        self.source_location = Location.objects.create(
+            warehouse=self.source_warehouse, name="Form source location"
+        )
+        self.destination_location = Location.objects.create(
+            warehouse=self.destination_warehouse, name="Form destination location"
+        )
+        self.other_location = Location.objects.create(
+            warehouse=self.destination_warehouse, name="Form other location"
+        )
+
+    def form_data(self, **overrides):
+        data = {
+            "item": self.item.pk,
+            "source_warehouse": self.source_warehouse.pk,
+            "source_location": self.source_location.pk,
+            "destination_warehouse": self.destination_warehouse.pk,
+            "destination_location": self.destination_location.pk,
+            "qty": "1.000",
+            "comment": "Form transfer",
+            "occurred_at": "2026-01-15T10:30",
+        }
+        data.update(overrides)
+        return data
+
+    def test_source_location_must_belong_to_source_warehouse(self):
+        form = StockTransferForm(
+            data=self.form_data(source_location=self.other_location.pk)
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("source_location", form.errors)
+
+    def test_destination_location_must_belong_to_destination_warehouse(self):
+        form = StockTransferForm(
+            data=self.form_data(destination_location=self.source_location.pk)
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("destination_location", form.errors)
+
+    def test_same_source_and_destination_location_is_invalid(self):
+        form = StockTransferForm(
+            data=self.form_data(
+                destination_warehouse=self.source_warehouse.pk,
+                destination_location=self.source_location.pk,
+            )
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("destination_location", form.errors)
+
+    def test_qty_must_be_positive(self):
+        form = StockTransferForm(data=self.form_data(qty="0.000"))
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("qty", form.errors)
+
 
 class WarehouseWorkflowTests(TestCase):
     def setUp(self):
@@ -1711,6 +1821,10 @@ class WarehouseWorkflowTests(TestCase):
         self.warehouse = Warehouse.objects.create(name="Workflow warehouse")
         self.location = Location.objects.create(
             warehouse=self.warehouse, name="Workflow location"
+        )
+        self.destination_warehouse = Warehouse.objects.create(name="Workflow destination")
+        self.destination_location = Location.objects.create(
+            warehouse=self.destination_warehouse, name="Workflow destination location"
         )
 
     def test_item_without_barcode_gets_itm_barcode(self):
@@ -1751,6 +1865,77 @@ class WarehouseWorkflowTests(TestCase):
         self.assertEqual(balance.qty, Decimal("7.000"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.IN)
         self.assertIsNotNone(self.item.barcode)
+
+
+    def test_transfer_stock_ui_creates_transfer_movement(self):
+        from .services.stock import receive_stock
+
+        receive_stock(item=self.item, location=self.location, qty=Decimal("5.000"))
+        response = self.client.post(
+            reverse("stock_transfer"),
+            {
+                "item": self.item.pk,
+                "source_warehouse": self.warehouse.pk,
+                "source_location": self.location.pk,
+                "destination_warehouse": self.destination_warehouse.pk,
+                "destination_location": self.destination_location.pk,
+                "qty": "2.000",
+                "comment": "UI transfer",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(comment="UI transfer")
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.TRANSFER)
+        self.assertEqual(movement.source_location, self.location)
+        self.assertEqual(movement.destination_location, self.destination_location)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=self.location).qty,
+            Decimal("3.000"),
+        )
+        self.assertEqual(
+            StockBalance.objects.get(
+                item=self.item, location=self.destination_location
+            ).qty,
+            Decimal("2.000"),
+        )
+
+    def test_transfer_result_page_shows_item_quantity_source_and_destination(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            item=self.item,
+            qty=Decimal("2.000"),
+            source_location=self.location,
+            destination_location=self.destination_location,
+            comment="Result transfer",
+        )
+
+        response = self.client.get(reverse("stock_transfer_result", args=[movement.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Workflow item")
+        self.assertContains(response, "2,000")
+        self.assertContains(response, "Workflow location")
+        self.assertContains(response, "Workflow destination location")
+
+    def test_transfer_movement_is_visible_in_movement_list(self):
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            destination_location=self.destination_location,
+            comment="Visible transfer",
+        )
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Переміщення")
+        self.assertContains(response, "Workflow location")
+        self.assertContains(response, "Workflow destination location")
+        self.assertContains(response, "Visible transfer")
 
     def test_initial_balance_creates_stock_movement(self):
         response = self.client.post(
@@ -1988,6 +2173,61 @@ class DashboardNavigationPolishTests(TestCase):
 
         translation.activate("uk")
 
+    def test_admin_dashboard_shows_stock_transfer_card(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+
+        self.assertContains(response, "Переміщення товару")
+
+    def test_storekeeper_dashboard_shows_stock_transfer_card(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+
+        self.assertContains(response, "Переміщення товару")
+
+    def test_auditor_dashboard_hides_stock_transfer_card(self):
+        response = self.dashboard_for(self.auditor, "/uk/")
+
+        self.assertNotContains(response, "Переміщення товару")
+
+    def test_storekeeper_can_open_ukrainian_stock_transfer_page(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/stock/transfer/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Переміщення товару")
+
+    def test_english_dashboard_contains_stock_transfer(self):
+        response = self.dashboard_for(self.admin, "/en/")
+
+        self.assertContains(response, "Stock transfer")
+
+    def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
+        response = self.dashboard_for(self.admin, "/en/stock/transfer/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Stock transfer", html)
+        for phrase in [
+            "Переміщення товару",
+            "Перемістіть товар",
+            "Склад-відправник",
+            "Локація-відправник",
+            "Перемістити",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_ukrainian_transfer_page_has_no_english_transfer_phrases(self):
+        response = self.dashboard_for(self.admin, "/uk/stock/transfer/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Переміщення товару", html)
+        for phrase in [
+            "Stock transfer",
+            "Move items between warehouses or locations",
+            "Source warehouse",
+            "Destination location",
+        ]:
+            self.assertNotIn(phrase, html)
+
     def test_language_switcher_only_exposes_ukrainian_and_english(self):
         response = self.dashboard_for(self.admin, "/uk/")
         html = response.content.decode()
@@ -2015,6 +2255,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Складські операції",
             "Прихід товару",
             "Видача товару",
+            "Переміщення товару",
             "Початкові залишки",
             "Інвентаризація",
             "Залишки",
@@ -2026,6 +2267,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Stock receipt",
             "Stock issue",
             "Initial balances",
+            "Stock transfer",
             "Stock movements",
             "Open",
         ]:
@@ -2042,6 +2284,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Warehouse operations",
             "Stock receipt",
             "Stock issue",
+            "Stock transfer",
             "Initial balances",
             "Inventory count",
             "Stock balances",
@@ -2055,6 +2298,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",
+            "Переміщення товару",
             "Рухи товарів",
             "Відкрити",
         ]:
@@ -2068,6 +2312,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",
+            "Переміщення товару",
             "Залишки",
             "Рухи товарів",
             "Довідники",
@@ -2083,6 +2328,7 @@ class DashboardNavigationPolishTests(TestCase):
             "/en/stock/movements/",
             "/en/stock/receive/",
             "/en/stock/issue/",
+            "/en/stock/transfer/",
             "/en/stock/initial/",
             "/en/stock/inventory/",
         ]:
@@ -2100,9 +2346,11 @@ class DashboardNavigationPolishTests(TestCase):
             "Warehouse operations",
             "Stock receipt",
             "Stock issue",
+            "Stock transfer",
             "Initial balances",
             "Stock movements",
             "Stock balances",
+            "Stock transfer",
             "Directories",
             "Labels",
             "Administration",
@@ -2117,6 +2365,7 @@ class DashboardNavigationPolishTests(TestCase):
             "/uk/stock/movements/",
             "/uk/stock/receive/",
             "/uk/stock/issue/",
+            "/uk/stock/transfer/",
             "/uk/stock/initial/",
             "/uk/stock/inventory/",
         ]:
@@ -2138,6 +2387,7 @@ class DashboardNavigationPolishTests(TestCase):
         for label in [
             "Прихід товару",
             "Видача товару",
+            "Переміщення товару",
             "Початкові залишки",
             "Інвентаризація",
         ]:
@@ -2150,6 +2400,7 @@ class DashboardNavigationPolishTests(TestCase):
         for label in [
             "Прихід товару",
             "Видача товару",
+            "Переміщення товару",
             "Початкові залишки",
             "Інвентаризація",
         ]:
@@ -2160,7 +2411,7 @@ class DashboardNavigationPolishTests(TestCase):
     def test_auditor_dashboard_is_view_only(self):
         response = self.dashboard_for(self.auditor)
 
-        for label in ["Прихід товару", "Видача товару", "Початкові залишки"]:
+        for label in ["Прихід товару", "Видача товару", "Переміщення товару", "Початкові залишки"]:
             self.assertNotContains(response, label)
         for label in ["Залишки", "Рухи товарів", "Інвентаризація"]:
             self.assertContains(response, label)
@@ -2173,7 +2424,7 @@ class DashboardNavigationPolishTests(TestCase):
     def test_auditor_sidebar_hides_create_operations(self):
         response = self.dashboard_for(self.auditor)
 
-        for label in ["Прихід товару", "Видача товару", "Початкові залишки"]:
+        for label in ["Прихід товару", "Видача товару", "Переміщення товару", "Початкові залишки"]:
             self.assertNotContains(response, label)
         self.assertContains(response, "Інвентаризація")
 
@@ -2199,6 +2450,7 @@ class DashboardNavigationPolishTests(TestCase):
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",
+            "Переміщення товару",
             "Керування",
         ]:
             self.assertNotIn(phrase, html)
