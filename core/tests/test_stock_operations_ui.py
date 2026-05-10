@@ -11,7 +11,17 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
-from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from ..forms import (
+    CategoryForm,
+    ItemForm,
+    LocationForm,
+    StockBalanceFilterForm,
+    StockTransferForm,
+)
+from ..services.locations import (
+    DEFAULT_LOCATION_NAME,
+    get_default_location_for_warehouse,
+)
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -26,6 +36,7 @@ from ..models import (
     Recipient,
     StockBalance,
     StockMovement,
+    SystemSettings,
     Unit,
     Warehouse,
 )
@@ -37,7 +48,9 @@ class StockTransferFormTests(TestCase):
         self.unit = Unit.objects.create(name="Form unit", symbol="fu")
         self.item = Item.objects.create(name="Form item", unit=self.unit)
         self.source_warehouse = Warehouse.objects.create(name="Form source warehouse")
-        self.destination_warehouse = Warehouse.objects.create(name="Form destination warehouse")
+        self.destination_warehouse = Warehouse.objects.create(
+            name="Form destination warehouse"
+        )
         self.source_location = Location.objects.create(
             warehouse=self.source_warehouse, name="Form source location"
         )
@@ -173,7 +186,15 @@ class StockIssueInterfaceTests(TestCase):
 
     def test_pr17_stock_pages_available_to_storekeeper(self):
         self.client.force_login(self.storekeeper)
-        for url_name in ["stock_receive", "stock_issue", "stock_initial", "movement_list", "stockbalance_list", "item_list", "help"]:
+        for url_name in [
+            "stock_receive",
+            "stock_issue",
+            "stock_initial",
+            "movement_list",
+            "stockbalance_list",
+            "item_list",
+            "help",
+        ]:
             response = self.client.get(reverse(url_name))
             self.assertEqual(response.status_code, 200, url_name)
 
@@ -399,7 +420,9 @@ class StockOperationWorkflowTests(TestCase):
         self.location = Location.objects.create(
             warehouse=self.warehouse, name="Workflow location"
         )
-        self.destination_warehouse = Warehouse.objects.create(name="Workflow destination")
+        self.destination_warehouse = Warehouse.objects.create(
+            name="Workflow destination"
+        )
         self.destination_location = Location.objects.create(
             warehouse=self.destination_warehouse, name="Workflow destination location"
         )
@@ -543,6 +566,225 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "2,000")
         self.assertContains(response, "Workflow location")
         self.assertContains(response, "Workflow destination location")
+
+    def disable_locations(self):
+        settings = SystemSettings.get_solo()
+        settings.use_locations = False
+        settings.save(update_fields=["use_locations", "updated_at"])
+
+    def test_receive_uses_default_location_when_locations_disabled(self):
+        self.disable_locations()
+
+        response = self.client.get(reverse("stock_receive"))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("location", response.context["form"].fields)
+        self.assertContains(
+            response, "Локації вимкнено. Операція буде виконана по складу."
+        )
+
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "qty": "7.000",
+                "comment": "Default receive",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        movement = StockMovement.objects.get(comment="Default receive")
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.IN)
+        self.assertEqual(movement.destination_location, default_location)
+        self.assertEqual(movement.destination_location.name, DEFAULT_LOCATION_NAME)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=default_location).qty,
+            Decimal("7.000"),
+        )
+
+    def test_initial_balance_uses_default_location_when_locations_disabled(self):
+        self.disable_locations()
+
+        response = self.client.post(
+            reverse("stock_initial"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "qty": "4.000",
+                "comment": "Default initial",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        movement = StockMovement.objects.get(comment="Default initial")
+        self.assertEqual(
+            movement.movement_type, StockMovement.MovementType.INITIAL_BALANCE
+        )
+        self.assertEqual(movement.destination_location, default_location)
+        self.assertEqual(default_location.name, DEFAULT_LOCATION_NAME)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=default_location).qty,
+            Decimal("4.000"),
+        )
+
+    def test_issue_uses_default_location_when_locations_disabled(self):
+        from ..services.stock import receive_stock
+
+        self.disable_locations()
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        receive_stock(item=self.item, location=default_location, qty=Decimal("5.000"))
+
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "qty": "2.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "recipient": "",
+                "document_number": "",
+                "comment": "Default issue",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(comment="Default issue")
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
+        self.assertEqual(movement.source_location, default_location)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=default_location).qty,
+            Decimal("3.000"),
+        )
+
+    def test_writeoff_uses_default_location_when_locations_disabled(self):
+        from ..services.stock import receive_stock
+
+        self.disable_locations()
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        receive_stock(item=self.item, location=default_location, qty=Decimal("5.000"))
+
+        response = self.client.post(
+            reverse("stock_writeoff"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "qty": "2.000",
+                "writeoff_reason": "other",
+                "document_number": "",
+                "comment": "Default writeoff",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.WRITEOFF)
+        self.assertEqual(movement.source_location, default_location)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=default_location).qty,
+            Decimal("3.000"),
+        )
+
+    def test_transfer_uses_default_locations_when_locations_disabled(self):
+        from ..services.stock import receive_stock
+
+        self.disable_locations()
+        source_default = get_default_location_for_warehouse(self.warehouse)
+        destination_default = get_default_location_for_warehouse(
+            self.destination_warehouse
+        )
+        receive_stock(item=self.item, location=source_default, qty=Decimal("5.000"))
+
+        response = self.client.post(
+            reverse("stock_transfer"),
+            {
+                "item": self.item.pk,
+                "source_warehouse": self.warehouse.pk,
+                "destination_warehouse": self.destination_warehouse.pk,
+                "qty": "2.000",
+                "comment": "Default transfer",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(comment="Default transfer")
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.TRANSFER)
+        self.assertEqual(movement.source_location, source_default)
+        self.assertEqual(movement.destination_location, destination_default)
+        self.assertEqual(movement.source_location.name, DEFAULT_LOCATION_NAME)
+        self.assertEqual(movement.destination_location.name, DEFAULT_LOCATION_NAME)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=source_default).qty,
+            Decimal("3.000"),
+        )
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=destination_default).qty,
+            Decimal("2.000"),
+        )
+
+    def test_transfer_same_warehouse_is_invalid_when_locations_disabled(self):
+        self.disable_locations()
+        movement_count = StockMovement.objects.count()
+
+        response = self.client.post(
+            "/uk/stock/transfer/",
+            {
+                "item": self.item.pk,
+                "source_warehouse": self.warehouse.pk,
+                "destination_warehouse": self.warehouse.pk,
+                "qty": "1.000",
+                "comment": "Same warehouse transfer",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Неможливо перемістити товар у той самий склад.")
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+
+    def test_use_locations_true_keeps_location_fields_visible(self):
+        receive_response = self.client.get(reverse("stock_receive"))
+        transfer_response = self.client.get(reverse("stock_transfer"))
+
+        self.assertIn("location", receive_response.context["form"].fields)
+        self.assertIn("source_location", transfer_response.context["form"].fields)
+        self.assertIn("destination_location", transfer_response.context["form"].fields)
+
+    def test_issue_insufficient_stock_shows_alert_when_locations_disabled(self):
+        self.disable_locations()
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        StockBalance.objects.create(
+            item=self.item, location=default_location, qty=Decimal("1.000")
+        )
+
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "qty": "2.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "recipient": "",
+                "document_number": "",
+                "comment": "Too much default issue",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Недостатньо залишку для видачі")
+        self.assertContains(response, "alert-danger")
+        self.assertFalse(
+            StockMovement.objects.filter(comment="Too much default issue").exists()
+        )
 
     def test_initial_balance_creates_stock_movement(self):
         response = self.client.post(
