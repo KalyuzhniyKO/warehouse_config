@@ -161,6 +161,10 @@ urlpatterns = [
         views.StockBalanceListView.as_view(),
         name="stockbalance_list",
     ),
+    path(
+        "stock/balances/",
+        views.StockBalanceListView.as_view(),
+    ),
     path("analytics/", views.AnalyticsRedirectView.as_view(), name="analytics"),
     path(
         "analytics/export.csv",
