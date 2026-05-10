@@ -224,6 +224,21 @@ urlpatterns = [
         name="management_users",
     ),
     path(
+        "management/users/create/",
+        views.ManagementUserCreateView.as_view(),
+        name="management_user_create",
+    ),
+    path(
+        "management/users/<int:pk>/edit/",
+        views.ManagementUserUpdateView.as_view(),
+        name="management_user_update",
+    ),
+    path(
+        "management/users/<int:pk>/password/",
+        views.ManagementUserPasswordView.as_view(),
+        name="management_user_password",
+    ),
+    path(
         "management/settings/",
         views.ManagementSettingsView.as_view(),
         name="management_settings",

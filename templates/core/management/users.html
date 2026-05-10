@@ -2,8 +2,53 @@
 {% load i18n %}
 {% block title %}{% trans "Користувачі та ролі" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4"><h1 class="h3 mb-0">{% trans "Користувачі та ролі" %}</h1><a class="btn btn-primary" href="{% url 'admin:auth_user_add' %}">{% trans "Створити в Django Admin" %}</a></div>
-<div class="card content-card"><div class="table-responsive"><table class="table mb-0"><thead><tr><th>{% trans "Логін" %}</th><th>{% trans "Email" %}</th><th>{% trans "Ролі" %}</th></tr></thead><tbody>{% for app_user in users %}<tr><td>{{ app_user.username }}</td><td>{{ app_user.email|default:"—" }}</td><td>{% for group in app_user.groups.all %}<span class="badge text-bg-secondary">{{ group.name }}</span>{% empty %}—{% endfor %}</td></tr>{% endfor %}</tbody></table></div></div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{% trans "Користувачі та ролі" %}</h1>
+    <a class="btn btn-primary" href="{% url 'management_user_create' %}">{% trans "Створити користувача" %}</a>
+</div>
+<div class="card content-card">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{% trans "Логін" %}</th>
+                    <th>{% trans "Ім'я" %}</th>
+                    <th>{% trans "Email" %}</th>
+                    <th>{% trans "Ролі" %}</th>
+                    <th>{% trans "Статус" %}</th>
+                    <th class="text-end">{% trans "Дії" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app_user in users %}
+                    <tr>
+                        <td>{{ app_user.username }}</td>
+                        <td>{{ app_user.get_full_name|default:"—" }}</td>
+                        <td>{{ app_user.email|default:"—" }}</td>
+                        <td>
+                            {% for group in app_user.groups.all %}
+                                <span class="badge text-bg-secondary">{{ group.name }}</span>
+                            {% empty %}—{% endfor %}
+                        </td>
+                        <td>
+                            {% if app_user.is_active %}
+                                <span class="badge text-bg-success">{% trans "Активний" %}</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">{% trans "Неактивний" %}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'management_user_update' app_user.pk %}">{% trans "Редагувати" %}</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'management_user_password' app_user.pk %}">{% trans "Змінити пароль" %}</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center text-muted py-4">{% trans "Користувачів ще немає." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 <h2 class="h5 mt-4">{% trans "Доступні ролі" %}</h2>
 <ul>{% for group in groups %}<li>{{ group.name }}</li>{% endfor %}</ul>
 {% endblock %}

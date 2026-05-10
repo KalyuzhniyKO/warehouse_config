@@ -23,7 +23,13 @@ from core.forms.directories import (
 from core.forms.filters import StockBalanceFilterForm, StockMovementFilterForm
 from core.forms.inventory import InventoryCountCreateForm, InventoryCountLineForm
 from core.forms.labels import LabelTemplateForm, PrintLabelForm, PrinterForm
-from core.forms.management import SystemSettingsForm
+from core.forms.management import (
+    ManagementUserCreateForm,
+    ManagementUserPasswordForm,
+    ManagementUserUpdateForm,
+    SystemSettingsForm,
+    warehouse_role_queryset,
+)
 from core.forms.stock_operations import (
     InitialBalanceForm,
     StockIssueForm,
@@ -45,6 +51,9 @@ __all__ = [
     "ItemForm",
     "LabelTemplateForm",
     "LocationForm",
+    "ManagementUserCreateForm",
+    "ManagementUserPasswordForm",
+    "ManagementUserUpdateForm",
     "PrintLabelForm",
     "PrinterForm",
     "RecipientForm",
@@ -60,6 +69,7 @@ __all__ = [
     "StockWriteOffForm",
     "UnitForm",
     "WarehouseForm",
+    "warehouse_role_queryset",
     "active_queryset",
     "current_related",
     "is_current_relation",
