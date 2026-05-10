@@ -35,6 +35,7 @@ from ..forms import (
     StockMovementFilterForm,
     StockReceiveForm,
     StockTransferForm,
+    StockWriteOffForm,
     UnitForm,
     WarehouseForm,
 )
@@ -80,6 +81,7 @@ from ..services.stock import (
     issue_stock,
     receive_stock,
     transfer_stock,
+    writeoff_stock,
 )
 
 
@@ -177,6 +179,67 @@ class StockIssueResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView)
         context["balance_after"] = get_object_or_404(
             StockBalance, item=movement.item, location=movement.source_location
         ).qty
+        return context
+
+
+def _format_writeoff_comment(*, reason, document_number, comment):
+    lines = [_("Причина списання: %(reason)s") % {"reason": reason}]
+    if document_number:
+        lines.append(_("Номер документа: %(document_number)s") % {"document_number": document_number})
+    if comment:
+        lines.append(_("Коментар: %(comment)s") % {"comment": comment})
+    return "\n".join(lines)
+
+
+class StockWriteOffView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_writeoff_form.html"
+    form_class = StockWriteOffForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        return initial
+
+    def form_valid(self, form):
+        reason = dict(form.fields["writeoff_reason"].choices).get(
+            form.cleaned_data["writeoff_reason"], form.cleaned_data["writeoff_reason"]
+        )
+        comment = _format_writeoff_comment(
+            reason=reason,
+            document_number=form.cleaned_data["document_number"],
+            comment=form.cleaned_data["comment"],
+        )
+        try:
+            movement = writeoff_stock(
+                item=form.cleaned_data["item"],
+                location=form.cleaned_data["location"],
+                qty=form.cleaned_data["qty"],
+                comment=comment,
+                occurred_at=form.cleaned_data["occurred_at"],
+            )
+        except InsufficientStockError:
+            form.add_error(None, _("Недостатньо залишку для списання."))
+            return self.form_invalid(form)
+        except StockServiceError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        return redirect("stock_writeoff_result", pk=movement.pk)
+
+
+class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_VIEW_GROUPS
+    template_name = "core/stock_writeoff_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["movement"] = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item", "source_location", "source_location__warehouse"
+            ),
+            pk=self.kwargs["pk"],
+            movement_type=StockMovement.MovementType.WRITEOFF,
+        )
         return context
 
 

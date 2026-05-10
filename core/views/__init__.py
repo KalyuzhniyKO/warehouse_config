@@ -19,6 +19,8 @@ from .stock_operations import (
     StockReceiveView,
     StockTransferResultView,
     StockTransferView,
+    StockWriteOffResultView,
+    StockWriteOffView,
 )
 from .stock_lists import StockBalanceListView, StockMovementListView
 from .inventory import (
@@ -106,6 +108,8 @@ __all__ = [
     "StockReceiveView",
     "StockTransferResultView",
     "StockTransferView",
+    "StockWriteOffResultView",
+    "StockWriteOffView",
     "barcode_lookup",
     "clean_analytics_filters",
     "directory_view",

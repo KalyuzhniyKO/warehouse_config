@@ -126,14 +126,21 @@ class StockServiceTests(TestCase):
         receive_stock(
             item=self.item, location=self.source_location, qty=Decimal("5.000")
         )
+        occurred_at = timezone.datetime(
+            2026, 1, 20, 10, 30, tzinfo=timezone.get_current_timezone()
+        )
         movement = writeoff_stock(
             item=self.item,
             location=self.source_location,
             qty=Decimal("1.125"),
+            occurred_at=occurred_at,
         )
 
         self.assertEqual(self.get_balance_qty(), Decimal("3.875"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.WRITEOFF)
+        self.assertEqual(movement.source_location, self.source_location)
+        self.assertIsNone(movement.destination_location)
+        self.assertEqual(movement.occurred_at, occurred_at)
         self.assertEqual(StockMovement.objects.count(), 2)
 
     def test_cannot_writeoff_more_than_available(self):

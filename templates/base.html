@@ -103,6 +103,7 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'stock_issue' %}">{% trans "Видача товару" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'stock_transfer' %}">{% trans "Переміщення товару" %}</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'stock_writeoff' %}">{% trans "Списання товару" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'stock_initial' %}">{% trans "Початкові залишки" %}</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'inventory_list' %}">{% trans "Інвентаризація" %}</a></li>
                 {% elif user|in_group:"Перегляд / аудитор" %}
@@ -163,6 +164,7 @@
                                 <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Прихід товару" %}</a>
                                 <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Видача товару" %}</a>
                                 <a class="sidebar-link" href="{% url 'stock_transfer' %}">🔀 {% trans "Переміщення товару" %}</a>
+                                <a class="sidebar-link" href="{% url 'stock_writeoff' %}">🗑️ {% trans "Списання товару" %}</a>
                                 <a class="sidebar-link" href="{% url 'stock_initial' %}">🧾 {% trans "Початкові залишки" %}</a>
                                 <a class="sidebar-link" href="{% url 'inventory_list' %}">🧮 {% trans "Інвентаризація" %}</a>
                             {% elif user|in_group:"Перегляд / аудитор" %}
