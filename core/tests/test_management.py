@@ -127,6 +127,43 @@ class ManagementInterfaceTests(TestCase):
             response = self.client.get(reverse(url_name))
             self.assertEqual(response.status_code, 200, url_name)
 
+    def test_warehouse_admin_sees_structured_management_dashboard(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        for text in [
+            "Адміністрування складу",
+            "Довідники",
+            "Номенклатура",
+            "Склади",
+            "Локації",
+            "Користувачі та доступ",
+            "Користувачі та ролі",
+            "Етикетки",
+            "Контроль і звіти",
+            "Система",
+        ]:
+            self.assertContains(response, text)
+
+    def test_auditor_cannot_open_management_dashboard(self):
+        self.client.force_login(self.auditor)
+        response = self.client.get(reverse("management_dashboard"))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertNotContains(
+            response, "Адміністрування складу", status_code=403
+        )
+
+    def test_superuser_sees_system_management_cards(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("management_dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Система")
+        self.assertContains(response, "Налаштування системи")
+        self.assertContains(response, "Довідка адміністратора")
+
     def test_superuser_sees_technical_django_admin_card(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("management_dashboard"))

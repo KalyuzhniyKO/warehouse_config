@@ -2080,3 +2080,79 @@ msgstr "Log in"
 
 #~ msgid "Контроль"
 #~ msgstr "Control"
+
+#: templates/core/management/dashboard.html
+msgid "Адміністрування складу"
+msgstr "Warehouse administration"
+
+#: templates/core/management/dashboard.html
+msgid "Керуйте довідниками, користувачами, етикетками та налаштуваннями системи."
+msgstr "Manage directories, users, labels and system settings."
+
+#: templates/core/management/dashboard.html
+msgid "Товари, коди, штрихкоди та основні облікові дані."
+msgstr "Items, codes, barcodes, and core accounting details."
+
+#: templates/core/management/dashboard.html
+msgid "Список складів, де ведеться облік товарів."
+msgstr "Warehouses where item stock is tracked."
+
+#: templates/core/management/dashboard.html
+msgid "Комірки, зони та місця зберігання на складах."
+msgstr "Bins, zones, and storage locations in warehouses."
+
+#: templates/core/management/dashboard.html
+msgid "Групування номенклатури для швидкої навігації."
+msgstr "Item grouping for faster navigation."
+
+#: templates/core/management/dashboard.html
+msgid "Одиниці обліку для товарів і складських операцій."
+msgstr "Units used for items and warehouse operations."
+
+#: templates/core/management/dashboard.html
+msgid "Підрозділи, клієнти або інші отримувачі видачі."
+msgstr "Departments, customers, or other issue recipients."
+
+#: templates/core/management/dashboard.html
+msgid "Користувачі та доступ"
+msgstr "Users and access"
+
+#: templates/core/management/dashboard.html
+msgid "Перегляд користувачів і призначених складських ролей."
+msgstr "View users and assigned warehouse roles."
+
+#: templates/core/management/dashboard.html
+msgid "Налаштування принтерів для друку складських етикеток."
+msgstr "Printer settings for warehouse label printing."
+
+#: templates/core/management/dashboard.html
+msgid "Макети етикеток для товарів і штрихкодів."
+msgstr "Label layouts for items and barcodes."
+
+#: templates/core/management/dashboard.html
+msgid "Поточні залишки товарів по складах і локаціях."
+msgstr "Current item balances by warehouse and location."
+
+#: templates/core/management/dashboard.html
+msgid "Журнал приходів, видач, переміщень і списань."
+msgstr "Log of receipts, issues, transfers, and write-offs."
+
+#: templates/core/management/dashboard.html
+msgid "Система"
+msgstr "System"
+
+#: templates/core/management/dashboard.html
+msgid "Налаштування системи"
+msgstr "System settings"
+
+#: templates/core/management/dashboard.html
+msgid "Службові параметри та адміністративні налаштування."
+msgstr "Service parameters and administrative settings."
+
+#: templates/core/management/dashboard.html
+msgid "Довідка адміністратора"
+msgstr "Administrator help"
+
+#: templates/core/management/dashboard.html
+msgid "Інструкції для запуску, обслуговування та щоденної роботи."
+msgstr "Instructions for setup, maintenance, and daily work."

@@ -1,24 +1,202 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Керування" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Адміністрування складу" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-1">{% trans "Керування складом" %}</h1>
-        <p class="text-muted mb-0">{% trans "Операційна панель для адміністрування складу, аналітики та довідників." %}</p>
+        <h1 class="h3 mb-1">{% trans "Адміністрування складу" %}</h1>
+        <p class="text-muted mb-0">{% trans "Керуйте довідниками, користувачами, етикетками та налаштуваннями системи." %}</p>
     </div>
 </div>
-<div class="row g-3 mb-4">
-    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Номенклатура" %}</div><div class="fs-3 fw-semibold">{{ counts.items }}</div></div></div></div>
-    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Склади" %}</div><div class="fs-3 fw-semibold">{{ counts.warehouses }}</div></div></div></div>
-    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Локації" %}</div><div class="fs-3 fw-semibold">{{ counts.locations }}</div></div></div></div>
-    <div class="col-md-3"><div class="card content-card"><div class="card-body"><div class="text-muted small">{% trans "Користувачі" %}</div><div class="fs-3 fw-semibold">{{ counts.users }}</div></div></div></div>
-</div>
-<div class="row g-3">
-    {% if can_manage_directories %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_directories' %}"><div class="card-body"><h2 class="h5">📚 {% trans "Довідники" %}</h2><p class="text-muted mb-0">{% trans "Номенклатура, категорії, склади, локації та отримувачі." %}</p></div></a></div>{% endif %}
-    {% if can_view_analytics %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_analytics' %}"><div class="card-body"><h2 class="h5">📈 {% trans "Аналітика" %}</h2><p class="text-muted mb-0">{% trans "KPI, графіки та експорт рухів складу." %}</p></div></a></div>{% endif %}
-    {% if can_manage_users %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_users' %}"><div class="card-body"><h2 class="h5">👤 {% trans "Користувачі та ролі" %}</h2><p class="text-muted mb-0">{% trans "Перегляд користувачів і складських ролей." %}</p></div></a></div>{% endif %}
-    <div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{% url 'management_help' %}"><div class="card-body"><h2 class="h5">❓ {% trans "Допомога" %}</h2><p class="text-muted mb-0">{% trans "Швидкі інструкції для запуску та роботи." %}</p></div></a></div>
-    {% if show_technical_admin %}<div class="col-md-4"><a class="card content-card text-decoration-none h-100 border-warning" href="{% url 'admin:index' %}"><div class="card-body"><h2 class="h5">🛠️ {% trans "Технічна Django Admin" %}</h2><p class="text-muted mb-0">{% trans "Тільки для технічного обслуговування." %}</p></div></a></div>{% endif %}
-</div>
+
+{% if can_manage_directories %}
+<section class="mb-4" aria-labelledby="management-directories-heading">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 id="management-directories-heading" class="h5 mb-0">{% trans "Довідники" %}</h2>
+    </div>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                        <h3 class="h6 mb-0">📦 {% trans "Номенклатура" %}</h3>
+                        <span class="badge text-bg-light">{{ counts.items|default:0 }}</span>
+                    </div>
+                    <p class="text-muted small mb-2">{% trans "Товари, коди, штрихкоди та основні облікові дані." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                        <h3 class="h6 mb-0">🏭 {% trans "Склади" %}</h3>
+                        <span class="badge text-bg-light">{{ counts.warehouses|default:0 }}</span>
+                    </div>
+                    <p class="text-muted small mb-2">{% trans "Список складів, де ведеться облік товарів." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'warehouse_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                        <h3 class="h6 mb-0">📍 {% trans "Локації" %}</h3>
+                        <span class="badge text-bg-light">{{ counts.locations|default:0 }}</span>
+                    </div>
+                    <p class="text-muted small mb-2">{% trans "Комірки, зони та місця зберігання на складах." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'location_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">🗂️ {% trans "Категорії" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Групування номенклатури для швидкої навігації." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'category_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">⚖️ {% trans "Одиниці виміру" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Одиниці обліку для товарів і складських операцій." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'unit_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">👥 {% trans "Отримувачі" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Підрозділи, клієнти або інші отримувачі видачі." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'recipient_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if can_manage_users %}
+<section class="mb-4" aria-labelledby="management-users-heading">
+    <h2 id="management-users-heading" class="h5 mb-3">{% trans "Користувачі та доступ" %}</h2>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                        <h3 class="h6 mb-0">👤 {% trans "Користувачі та ролі" %}</h3>
+                        <span class="badge text-bg-light">{{ counts.users|default:0 }}</span>
+                    </div>
+                    <p class="text-muted small mb-2">{% trans "Перегляд користувачів і призначених складських ролей." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_users' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if can_manage_users or show_technical_admin %}
+<section class="mb-4" aria-labelledby="management-labels-heading">
+    <h2 id="management-labels-heading" class="h5 mb-3">{% trans "Етикетки" %}</h2>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">🖨️ {% trans "Принтери" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Налаштування принтерів для друку складських етикеток." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'printer_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">📐 {% trans "Шаблони етикеток" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Макети етикеток для товарів і штрихкодів." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'labeltemplate_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<section class="mb-4" aria-labelledby="management-reports-heading">
+    <h2 id="management-reports-heading" class="h5 mb-3">{% trans "Контроль і звіти" %}</h2>
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">📊 {% trans "Залишки" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Поточні залишки товарів по складах і локаціях." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">🔁 {% trans "Рухи товарів" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Журнал приходів, видач, переміщень і списань." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'movement_list' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        {% if can_view_analytics %}
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">📈 {% trans "Аналітика" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "KPI, графіки та експорт рухів складу." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_analytics' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="mb-4" aria-labelledby="management-system-heading">
+    <h2 id="management-system-heading" class="h5 mb-3">{% trans "Система" %}</h2>
+    <div class="row g-3">
+        {% if can_manage_users or show_technical_admin %}
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">⚙️ {% trans "Налаштування системи" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Службові параметри та адміністративні налаштування." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_settings' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">❓ {% trans "Довідка адміністратора" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Інструкції для запуску, обслуговування та щоденної роботи." %}</p>
+                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_help' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        {% if show_technical_admin %}
+        <div class="col-sm-6 col-xl-4">
+            <div class="card content-card h-100 position-relative border-warning">
+                <div class="card-body d-flex flex-column gap-2">
+                    <h3 class="h6 mb-0">🛠️ {% trans "Технічна Django Admin" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Тільки для технічного обслуговування." %}</p>
+                    <a class="btn btn-sm btn-outline-warning mt-auto stretched-link" href="{% url 'admin:index' %}">{% trans "Відкрити" %}</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
 {% endblock %}

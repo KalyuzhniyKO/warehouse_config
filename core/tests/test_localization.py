@@ -406,6 +406,39 @@ class DashboardLocalizationTests(TestCase):
                 for phrase in forbidden_phrases:
                     self.assertNotIn(phrase, html)
 
+
+    def test_english_management_dashboard_uses_only_english_terms(self):
+        response = self.dashboard_for(self.admin, "/en/management/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Warehouse administration", html)
+        self.assertIn("Directories", html)
+        self.assertIn("Users and roles", html)
+        self.assertIn("System settings", html)
+        for phrase in [
+            "Адміністрування складу",
+            "Керуйте довідниками",
+            "Довідники",
+            "Номенклатура",
+            "Склади",
+            "Локації",
+            "Користувачі та ролі",
+            "Налаштування системи",
+            "Довідка адміністратора",
+            "Відкрити",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_ukrainian_storekeeper_workplace_keeps_autofocus_search(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Робоче місце комірника", html)
+        self.assertIn('id="storekeeper-item-search"', html)
+        self.assertIn("autofocus", html)
+
     def test_english_dashboard_has_no_new_ukrainian_phrases_and_keeps_yantos_brand(self):
         response = self.dashboard_for(self.admin, "/en/")
         html = response.content.decode()
