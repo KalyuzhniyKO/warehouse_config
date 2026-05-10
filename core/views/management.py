@@ -35,6 +35,7 @@ from ..forms import (
     StockMovementFilterForm,
     StockReceiveForm,
     StockTransferForm,
+    SystemSettingsForm,
     UnitForm,
     WarehouseForm,
 )
@@ -49,6 +50,7 @@ from ..models import (
     Recipient,
     StockBalance,
     StockMovement,
+    SystemSettings,
     Unit,
     Warehouse,
 )
@@ -179,9 +181,21 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         return context
 
 
-class ManagementSettingsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class ManagementSettingsView(LoginRequiredMixin, GroupRequiredMixin, FormView):
     group_names = USER_MANAGEMENT_GROUPS
     template_name = "core/management/settings.html"
+    form_class = SystemSettingsForm
+    success_url = reverse_lazy("management_settings")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = SystemSettings.get_solo()
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Налаштування збережено."))
+        return super().form_valid(form)
 
 
 HELP_SECTIONS = [

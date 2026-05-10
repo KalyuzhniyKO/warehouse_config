@@ -1,6 +1,29 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Налаштування" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Налаштування системи" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="card content-card"><div class="card-body"><h1 class="h3">{% trans "Налаштування" %}</h1><p class="text-muted mb-0">{% trans "Системні налаштування доступні через технічну Django Admin та конфігураційні файли проєкту." %}</p></div></div>
+<div class="card content-card">
+    <div class="card-body">
+        <h1 class="h3 mb-4">{% trans "Налаштування системи" %}</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <div class="form-check mb-2">
+                {{ form.use_locations }}
+                <label class="form-check-label" for="{{ form.use_locations.id_for_label }}">
+                    {{ form.use_locations.label }}
+                </label>
+            </div>
+            {% if form.use_locations.help_text %}
+                <div class="form-text mb-3">{{ form.use_locations.help_text }}</div>
+            {% endif %}
+            {% if form.use_locations.errors %}
+                <div class="text-danger mb-3">{{ form.use_locations.errors }}</div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary">{% trans "Зберегти" %}</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
