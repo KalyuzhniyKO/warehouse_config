@@ -107,7 +107,7 @@
                 {% elif user|in_group:"Перегляд / аудитор" %}
                     <li class="nav-item"><a class="nav-link" href="{% url 'inventory_list' %}">{% trans "Інвентаризація" %}</a></li>
                 {% endif %}
-                <li class="nav-item"><span class="nav-link disabled text-uppercase small fw-semibold">{% trans "Контроль" %}</span></li>
+                <li class="nav-item"><span class="nav-link disabled text-uppercase small fw-semibold">{% trans "Контроль і звіти" %}</span></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки" %}</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Рухи товарів" %}</a></li>
                 <li class="nav-item"><span class="nav-link disabled text-uppercase small fw-semibold">{% trans "Довідники" %}</span></li>
@@ -167,7 +167,7 @@
                                 <div class="text-uppercase text-muted small fw-semibold mt-3 mb-1">{% trans "Складські операції" %}</div>
                                 <a class="sidebar-link" href="{% url 'inventory_list' %}">🧮 {% trans "Інвентаризація" %}</a>
                             {% endif %}
-                            <div class="text-uppercase text-muted small fw-semibold mt-3 mb-1">{% trans "Контроль" %}</div>
+                            <div class="text-uppercase text-muted small fw-semibold mt-3 mb-1">{% trans "Контроль і звіти" %}</div>
                             <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки" %}</a>
                             <a class="sidebar-link" href="{% url 'movement_list' %}">🔁 {% trans "Рухи товарів" %}</a>
                             <div class="text-uppercase text-muted small fw-semibold mt-3 mb-1">{% trans "Довідники" %}</div>

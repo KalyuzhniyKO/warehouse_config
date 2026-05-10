@@ -789,7 +789,7 @@ class WebInterfaceTests(TestCase):
         self.assertIn(reverse("login"), response["Location"])
 
     def test_localized_home_pages_show_yantos_brand(self):
-        for path in ["/uk/", "/ru/"]:
+        for path in ["/uk/", "/en/"]:
             with self.subTest(path=path):
                 response = self.client.get(path)
 
@@ -1345,15 +1345,15 @@ class SwitchLanguageUrlTests(TestCase):
         self.assertEqual(switch_language_url(request, language_code), expected_url)
 
     def test_replaces_existing_language_prefix(self):
-        self.assert_switch_url("/uk/", "ru", "/ru/")
-        self.assert_switch_url("/uk/items/", "en", "/en/items/")
+        self.assert_switch_url("/uk/", "en", "/en/")
+        self.assert_switch_url("/en/items/", "uk", "/uk/items/")
 
     def test_preserves_query_string(self):
-        self.assert_switch_url("/uk/items/?q=test", "ru", "/ru/items/?q=test")
+        self.assert_switch_url("/uk/items/?q=test", "en", "/en/items/?q=test")
 
     def test_adds_language_prefix_when_missing(self):
-        self.assert_switch_url("/admin/", "ru", "/ru/admin/")
-        self.assert_switch_url("/", "ru", "/ru/")
+        self.assert_switch_url("/admin/", "en", "/en/admin/")
+        self.assert_switch_url("/", "uk", "/uk/")
 
 
 class ManagementAnalyticsTests(TestCase):
@@ -1987,6 +1987,147 @@ class DashboardNavigationPolishTests(TestCase):
         from django.utils import translation
 
         translation.activate("uk")
+
+    def test_language_switcher_only_exposes_ukrainian_and_english(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
+
+        self.assertIn("Українська", html)
+        self.assertIn("English", html)
+        for language_name in [
+            "Русский",
+            "Deutsch",
+            "Polski",
+            "Français",
+            "Español",
+            "Italiano",
+            "Português",
+            "Türkçe",
+        ]:
+            self.assertNotIn(language_name, html)
+
+    def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
+
+        for phrase in [
+            "Головна",
+            "Складські операції",
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Інвентаризація",
+            "Залишки",
+            "Рухи товарів",
+        ]:
+            self.assertIn(phrase, html)
+        for phrase in [
+            "Warehouse operations",
+            "Stock receipt",
+            "Stock issue",
+            "Initial balances",
+            "Stock movements",
+            "Open",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_english_dashboard_uses_only_english_navigation_terms(self):
+        response = self.dashboard_for(self.admin, "/en/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("YANTOS", html)
+        for phrase in [
+            "Home",
+            "Warehouse operations",
+            "Stock receipt",
+            "Stock issue",
+            "Initial balances",
+            "Inventory count",
+            "Stock balances",
+            "Stock movements",
+            "Open",
+        ]:
+            self.assertIn(phrase, html)
+        for phrase in [
+            "Головна",
+            "Складські операції",
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Рухи товарів",
+            "Відкрити",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_english_core_pages_do_not_show_ukrainian_menu_words(self):
+        forbidden_phrases = [
+            "Головна",
+            "Навігація",
+            "Складські операції",
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Залишки",
+            "Рухи товарів",
+            "Довідники",
+            "Етикетки",
+            "Адміністрування",
+            "Допомога",
+            "Відкрити",
+            "Зберегти",
+            "Скасувати",
+        ]
+        for path in [
+            "/en/stock/balances/",
+            "/en/stock/movements/",
+            "/en/stock/receive/",
+            "/en/stock/issue/",
+            "/en/stock/initial/",
+            "/en/stock/inventory/",
+        ]:
+            with self.subTest(path=path):
+                response = self.dashboard_for(self.admin, path)
+                html = response.content.decode()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("YANTOS", html)
+                for phrase in forbidden_phrases:
+                    self.assertNotIn(phrase, html)
+
+    def test_ukrainian_core_pages_do_not_show_english_menu_words(self):
+        forbidden_phrases = [
+            "Warehouse operations",
+            "Stock receipt",
+            "Stock issue",
+            "Initial balances",
+            "Stock movements",
+            "Stock balances",
+            "Directories",
+            "Labels",
+            "Administration",
+            "Management",
+            "Help",
+            "Open",
+            "Save",
+            "Cancel",
+        ]
+        for path in [
+            "/uk/stock/balances/",
+            "/uk/stock/movements/",
+            "/uk/stock/receive/",
+            "/uk/stock/issue/",
+            "/uk/stock/initial/",
+            "/uk/stock/inventory/",
+        ]:
+            with self.subTest(path=path):
+                response = self.dashboard_for(self.admin, path)
+                html = response.content.decode()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("YANTOS", html)
+                for phrase in forbidden_phrases:
+                    self.assertNotIn(phrase, html)
 
     def test_admin_dashboard_contains_required_groups_and_operations(self):
         response = self.dashboard_for(self.admin)
