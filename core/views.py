@@ -34,6 +34,7 @@ from .forms import (
     StockIssueForm,
     StockMovementFilterForm,
     StockReceiveForm,
+    StockTransferForm,
     UnitForm,
     WarehouseForm,
 )
@@ -71,7 +72,15 @@ from .services.inventory import (
     update_inventory_line_actual_qty,
 )
 from .services.labels import download_item_label_pdf, get_default_label_template, print_item_label
-from .services.stock import InsufficientStockError, StockServiceError, create_initial_balance, issue_stock, receive_stock
+from .services.stock import (
+    InsufficientStockError,
+    SameLocationTransferError,
+    StockServiceError,
+    create_initial_balance,
+    issue_stock,
+    receive_stock,
+    transfer_stock,
+)
 
 
 @login_required
@@ -719,6 +728,58 @@ class StockIssueResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView)
         context["balance_after"] = get_object_or_404(
             StockBalance, item=movement.item, location=movement.source_location
         ).qty
+        return context
+
+
+class StockTransferView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_transfer_form.html"
+    form_class = StockTransferForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        return initial
+
+    def form_valid(self, form):
+        try:
+            movement = transfer_stock(
+                item=form.cleaned_data["item"],
+                source_location=form.cleaned_data["source_location"],
+                target_location=form.cleaned_data["destination_location"],
+                qty=form.cleaned_data["qty"],
+                comment=form.cleaned_data["comment"],
+                occurred_at=form.cleaned_data["occurred_at"],
+            )
+        except InsufficientStockError:
+            form.add_error(None, _("Недостатньо залишку для переміщення."))
+            return self.form_invalid(form)
+        except SameLocationTransferError:
+            form.add_error(None, _("Неможливо перемістити товар у ту саму локацію."))
+            return self.form_invalid(form)
+        except StockServiceError as exc:
+            form.add_error(None, str(exc))
+            return self.form_invalid(form)
+        return redirect("stock_transfer_result", pk=movement.pk)
+
+
+class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_VIEW_GROUPS
+    template_name = "core/stock_transfer_result.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["movement"] = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item",
+                "source_location",
+                "source_location__warehouse",
+                "destination_location",
+                "destination_location__warehouse",
+            ),
+            pk=self.kwargs["pk"],
+            movement_type=StockMovement.MovementType.TRANSFER,
+        )
         return context
 
 
