@@ -320,7 +320,7 @@ DIRECTORIES = {
             ("category", _("Категорія")),
             ("unit", _("Одиниця")),
         ),
-        "search_fields": ("name", "internal_code"),
+        "search_fields": ("name", "internal_code", "barcode__barcode"),
     },
     "warehouse": {
         "model": Warehouse,

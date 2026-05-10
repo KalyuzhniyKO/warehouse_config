@@ -327,6 +327,20 @@ class DirectoryWebInterfaceTests(TestCase):
         unit.refresh_from_db()
         self.assertFalse(unit.is_active)
 
+    def test_item_list_searches_by_name_internal_code_and_barcode(self):
+        self.item.refresh_from_db()
+        barcode = self.item.barcode.barcode
+
+        self.assertEqual(barcode, "ITM0000000001")
+
+        for query in [self.item.name, self.item.internal_code, barcode, barcode[-4:]]:
+            with self.subTest(query=query):
+                response = self.client.get(reverse("item_list"), {"q": query})
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, self.item.name)
+                self.assertContains(response, barcode)
+
     def test_item_can_be_created_through_web(self):
         response = self.client.post(
             reverse("item_create"),
