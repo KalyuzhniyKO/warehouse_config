@@ -149,6 +149,62 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertContains(response, "Stock transfer")
 
+    def test_english_storekeeper_workplace_uses_only_english_action_terms(self):
+        response = self.dashboard_for(self.storekeeper, "/en/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Storekeeper workplace", html)
+        for phrase in [
+            "Receive goods",
+            "Issue goods",
+            "Transfer goods",
+            "Write off goods",
+            "Run inventory count",
+            "Check stock",
+            "Print label",
+        ]:
+            self.assertIn(phrase, html)
+        for phrase in [
+            "Робоче місце комірника",
+            "Прийняти товар",
+            "Видати товар",
+            "Перемістити товар",
+            "Списати товар",
+            "Провести інвентаризацію",
+            "Перевірити залишки",
+            "Надрукувати етикетку",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_ukrainian_storekeeper_workplace_uses_only_ukrainian_action_terms(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Робоче місце комірника", html)
+        for phrase in [
+            "Прийняти товар",
+            "Видати товар",
+            "Перемістити товар",
+            "Списати товар",
+            "Провести інвентаризацію",
+            "Перевірити залишки",
+            "Надрукувати етикетку",
+        ]:
+            self.assertIn(phrase, html)
+        for phrase in [
+            "Storekeeper workplace",
+            "Receive goods",
+            "Issue goods",
+            "Transfer goods",
+            "Write off goods",
+            "Run inventory count",
+            "Check stock",
+            "Print label",
+        ]:
+            self.assertNotIn(phrase, html)
+
     def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
         response = self.dashboard_for(self.admin, "/en/stock/transfer/")
         html = response.content.decode()

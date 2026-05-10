@@ -110,9 +110,17 @@ class ManagementPermissionTests(TestCase):
         self.client.force_login(self.storekeeper)
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Керування")
-        self.assertNotContains(response, "Аналітика")
-        self.assertNotContains(response, "Адмін-панель")
+        self.assertContains(response, "Робоче місце комірника")
+        for label in [
+            "Керування",
+            "Аналітика",
+            "Адмін-панель",
+            "Категорії",
+            "Одиниці виміру",
+            "Принтери",
+            "Шаблони етикеток",
+        ]:
+            self.assertNotContains(response, label)
 
     def test_storekeeper_cannot_open_analytics_urls(self):
         self.client.force_login(self.storekeeper)
@@ -187,7 +195,7 @@ class DashboardPermissionTests(TestCase):
     def test_storekeeper_dashboard_shows_stock_transfer_card(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
 
-        self.assertContains(response, "Переміщення товару")
+        self.assertContains(response, "Перемістити товар")
 
     def test_auditor_dashboard_hides_stock_transfer_card(self):
         response = self.dashboard_for(self.auditor, "/uk/")
@@ -215,20 +223,42 @@ class DashboardPermissionTests(TestCase):
         ]:
             self.assertContains(response, label)
 
-    def test_storekeeper_dashboard_contains_operations_without_management_or_recipients(self):
-        response = self.dashboard_for(self.storekeeper)
+    def test_storekeeper_dashboard_contains_workplace_actions_without_admin_items(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
 
-        self.assertContains(response, "Складські операції")
+        self.assertTemplateUsed(response, "core/storekeeper_workplace.html")
         for label in [
-            "Прихід товару",
-            "Видача товару",
-            "Переміщення товару",
-            "Початкові залишки",
-            "Інвентаризація",
+            "Робоче місце комірника",
+            "Прийняти товар",
+            "Видати товар",
+            "Перемістити товар",
+            "Списати товар",
+            "Провести інвентаризацію",
+            "Перевірити залишки",
+            "Надрукувати етикетку",
         ]:
             self.assertContains(response, label)
-        self.assertNotContains(response, "Керування")
-        self.assertNotContains(response, "Отримувачі")
+        for label in [
+            "Категорії",
+            "Одиниці виміру",
+            "Принтери",
+            "Шаблони етикеток",
+            "Аналітика",
+            "Керування",
+            "Отримувачі",
+            "Довідники",
+            "Початкові залишки",
+        ]:
+            self.assertNotContains(response, label)
+
+    def test_warehouse_admin_keeps_full_dashboard(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+
+        self.assertTemplateUsed(response, "core/dashboard.html")
+        self.assertTemplateNotUsed(response, "core/storekeeper_workplace.html")
+        self.assertContains(response, "Головна")
+        self.assertContains(response, "Довідники")
+        self.assertNotContains(response, "Робоче місце комірника")
 
     def test_auditor_dashboard_is_view_only(self):
         response = self.dashboard_for(self.auditor)
@@ -242,6 +272,7 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.storekeeper)
 
         self.assertNotContains(response, "Отримувачі")
+        self.assertNotContains(response, "Довідники")
 
     def test_auditor_sidebar_hides_create_operations(self):
         response = self.dashboard_for(self.auditor)
