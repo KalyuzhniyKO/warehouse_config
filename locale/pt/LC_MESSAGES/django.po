@@ -19,41 +19,41 @@ msgstr ""
 
 #: core/forms.py:17
 msgid "Не можна вибрати архівний запис."
-msgstr ""
+msgstr "Não é possível vibrar com uma mensagem."
 
 #: core/forms.py:50
 msgid "Категорія з такою назвою вже існує."
-msgstr ""
+msgstr "Já existe uma categoria com esse nome."
 
 #: core/forms.py:51
 msgid "Одиниця виміру з такою назвою вже існує."
-msgstr ""
+msgstr "Já existe uma unidade de medida com este nome."
 
 #: core/forms.py:52
 msgid "Одиниця виміру з таким позначенням вже існує."
-msgstr ""
+msgstr "Já existe uma unidade de medida com esta designação."
 
 #: core/forms.py:53
 msgid "Отримувач з такою назвою вже існує."
-msgstr ""
+msgstr "Já existe um destinatário com esse nome."
 
 #: core/forms.py:54
 msgid "Склад з такою назвою вже існує."
-msgstr ""
+msgstr "Já existe um armazém com este nome."
 
 #: core/forms.py:55
 msgid "Локація з такою назвою вже існує на цьому складі."
-msgstr ""
+msgstr "Já existe um local com esse nome neste armazém."
 
 #: core/forms.py:56
 msgid "Номенклатура з таким внутрішнім кодом вже існує."
-msgstr ""
+msgstr "Já existe uma nomenclatura com esse código interno."
 
 #: core/forms.py:102 core/forms.py:128 core/forms.py:185 core/forms.py:215
 #: core/forms.py:282 core/forms.py:305 core/forms.py:621 core/forms.py:644
 #: core/views.py:509 core/views.py:524 core/views.py:539 core/views.py:558
-#: core/views.py:578 core/views.py:594 templates/core/labeltemplate_list.html:6
-#: templates/core/printer_list.html:6
+#: core/views.py:578 core/views.py:594
+#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:6
 msgid "Назва"
 msgstr "Nome"
 
@@ -69,7 +69,7 @@ msgstr "Ativo"
 
 #: core/forms.py:106
 msgid "Коротке позначення одиниці, наприклад: шт, кг, м."
-msgstr ""
+msgstr "Designação abreviada da unidade, por exemplo: pcs, kg, m."
 
 #: core/forms.py:129 core/views.py:524
 msgid "Батьківська категорія"
@@ -77,11 +77,12 @@ msgstr "Categoria pai"
 
 #: core/forms.py:132
 msgid "Залиште порожнім для категорії верхнього рівня."
-msgstr ""
+msgstr "Deixe em branco para categoria de nível superior."
 
 #: core/forms.py:167
 msgid "Категорія не може бути батьківською для самої себе."
 msgstr ""
+"A categoria não pode ser usada como uma bateria para seu próprio país."
 
 #: core/forms.py:186
 msgid "Контактна особа"
@@ -93,7 +94,7 @@ msgstr "Telefone"
 
 #: core/forms.py:188 templates/core/management/users.html:6
 msgid "Email"
-msgstr ""
+msgstr "E-mail"
 
 #: core/forms.py:189
 msgid "Примітки"
@@ -101,9 +102,10 @@ msgstr "Notas"
 
 #: core/forms.py:192
 msgid "Додаткова інформація про отримувача."
-msgstr ""
+msgstr "Informações adicionais sobre o destinatário."
 
-#: core/forms.py:216 core/views.py:559 templates/core/stockbalance_list.html:30
+#: core/forms.py:216 core/views.py:559
+#: templates/core/stockbalance_list.html:30
 msgid "Внутрішній код"
 msgstr "Código interno"
 
@@ -123,7 +125,7 @@ msgstr "Descrição"
 
 #: core/forms.py:223
 msgid "Необов'язковий унікальний код у вашій системі обліку."
-msgstr ""
+msgstr "Um código exclusivo opcional em seu sistema de contabilidade."
 
 #: core/forms.py:283 core/views.py:578
 msgid "Адреса"
@@ -131,7 +133,7 @@ msgstr "Endereço"
 
 #: core/forms.py:287
 msgid "Фактична адреса або короткий опис місця розташування складу."
-msgstr ""
+msgstr "Endereço real ou breve descrição da localização do armazém."
 
 #: core/forms.py:304 core/forms.py:356 core/forms.py:484 core/forms.py:534
 #: core/forms.py:593 core/models.py:84 core/models.py:196 core/models.py:228
@@ -147,7 +149,7 @@ msgstr "Tipo de localização"
 
 #: core/forms.py:309
 msgid "Наприклад: A-01, Ряд 2, Комірка 5."
-msgstr ""
+msgstr "Por exemplo: A-01, Linha 2, Célula 5."
 
 #: core/forms.py:361 core/forms.py:489 core/forms.py:535 core/forms.py:595
 #: core/models.py:86 core/models.py:223 core/models.py:250 core/models.py:293
@@ -173,15 +175,15 @@ msgstr "Pesquisar"
 
 #: core/forms.py:376
 msgid "Назва, внутрішній код або штрихкод"
-msgstr ""
+msgstr "Nome, código interno ou código de barras"
 
 #: core/forms.py:474
 msgid "Період від"
-msgstr ""
+msgstr "Período do vídeo"
 
 #: core/forms.py:479
 msgid "Період до"
-msgstr ""
+msgstr "Período para fazer"
 
 #: core/forms.py:506 core/forms.py:588 core/views.py:884
 #: templates/core/stockmovement_list.html:7
@@ -199,7 +201,7 @@ msgstr "Destinatário"
 
 #: core/forms.py:519 core/forms.py:604
 msgid "Назва, internal_code або barcode"
-msgstr ""
+msgstr "Primeiro, código_interno ou código de barras"
 
 #: core/forms.py:536 core/views.py:886
 #: templates/core/stock_receive_result.html:9
@@ -222,48 +224,48 @@ msgstr "A localização deve pertencer ao armazém selecionado."
 
 #: core/forms.py:578
 msgid "Надрукувати етикетку після збереження"
-msgstr ""
+msgstr "Imprimir etiqueta após salvar"
 
 #: core/forms.py:599
 msgid "Дата від"
-msgstr ""
+msgstr "Dados"
 
 #: core/forms.py:600
 msgid "Дата до"
-msgstr ""
+msgstr "Isso mesmo"
 
 #: core/forms.py:622 templates/core/printer_list.html:6
 msgid "Системна назва"
-msgstr ""
+msgstr "Sistema atual"
 
-#: core/forms.py:624 core/forms.py:651 templates/core/labeltemplate_list.html:6
-#: templates/core/printer_list.html:6
+#: core/forms.py:624 core/forms.py:651
+#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:6
 msgid "За замовчуванням"
-msgstr ""
+msgstr "Para fazer isso"
 
 #: core/forms.py:645
 msgid "Ширина, мм"
-msgstr ""
+msgstr "Shirina, hum"
 
 #: core/forms.py:646
 msgid "Висота, мм"
-msgstr ""
+msgstr "Visota, mm"
 
 #: core/forms.py:647
 msgid "Показувати назву товару"
-msgstr ""
+msgstr "Mostrar nome do produto"
 
 #: core/forms.py:648
 msgid "Показувати внутрішній код"
-msgstr ""
+msgstr "Mostrar código interno"
 
 #: core/forms.py:649
 msgid "Показувати текст штрихкоду"
-msgstr ""
+msgstr "Mostrar texto do código de barras"
 
 #: core/forms.py:650 templates/core/labeltemplate_list.html:6
 msgid "Тип штрихкоду"
-msgstr ""
+msgstr "Tipo de código de barras"
 
 #: core/forms.py:657 core/models.py:377 core/models.py:429
 msgid "Принтер"
@@ -275,19 +277,19 @@ msgstr "Modelo"
 
 #: core/forms.py:659
 msgid "Кількість копій"
-msgstr ""
+msgstr "Número de cópias"
 
 #: core/models.py:8
 msgid "active"
-msgstr ""
+msgstr "ativo"
 
 #: core/models.py:9 core/models.py:443
 msgid "created at"
-msgstr ""
+msgstr "criado em"
 
 #: core/models.py:10
 msgid "updated at"
-msgstr ""
+msgstr "atualizado em"
 
 #: core/models.py:17 core/models.py:35 core/models.py:59 core/models.py:125
 #: core/models.py:183 core/models.py:232 core/models.py:371 core/models.py:396
@@ -296,10 +298,10 @@ msgstr "Nome"
 
 #: core/models.py:18
 msgid "symbol"
-msgstr ""
+msgstr "símbolo"
 
-#: core/models.py:22 core/views.py:500 core/views.py:665 templates/base.html:58
-#: templates/core/dashboard.html:14
+#: core/models.py:22 core/views.py:500 core/views.py:665
+#: templates/base.html:58 templates/core/dashboard.html:14
 msgid "Одиниці виміру"
 msgstr "Unidades"
 
@@ -307,35 +309,35 @@ msgstr "Unidades"
 msgid "parent category"
 msgstr "categoria pai"
 
-#: core/models.py:47 core/views.py:515 core/views.py:660 templates/base.html:57
-#: templates/core/dashboard.html:13
+#: core/models.py:47 core/views.py:515 core/views.py:660
+#: templates/base.html:57 templates/core/dashboard.html:13
 msgid "Категорії"
 msgstr "Categorias"
 
 #: core/models.py:60
 msgid "contact name"
-msgstr ""
+msgstr "nome do contato"
 
 #: core/models.py:61
 msgid "phone"
-msgstr ""
+msgstr "telefone"
 
 #: core/models.py:62
 msgid "email"
-msgstr ""
+msgstr "e-mail"
 
 #: core/models.py:63
 msgid "notes"
-msgstr ""
+msgstr "notas"
 
-#: core/models.py:67 core/views.py:529 core/views.py:680 templates/base.html:62
-#: templates/core/dashboard.html:17
+#: core/models.py:67 core/views.py:529 core/views.py:680
+#: templates/base.html:62 templates/core/dashboard.html:17
 msgid "Отримувачі"
 msgstr "Destinatários"
 
 #: core/models.py:85 core/models.py:224
 msgid "rack"
-msgstr ""
+msgstr "prateleira"
 
 #: core/models.py:88 core/models.py:145 core/models.py:186 core/models.py:241
 #: core/models.py:434
@@ -344,47 +346,47 @@ msgstr "código de barras"
 
 #: core/models.py:89 core/models.py:110
 msgid "prefix"
-msgstr ""
+msgstr "prefixo"
 
 #: core/models.py:90 core/models.py:152 core/models.py:373
 msgid "description"
-msgstr ""
+msgstr "descrição"
 
 #: core/models.py:93 core/models.py:94
 msgid "Реєстр штрихкодів"
-msgstr ""
+msgstr "Cadastro de códigos de barras"
 
 #: core/models.py:101
 msgid "Barcode must start with the selected prefix."
-msgstr ""
+msgstr "O código de barras deve começar com o prefixo selecionado."
 
 #: core/models.py:112
 msgid "next number"
-msgstr ""
+msgstr "próximo número"
 
 #: core/models.py:113
 msgid "padding"
-msgstr ""
+msgstr "preenchimento"
 
 #: core/models.py:116
 msgid "Послідовність штрихкодів"
-msgstr ""
+msgstr "Uma sequência de códigos de barras"
 
 #: core/models.py:117
 msgid "Послідовності штрихкодів"
-msgstr ""
+msgstr "Sequências de código de barras"
 
 #: core/models.py:127
 msgid "internal code"
-msgstr ""
+msgstr "código interno"
 
 #: core/models.py:162
 msgid "Item barcode must use the ITM prefix."
-msgstr ""
+msgstr "O código de barras do item deve usar o prefixo ITM."
 
 #: core/models.py:193
 msgid "address"
-msgstr ""
+msgstr "endereço"
 
 #: core/models.py:197 core/views.py:569 core/views.py:670
 #: templates/base.html:59 templates/core/dashboard.html:15
@@ -394,11 +396,11 @@ msgstr "Armazéns"
 
 #: core/models.py:203
 msgid "Warehouse barcode must use the WH prefix."
-msgstr ""
+msgstr "O código de barras do armazém deve usar o prefixo WH."
 
 #: core/models.py:234
 msgid "location type"
-msgstr ""
+msgstr "tipo de localização"
 
 #: core/models.py:251 core/views.py:583 core/views.py:675
 #: templates/base.html:60 templates/core/dashboard.html:16
@@ -408,7 +410,7 @@ msgstr "Localizações"
 
 #: core/models.py:265
 msgid "Location barcode prefix does not match its type."
-msgstr ""
+msgstr "O prefixo do código de barras do local não corresponde ao seu tipo."
 
 #: core/models.py:297 core/models.py:333
 msgid "quantity"
@@ -458,23 +460,23 @@ msgstr "movimentos de estoque"
 
 #: core/models.py:336
 msgid "source location"
-msgstr ""
+msgstr "localização de origem"
 
 #: core/models.py:344
 msgid "destination location"
-msgstr ""
+msgstr "local de destino"
 
 #: core/models.py:358
 msgid "occurred at"
-msgstr ""
+msgstr "ocorreu em"
 
 #: core/models.py:359
 msgid "comment"
-msgstr ""
+msgstr "comentário"
 
 #: core/models.py:362
 msgid "Рух товарів"
-msgstr ""
+msgstr "Movimento de mercadorias"
 
 #: core/models.py:363 core/views.py:720 templates/base.html:28
 #: templates/base.html:67 templates/core/stockmovement_list.html:3
@@ -484,44 +486,44 @@ msgstr "Movimentos de estoque"
 
 #: core/models.py:372
 msgid "system name"
-msgstr ""
+msgstr "nome do sistema"
 
 #: core/models.py:374 core/models.py:405
 msgid "default"
-msgstr ""
+msgstr "padrão"
 
-#: core/models.py:378 templates/base.html:69 templates/core/printer_list.html:3
-#: templates/core/printer_list.html:5
+#: core/models.py:378 templates/base.html:69
+#: templates/core/printer_list.html:3 templates/core/printer_list.html:5
 msgid "Принтери"
 msgstr "Impressoras"
 
 #: core/models.py:394
 msgid "Code 128"
-msgstr ""
+msgstr "Código 128"
 
 #: core/models.py:397
 msgid "width, mm"
-msgstr ""
+msgstr "largura, mm"
 
 #: core/models.py:398
 msgid "height, mm"
-msgstr ""
+msgstr "altura, mm"
 
 #: core/models.py:399
 msgid "show item name"
-msgstr ""
+msgstr "mostrar o nome do item"
 
 #: core/models.py:400
 msgid "show internal code"
-msgstr ""
+msgstr "mostrar código interno"
 
 #: core/models.py:401
 msgid "show barcode text"
-msgstr ""
+msgstr "mostrar texto do código de barras"
 
 #: core/models.py:403
 msgid "barcode type"
-msgstr ""
+msgstr "tipo de código de barras"
 
 #: core/models.py:408 core/models.py:436
 msgid "Шаблон етикеток"
@@ -535,19 +537,19 @@ msgstr "Modelos de etiquetas"
 
 #: core/models.py:424
 msgid "pending"
-msgstr ""
+msgstr "pendente"
 
 #: core/models.py:425
 msgid "printed"
-msgstr ""
+msgstr "impresso"
 
 #: core/models.py:426
 msgid "failed"
-msgstr ""
+msgstr "fracassado"
 
 #: core/models.py:438
 msgid "copies"
-msgstr ""
+msgstr "cópias"
 
 #: core/models.py:440
 msgid "status"
@@ -555,117 +557,124 @@ msgstr "status"
 
 #: core/models.py:442
 msgid "error message"
-msgstr ""
+msgstr "mensagem de erro"
 
 #: core/models.py:444
 msgid "printed at"
-msgstr ""
+msgstr "impresso em"
 
 #: core/models.py:446
 msgid "user"
-msgstr ""
+msgstr "usuário"
 
 #: core/models.py:450 core/models.py:451
 msgid "Завдання друку"
-msgstr ""
+msgstr "Imprimir trabalho"
 
 #: core/permissions.py:29
 msgid "У вас немає прав для перегляду цієї сторінки."
-msgstr ""
+msgstr "Você não está pronto para fazer suas histórias."
 
 #: core/services/labels.py:25
 msgid "Стандартна 58×40 мм"
-msgstr ""
+msgstr "Padrão 58×40 mm"
 
 #: core/services/labels.py:141
 msgid "Невідома помилка друку."
-msgstr ""
+msgstr "Erro de impressão desconhecido."
 
 #: core/views.py:156
 #, python-format
 msgid "Номенклатуру створено. Штрихкод: %(barcode)s"
-msgstr ""
+msgstr "A nomenclatura foi criada. Código de barras: %(barcode)s"
 
 #: core/views.py:160
 msgid "Запис успішно створено."
-msgstr ""
+msgstr "Registro criado com sucesso."
 
 #: core/views.py:171
 msgid "Запис успішно оновлено."
-msgstr ""
+msgstr "Registro atualizado com sucesso."
 
 #: core/views.py:184
 msgid "Категорію не можна архівувати, бо вона має активні дочірні категорії."
 msgstr ""
+"A categoria não pode ser arquivada porque possui categorias filhas ativas."
 
 #: core/views.py:188
 msgid ""
 "Категорію не можна архівувати, бо вона використовується в активній "
 "номенклатурі."
 msgstr ""
+"A categoria não pode ser arquivada porque é utilizada na nomenclatura ativa."
 
 #: core/views.py:192
 msgid ""
 "Одиницю виміру не можна архівувати, бо вона використовується в активній "
 "номенклатурі."
 msgstr ""
+"A unidade de medida não pode ser arquivada porque é utilizada na "
+"nomenclatura ativa."
 
 #: core/views.py:197
 msgid "Склад не можна архівувати, бо він має активні локації."
-msgstr ""
+msgstr "O armazém não pode ser arquivado porque possui locais ativos."
 
 #: core/views.py:199
 msgid "Локацію не можна архівувати, бо на ній є ненульові залишки."
 msgstr ""
+"O local não pode ser arquivado porque possui saldos diferentes de zero."
 
 #: core/views.py:201
 msgid "Номенклатуру не можна архівувати, бо за нею є ненульові залишки."
 msgstr ""
+"A nomenclatura não pode ser arquivada porque há saldos diferentes de zero "
+"por trás dela."
 
 #: core/views.py:212
 msgid "Запис переміщено в архів."
-msgstr ""
+msgstr "O registro foi movido para o arquivo."
 
 #: core/views.py:228
 msgid "Запис відновлено з архіву."
-msgstr ""
+msgstr "O registro foi restaurado do arquivo."
 
 #: core/views.py:232
 msgid "Запис не можна відновити."
-msgstr ""
+msgstr "A gravação não pode ser restaurada."
 
 #: core/views.py:359
 msgid "Початковий залишок збережено."
-msgstr ""
+msgstr "O saldo inicial é salvo."
 
 #: core/views.py:447
 msgid "Етикетку відправлено на друк."
-msgstr ""
+msgstr "A etiqueta foi enviada para impressão."
 
 #: core/views.py:449
 #, python-format
 msgid "Не вдалося надрукувати етикетку: %(error)s"
-msgstr ""
+msgstr "Não use a etiqueta: %(error)s"
 
 #: core/views.py:473
 msgid "Принтер збережено."
-msgstr ""
+msgstr "A impressora está desativada."
 
 #: core/views.py:492
 msgid "Шаблон етикетки збережено."
-msgstr ""
+msgstr "A etiqueta Shablon não é permitida."
 
 #: core/views.py:501
 msgid "Створити одиницю виміру"
-msgstr ""
+msgstr "Crie uma unidade de medida"
 
 #: core/views.py:502
 msgid "Редагувати одиницю виміру"
-msgstr ""
+msgstr "Editar unidade de medida"
 
 #: core/views.py:503
 msgid "Архівувати одиницю виміру"
-msgstr ""
+msgstr "Unidade de medida de arquivo"
 
 #: core/views.py:516
 msgid "Створити категорію"
@@ -673,39 +682,39 @@ msgstr "Criar categoria"
 
 #: core/views.py:517
 msgid "Редагувати категорію"
-msgstr ""
+msgstr "Editar categoria"
 
 #: core/views.py:518
 msgid "Архівувати категорію"
-msgstr ""
+msgstr "Categoria de arquivo"
 
 #: core/views.py:530
 msgid "Створити отримувача"
-msgstr ""
+msgstr "Criar destinatário"
 
 #: core/views.py:531
 msgid "Редагувати отримувача"
-msgstr ""
+msgstr "Editar destinatário"
 
 #: core/views.py:532
 msgid "Архівувати отримувача"
-msgstr ""
+msgstr "Arquivar destinatário"
 
 #: core/views.py:540
 msgid "Контакт"
-msgstr ""
+msgstr "Contato"
 
 #: core/views.py:549
 msgid "Створити номенклатуру"
-msgstr ""
+msgstr "Crie uma nomenclatura"
 
 #: core/views.py:550
 msgid "Редагувати номенклатуру"
-msgstr ""
+msgstr "Editar nomenclatura"
 
 #: core/views.py:551
 msgid "Архівувати номенклатуру"
-msgstr ""
+msgstr "Nomenclatura de arquivo"
 
 #: core/views.py:560 core/views.py:578 core/views.py:596
 #: templates/core/item_label_print.html:7
@@ -717,63 +726,63 @@ msgstr "Código de barras"
 
 #: core/views.py:562
 msgid "Одиниця"
-msgstr ""
+msgstr "Unidade"
 
 #: core/views.py:570
 msgid "Створити склад"
-msgstr ""
+msgstr "Crie um armazém"
 
 #: core/views.py:571
 msgid "Редагувати склад"
-msgstr ""
+msgstr "Editar composição"
 
 #: core/views.py:572
 msgid "Архівувати склад"
-msgstr ""
+msgstr "Composição do arquivo"
 
 #: core/views.py:584
 msgid "Створити локацію"
-msgstr ""
+msgstr "Crie um local"
 
 #: core/views.py:585
 msgid "Редагувати локацію"
-msgstr ""
+msgstr "Editar local"
 
 #: core/views.py:586
 msgid "Архівувати локацію"
-msgstr ""
+msgstr "Localização do arquivo"
 
 #: core/views.py:595
 msgid "Тип"
-msgstr ""
+msgstr "Tipo"
 
 #: core/views.py:708
 msgid "Як почати склад з нуля"
-msgstr ""
+msgstr "Eu sou uma merda de nulya"
 
 #: core/views.py:712
 msgid "Інструкція користувача"
-msgstr ""
+msgstr "Manual do usuário"
 
 #: core/views.py:713
 msgid "Інструкція адміністратора"
-msgstr ""
+msgstr "Administrador de Instrução"
 
 #: core/views.py:714
 msgid "Типові помилки"
-msgstr ""
+msgstr "Tipo de pomilki"
 
 #: core/views.py:715
 msgid "Backup і відновлення"
-msgstr ""
+msgstr "Backup e visualização"
 
 #: core/views.py:716
 msgid "Принтери і друк етикеток"
-msgstr ""
+msgstr "Impressoras e etiquetas"
 
 #: core/views.py:717
 msgid "Штрихкоди"
-msgstr ""
+msgstr "Códigos de barras"
 
 #: core/views.py:718 templates/base.html:28 templates/base.html:65
 #: templates/core/stock_receive_form.html:3
@@ -789,18 +798,19 @@ msgstr "Saldo inicial"
 
 #: core/views.py:727
 msgid "Документ ще не додано."
-msgstr ""
+msgstr "O documento não é necessário."
 
 #: core/views.py:883 templates/core/stockmovement_list.html:7
 msgid "Дата"
-msgstr ""
+msgstr "Dados"
 
 #: core/views.py:918
 msgid "XLSX експорт недоступний: openpyxl не встановлено."
-msgstr ""
+msgstr "XLSX não é exportado: openpyxl não é usado."
 
-#: templates/base.html:7 templates/base.html:20 templates/core/dashboard.html:3
-#: templates/core/directory_form.html:3 templates/core/directory_list.html:3
+#: templates/base.html:7 templates/base.html:20
+#: templates/core/dashboard.html:3 templates/core/directory_form.html:3
+#: templates/core/directory_list.html:3
 #: templates/core/initial_balance_form.html:3
 #: templates/core/item_label_print.html:3
 #: templates/core/labeltemplate_list.html:3
@@ -814,13 +824,14 @@ msgstr ""
 #: templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_result.html:3
 #: templates/core/stockbalance_list.html:3
-#: templates/core/stockmovement_list.html:3 templates/registration/login.html:4
+#: templates/core/stockmovement_list.html:3
+#: templates/registration/login.html:4
 msgid "Складський облік"
 msgstr "Gestão de armazém"
 
 #: templates/base.html:21
 msgid "Перемкнути навігацію"
-msgstr ""
+msgstr "Alternar navegação"
 
 #: templates/base.html:26 templates/base.html:55
 #: templates/core/dashboard.html:3 templates/core/dashboard.html:7
@@ -843,56 +854,58 @@ msgstr "Sair"
 
 #: templates/base.html:53
 msgid "Навігація"
-msgstr ""
+msgstr "Navegação"
 
 #: templates/base.html:68
 msgid "Друк етикеток"
-msgstr ""
+msgstr "Etiqueta dupla"
 
 #: templates/base.html:85
 msgid "Закрити"
-msgstr ""
+msgstr "Fechar"
 
 #: templates/core/dashboard.html:8
 msgid ""
 "Оберіть розділ для роботи з довідниками складу, номенклатурою або залишками."
 msgstr ""
+"Escolha uma seção para trabalhar com guias de armazém, nomenclatura ou "
+"saldos."
 
 #: templates/core/dashboard.html:12
 msgid "Товари та матеріали"
-msgstr ""
+msgstr "Bens e materiais"
 
 #: templates/core/dashboard.html:13
 msgid "Групування номенклатури"
-msgstr ""
+msgstr "Agrupamento de nomenclatura"
 
 #: templates/core/dashboard.html:14
 msgid "шт, кг, м та інші"
-msgstr ""
+msgstr "peças, kg, m e outros"
 
 #: templates/core/dashboard.html:15
 msgid "Місця зберігання"
-msgstr ""
+msgstr "Locais de armazenamento"
 
 #: templates/core/dashboard.html:16
 msgid "Комірки та стелажі"
-msgstr ""
+msgstr "Células e racks"
 
 #: templates/core/dashboard.html:17
 msgid "Підрозділи та контакти"
-msgstr ""
+msgstr "Departamentos e contatos"
 
 #: templates/core/dashboard.html:18
 msgid "Кількість на локаціях"
-msgstr ""
+msgstr "Número de locais"
 
 #: templates/core/dashboard.html:20
 msgid "Панель керування складом"
-msgstr ""
+msgstr "Painel de controle do armazém"
 
 #: templates/core/directory_form.html:8
 msgid "Заповніть поля українською мовою та збережіть зміни."
-msgstr ""
+msgstr "Preencha os campos em ucraniano e salve as alterações."
 
 #: templates/core/directory_form.html:34
 msgid "Скасувати"
@@ -904,7 +917,7 @@ msgstr "Salvar"
 
 #: templates/core/directory_list.html:8
 msgid "Керуйте активними та архівними записами довідника."
-msgstr ""
+msgstr "Gerencie entradas de diretório ativas e arquivadas."
 
 #: templates/core/directory_list.html:10
 #: templates/core/labeltemplate_list.html:5 templates/core/printer_list.html:5
@@ -913,11 +926,11 @@ msgstr "Criar"
 
 #: templates/core/directory_list.html:16
 msgid "Пошук по назві"
-msgstr ""
+msgstr "Pesquisar por nome"
 
 #: templates/core/directory_list.html:17
 msgid "Введіть назву або код"
-msgstr ""
+msgstr "Digite um nome ou código"
 
 #: templates/core/directory_list.html:20 templates/core/directory_list.html:39
 msgid "Статус"
@@ -948,11 +961,12 @@ msgstr "Ações"
 msgid "Архівний"
 msgstr "Arquivado"
 
-#: templates/core/directory_list.html:50 templates/core/item_label_print.html:3
+#: templates/core/directory_list.html:50
+#: templates/core/item_label_print.html:3
 #: templates/core/item_label_print.html:5
 #: templates/core/stockbalance_list.html:35
 msgid "Друк етикетки"
-msgstr ""
+msgstr "Impressão de etiquetas"
 
 #: templates/core/directory_list.html:50
 msgid "Редагувати"
@@ -960,7 +974,7 @@ msgstr "Editar"
 
 #: templates/core/directory_list.html:52
 msgid "Архівувати цей запис?"
-msgstr ""
+msgstr "Arquivar este registro?"
 
 #: templates/core/directory_list.html:54
 msgid "Архівувати"
@@ -979,21 +993,21 @@ msgstr "Ainda não há registos"
 
 #: templates/core/includes/pagination.html:3
 msgid "Навігація сторінками"
-msgstr ""
+msgstr "Navegação na página"
 
 #: templates/core/includes/pagination.html:6
 #: templates/core/includes/pagination.html:8
 msgid "Попередня"
-msgstr ""
+msgstr "Anterior"
 
 #: templates/core/includes/pagination.html:12
 #: templates/core/includes/pagination.html:14
 msgid "Наступна"
-msgstr ""
+msgstr "Próximo"
 
 #: templates/core/initial_balance_form.html:9
 msgid "Зберегти початковий залишок"
-msgstr ""
+msgstr "Salve o saldo inicial"
 
 #: templates/core/item_label_print.html:8
 msgid "Друкувати"
@@ -1001,67 +1015,67 @@ msgstr "Imprimir"
 
 #: templates/core/item_label_print.html:8
 msgid "Завантажити PDF"
-msgstr ""
+msgstr "Baixar PDF"
 
 #: templates/core/labeltemplate_list.html:6
 msgid "Розмір"
-msgstr ""
+msgstr "Tamanho"
 
 #: templates/core/management/analytics.html:3
 #: templates/core/management/analytics.html:6
 #: templates/core/management/dashboard.html:19
 msgid "Аналітика"
-msgstr ""
+msgstr "Analítica"
 
 #: templates/core/management/analytics.html:6
 msgid "Прихід, видача, списання, переміщення, повернення та залишки."
-msgstr ""
+msgstr "Chegadas, saídas, baixas, transferências, devoluções e saldos."
 
 #: templates/core/management/analytics.html:7
 msgid "Експорт CSV"
-msgstr ""
+msgstr "Exportar CSV"
 
 #: templates/core/management/analytics.html:7
 msgid "Експорт XLSX"
-msgstr ""
+msgstr "Exportar XLSX"
 
 #: templates/core/management/analytics.html:9
 msgid "Застосувати фільтр"
-msgstr ""
+msgstr "Filtrar"
 
 #: templates/core/management/analytics.html:9
 msgid "Скинути"
-msgstr ""
+msgstr "Elenco"
 
 #: templates/core/management/analytics.html:11
 msgid "Прихід"
-msgstr ""
+msgstr "Chegando"
 
 #: templates/core/management/analytics.html:12
 msgid "Видача"
-msgstr ""
+msgstr "Vida"
 
 #: templates/core/management/analytics.html:13
 msgid "Списання"
-msgstr ""
+msgstr "Espionagem"
 
 #: templates/core/management/analytics.html:14
 msgid "Унікальні товари"
-msgstr ""
+msgstr "Produtos exclusivos"
 
 #: templates/core/management/analytics.html:17
 msgid "Топ-10 товарів за видачею"
-msgstr ""
+msgstr "Os 10 principais produtos por edição"
 
 #: templates/core/management/analytics.html:17
 #: templates/core/management/analytics.html:18
 #: templates/core/management/analytics.html:19
 msgid "Немає даних"
-msgstr ""
+msgstr "Não há dados disponíveis"
 
 #: templates/core/management/analytics.html:18
 msgid "Топ-10 товарів за приходом"
-msgstr ""
+msgstr "10 melhores coisas para comprar"
 
 #: templates/core/management/analytics.html:19
 msgid "Топ-10 отримувачів"
@@ -1073,7 +1087,7 @@ msgstr "Gestão"
 
 #: templates/core/management/dashboard.html:8
 msgid "Операційна панель для адміністрування складу, аналітики та довідників."
-msgstr ""
+msgstr "Painel de operação para sistema de administração, análise de dados."
 
 #: templates/core/management/dashboard.html:15
 msgid "Користувачі"
@@ -1083,75 +1097,79 @@ msgstr "Usuários"
 #: templates/core/management/directories.html:3
 #: templates/core/management/directories.html:5
 msgid "Довідники"
-msgstr ""
+msgstr "Livros de referência"
 
 #: templates/core/management/dashboard.html:18
 msgid "Номенклатура, категорії, склади, локації та отримувачі."
-msgstr ""
+msgstr "Nomenclatura, categorias, armazéns, localizações e destinatários."
 
 #: templates/core/management/dashboard.html:19
 msgid "KPI, графіки та експорт рухів складу."
-msgstr ""
+msgstr "KPI, gráficos e escalas de exportação."
 
 #: templates/core/management/dashboard.html:20
 #: templates/core/management/users.html:3
 #: templates/core/management/users.html:5
 msgid "Користувачі та ролі"
-msgstr ""
+msgstr "Usuários e funções"
 
 #: templates/core/management/dashboard.html:20
 msgid "Перегляд користувачів і складських ролей."
-msgstr ""
+msgstr "Visualize usuários e funções de warehouse."
 
 #: templates/core/management/dashboard.html:21
 msgid "Швидкі інструкції для запуску та роботи."
-msgstr ""
+msgstr "Instruções rápidas para começar a trabalhar."
 
 #: templates/core/management/dashboard.html:22
 msgid "Технічна Django Admin"
-msgstr ""
+msgstr "Técnica Django Admin"
 
 #: templates/core/management/dashboard.html:22
 msgid "Тільки для технічного обслуговування."
-msgstr ""
+msgstr "Somente para manutenção."
 
 #: templates/core/management/directories.html:8
 msgid "Записів"
-msgstr ""
+msgstr "Registros"
 
 #: templates/core/management/help.html:3 templates/core/management/help.html:7
 msgid "Центр допомоги"
-msgstr ""
+msgstr "Centro de doação"
 
 #: templates/core/management/help.html:9
 msgid ""
 "Інструкції адміністратора, запуску складу, друку, штрихкодів і робочих "
 "операцій."
 msgstr ""
+"Instruções para o administrador, início do armazém, impressão, códigos de "
+"barras e operações de trabalho."
 
 #: templates/core/management/help.html:11
 msgid "Користувацька інструкція для щоденної роботи зі складом."
-msgstr ""
+msgstr "Manual do usuário para o trabalho diário com o armazém."
 
 #: templates/core/management/help.html:14
 msgid "Назад до керування"
-msgstr ""
+msgstr "De volta à gestão"
 
 #: templates/core/management/help.html:20
 msgid "Розділи"
-msgstr ""
+msgstr "Rosa"
 
 #: templates/core/management/settings.html:3
 #: templates/core/management/settings.html:5 templates/core/simple_form.html:3
 #: templates/core/simple_form.html:5
 msgid "Налаштування"
-msgstr ""
+msgstr "Configurações"
 
 #: templates/core/management/settings.html:5
 msgid ""
-"Системні налаштування доступні через технічну Django Admin та конфігураційні "
-"файли проєкту."
+"Системні налаштування доступні через технічну Django Admin та конфігураційні"
+" файли проєкту."
 msgstr ""
+"A configuração do sistema fornece a tecnologia Django Admin para configurar "
+"o produto."
 
 #: templates/core/management/users.html:5
 msgid "Створити в Django Admin"
@@ -1159,15 +1177,15 @@ msgstr "Criar no Django Admin"
 
 #: templates/core/management/users.html:6
 msgid "Логін"
-msgstr ""
+msgstr "Entrar"
 
 #: templates/core/management/users.html:6
 msgid "Ролі"
-msgstr ""
+msgstr "Funções"
 
 #: templates/core/management/users.html:7
 msgid "Доступні ролі"
-msgstr ""
+msgstr "Funções disponíveis"
 
 #: templates/core/stock_receive_form.html:9
 msgid "Зберегти прихід"
@@ -1175,27 +1193,27 @@ msgstr "Salvar recebimento"
 
 #: templates/core/stock_receive_result.html:3
 msgid "Результат приходу"
-msgstr ""
+msgstr "Resultado de chegada"
 
 #: templates/core/stock_receive_result.html:5
 msgid "Прихід товару збережено"
-msgstr ""
+msgstr "Por que você está livre"
 
 #: templates/core/stock_receive_result.html:8
 msgid "Товар"
-msgstr ""
+msgstr "Tovar"
 
 #: templates/core/stock_receive_result.html:14
 msgid "Надрукувати етикетку"
-msgstr ""
+msgstr "Imprimir uma etiqueta"
 
 #: templates/core/stock_receive_result.html:14
 msgid "Новий прихід"
-msgstr ""
+msgstr "Novo preço"
 
 #: templates/core/stockbalance_list.html:7
 msgid "Перегляд фактичної кількості номенклатури на локаціях."
-msgstr ""
+msgstr "Visualizando o número real de itens nos locais."
 
 #: templates/core/stockbalance_list.html:20
 #: templates/core/stockmovement_list.html:6
@@ -1209,11 +1227,11 @@ msgstr "Filtrar"
 
 #: templates/core/stockmovement_list.html:7
 msgid "Звідки"
-msgstr ""
+msgstr "Onde"
 
 #: templates/core/stockmovement_list.html:7
 msgid "Куди"
-msgstr ""
+msgstr "Onde"
 
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
@@ -1227,9 +1245,278 @@ msgstr "Login"
 msgid "Увійти"
 msgstr "Entrar"
 
-#~ msgid "Адмін-панель"
-#~ msgstr "Painel de administração"
-
 #: templates/base.html:2 templates/registration/login.html:4
 msgid "YANTOS · Складський облік"
 msgstr "YANTOS · Warehouse accounting"
+
+#: core/models.py:21 core/models.py:139
+msgid "unit"
+msgstr "unidade"
+
+#: core/models.py:22
+msgid "units"
+msgstr "unidades"
+
+#: core/models.py:46 core/models.py:131
+msgid "category"
+msgstr "categoria"
+
+#: core/models.py:47
+msgid "categories"
+msgstr "categorias"
+
+#: core/models.py:66 core/models.py:328
+msgid "recipient"
+msgstr "destinatário"
+
+#: core/models.py:67
+msgid "recipients"
+msgstr "destinatários"
+
+#: core/models.py:83 core/models.py:155 core/models.py:263 core/models.py:305
+msgid "item"
+msgstr "item"
+
+#: core/models.py:84 core/models.py:188 core/models.py:212
+msgid "warehouse"
+msgstr "armazém"
+
+#: core/models.py:86 core/models.py:207 core/models.py:234 core/models.py:269
+msgid "location"
+msgstr "localização"
+
+#: core/models.py:93
+msgid "barcode registry entry"
+msgstr "entrada de registro de código de barras"
+
+#: core/models.py:94
+msgid "barcode registry entries"
+msgstr "entradas de registro de código de barras"
+
+#: core/models.py:116
+msgid "barcode sequence"
+msgstr "sequência de código de barras"
+
+#: core/models.py:117
+msgid "barcode sequences"
+msgstr "sequências de código de barras"
+
+#: core/models.py:156
+msgid "items"
+msgstr "Unid"
+
+#: core/models.py:189
+msgid "warehouses"
+msgstr "armazéns"
+
+#: core/models.py:235
+msgid "locations"
+msgstr "locais"
+
+#: core/models.py:276
+msgid "stock balance"
+msgstr "saldo de estoque"
+
+#: core/models.py:277
+msgid "stock balances"
+msgstr "saldos de estoque"
+
+#: core/models.py:338
+msgid "stock movement"
+msgstr "movimento de estoque"
+
+#: core/models.py:339
+msgid "stock movements"
+msgstr "movimentos de estoque"
+
+#: templates/core/dashboard.html:19
+msgid "Розширене адміністрування"
+msgstr "Administração avançada"
+
+msgid "Видача товару"
+msgstr "Emissão de ações"
+
+msgid "Тип видачі"
+msgstr "Tipo de problema"
+
+msgid "Продаж"
+msgstr "Oferta"
+
+msgid "Ремонтні роботи"
+msgstr "Obras de reparo"
+
+msgid "Виробничі потреби"
+msgstr "Necessidades de produção"
+
+msgid "Інше"
+msgstr "Outro"
+
+msgid "Цех / підрозділ"
+msgstr "Oficina / departamento"
+
+msgid "Номер документа"
+msgstr "Número do documento"
+
+msgid "Недостатньо залишку для видачі."
+msgstr "Não há estoque suficiente para emitir."
+
+msgid "Недостатньо залишку для видачі"
+msgstr "Não há estoque suficiente para emitir"
+
+msgid "Нова видача"
+msgstr "Novo problema"
+
+msgid "Усі типи видачі"
+msgstr "Todos os tipos de problemas"
+
+msgid "Отримувач / відповідальний"
+msgstr "Destinatário/responsável"
+
+msgid "Документ"
+msgstr "Documento"
+
+msgid "Залишок після операції"
+msgstr "Equilíbrio após operação"
+
+msgid "Видача зі складу"
+msgstr "Emissão do armazém"
+
+msgid "Inventory count"
+msgstr "Contagem de estoque"
+
+msgid "Inventory counts"
+msgstr "Contagens de estoque"
+
+msgid "Inventory count line"
+msgstr "Linha de contagem de estoque"
+
+msgid "Inventory count lines"
+msgstr "Linhas de contagem de estoque"
+
+msgid "Draft"
+msgstr "Rascunho"
+
+msgid "In progress"
+msgstr "Em andamento"
+
+msgid "Completed"
+msgstr "Concluído"
+
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#: inventory-ui
+msgid "Інвентаризація"
+msgstr "Contagem de estoque"
+
+#: inventory-ui
+msgid "Нова інвентаризація"
+msgstr "Nova contagem de inventário"
+
+#: inventory-ui
+msgid "Створити інвентаризацію"
+msgstr "Criar contagem de inventário"
+
+#: inventory-ui
+msgid "Підрахунок"
+msgstr "Contar"
+
+#: inventory-ui
+msgid "Облікова кількість"
+msgstr "Quantidade esperada"
+
+#: inventory-ui
+msgid "Фактична кількість"
+msgstr "Quantidade real"
+
+#: inventory-ui
+msgid "Різниця"
+msgstr "Diferença"
+
+#: inventory-ui
+msgid "Надлишок"
+msgstr "Excedente"
+
+#: inventory-ui
+msgid "Нестача"
+msgstr "Falta"
+
+#: inventory-ui
+msgid "Сканувати штрихкод"
+msgstr "Digitalizar código de barras"
+
+#: inventory-ui
+msgid "Назад до інвентаризації"
+msgstr "Voltar à contagem de estoque"
+
+#: inventory-ui
+msgid "До списку інвентаризацій"
+msgstr "Voltar à lista de inventário"
+
+msgid "Завершити інвентаризацію"
+msgstr "Contagem completa de estoque"
+
+msgid "Інвентаризацію завершено. Залишки скориговано."
+msgstr "Contagem de estoque concluída. Saldos de estoque ajustados."
+
+msgid "Інвентаризацію вже завершено."
+msgstr "A contagem do estoque já foi concluída."
+
+msgid "Неможливо завершити скасовану інвентаризацію."
+msgstr "Não é possível concluir uma contagem de inventário cancelada."
+
+msgid "Коригування за інвентаризацією"
+msgstr "Ajuste de contagem de estoque"
+
+msgid "Всього рядків"
+msgstr "Total de linhas"
+
+msgid "Кількість розбіжностей"
+msgstr "Linhas de diferença"
+
+msgid "Сума надлишків"
+msgstr "Superávit total"
+
+msgid "Сума нестач"
+msgstr "Escassez total"
+
+msgid "XLSX export requires openpyxl."
+msgstr "A exportação XLSX requer openpyxl."
+
+msgid "Номер інвентаризації"
+msgstr "Número de inventário"
+
+msgid "Локація інвентаризації"
+msgstr "Localização do inventário"
+
+msgid "Internal code"
+msgstr "Código interno"
+
+msgid "Barcode"
+msgstr "Código de barras"
+
+msgid "Коментар рядка"
+msgstr "Comentário de linha"
+
+#: barcode-scanner
+msgid "Штрихкод не знайдено."
+msgstr "Código de barras não encontrado."
+
+#: barcode-scanner
+msgid "Товар знайдено."
+msgstr "Item encontrado."
+
+#: barcode-scanner
+msgid "Локацію знайдено."
+msgstr "Localização encontrada."
+
+#: barcode-scanner
+msgid "Склад знайдено."
+msgstr "Armazém encontrado."
+
+#: barcode-scanner
+msgid "Товар не знайдено у цій інвентаризації."
+msgstr "O item não foi encontrado nesta contagem de inventário."
+
+#~ msgid "Адмін-панель"
+#~ msgstr "Painel de administração"
