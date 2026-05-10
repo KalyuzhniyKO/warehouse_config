@@ -19,41 +19,41 @@ msgstr ""
 
 #: core/forms.py:17
 msgid "Не можна вибрати архівний запис."
-msgstr ""
+msgstr "Hiçbir şey değişmiyor."
 
 #: core/forms.py:50
 msgid "Категорія з такою назвою вже існує."
-msgstr ""
+msgstr "Bu ada sahip bir kategori zaten mevcut."
 
 #: core/forms.py:51
 msgid "Одиниця виміру з такою назвою вже існує."
-msgstr ""
+msgstr "Bu ada sahip bir ölçü birimi zaten mevcut."
 
 #: core/forms.py:52
 msgid "Одиниця виміру з таким позначенням вже існує."
-msgstr ""
+msgstr "Bu atamaya sahip bir ölçü birimi zaten mevcut."
 
 #: core/forms.py:53
 msgid "Отримувач з такою назвою вже існує."
-msgstr ""
+msgstr "Bu ada sahip bir alıcı zaten mevcut."
 
 #: core/forms.py:54
 msgid "Склад з такою назвою вже існує."
-msgstr ""
+msgstr "Bu ada sahip bir depo zaten mevcut."
 
 #: core/forms.py:55
 msgid "Локація з такою назвою вже існує на цьому складі."
-msgstr ""
+msgstr "Bu depoda bu ada sahip bir konum zaten mevcut."
 
 #: core/forms.py:56
 msgid "Номенклатура з таким внутрішнім кодом вже існує."
-msgstr ""
+msgstr "Böyle bir dahili koda sahip isimlendirme zaten mevcuttur."
 
 #: core/forms.py:102 core/forms.py:128 core/forms.py:185 core/forms.py:215
 #: core/forms.py:282 core/forms.py:305 core/forms.py:621 core/forms.py:644
 #: core/views.py:509 core/views.py:524 core/views.py:539 core/views.py:558
-#: core/views.py:578 core/views.py:594 templates/core/labeltemplate_list.html:6
-#: templates/core/printer_list.html:6
+#: core/views.py:578 core/views.py:594
+#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:6
 msgid "Назва"
 msgstr "Ad"
 
@@ -69,7 +69,7 @@ msgstr "Aktif"
 
 #: core/forms.py:106
 msgid "Коротке позначення одиниці, наприклад: шт, кг, м."
-msgstr ""
+msgstr "Birimin kısa tanımı, örneğin: adet, kg, m."
 
 #: core/forms.py:129 core/views.py:524
 msgid "Батьківська категорія"
@@ -77,11 +77,11 @@ msgstr "Üst kategori"
 
 #: core/forms.py:132
 msgid "Залиште порожнім для категорії верхнього рівня."
-msgstr ""
+msgstr "Üst düzey kategori için boş bırakın."
 
 #: core/forms.py:167
 msgid "Категорія не може бути батьківською для самої себе."
-msgstr ""
+msgstr "Kategori asla bu kadar basit değil."
 
 #: core/forms.py:186
 msgid "Контактна особа"
@@ -93,7 +93,7 @@ msgstr "Telefon"
 
 #: core/forms.py:188 templates/core/management/users.html:6
 msgid "Email"
-msgstr ""
+msgstr "E-posta"
 
 #: core/forms.py:189
 msgid "Примітки"
@@ -101,9 +101,10 @@ msgstr "Notlar"
 
 #: core/forms.py:192
 msgid "Додаткова інформація про отримувача."
-msgstr ""
+msgstr "Alıcı hakkında ek bilgi."
 
-#: core/forms.py:216 core/views.py:559 templates/core/stockbalance_list.html:30
+#: core/forms.py:216 core/views.py:559
+#: templates/core/stockbalance_list.html:30
 msgid "Внутрішній код"
 msgstr "İç kod"
 
@@ -123,7 +124,7 @@ msgstr "Açıklama"
 
 #: core/forms.py:223
 msgid "Необов'язковий унікальний код у вашій системі обліку."
-msgstr ""
+msgstr "Muhasebe sisteminizde isteğe bağlı benzersiz bir kod."
 
 #: core/forms.py:283 core/views.py:578
 msgid "Адреса"
@@ -131,7 +132,7 @@ msgstr "Adres"
 
 #: core/forms.py:287
 msgid "Фактична адреса або короткий опис місця розташування складу."
-msgstr ""
+msgstr "Depo konumunun gerçek adresi veya kısa açıklaması."
 
 #: core/forms.py:304 core/forms.py:356 core/forms.py:484 core/forms.py:534
 #: core/forms.py:593 core/models.py:84 core/models.py:196 core/models.py:228
@@ -147,7 +148,7 @@ msgstr "Konum türü"
 
 #: core/forms.py:309
 msgid "Наприклад: A-01, Ряд 2, Комірка 5."
-msgstr ""
+msgstr "Örneğin: A-01, Satır 2, Hücre 5."
 
 #: core/forms.py:361 core/forms.py:489 core/forms.py:535 core/forms.py:595
 #: core/models.py:86 core/models.py:223 core/models.py:250 core/models.py:293
@@ -173,15 +174,15 @@ msgstr "Ara"
 
 #: core/forms.py:376
 msgid "Назва, внутрішній код або штрихкод"
-msgstr ""
+msgstr "Ad, dahili kod veya barkod"
 
 #: core/forms.py:474
 msgid "Період від"
-msgstr ""
+msgstr "Geçen gün"
 
 #: core/forms.py:479
 msgid "Період до"
-msgstr ""
+msgstr "Geçen gün"
 
 #: core/forms.py:506 core/forms.py:588 core/views.py:884
 #: templates/core/stockmovement_list.html:7
@@ -199,7 +200,7 @@ msgstr "Alıcı"
 
 #: core/forms.py:519 core/forms.py:604
 msgid "Назва, internal_code або barcode"
-msgstr ""
+msgstr "Evet, dahili_kod veya barkod"
 
 #: core/forms.py:536 core/views.py:886
 #: templates/core/stock_receive_result.html:9
@@ -222,48 +223,48 @@ msgstr "Konum seçilen depoya ait olmalıdır."
 
 #: core/forms.py:578
 msgid "Надрукувати етикетку після збереження"
-msgstr ""
+msgstr "Kaydettikten sonra etiketi yazdırın"
 
 #: core/forms.py:599
 msgid "Дата від"
-msgstr ""
+msgstr "Veriler"
 
 #: core/forms.py:600
 msgid "Дата до"
-msgstr ""
+msgstr "Veri"
 
 #: core/forms.py:622 templates/core/printer_list.html:6
 msgid "Системна назва"
-msgstr ""
+msgstr "Yeni Sistem"
 
-#: core/forms.py:624 core/forms.py:651 templates/core/labeltemplate_list.html:6
-#: templates/core/printer_list.html:6
+#: core/forms.py:624 core/forms.py:651
+#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:6
 msgid "За замовчуванням"
-msgstr ""
+msgstr "Varsayılan olarak"
 
 #: core/forms.py:645
 msgid "Ширина, мм"
-msgstr ""
+msgstr "Genişlik, mm"
 
 #: core/forms.py:646
 msgid "Висота, мм"
-msgstr ""
+msgstr "Evet, mm"
 
 #: core/forms.py:647
 msgid "Показувати назву товару"
-msgstr ""
+msgstr "Yeni Nesil"
 
 #: core/forms.py:648
 msgid "Показувати внутрішній код"
-msgstr ""
+msgstr "Dahili kodu göster"
 
 #: core/forms.py:649
 msgid "Показувати текст штрихкоду"
-msgstr ""
+msgstr "Barkod metnini göster"
 
 #: core/forms.py:650 templates/core/labeltemplate_list.html:6
 msgid "Тип штрихкоду"
-msgstr ""
+msgstr "Barkod türü"
 
 #: core/forms.py:657 core/models.py:377 core/models.py:429
 msgid "Принтер"
@@ -275,19 +276,19 @@ msgstr "Şablon"
 
 #: core/forms.py:659
 msgid "Кількість копій"
-msgstr ""
+msgstr "Kopya sayısı"
 
 #: core/models.py:8
 msgid "active"
-msgstr ""
+msgstr "aktif"
 
 #: core/models.py:9 core/models.py:443
 msgid "created at"
-msgstr ""
+msgstr "oluşturuldu"
 
 #: core/models.py:10
 msgid "updated at"
-msgstr ""
+msgstr "şu tarihte güncellendi:"
 
 #: core/models.py:17 core/models.py:35 core/models.py:59 core/models.py:125
 #: core/models.py:183 core/models.py:232 core/models.py:371 core/models.py:396
@@ -296,10 +297,10 @@ msgstr "Ad"
 
 #: core/models.py:18
 msgid "symbol"
-msgstr ""
+msgstr "sembol"
 
-#: core/models.py:22 core/views.py:500 core/views.py:665 templates/base.html:58
-#: templates/core/dashboard.html:14
+#: core/models.py:22 core/views.py:500 core/views.py:665
+#: templates/base.html:58 templates/core/dashboard.html:14
 msgid "Одиниці виміру"
 msgstr "Birimler"
 
@@ -307,35 +308,35 @@ msgstr "Birimler"
 msgid "parent category"
 msgstr "üst kategori"
 
-#: core/models.py:47 core/views.py:515 core/views.py:660 templates/base.html:57
-#: templates/core/dashboard.html:13
+#: core/models.py:47 core/views.py:515 core/views.py:660
+#: templates/base.html:57 templates/core/dashboard.html:13
 msgid "Категорії"
 msgstr "Kategoriler"
 
 #: core/models.py:60
 msgid "contact name"
-msgstr ""
+msgstr "iletişim adı"
 
 #: core/models.py:61
 msgid "phone"
-msgstr ""
+msgstr "telefon"
 
 #: core/models.py:62
 msgid "email"
-msgstr ""
+msgstr "e-posta"
 
 #: core/models.py:63
 msgid "notes"
-msgstr ""
+msgstr "notlar"
 
-#: core/models.py:67 core/views.py:529 core/views.py:680 templates/base.html:62
-#: templates/core/dashboard.html:17
+#: core/models.py:67 core/views.py:529 core/views.py:680
+#: templates/base.html:62 templates/core/dashboard.html:17
 msgid "Отримувачі"
 msgstr "Alıcılar"
 
 #: core/models.py:85 core/models.py:224
 msgid "rack"
-msgstr ""
+msgstr "raf"
 
 #: core/models.py:88 core/models.py:145 core/models.py:186 core/models.py:241
 #: core/models.py:434
@@ -344,47 +345,47 @@ msgstr "barkod"
 
 #: core/models.py:89 core/models.py:110
 msgid "prefix"
-msgstr ""
+msgstr "önek"
 
 #: core/models.py:90 core/models.py:152 core/models.py:373
 msgid "description"
-msgstr ""
+msgstr "Tanım"
 
 #: core/models.py:93 core/models.py:94
 msgid "Реєстр штрихкодів"
-msgstr ""
+msgstr "Barkodların kaydı"
 
 #: core/models.py:101
 msgid "Barcode must start with the selected prefix."
-msgstr ""
+msgstr "Barkod seçilen önekle başlamalıdır."
 
 #: core/models.py:112
 msgid "next number"
-msgstr ""
+msgstr "sonraki numara"
 
 #: core/models.py:113
 msgid "padding"
-msgstr ""
+msgstr "dolgu"
 
 #: core/models.py:116
 msgid "Послідовність штрихкодів"
-msgstr ""
+msgstr "Bir dizi barkod"
 
 #: core/models.py:117
 msgid "Послідовності штрихкодів"
-msgstr ""
+msgstr "Barkod dizileri"
 
 #: core/models.py:127
 msgid "internal code"
-msgstr ""
+msgstr "dahili kod"
 
 #: core/models.py:162
 msgid "Item barcode must use the ITM prefix."
-msgstr ""
+msgstr "Öğe barkodu ITM önekini kullanmalıdır."
 
 #: core/models.py:193
 msgid "address"
-msgstr ""
+msgstr "adres"
 
 #: core/models.py:197 core/views.py:569 core/views.py:670
 #: templates/base.html:59 templates/core/dashboard.html:15
@@ -394,11 +395,11 @@ msgstr "Depolar"
 
 #: core/models.py:203
 msgid "Warehouse barcode must use the WH prefix."
-msgstr ""
+msgstr "Depo barkodu WH önekini kullanmalıdır."
 
 #: core/models.py:234
 msgid "location type"
-msgstr ""
+msgstr "konum türü"
 
 #: core/models.py:251 core/views.py:583 core/views.py:675
 #: templates/base.html:60 templates/core/dashboard.html:16
@@ -408,7 +409,7 @@ msgstr "Konumlar"
 
 #: core/models.py:265
 msgid "Location barcode prefix does not match its type."
-msgstr ""
+msgstr "Konum barkodu öneki türüyle eşleşmiyor."
 
 #: core/models.py:297 core/models.py:333
 msgid "quantity"
@@ -458,23 +459,23 @@ msgstr "stok hareketleri"
 
 #: core/models.py:336
 msgid "source location"
-msgstr ""
+msgstr "kaynak konumu"
 
 #: core/models.py:344
 msgid "destination location"
-msgstr ""
+msgstr "varış yeri"
 
 #: core/models.py:358
 msgid "occurred at"
-msgstr ""
+msgstr "meydana geldi"
 
 #: core/models.py:359
 msgid "comment"
-msgstr ""
+msgstr "Yorum"
 
 #: core/models.py:362
 msgid "Рух товарів"
-msgstr ""
+msgstr "Malların hareketi"
 
 #: core/models.py:363 core/views.py:720 templates/base.html:28
 #: templates/base.html:67 templates/core/stockmovement_list.html:3
@@ -484,44 +485,44 @@ msgstr "Stok hareketleri"
 
 #: core/models.py:372
 msgid "system name"
-msgstr ""
+msgstr "sistem adı"
 
 #: core/models.py:374 core/models.py:405
 msgid "default"
-msgstr ""
+msgstr "varsayılan"
 
-#: core/models.py:378 templates/base.html:69 templates/core/printer_list.html:3
-#: templates/core/printer_list.html:5
+#: core/models.py:378 templates/base.html:69
+#: templates/core/printer_list.html:3 templates/core/printer_list.html:5
 msgid "Принтери"
 msgstr "Yazıcılar"
 
 #: core/models.py:394
 msgid "Code 128"
-msgstr ""
+msgstr "Kod 128"
 
 #: core/models.py:397
 msgid "width, mm"
-msgstr ""
+msgstr "genişlik, mm"
 
 #: core/models.py:398
 msgid "height, mm"
-msgstr ""
+msgstr "yükseklik, mm"
 
 #: core/models.py:399
 msgid "show item name"
-msgstr ""
+msgstr "öğe adını göster"
 
 #: core/models.py:400
 msgid "show internal code"
-msgstr ""
+msgstr "dahili kodu göster"
 
 #: core/models.py:401
 msgid "show barcode text"
-msgstr ""
+msgstr "barkod metnini göster"
 
 #: core/models.py:403
 msgid "barcode type"
-msgstr ""
+msgstr "barkod türü"
 
 #: core/models.py:408 core/models.py:436
 msgid "Шаблон етикеток"
@@ -535,19 +536,19 @@ msgstr "Etiket şablonları"
 
 #: core/models.py:424
 msgid "pending"
-msgstr ""
+msgstr "askıda olması"
 
 #: core/models.py:425
 msgid "printed"
-msgstr ""
+msgstr "baskılı"
 
 #: core/models.py:426
 msgid "failed"
-msgstr ""
+msgstr "arızalı"
 
 #: core/models.py:438
 msgid "copies"
-msgstr ""
+msgstr "kopyalar"
 
 #: core/models.py:440
 msgid "status"
@@ -555,117 +556,118 @@ msgstr "durum"
 
 #: core/models.py:442
 msgid "error message"
-msgstr ""
+msgstr "hata mesajı"
 
 #: core/models.py:444
 msgid "printed at"
-msgstr ""
+msgstr "basılmış"
 
 #: core/models.py:446
 msgid "user"
-msgstr ""
+msgstr "kullanıcı"
 
 #: core/models.py:450 core/models.py:451
 msgid "Завдання друку"
-msgstr ""
+msgstr "Yazdırma işi"
 
 #: core/permissions.py:29
 msgid "У вас немає прав для перегляду цієї сторінки."
-msgstr ""
+msgstr "Bu sorunla başa çıkmanın bir yolu yok."
 
 #: core/services/labels.py:25
 msgid "Стандартна 58×40 мм"
-msgstr ""
+msgstr "Standart 58×40 mm"
 
 #: core/services/labels.py:141
 msgid "Невідома помилка друку."
-msgstr ""
+msgstr "Yeni bir ürün değil."
 
 #: core/views.py:156
 #, python-format
 msgid "Номенклатуру створено. Штрихкод: %(barcode)s"
-msgstr ""
+msgstr "Çok güzel bir isim. Adres: %(barcode)s"
 
 #: core/views.py:160
 msgid "Запис успішно створено."
-msgstr ""
+msgstr "Kayıt başarıyla oluşturuldu."
 
 #: core/views.py:171
 msgid "Запис успішно оновлено."
-msgstr ""
+msgstr "Kayıt başarıyla güncellendi."
 
 #: core/views.py:184
 msgid "Категорію не можна архівувати, бо вона має активні дочірні категорії."
-msgstr ""
+msgstr "Kategori, etkin alt kategorilere sahip olduğundan arşivlenemiyor."
 
 #: core/views.py:188
 msgid ""
 "Категорію не можна архівувати, бо вона використовується в активній "
 "номенклатурі."
-msgstr ""
+msgstr "Kategori, etkin terminolojide kullanıldığı için arşivlenemiyor."
 
 #: core/views.py:192
 msgid ""
 "Одиницю виміру не можна архівувати, бо вона використовується в активній "
 "номенклатурі."
-msgstr ""
+msgstr "Ölçü birimi, etkin terminolojide kullanıldığı için arşivlenemiyor."
 
 #: core/views.py:197
 msgid "Склад не можна архівувати, бо він має активні локації."
-msgstr ""
+msgstr "Depo, etkin konumlara sahip olduğundan arşivlenemiyor."
 
 #: core/views.py:199
 msgid "Локацію не можна архівувати, бо на ній є ненульові залишки."
-msgstr ""
+msgstr "Sıfırdan farklı bakiyelere sahip olduğundan konum arşivlenemiyor."
 
 #: core/views.py:201
 msgid "Номенклатуру не можна архівувати, бо за нею є ненульові залишки."
 msgstr ""
+"Terminoloji arşivlenemiyor çünkü arkasında sıfırdan farklı bakiyeler var."
 
 #: core/views.py:212
 msgid "Запис переміщено в архів."
-msgstr ""
+msgstr "Kayıt arşive taşındı."
 
 #: core/views.py:228
 msgid "Запис відновлено з архіву."
-msgstr ""
+msgstr "Kayıt arşivden geri yüklendi."
 
 #: core/views.py:232
 msgid "Запис не можна відновити."
-msgstr ""
+msgstr "Kayıt geri yüklenemez."
 
 #: core/views.py:359
 msgid "Початковий залишок збережено."
-msgstr ""
+msgstr "Başlangıçtaki bakiye kaydedilir."
 
 #: core/views.py:447
 msgid "Етикетку відправлено на друк."
-msgstr ""
+msgstr "Etiket baskıya gönderildi."
 
 #: core/views.py:449
 #, python-format
 msgid "Не вдалося надрукувати етикетку: %(error)s"
-msgstr ""
+msgstr "Şu e-posta adresini kullanamazsınız: %(error)s"
 
 #: core/views.py:473
 msgid "Принтер збережено."
-msgstr ""
+msgstr "Yazıcı kaydedilir."
 
 #: core/views.py:492
 msgid "Шаблон етикетки збережено."
-msgstr ""
+msgstr "Etiket şablonu kaydedilir."
 
 #: core/views.py:501
 msgid "Створити одиницю виміру"
-msgstr ""
+msgstr "Bir ölçü birimi oluşturun"
 
 #: core/views.py:502
 msgid "Редагувати одиницю виміру"
-msgstr ""
+msgstr "Ölçü birimini düzenle"
 
 #: core/views.py:503
 msgid "Архівувати одиницю виміру"
-msgstr ""
+msgstr "Arşiv ölçü birimi"
 
 #: core/views.py:516
 msgid "Створити категорію"
@@ -673,39 +675,39 @@ msgstr "Kategori oluştur"
 
 #: core/views.py:517
 msgid "Редагувати категорію"
-msgstr ""
+msgstr "Kategoriyi düzenle"
 
 #: core/views.py:518
 msgid "Архівувати категорію"
-msgstr ""
+msgstr "Arşiv kategorisi"
 
 #: core/views.py:530
 msgid "Створити отримувача"
-msgstr ""
+msgstr "Alıcı oluştur"
 
 #: core/views.py:531
 msgid "Редагувати отримувача"
-msgstr ""
+msgstr "Alıcıyı düzenle"
 
 #: core/views.py:532
 msgid "Архівувати отримувача"
-msgstr ""
+msgstr "Arşiv alıcısı"
 
 #: core/views.py:540
 msgid "Контакт"
-msgstr ""
+msgstr "Temas etmek"
 
 #: core/views.py:549
 msgid "Створити номенклатуру"
-msgstr ""
+msgstr "Bir terminoloji oluşturun"
 
 #: core/views.py:550
 msgid "Редагувати номенклатуру"
-msgstr ""
+msgstr "İsimlendirmeyi düzenle"
 
 #: core/views.py:551
 msgid "Архівувати номенклатуру"
-msgstr ""
+msgstr "Arşiv terminolojisi"
 
 #: core/views.py:560 core/views.py:578 core/views.py:596
 #: templates/core/item_label_print.html:7
@@ -717,63 +719,63 @@ msgstr "Barkod"
 
 #: core/views.py:562
 msgid "Одиниця"
-msgstr ""
+msgstr "Birim"
 
 #: core/views.py:570
 msgid "Створити склад"
-msgstr ""
+msgstr "Depo oluştur"
 
 #: core/views.py:571
 msgid "Редагувати склад"
-msgstr ""
+msgstr "Kompozisyonu düzenle"
 
 #: core/views.py:572
 msgid "Архівувати склад"
-msgstr ""
+msgstr "Arşiv kompozisyonu"
 
 #: core/views.py:584
 msgid "Створити локацію"
-msgstr ""
+msgstr "Konum oluştur"
 
 #: core/views.py:585
 msgid "Редагувати локацію"
-msgstr ""
+msgstr "Konumu düzenle"
 
 #: core/views.py:586
 msgid "Архівувати локацію"
-msgstr ""
+msgstr "Arşiv konumu"
 
 #: core/views.py:595
 msgid "Тип"
-msgstr ""
+msgstr "Tip"
 
 #: core/views.py:708
 msgid "Як почати склад з нуля"
-msgstr ""
+msgstr "Yeni yılda ne yapacağımı şaşırdım"
 
 #: core/views.py:712
 msgid "Інструкція користувача"
-msgstr ""
+msgstr "Kullanım kılavuzu"
 
 #: core/views.py:713
 msgid "Інструкція адміністратора"
-msgstr ""
+msgstr "Yönetici talimatları"
 
 #: core/views.py:714
 msgid "Типові помилки"
-msgstr ""
+msgstr "Tipik hatalar"
 
 #: core/views.py:715
 msgid "Backup і відновлення"
-msgstr ""
+msgstr "Yedekleme ve yedekleme"
 
 #: core/views.py:716
 msgid "Принтери і друк етикеток"
-msgstr ""
+msgstr "Etik Kurallar"
 
 #: core/views.py:717
 msgid "Штрихкоди"
-msgstr ""
+msgstr "Barkodlar"
 
 #: core/views.py:718 templates/base.html:28 templates/base.html:65
 #: templates/core/stock_receive_form.html:3
@@ -789,18 +791,19 @@ msgstr "Başlangıç bakiyesi"
 
 #: core/views.py:727
 msgid "Документ ще не додано."
-msgstr ""
+msgstr "Belge hiç de kolay değil."
 
 #: core/views.py:883 templates/core/stockmovement_list.html:7
 msgid "Дата"
-msgstr ""
+msgstr "veri"
 
 #: core/views.py:918
 msgid "XLSX експорт недоступний: openpyxl не встановлено."
-msgstr ""
+msgstr "XLSX ek sürüme uygun değil: openpyxl güncellenmiyor."
 
-#: templates/base.html:7 templates/base.html:20 templates/core/dashboard.html:3
-#: templates/core/directory_form.html:3 templates/core/directory_list.html:3
+#: templates/base.html:7 templates/base.html:20
+#: templates/core/dashboard.html:3 templates/core/directory_form.html:3
+#: templates/core/directory_list.html:3
 #: templates/core/initial_balance_form.html:3
 #: templates/core/item_label_print.html:3
 #: templates/core/labeltemplate_list.html:3
@@ -814,13 +817,14 @@ msgstr ""
 #: templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_result.html:3
 #: templates/core/stockbalance_list.html:3
-#: templates/core/stockmovement_list.html:3 templates/registration/login.html:4
+#: templates/core/stockmovement_list.html:3
+#: templates/registration/login.html:4
 msgid "Складський облік"
 msgstr "Depo muhasebesi"
 
 #: templates/base.html:21
 msgid "Перемкнути навігацію"
-msgstr ""
+msgstr "Gezinmeyi değiştir"
 
 #: templates/base.html:26 templates/base.html:55
 #: templates/core/dashboard.html:3 templates/core/dashboard.html:7
@@ -843,56 +847,58 @@ msgstr "Çıkış yap"
 
 #: templates/base.html:53
 msgid "Навігація"
-msgstr ""
+msgstr "Navigasyon"
 
 #: templates/base.html:68
 msgid "Друк етикеток"
-msgstr ""
+msgstr "Etiket yazdırma"
 
 #: templates/base.html:85
 msgid "Закрити"
-msgstr ""
+msgstr "Kapalı"
 
 #: templates/core/dashboard.html:8
 msgid ""
 "Оберіть розділ для роботи з довідниками складу, номенклатурою або залишками."
 msgstr ""
+"Depo kılavuzları, terminoloji veya bakiyelerle çalışmak için bir bölüm "
+"seçin."
 
 #: templates/core/dashboard.html:12
 msgid "Товари та матеріали"
-msgstr ""
+msgstr "Mal ve malzemeler"
 
 #: templates/core/dashboard.html:13
 msgid "Групування номенклатури"
-msgstr ""
+msgstr "İsimlendirmenin gruplandırılması"
 
 #: templates/core/dashboard.html:14
 msgid "шт, кг, м та інші"
-msgstr ""
+msgstr "adet, kg, m ve diğerleri"
 
 #: templates/core/dashboard.html:15
 msgid "Місця зберігання"
-msgstr ""
+msgstr "Depolama yerleri"
 
 #: templates/core/dashboard.html:16
 msgid "Комірки та стелажі"
-msgstr ""
+msgstr "Hücreler ve raflar"
 
 #: templates/core/dashboard.html:17
 msgid "Підрозділи та контакти"
-msgstr ""
+msgstr "Departmanlar ve iletişim bilgileri"
 
 #: templates/core/dashboard.html:18
 msgid "Кількість на локаціях"
-msgstr ""
+msgstr "Konum sayısı"
 
 #: templates/core/dashboard.html:20
 msgid "Панель керування складом"
-msgstr ""
+msgstr "Depo kontrol paneli"
 
 #: templates/core/directory_form.html:8
 msgid "Заповніть поля українською мовою та збережіть зміни."
-msgstr ""
+msgstr "Alanları Ukraynaca doldurun ve değişiklikleri kaydedin."
 
 #: templates/core/directory_form.html:34
 msgid "Скасувати"
@@ -904,7 +910,7 @@ msgstr "Kaydet"
 
 #: templates/core/directory_list.html:8
 msgid "Керуйте активними та архівними записами довідника."
-msgstr ""
+msgstr "Aktif ve arşivlenmiş dizin girişlerini yönetin."
 
 #: templates/core/directory_list.html:10
 #: templates/core/labeltemplate_list.html:5 templates/core/printer_list.html:5
@@ -913,11 +919,11 @@ msgstr "Oluştur"
 
 #: templates/core/directory_list.html:16
 msgid "Пошук по назві"
-msgstr ""
+msgstr "İsme göre ara"
 
 #: templates/core/directory_list.html:17
 msgid "Введіть назву або код"
-msgstr ""
+msgstr "Bir ad veya kod girin"
 
 #: templates/core/directory_list.html:20 templates/core/directory_list.html:39
 msgid "Статус"
@@ -948,11 +954,12 @@ msgstr "İşlemler"
 msgid "Архівний"
 msgstr "Arşivlenmiş"
 
-#: templates/core/directory_list.html:50 templates/core/item_label_print.html:3
+#: templates/core/directory_list.html:50
+#: templates/core/item_label_print.html:3
 #: templates/core/item_label_print.html:5
 #: templates/core/stockbalance_list.html:35
 msgid "Друк етикетки"
-msgstr ""
+msgstr "Etiket yazdırma"
 
 #: templates/core/directory_list.html:50
 msgid "Редагувати"
@@ -960,7 +967,7 @@ msgstr "Düzenle"
 
 #: templates/core/directory_list.html:52
 msgid "Архівувати цей запис?"
-msgstr ""
+msgstr "Bu kayıt arşivlensin mi?"
 
 #: templates/core/directory_list.html:54
 msgid "Архівувати"
@@ -979,21 +986,21 @@ msgstr "Henüz kayıt yok"
 
 #: templates/core/includes/pagination.html:3
 msgid "Навігація сторінками"
-msgstr ""
+msgstr "Sayfada gezinme"
 
 #: templates/core/includes/pagination.html:6
 #: templates/core/includes/pagination.html:8
 msgid "Попередня"
-msgstr ""
+msgstr "Öncesi"
 
 #: templates/core/includes/pagination.html:12
 #: templates/core/includes/pagination.html:14
 msgid "Наступна"
-msgstr ""
+msgstr "Sonraki"
 
 #: templates/core/initial_balance_form.html:9
 msgid "Зберегти початковий залишок"
-msgstr ""
+msgstr "Açılış bakiyesini kaydet"
 
 #: templates/core/item_label_print.html:8
 msgid "Друкувати"
@@ -1001,67 +1008,67 @@ msgstr "Yazdır"
 
 #: templates/core/item_label_print.html:8
 msgid "Завантажити PDF"
-msgstr ""
+msgstr "Açıklama PDF"
 
 #: templates/core/labeltemplate_list.html:6
 msgid "Розмір"
-msgstr ""
+msgstr "Boyut"
 
 #: templates/core/management/analytics.html:3
 #: templates/core/management/analytics.html:6
 #: templates/core/management/dashboard.html:19
 msgid "Аналітика"
-msgstr ""
+msgstr "Analiz"
 
 #: templates/core/management/analytics.html:6
 msgid "Прихід, видача, списання, переміщення, повернення та залишки."
-msgstr ""
+msgstr "Varışlar, ihraçlar, iptaller, transferler, iadeler ve bakiyeler."
 
 #: templates/core/management/analytics.html:7
 msgid "Експорт CSV"
-msgstr ""
+msgstr "CSV'yi dışa aktar"
 
 #: templates/core/management/analytics.html:7
 msgid "Експорт XLSX"
-msgstr ""
+msgstr "XLSX'i dışa aktar"
 
 #: templates/core/management/analytics.html:9
 msgid "Застосувати фільтр"
-msgstr ""
+msgstr "Filtreyi uygula"
 
 #: templates/core/management/analytics.html:9
 msgid "Скинути"
-msgstr ""
+msgstr "Döküm"
 
 #: templates/core/management/analytics.html:11
 msgid "Прихід"
-msgstr ""
+msgstr "Gelen"
 
 #: templates/core/management/analytics.html:12
 msgid "Видача"
-msgstr ""
+msgstr "video"
 
 #: templates/core/management/analytics.html:13
 msgid "Списання"
-msgstr ""
+msgstr "hurdaya çıkarmak"
 
 #: templates/core/management/analytics.html:14
 msgid "Унікальні товари"
-msgstr ""
+msgstr "Benzersiz ürünler"
 
 #: templates/core/management/analytics.html:17
 msgid "Топ-10 товарів за видачею"
-msgstr ""
+msgstr "Video çekimi için Top-10 taşıma"
 
 #: templates/core/management/analytics.html:17
 #: templates/core/management/analytics.html:18
 #: templates/core/management/analytics.html:19
 msgid "Немає даних"
-msgstr ""
+msgstr "Veri yok"
 
 #: templates/core/management/analytics.html:18
 msgid "Топ-10 товарів за приходом"
-msgstr ""
+msgstr "Bir sezon için Top-10 nakliyesi"
 
 #: templates/core/management/analytics.html:19
 msgid "Топ-10 отримувачів"
@@ -1073,7 +1080,7 @@ msgstr "Yönetim"
 
 #: templates/core/management/dashboard.html:8
 msgid "Операційна панель для адміністрування складу, аналітики та довідників."
-msgstr ""
+msgstr "Envanter yönetimi, analizler ve dizinler için işletim paneli."
 
 #: templates/core/management/dashboard.html:15
 msgid "Користувачі"
@@ -1083,75 +1090,78 @@ msgstr "Kullanıcılar"
 #: templates/core/management/directories.html:3
 #: templates/core/management/directories.html:5
 msgid "Довідники"
-msgstr ""
+msgstr "Referans kitapları"
 
 #: templates/core/management/dashboard.html:18
 msgid "Номенклатура, категорії, склади, локації та отримувачі."
-msgstr ""
+msgstr "İsimlendirme, kategoriler, depolar, konumlar ve alıcılar."
 
 #: templates/core/management/dashboard.html:19
 msgid "KPI, графіки та експорт рухів складу."
-msgstr ""
+msgstr "KPI, grafiklerin en iyi şekilde değerlendirildiğini gösteriyor."
 
 #: templates/core/management/dashboard.html:20
 #: templates/core/management/users.html:3
 #: templates/core/management/users.html:5
 msgid "Користувачі та ролі"
-msgstr ""
+msgstr "Kullanıcılar ve roller"
 
 #: templates/core/management/dashboard.html:20
 msgid "Перегляд користувачів і складських ролей."
-msgstr ""
+msgstr "Kullanıcıları ve ambar rollerini görüntüleyin."
 
 #: templates/core/management/dashboard.html:21
 msgid "Швидкі інструкції для запуску та роботи."
-msgstr ""
+msgstr "Çalıştırmaya başlamak için hızlı talimatlar."
 
 #: templates/core/management/dashboard.html:22
 msgid "Технічна Django Admin"
-msgstr ""
+msgstr "Teknik Django Yöneticisi"
 
 #: templates/core/management/dashboard.html:22
 msgid "Тільки для технічного обслуговування."
-msgstr ""
+msgstr "Bu çok önemli bir şey."
 
 #: templates/core/management/directories.html:8
 msgid "Записів"
-msgstr ""
+msgstr "Kayıtlar"
 
 #: templates/core/management/help.html:3 templates/core/management/help.html:7
 msgid "Центр допомоги"
-msgstr ""
+msgstr "Yardım merkezi"
 
 #: templates/core/management/help.html:9
 msgid ""
 "Інструкції адміністратора, запуску складу, друку, штрихкодів і робочих "
 "операцій."
 msgstr ""
+"Yöneticiye yönelik talimatlar, depoyu başlatma, yazdırma, barkodlar ve iş "
+"operasyonları."
 
 #: templates/core/management/help.html:11
 msgid "Користувацька інструкція для щоденної роботи зі складом."
-msgstr ""
+msgstr "Depo ile günlük çalışma için kullanım kılavuzu."
 
 #: templates/core/management/help.html:14
 msgid "Назад до керування"
-msgstr ""
+msgstr "Yönetime geri dön"
 
 #: templates/core/management/help.html:20
 msgid "Розділи"
-msgstr ""
+msgstr "Bölümler"
 
 #: templates/core/management/settings.html:3
 #: templates/core/management/settings.html:5 templates/core/simple_form.html:3
 #: templates/core/simple_form.html:5
 msgid "Налаштування"
-msgstr ""
+msgstr "Ayarlar"
 
 #: templates/core/management/settings.html:5
 msgid ""
-"Системні налаштування доступні через технічну Django Admin та конфігураційні "
-"файли проєкту."
+"Системні налаштування доступні через технічну Django Admin та конфігураційні"
+" файли проєкту."
 msgstr ""
+"Sistem, Django Admin'i kontrol etmek için bir uygulama olarak kullanılıyor."
 
 #: templates/core/management/users.html:5
 msgid "Створити в Django Admin"
@@ -1159,15 +1169,15 @@ msgstr "Django Admin’de oluştur"
 
 #: templates/core/management/users.html:6
 msgid "Логін"
-msgstr ""
+msgstr "Giriş"
 
 #: templates/core/management/users.html:6
 msgid "Ролі"
-msgstr ""
+msgstr "Roller"
 
 #: templates/core/management/users.html:7
 msgid "Доступні ролі"
-msgstr ""
+msgstr "Mevcut roller"
 
 #: templates/core/stock_receive_form.html:9
 msgid "Зберегти прихід"
@@ -1175,27 +1185,27 @@ msgstr "Stok girişini kaydet"
 
 #: templates/core/stock_receive_result.html:3
 msgid "Результат приходу"
-msgstr ""
+msgstr "Varış sonucu"
 
 #: templates/core/stock_receive_result.html:5
 msgid "Прихід товару збережено"
-msgstr ""
+msgstr "Malların gelişi kaydedildi"
 
 #: templates/core/stock_receive_result.html:8
 msgid "Товар"
-msgstr ""
+msgstr "Mal"
 
 #: templates/core/stock_receive_result.html:14
 msgid "Надрукувати етикетку"
-msgstr ""
+msgstr "Etiket yazdır"
 
 #: templates/core/stock_receive_result.html:14
 msgid "Новий прихід"
-msgstr ""
+msgstr "Yeni sezon"
 
 #: templates/core/stockbalance_list.html:7
 msgid "Перегляд фактичної кількості номенклатури на локаціях."
-msgstr ""
+msgstr "Konumlardaki gerçek öğe sayısını görüntüleme."
 
 #: templates/core/stockbalance_list.html:20
 #: templates/core/stockmovement_list.html:6
@@ -1209,11 +1219,11 @@ msgstr "Filtrele"
 
 #: templates/core/stockmovement_list.html:7
 msgid "Звідки"
-msgstr ""
+msgstr "Nerede"
 
 #: templates/core/stockmovement_list.html:7
 msgid "Куди"
-msgstr ""
+msgstr "Arkadaşlar"
 
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
@@ -1227,9 +1237,278 @@ msgstr "Giriş"
 msgid "Увійти"
 msgstr "Oturum aç"
 
-#~ msgid "Адмін-панель"
-#~ msgstr "Yönetim paneli"
-
 #: templates/base.html:2 templates/registration/login.html:4
 msgid "YANTOS · Складський облік"
 msgstr "YANTOS · Warehouse accounting"
+
+#: core/models.py:21 core/models.py:139
+msgid "unit"
+msgstr "birim"
+
+#: core/models.py:22
+msgid "units"
+msgstr "birimler"
+
+#: core/models.py:46 core/models.py:131
+msgid "category"
+msgstr "kategori"
+
+#: core/models.py:47
+msgid "categories"
+msgstr "kategoriler"
+
+#: core/models.py:66 core/models.py:328
+msgid "recipient"
+msgstr "alıcı"
+
+#: core/models.py:67
+msgid "recipients"
+msgstr "alıcılar"
+
+#: core/models.py:83 core/models.py:155 core/models.py:263 core/models.py:305
+msgid "item"
+msgstr "öğe"
+
+#: core/models.py:84 core/models.py:188 core/models.py:212
+msgid "warehouse"
+msgstr "depo"
+
+#: core/models.py:86 core/models.py:207 core/models.py:234 core/models.py:269
+msgid "location"
+msgstr "konum"
+
+#: core/models.py:93
+msgid "barcode registry entry"
+msgstr "barkod kayıt girişi"
+
+#: core/models.py:94
+msgid "barcode registry entries"
+msgstr "barkod kayıt girişleri"
+
+#: core/models.py:116
+msgid "barcode sequence"
+msgstr "barkod dizisi"
+
+#: core/models.py:117
+msgid "barcode sequences"
+msgstr "barkod dizileri"
+
+#: core/models.py:156
+msgid "items"
+msgstr "öğeler"
+
+#: core/models.py:189
+msgid "warehouses"
+msgstr "depolar"
+
+#: core/models.py:235
+msgid "locations"
+msgstr "yerler"
+
+#: core/models.py:276
+msgid "stock balance"
+msgstr "stok bakiyesi"
+
+#: core/models.py:277
+msgid "stock balances"
+msgstr "hisse senedi bakiyeleri"
+
+#: core/models.py:338
+msgid "stock movement"
+msgstr "stok hareketi"
+
+#: core/models.py:339
+msgid "stock movements"
+msgstr "hisse senedi hareketleri"
+
+#: templates/core/dashboard.html:19
+msgid "Розширене адміністрування"
+msgstr "Gelişmiş yönetim"
+
+msgid "Видача товару"
+msgstr "Stok sorunu"
+
+msgid "Тип видачі"
+msgstr "Sorun türü"
+
+msgid "Продаж"
+msgstr "Satış"
+
+msgid "Ремонтні роботи"
+msgstr "Onarım işleri"
+
+msgid "Виробничі потреби"
+msgstr "Üretim ihtiyaçları"
+
+msgid "Інше"
+msgstr "Diğer"
+
+msgid "Цех / підрозділ"
+msgstr "Atölye / bölüm"
+
+msgid "Номер документа"
+msgstr "Belge numarası"
+
+msgid "Недостатньо залишку для видачі."
+msgstr "İhraç edilecek yeterli stok yok."
+
+msgid "Недостатньо залишку для видачі"
+msgstr "İhraç için yeterli stok yok"
+
+msgid "Нова видача"
+msgstr "Yeni sayı"
+
+msgid "Усі типи видачі"
+msgstr "Tüm sorun türleri"
+
+msgid "Отримувач / відповідальний"
+msgstr "Alıcı / sorumlu kişi"
+
+msgid "Документ"
+msgstr "Belge"
+
+msgid "Залишок після операції"
+msgstr "Operasyon sonrası bakiye"
+
+msgid "Видача зі складу"
+msgstr "Depodan çıkış"
+
+msgid "Inventory count"
+msgstr "Envanter sayımı"
+
+msgid "Inventory counts"
+msgstr "Envanter sayıları"
+
+msgid "Inventory count line"
+msgstr "Envanter sayım satırı"
+
+msgid "Inventory count lines"
+msgstr "Envanter sayım satırları"
+
+msgid "Draft"
+msgstr "Taslak"
+
+msgid "In progress"
+msgstr "Devam etmekte"
+
+msgid "Completed"
+msgstr "Tamamlanmış"
+
+msgid "Cancelled"
+msgstr "İptal edildi"
+
+#: inventory-ui
+msgid "Інвентаризація"
+msgstr "Envanter sayımı"
+
+#: inventory-ui
+msgid "Нова інвентаризація"
+msgstr "Yeni envanter sayımı"
+
+#: inventory-ui
+msgid "Створити інвентаризацію"
+msgstr "Envanter sayımı oluştur"
+
+#: inventory-ui
+msgid "Підрахунок"
+msgstr "Saymak"
+
+#: inventory-ui
+msgid "Облікова кількість"
+msgstr "Beklenen miktar"
+
+#: inventory-ui
+msgid "Фактична кількість"
+msgstr "Gerçek miktar"
+
+#: inventory-ui
+msgid "Різниця"
+msgstr "Fark"
+
+#: inventory-ui
+msgid "Надлишок"
+msgstr "Fazlalık"
+
+#: inventory-ui
+msgid "Нестача"
+msgstr "Kıtlık"
+
+#: inventory-ui
+msgid "Сканувати штрихкод"
+msgstr "Barkodu tarayın"
+
+#: inventory-ui
+msgid "Назад до інвентаризації"
+msgstr "Envanter sayımına geri dön"
+
+#: inventory-ui
+msgid "До списку інвентаризацій"
+msgstr "Envanter listesine geri dön"
+
+msgid "Завершити інвентаризацію"
+msgstr "Envanter sayımını tamamla"
+
+msgid "Інвентаризацію завершено. Залишки скориговано."
+msgstr "Envanter sayımı tamamlandı. Stok bakiyeleri ayarlandı."
+
+msgid "Інвентаризацію вже завершено."
+msgstr "Envanter sayımı zaten tamamlandı."
+
+msgid "Неможливо завершити скасовану інвентаризацію."
+msgstr "İptal edilen bir envanter sayımı tamamlanamıyor."
+
+msgid "Коригування за інвентаризацією"
+msgstr "Envanter sayımı düzenlemesi"
+
+msgid "Всього рядків"
+msgstr "Toplam satırlar"
+
+msgid "Кількість розбіжностей"
+msgstr "Fark çizgileri"
+
+msgid "Сума надлишків"
+msgstr "Toplam fazla"
+
+msgid "Сума нестач"
+msgstr "Toplam kıtlık"
+
+msgid "XLSX export requires openpyxl."
+msgstr "XLSX dışa aktarımı openpyxl gerektirir."
+
+msgid "Номер інвентаризації"
+msgstr "Envanter numarası"
+
+msgid "Локація інвентаризації"
+msgstr "Envanter konumu"
+
+msgid "Internal code"
+msgstr "Dahili kod"
+
+msgid "Barcode"
+msgstr "Barkod"
+
+msgid "Коментар рядка"
+msgstr "Satır yorumu"
+
+#: barcode-scanner
+msgid "Штрихкод не знайдено."
+msgstr "Barkod bulunamadı."
+
+#: barcode-scanner
+msgid "Товар знайдено."
+msgstr "Öğe bulundu."
+
+#: barcode-scanner
+msgid "Локацію знайдено."
+msgstr "Konum bulundu."
+
+#: barcode-scanner
+msgid "Склад знайдено."
+msgstr "Depo bulundu."
+
+#: barcode-scanner
+msgid "Товар не знайдено у цій інвентаризації."
+msgstr "Bu envanter sayımında öğe bulunamadı."
+
+#~ msgid "Адмін-панель"
+#~ msgstr "Yönetim paneli"
