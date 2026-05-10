@@ -52,7 +52,7 @@
         <form class="row g-2 align-items-end" method="get" action="{% url 'item_list' %}" role="search">
             <div class="col-12 col-lg">
                 <label class="form-label fw-semibold" for="storekeeper-item-search">{% trans "Пошук товару" %}</label>
-                <input class="form-control" id="storekeeper-item-search" type="search" name="q" placeholder="{% trans 'Назва, внутрішній код або штрихкод' %}">
+                <input class="form-control" id="storekeeper-item-search" type="search" name="q" autofocus placeholder="{% trans 'Назва, внутрішній код або штрихкод' %}">
             </div>
             <div class="col-12 col-lg-auto">
                 <button class="btn btn-primary w-100" type="submit">{% trans "Знайти" %}</button>

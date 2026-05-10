@@ -274,7 +274,8 @@ class DashboardPermissionTests(TestCase):
 
         self.assertContains(response, "Назва, внутрішній код або штрихкод")
         self.assertIn(f'<form class="row g-2 align-items-end" method="get" action="{reverse("item_list")}"', html)
-        self.assertIn('type="search" name="q"', html)
+        self.assertIn('type="search" name="q" autofocus', html)
+        self.assertNotContains(response, "Відкрити")
 
     def test_storekeeper_quick_item_search_targets_item_list_q_parameter(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
@@ -348,6 +349,8 @@ class DashboardPermissionTests(TestCase):
         self.assertContains(response, "Головна")
         self.assertContains(response, "Довідники")
         self.assertNotContains(response, "Робоче місце комірника")
+        self.assertNotContains(response, "Пошук товару")
+        self.assertNotContains(response, "autofocus")
 
     def test_auditor_dashboard_is_view_only(self):
         response = self.dashboard_for(self.auditor)
