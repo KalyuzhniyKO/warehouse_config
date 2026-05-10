@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ title }} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="card content-card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">{{ title }}</h1>
+            <a class="btn btn-outline-secondary" href="{% url 'management_users' %}">{% trans "Назад до користувачів" %}</a>
+        </div>
+        {% if is_superuser_target %}
+            <div class="alert alert-warning" role="alert">
+                {% trans "Це superuser. Групи та технічні права краще змінювати тільки в Django Admin." %}
+            </div>
+        {% endif %}
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                {% if field.field.widget.input_type == "checkbox" and field.name != "groups" %}
+                    <div class="form-check mb-3">
+                        {{ field }}
+                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% elif field.name == "groups" %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {% for choice in field %}
+                            <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+                        {% endfor %}
+                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

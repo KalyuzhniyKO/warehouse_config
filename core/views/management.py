@@ -3,7 +3,6 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -27,6 +26,9 @@ from ..forms import (
     InventoryCountLineForm,
     LabelTemplateForm,
     LocationForm,
+    ManagementUserCreateForm,
+    ManagementUserPasswordForm,
+    ManagementUserUpdateForm,
     PrintLabelForm,
     PrinterForm,
     RecipientForm,
@@ -36,6 +38,7 @@ from ..forms import (
     StockReceiveForm,
     StockTransferForm,
     SystemSettingsForm,
+    warehouse_role_queryset,
     UnitForm,
     WarehouseForm,
 )
@@ -177,8 +180,87 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context["users"] = (
             get_user_model().objects.prefetch_related("groups").order_by("username")
         )
-        context["groups"] = Group.objects.order_by("name")
+        context["groups"] = warehouse_role_queryset()
         return context
+
+
+
+class ManagementUserCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
+    group_names = USER_MANAGEMENT_GROUPS
+    model = get_user_model()
+    form_class = ManagementUserCreateForm
+    template_name = "core/management/user_form.html"
+    success_url = reverse_lazy("management_users")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request_user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = _("Створити користувача")
+        context["submit_label"] = _("Створити")
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Користувача створено."))
+        return response
+
+
+class ManagementUserUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
+    group_names = USER_MANAGEMENT_GROUPS
+    model = get_user_model()
+    form_class = ManagementUserUpdateForm
+    template_name = "core/management/user_form.html"
+    success_url = reverse_lazy("management_users")
+
+    def get_queryset(self):
+        return get_user_model().objects.prefetch_related("groups")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request_user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = _("Редагувати користувача")
+        context["submit_label"] = _("Зберегти")
+        context["is_superuser_target"] = self.object.is_superuser
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(self.request, _("Користувача оновлено."))
+        return response
+
+
+class ManagementUserPasswordView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+    group_names = USER_MANAGEMENT_GROUPS
+    form_class = ManagementUserPasswordForm
+    template_name = "core/management/user_password_form.html"
+    success_url = reverse_lazy("management_users")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.target_user = get_object_or_404(get_user_model(), pk=kwargs["pk"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.target_user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["target_user"] = self.target_user
+        return context
+
+    def form_valid(self, form):
+        form.save()
+        messages.success(self.request, _("Пароль змінено."))
+        return super().form_valid(form)
 
 
 class ManagementSettingsView(LoginRequiredMixin, GroupRequiredMixin, FormView):
