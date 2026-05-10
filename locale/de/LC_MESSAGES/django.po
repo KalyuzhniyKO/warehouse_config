@@ -1524,3 +1524,111 @@ msgstr "Der Artikel wurde bei dieser Inventurzählung nicht gefunden."
 
 #~ msgid "Адмін-панель"
 #~ msgstr "Adminbereich"
+
+msgid "Інструкції для роботи із системою."
+msgstr "Instructions for using the system."
+
+msgid "Адміністрування"
+msgstr "Administration"
+
+msgid "Виберіть номенклатуру для друку етикетки."
+msgstr "Choose an item to print a label."
+
+msgid "Внесіть стартову кількість товарів."
+msgstr "Enter starting quantities for goods."
+
+msgid "Відкрити"
+msgstr "Öffnen"
+
+msgid "Групування номенклатури."
+msgstr "Item grouping."
+
+msgid "Даних поки немає."
+msgstr "Noch keine Daten."
+
+msgid "До залишків"
+msgstr "Zu Beständen"
+
+msgid "До рухів товарів"
+msgstr "Zu Warenbewegungen"
+
+msgid "Етикетки"
+msgstr "Labels"
+
+msgid "Зведені показники та експорт звітів."
+msgstr "Summary metrics and report export."
+
+msgid "Комірки, стелажі та зони складу."
+msgstr "Bins, racks, and warehouse zones."
+
+msgid "Контроль"
+msgstr "Kontrolle"
+
+msgid "Контроль і звіти"
+msgstr "Kontrolle und Berichte"
+
+msgid "Місця зберігання товарів."
+msgstr "Goods storage places."
+
+msgid "Назад до списку"
+msgstr "Zurück zur Liste"
+
+msgid "Налаштування принтерів етикеток."
+msgstr "Label printer settings."
+
+msgid "Немає залишків за вибраними фільтрами."
+msgstr "Keine Bestände für die gewählten Filter."
+
+msgid "Немає рухів за вибраними фільтрами."
+msgstr "Keine Bewegungen für die gewählten Filter."
+
+msgid "Немає інвентаризацій."
+msgstr "Keine Inventuren."
+
+msgid "Нова операція"
+msgstr "Neue Operation"
+
+msgid "Оберіть потрібну дію для щоденної складської роботи."
+msgstr "Wählen Sie eine Aktion für die tägliche Lagerarbeit."
+
+msgid "Одиниці для обліку кількості."
+msgstr "Units for quantity accounting."
+
+msgid "Оформіть видачу товарів зі складу."
+msgstr "Record goods issued from the warehouse."
+
+msgid "Панель керування складом."
+msgstr "Warehouse management panel."
+
+msgid "Перевірте фактичну кількість на локаціях."
+msgstr "Check actual quantities by location."
+
+msgid "Перегляньте історію складських операцій."
+msgstr "Review the history of warehouse operations."
+
+msgid "Початкові залишки"
+msgstr "Anfangsbestände"
+
+msgid "Прийміть товар на склад або локацію."
+msgstr "Receive goods into a warehouse or location."
+
+msgid "Проведіть або перегляньте перерахунок складу."
+msgstr "Perform or review a warehouse count."
+
+msgid "Підрозділи та контакти для видач."
+msgstr "Departments and contacts for issues."
+
+msgid "Складські операції"
+msgstr "Lageroperationen"
+
+msgid "Створіть перший запис."
+msgstr "Erstellen Sie den ersten Eintrag."
+
+msgid "Товари, матеріали та їхні коди."
+msgstr "Goods, materials, and their codes."
+
+msgid "Формати та шаблони для друку."
+msgstr "Print formats and templates."
+
+msgid "Перегляньте інвентаризації складу."
+msgstr "Lagerinventuren anzeigen."

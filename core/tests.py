@@ -1956,3 +1956,109 @@ class WarehouseWorkflowTests(TestCase):
         response = self.client.get(reverse("stock_receive"))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+
+class DashboardNavigationPolishTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        call_command("compilemessages", verbosity=0)
+
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        User = get_user_model()
+        self.admin = User.objects.create_user(username="dash-admin", password="pw")
+        self.admin.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.storekeeper = User.objects.create_user(
+            username="dash-storekeeper", password="pw"
+        )
+        self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        self.auditor = User.objects.create_user(username="dash-auditor", password="pw")
+        self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
+
+    def dashboard_for(self, user, path=None):
+        from django.utils import translation
+
+        translation.activate("en" if path and path.startswith("/en/") else "uk")
+        self.client.force_login(user)
+        return self.client.get(path or reverse("dashboard"))
+
+    def tearDown(self):
+        from django.utils import translation
+
+        translation.activate("uk")
+
+    def test_admin_dashboard_contains_required_groups_and_operations(self):
+        response = self.dashboard_for(self.admin)
+
+        self.assertContains(response, "Складські операції")
+        self.assertContains(response, "Контроль")
+        self.assertContains(response, "Довідники")
+        for label in [
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Інвентаризація",
+        ]:
+            self.assertContains(response, label)
+
+    def test_storekeeper_dashboard_contains_operations_without_management_or_recipients(self):
+        response = self.dashboard_for(self.storekeeper)
+
+        self.assertContains(response, "Складські операції")
+        for label in [
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Інвентаризація",
+        ]:
+            self.assertContains(response, label)
+        self.assertNotContains(response, "Керування")
+        self.assertNotContains(response, "Отримувачі")
+
+    def test_auditor_dashboard_is_view_only(self):
+        response = self.dashboard_for(self.auditor)
+
+        for label in ["Прихід товару", "Видача товару", "Початкові залишки"]:
+            self.assertNotContains(response, label)
+        for label in ["Залишки", "Рухи товарів", "Інвентаризація"]:
+            self.assertContains(response, label)
+
+    def test_storekeeper_sidebar_hides_recipients(self):
+        response = self.dashboard_for(self.storekeeper)
+
+        self.assertNotContains(response, "Отримувачі")
+
+    def test_auditor_sidebar_hides_create_operations(self):
+        response = self.dashboard_for(self.auditor)
+
+        for label in ["Прихід товару", "Видача товару", "Початкові залишки"]:
+            self.assertNotContains(response, label)
+        self.assertContains(response, "Інвентаризація")
+
+    def test_mobile_menu_hides_management_for_storekeeper(self):
+        response = self.dashboard_for(self.storekeeper)
+        html = response.content.decode()
+
+        mobile_start = html.index('navbar-nav me-auto mb-2 mb-lg-0 d-lg-none')
+        mobile_end = html.index('ms-auto d-flex', mobile_start)
+        mobile_menu = html[mobile_start:mobile_end]
+        self.assertNotIn("Керування", mobile_menu)
+        self.assertNotIn("management/", mobile_menu)
+
+    def test_english_dashboard_has_no_new_ukrainian_phrases_and_keeps_yantos_brand(self):
+        response = self.dashboard_for(self.admin, "/en/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("YANTOS", html)
+        self.assertIn("Warehouse operations", html)
+        for phrase in [
+            "Складські операції",
+            "Прихід товару",
+            "Видача товару",
+            "Початкові залишки",
+            "Керування",
+        ]:
+            self.assertNotIn(phrase, html)
+
