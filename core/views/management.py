@@ -1,0 +1,237 @@
+import csv
+import json
+
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.forms.models import model_to_dict
+from django.db.models import Count, Q, Sum
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.utils.html import format_html, linebreaks, urlize
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
+from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
+
+from ..forms import (
+    AnalyticsFilterForm,
+    CategoryForm,
+    ItemForm,
+    InitialBalanceForm,
+    InventoryCountCreateForm,
+    InventoryCountLineForm,
+    LabelTemplateForm,
+    LocationForm,
+    PrintLabelForm,
+    PrinterForm,
+    RecipientForm,
+    StockBalanceFilterForm,
+    StockIssueForm,
+    StockMovementFilterForm,
+    StockReceiveForm,
+    StockTransferForm,
+    UnitForm,
+    WarehouseForm,
+)
+from ..models import (
+    Category,
+    InventoryCount,
+    Item,
+    LabelTemplate,
+    Location,
+    PrintJob,
+    Printer,
+    Recipient,
+    StockBalance,
+    StockMovement,
+    Unit,
+    Warehouse,
+)
+from ..permissions import (
+    ANALYTICS_GROUPS,
+    MANAGEMENT_GROUPS,
+    DIRECTORY_EDIT_GROUPS,
+    PRINT_GROUPS,
+    SETTINGS_GROUPS,
+    STOCK_EDIT_GROUPS,
+    STOCK_VIEW_GROUPS,
+    USER_MANAGEMENT_GROUPS,
+    GroupRequiredMixin,
+    user_in_groups,
+)
+from ..services import analytics as analytics_service
+from ..services.inventory import (
+    InventoryServiceError,
+    complete_inventory_count,
+    create_inventory_count,
+    update_inventory_line_actual_qty,
+)
+from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.stock import (
+    InsufficientStockError,
+    SameLocationTransferError,
+    StockServiceError,
+    create_initial_balance,
+    issue_stock,
+    receive_stock,
+    transfer_stock,
+)
+
+
+
+class PlaceholderPageView(LoginRequiredMixin, TemplateView):
+    template_name = "core/placeholder.html"
+    title = ""
+    description = ""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = self.title
+        context["description"] = self.description
+        return context
+
+
+class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = MANAGEMENT_GROUPS
+    template_name = "core/management/dashboard.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "can_manage_users": user_in_groups(
+                    self.request.user, USER_MANAGEMENT_GROUPS
+                ),
+                "can_manage_directories": user_in_groups(
+                    self.request.user, DIRECTORY_EDIT_GROUPS
+                ),
+                "can_view_analytics": user_in_groups(
+                    self.request.user, ANALYTICS_GROUPS
+                ),
+                "show_technical_admin": self.request.user.is_superuser,
+                "counts": {
+                    "items": Item.objects.count(),
+                    "warehouses": Warehouse.objects.count(),
+                    "locations": Location.objects.count(),
+                    "users": get_user_model().objects.count(),
+                },
+            }
+        )
+        return context
+
+
+class ManagementDirectoriesView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = DIRECTORY_EDIT_GROUPS
+    template_name = "core/management/directories.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["directories"] = [
+            {
+                "title": _("Номенклатура"),
+                "count": Item.objects.count(),
+                "url": reverse("item_list"),
+            },
+            {
+                "title": _("Категорії"),
+                "count": Category.objects.count(),
+                "url": reverse("category_list"),
+            },
+            {
+                "title": _("Одиниці виміру"),
+                "count": Unit.objects.count(),
+                "url": reverse("unit_list"),
+            },
+            {
+                "title": _("Склади"),
+                "count": Warehouse.objects.count(),
+                "url": reverse("warehouse_list"),
+            },
+            {
+                "title": _("Локації"),
+                "count": Location.objects.count(),
+                "url": reverse("location_list"),
+            },
+            {
+                "title": _("Отримувачі"),
+                "count": Recipient.objects.count(),
+                "url": reverse("recipient_list"),
+            },
+        ]
+        return context
+
+
+class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = USER_MANAGEMENT_GROUPS
+    template_name = "core/management/users.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["users"] = (
+            get_user_model().objects.prefetch_related("groups").order_by("username")
+        )
+        context["groups"] = Group.objects.order_by("name")
+        return context
+
+
+class ManagementSettingsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = USER_MANAGEMENT_GROUPS
+    template_name = "core/management/settings.html"
+
+
+HELP_SECTIONS = [
+    {
+        "title": _("Як почати склад з нуля"),
+        "filename": "START_WAREHOUSE_FROM_ZERO.md",
+        "admin_only": True,
+    },
+    {"title": _("Інструкція користувача"), "filename": "USER_GUIDE.md", "admin_only": False},
+    {"title": _("Інструкція адміністратора"), "filename": "ADMIN_GUIDE.md", "admin_only": True},
+    {"title": _("Типові помилки"), "filename": "ADMIN_GUIDE.md", "anchor": "Типові помилки", "admin_only": True},
+    {"title": _("Backup і відновлення"), "filename": "BACKUP_AND_RESTORE.md", "admin_only": True},
+    {"title": _("Принтери і друк етикеток"), "filename": "USER_GUIDE.md", "anchor": "Друк етикеток", "admin_only": True},
+    {"title": _("Штрихкоди"), "filename": "USER_GUIDE.md", "anchor": "Штрихкоди", "admin_only": False},
+    {"title": _("Прихід товару"), "filename": "USER_GUIDE.md", "anchor": "Прихід товару", "admin_only": False},
+    {"title": _("Початковий залишок"), "filename": "USER_GUIDE.md", "anchor": "Початковий залишок", "admin_only": False},
+    {"title": _("Рухи товарів"), "filename": "USER_GUIDE.md", "anchor": "Рухи товарів", "admin_only": False},
+]
+
+
+def render_markdown_document(filename):
+    document_path = settings.BASE_DIR / "docs" / filename
+    if not document_path.exists():
+        return format_html("<p class='text-muted'>{}</p>", _("Документ ще не додано."))
+    text = document_path.read_text(encoding="utf-8")
+    return mark_safe(linebreaks(urlize(text)))
+
+
+class HelpView(LoginRequiredMixin, TemplateView):
+    template_name = "core/management/help.html"
+    management_mode = False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        sections = HELP_SECTIONS if self.management_mode else [HELP_SECTIONS[1]]
+        context.update(
+            {
+                "management_mode": self.management_mode,
+                "help_sections": [
+                    {
+                        **section,
+                        "content": render_markdown_document(section["filename"]),
+                    }
+                    for section in sections
+                ],
+            }
+        )
+        return context
+
+
+class ManagementHelpView(GroupRequiredMixin, HelpView):
+    group_names = MANAGEMENT_GROUPS
+    management_mode = True
