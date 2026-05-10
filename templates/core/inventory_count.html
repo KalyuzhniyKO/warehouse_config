@@ -6,7 +6,7 @@
     <h1 class="mb-0">{% trans "Підрахунок" %} {{ inventory_count.number }}</h1>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-secondary" href="{% url 'inventory_detail' inventory_count.pk %}">{% trans "Назад до інвентаризації" %}</a>
-        <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
+        <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "Назад до списку" %}</a>
     </div>
 </div>
 {% with barcode_scanner_mode="inventory" barcode_scanner_id="inventory-barcode-scanner" %}{% include "core/includes/barcode_scanner.html" %}{% endwith %}
@@ -52,7 +52,7 @@
                 </tr>
                 {% endwith %}
             {% empty %}
-                <tr><td colspan="7" class="text-center text-muted py-5"><div class="fs-1 mb-2">📭</div>{% trans "Записів поки немає" %}</td></tr>
+                <tr><td colspan="7" class="text-center text-muted py-5"><div class="fs-1 mb-2">📭</div>{% trans "Даних поки немає." %}</td></tr>
             {% endfor %}
             </tbody>
         </table>
@@ -61,7 +61,7 @@
 <div class="mt-4 d-flex flex-wrap gap-2">
     <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
     <a class="btn btn-outline-secondary" href="{% url 'inventory_detail' inventory_count.pk %}">{% trans "Назад до інвентаризації" %}</a>
-    <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
+    <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "Назад до списку" %}</a>
 </div>
 </form>
 {% endblock %}

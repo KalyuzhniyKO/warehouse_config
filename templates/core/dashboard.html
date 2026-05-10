@@ -5,24 +5,72 @@
 <div class="card content-card mb-4">
     <div class="card-body p-4 p-xl-5">
         <h1 class="mb-2">{% trans "Головна" %}</h1>
-        <p class="lead text-muted mb-0">{% trans "Оберіть розділ для роботи з довідниками складу, номенклатурою або залишками." %}</p>
+        <p class="lead text-muted mb-0">{% trans "Оберіть потрібну дію для щоденної складської роботи." %}</p>
     </div>
 </div>
-<div class="row g-3">
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'item_list' %}"><div class="card-body"><div class="fs-2">📦</div><h2 class="h5 mt-2">{% trans "Номенклатура" %}</h2><p class="text-muted mb-0">{% trans "Товари та матеріали" %}</p></div></a></div>
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'category_list' %}"><div class="card-body"><div class="fs-2">🗂️</div><h2 class="h5 mt-2">{% trans "Категорії" %}</h2><p class="text-muted mb-0">{% trans "Групування номенклатури" %}</p></div></a></div>
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'unit_list' %}"><div class="card-body"><div class="fs-2">⚖️</div><h2 class="h5 mt-2">{% trans "Одиниці виміру" %}</h2><p class="text-muted mb-0">{% trans "шт, кг, м та інші" %}</p></div></a></div>
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'warehouse_list' %}"><div class="card-body"><div class="fs-2">🏭</div><h2 class="h5 mt-2">{% trans "Склади" %}</h2><p class="text-muted mb-0">{% trans "Місця зберігання" %}</p></div></a></div>
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'location_list' %}"><div class="card-body"><div class="fs-2">📍</div><h2 class="h5 mt-2">{% trans "Локації" %}</h2><p class="text-muted mb-0">{% trans "Комірки та стелажі" %}</p></div></a></div>
-    {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-        <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'recipient_list' %}"><div class="card-body"><div class="fs-2">👥</div><h2 class="h5 mt-2">{% trans "Отримувачі" %}</h2><p class="text-muted mb-0">{% trans "Підрозділи та контакти" %}</p></div></a></div>
-    {% endif %}
-    <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'stockbalance_list' %}"><div class="card-body"><div class="fs-2">📊</div><h2 class="h5 mt-2">{% trans "Залишки" %}</h2><p class="text-muted mb-0">{% trans "Кількість на локаціях" %}</p></div></a></div>
-    {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-        <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'stock_issue' %}"><div class="card-body"><div class="fs-2">📤</div><h2 class="h5 mt-2">{% trans "Видача товару" %}</h2><p class="text-muted mb-0">{% trans "Видача зі складу" %}</p></div></a></div>
-    {% endif %}
-    {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-        <div class="col-md-6 col-xl-3"><a class="card content-card h-100 text-decoration-none" href="{% url 'management_dashboard' %}"><div class="card-body"><div class="fs-2">🧭</div><h2 class="h5 mt-2">{% trans "Керування" %}</h2><p class="text-muted mb-0">{% trans "Панель керування складом" %}</p></div></a></div>
-    {% endif %}
-</div>
+
+{% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+<section class="mb-4" aria-labelledby="warehouse-operations-heading">
+    <h2 id="warehouse-operations-heading" class="h4 mb-3">{% trans "Складські операції" %}</h2>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📥</div><h3 class="h5 mt-2">{% trans "Прихід товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Прийміть товар на склад або локацію." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_receive' %}">{% trans "Відкрити" %}</a></div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📤</div><h3 class="h5 mt-2">{% trans "Видача товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Оформіть видачу товарів зі складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_issue' %}">{% trans "Відкрити" %}</a></div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧾</div><h3 class="h5 mt-2">{% trans "Початкові залишки" %}</h3><p class="text-muted flex-grow-1">{% trans "Внесіть стартову кількість товарів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_initial' %}">{% trans "Відкрити" %}</a></div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧮</div><h3 class="h5 mt-2">{% trans "Інвентаризація" %}</h3><p class="text-muted flex-grow-1">{% trans "Проведіть або перегляньте перерахунок складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+    </div>
+</section>
+{% endif %}
+
+<section class="mb-4" aria-labelledby="control-reports-heading">
+    <h2 id="control-reports-heading" class="h4 mb-3">{% trans "Контроль і звіти" %}</h2>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📊</div><h3 class="h5 mt-2">{% trans "Залишки" %}</h3><p class="text-muted flex-grow-1">{% trans "Перевірте фактичну кількість на локаціях." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🔁</div><h3 class="h5 mt-2">{% trans "Рухи товарів" %}</h3><p class="text-muted flex-grow-1">{% trans "Перегляньте історію складських операцій." %}</p><a class="btn btn-primary mt-auto" href="{% url 'movement_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% if user|in_group:"Перегляд / аудитор" and not user.is_superuser %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧮</div><h3 class="h5 mt-2">{% trans "Інвентаризація" %}</h3><p class="text-muted flex-grow-1">{% trans "Перегляньте інвентаризації складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📈</div><h3 class="h5 mt-2">{% trans "Аналітика" %}</h3><p class="text-muted flex-grow-1">{% trans "Зведені показники та експорт звітів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'management_analytics' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+    </div>
+</section>
+
+<section class="mb-4" aria-labelledby="directories-heading">
+    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📦</div><h3 class="h5 mt-2">{% trans "Номенклатура" %}</h3><p class="text-muted flex-grow-1">{% trans "Товари, матеріали та їхні коди." %}</p><a class="btn btn-primary mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🗂️</div><h3 class="h5 mt-2">{% trans "Категорії" %}</h3><p class="text-muted flex-grow-1">{% trans "Групування номенклатури." %}</p><a class="btn btn-primary mt-auto" href="{% url 'category_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">⚖️</div><h3 class="h5 mt-2">{% trans "Одиниці виміру" %}</h3><p class="text-muted flex-grow-1">{% trans "Одиниці для обліку кількості." %}</p><a class="btn btn-primary mt-auto" href="{% url 'unit_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🏭</div><h3 class="h5 mt-2">{% trans "Склади" %}</h3><p class="text-muted flex-grow-1">{% trans "Місця зберігання товарів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'warehouse_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📍</div><h3 class="h5 mt-2">{% trans "Локації" %}</h3><p class="text-muted flex-grow-1">{% trans "Комірки, стелажі та зони складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'location_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">👥</div><h3 class="h5 mt-2">{% trans "Отримувачі" %}</h3><p class="text-muted flex-grow-1">{% trans "Підрозділи та контакти для видач." %}</p><a class="btn btn-primary mt-auto" href="{% url 'recipient_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+    </div>
+</section>
+
+{% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+<section class="mb-4" aria-labelledby="labels-heading">
+    <h2 id="labels-heading" class="h4 mb-3">{% trans "Етикетки" %}</h2>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🏷️</div><h3 class="h5 mt-2">{% trans "Друк етикеток" %}</h3><p class="text-muted flex-grow-1">{% trans "Виберіть номенклатуру для друку етикетки." %}</p><a class="btn btn-primary mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🖨️</div><h3 class="h5 mt-2">{% trans "Принтери" %}</h3><p class="text-muted flex-grow-1">{% trans "Налаштування принтерів етикеток." %}</p><a class="btn btn-primary mt-auto" href="{% url 'printer_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📐</div><h3 class="h5 mt-2">{% trans "Шаблони етикеток" %}</h3><p class="text-muted flex-grow-1">{% trans "Формати та шаблони для друку." %}</p><a class="btn btn-primary mt-auto" href="{% url 'labeltemplate_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<section class="mb-4" aria-labelledby="administration-heading">
+    <h2 id="administration-heading" class="h4 mb-3">{% trans "Адміністрування" %}</h2>
+    <div class="row g-3">
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧭</div><h3 class="h5 mt-2">{% trans "Керування" %}</h3><p class="text-muted flex-grow-1">{% trans "Панель керування складом." %}</p><a class="btn btn-primary mt-auto" href="{% url 'management_dashboard' %}">{% trans "Відкрити" %}</a></div></div></div>
+        {% endif %}
+        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">❓</div><h3 class="h5 mt-2">{% trans "Допомога" %}</h3><p class="text-muted flex-grow-1">{% trans "Інструкції для роботи із системою." %}</p><a class="btn btn-primary mt-auto" href="{% url 'help' %}">{% trans "Відкрити" %}</a></div></div></div>
+    </div>
+</section>
 {% endblock %}
