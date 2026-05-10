@@ -13,6 +13,32 @@ python manage.py createsuperuser
 python manage.py init_roles
 ```
 
+
+## Швидкий локальний тест із демо-даними
+
+Для локальної перевірки після встановлення або очищення бази можна створити демо-склади, локації, довідники, DEMO-номенклатуру, початкові залишки та тестових користувачів:
+
+```bash
+python manage.py migrate
+python manage.py init_roles
+python manage.py seed_demo_data --create-users
+python manage.py runserver 0.0.0.0:8000
+```
+
+Тестові користувачі:
+
+- `warehouse_admin` / `warehouse_admin`
+- `storekeeper` / `storekeeper`
+- `auditor` / `auditor`
+
+Команда `seed_demo_data` ідемпотентна: повторний запуск не дублює склади, локації, одиниці, категорії, отримувачів, DEMO-номенклатуру та залишки. Вона не змінює системний параметр `use_locations`; демо-дані містять **Основну локацію** та адресні локації для тесту в обох режимах.
+
+Очищення демо-даних і тестових користувачів:
+
+```bash
+python manage.py seed_demo_data --clear-demo --clear-users
+```
+
 ## 2. Послідовність заповнення довідників
 1. Одиниці виміру.
 2. Категорії.

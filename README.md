@@ -268,6 +268,31 @@ python manage.py test
 python manage.py runserver
 ```
 
+### Швидкий локальний тест із демо-даними
+
+Після встановлення або очищення бази можна наповнити систему безпечними демо-даними для перевірки приходу, видачі, переміщення, списання, інвентаризації та сканера. Команда не змінює налаштування `use_locations`; створені склади мають і **Основну локацію**, і адресні локації, тому дані придатні для обох режимів.
+
+```bash
+python manage.py migrate
+python manage.py init_roles
+python manage.py seed_demo_data --create-users
+python manage.py runserver 0.0.0.0:8000
+```
+
+Тестові користувачі створюються тільки з параметром `--create-users`:
+
+- `warehouse_admin` / `warehouse_admin`
+- `storekeeper` / `storekeeper`
+- `auditor` / `auditor`
+
+Повторний запуск `seed_demo_data` не дублює демо-довідники, DEMO-номенклатуру та початкові залишки. Щоб оновити паролі тестових користувачів до стандартних, додайте `--reset-passwords`.
+
+Очищення DEMO-номенклатури, пов'язаних DEMO-залишків, DEMO-рухів і тестових користувачів:
+
+```bash
+python manage.py seed_demo_data --clear-demo --clear-users
+```
+
 Для SQLite у локальному `.env` можна використати такий приклад:
 
 ```env
