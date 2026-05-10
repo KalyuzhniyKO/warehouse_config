@@ -167,7 +167,7 @@
 </nav>
 <div class="container-fluid app-shell py-4">
     <div class="row g-4">
-        {% if user.is_authenticated %}
+        {% if user.is_authenticated and not is_storekeeper_workplace %}
             <aside class="col-lg-2 d-none d-lg-block">
                 <div class="card content-card sidebar-card">
                     <div class="card-body">
@@ -233,7 +233,7 @@
                 </div>
             </aside>
         {% endif %}
-        <main class="{% if user.is_authenticated %}col-lg-10{% else %}col-12{% endif %}">
+        <main class="{% if user.is_authenticated and not is_storekeeper_workplace %}col-lg-10{% else %}col-12{% endif %}">
             {% if messages %}
                 {% for message in messages %}
                     <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">

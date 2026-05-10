@@ -155,6 +155,18 @@ class ManagementPermissionTests(TestCase):
         response = self.client.post(reverse("stock_transfer"), {})
         self.assertEqual(response.status_code, 403)
 
+        response = self.client.get(reverse("stock_receive"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse("stock_receive"), {})
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.get(reverse("stock_writeoff"))
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(reverse("stock_writeoff"), {})
+        self.assertEqual(response.status_code, 403)
+
 
 class DashboardPermissionTests(TestCase):
 
@@ -227,6 +239,7 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.storekeeper, "/uk/")
 
         self.assertTemplateUsed(response, "core/storekeeper_workplace.html")
+        self.assertTrue(response.context["is_storekeeper_workplace"])
         for label in [
             "Робоче місце комірника",
             "Прийняти товар",
@@ -251,11 +264,37 @@ class DashboardPermissionTests(TestCase):
         ]:
             self.assertNotContains(response, label)
 
+    def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertContains(response, "Робоче місце комірника")
+        self.assertNotContains(response, "Навігація")
+        self.assertIn('<main class="col-12">', html)
+        self.assertNotIn('<main class="col-lg-10">', html)
+        for label in [
+            "Прийняти товар",
+            "Видати товар",
+            "Перемістити товар",
+            "Списати товар",
+        ]:
+            self.assertContains(response, label)
+
+    def test_storekeeper_internal_page_keeps_sidebar(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/stock/receive/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Навігація")
+        self.assertIn('<main class="col-lg-10">', html)
+
     def test_warehouse_admin_keeps_full_dashboard(self):
         response = self.dashboard_for(self.admin, "/uk/")
 
         self.assertTemplateUsed(response, "core/dashboard.html")
         self.assertTemplateNotUsed(response, "core/storekeeper_workplace.html")
+        self.assertFalse(response.context["is_storekeeper_workplace"])
+        self.assertContains(response, "Навігація")
         self.assertContains(response, "Головна")
         self.assertContains(response, "Довідники")
         self.assertNotContains(response, "Робоче місце комірника")
