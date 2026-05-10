@@ -2076,3 +2076,79 @@ msgstr "Увійти"
 
 #~ msgid "Контроль"
 #~ msgstr "Контроль"
+
+#: templates/core/management/dashboard.html
+msgid "Адміністрування складу"
+msgstr "Адміністрування складу"
+
+#: templates/core/management/dashboard.html
+msgid "Керуйте довідниками, користувачами, етикетками та налаштуваннями системи."
+msgstr "Керуйте довідниками, користувачами, етикетками та налаштуваннями системи."
+
+#: templates/core/management/dashboard.html
+msgid "Товари, коди, штрихкоди та основні облікові дані."
+msgstr "Товари, коди, штрихкоди та основні облікові дані."
+
+#: templates/core/management/dashboard.html
+msgid "Список складів, де ведеться облік товарів."
+msgstr "Список складів, де ведеться облік товарів."
+
+#: templates/core/management/dashboard.html
+msgid "Комірки, зони та місця зберігання на складах."
+msgstr "Комірки, зони та місця зберігання на складах."
+
+#: templates/core/management/dashboard.html
+msgid "Групування номенклатури для швидкої навігації."
+msgstr "Групування номенклатури для швидкої навігації."
+
+#: templates/core/management/dashboard.html
+msgid "Одиниці обліку для товарів і складських операцій."
+msgstr "Одиниці обліку для товарів і складських операцій."
+
+#: templates/core/management/dashboard.html
+msgid "Підрозділи, клієнти або інші отримувачі видачі."
+msgstr "Підрозділи, клієнти або інші отримувачі видачі."
+
+#: templates/core/management/dashboard.html
+msgid "Користувачі та доступ"
+msgstr "Користувачі та доступ"
+
+#: templates/core/management/dashboard.html
+msgid "Перегляд користувачів і призначених складських ролей."
+msgstr "Перегляд користувачів і призначених складських ролей."
+
+#: templates/core/management/dashboard.html
+msgid "Налаштування принтерів для друку складських етикеток."
+msgstr "Налаштування принтерів для друку складських етикеток."
+
+#: templates/core/management/dashboard.html
+msgid "Макети етикеток для товарів і штрихкодів."
+msgstr "Макети етикеток для товарів і штрихкодів."
+
+#: templates/core/management/dashboard.html
+msgid "Поточні залишки товарів по складах і локаціях."
+msgstr "Поточні залишки товарів по складах і локаціях."
+
+#: templates/core/management/dashboard.html
+msgid "Журнал приходів, видач, переміщень і списань."
+msgstr "Журнал приходів, видач, переміщень і списань."
+
+#: templates/core/management/dashboard.html
+msgid "Система"
+msgstr "Система"
+
+#: templates/core/management/dashboard.html
+msgid "Налаштування системи"
+msgstr "Налаштування системи"
+
+#: templates/core/management/dashboard.html
+msgid "Службові параметри та адміністративні налаштування."
+msgstr "Службові параметри та адміністративні налаштування."
+
+#: templates/core/management/dashboard.html
+msgid "Довідка адміністратора"
+msgstr "Довідка адміністратора"
+
+#: templates/core/management/dashboard.html
+msgid "Інструкції для запуску, обслуговування та щоденної роботи."
+msgstr "Інструкції для запуску, обслуговування та щоденної роботи."
