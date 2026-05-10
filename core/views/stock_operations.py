@@ -106,7 +106,9 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 occurred_at=form.cleaned_data["occurred_at"],
             )
         except StockServiceError as exc:
-            form.add_error(None, str(exc))
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         url = reverse("stock_receive_result", kwargs={"pk": movement.pk})
         if form.cleaned_data.get("print_label"):
@@ -154,10 +156,16 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 occurred_at=form.cleaned_data["occurred_at"],
             )
         except InsufficientStockError:
-            form.add_error(None, _("Недостатньо залишку для видачі."))
+            message = _(
+                "Недостатньо залишку для видачі. Перевірте залишки перед видачею."
+            )
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         except StockServiceError as exc:
-            form.add_error(None, str(exc))
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         return redirect("stock_issue_result", pk=movement.pk)
 
@@ -219,10 +227,16 @@ class StockWriteOffView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 occurred_at=form.cleaned_data["occurred_at"],
             )
         except InsufficientStockError:
-            form.add_error(None, _("Недостатньо залишку для списання."))
+            message = _(
+                "Недостатньо залишку для списання. Перевірте залишки перед списанням."
+            )
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         except StockServiceError as exc:
-            form.add_error(None, str(exc))
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         return redirect("stock_writeoff_result", pk=movement.pk)
 
@@ -264,13 +278,23 @@ class StockTransferView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 occurred_at=form.cleaned_data["occurred_at"],
             )
         except InsufficientStockError:
-            form.add_error(None, _("Недостатньо залишку для переміщення."))
+            message = _(
+                "Недостатньо залишку на локації-відправнику. Перевірте залишки перед переміщенням."
+            )
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         except SameLocationTransferError:
-            form.add_error(None, _("Неможливо перемістити товар у ту саму локацію."))
+            message = _(
+                "Неможливо перемістити товар у ту саму локацію. Виберіть іншу локацію-отримувач."
+            )
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         except StockServiceError as exc:
-            form.add_error(None, str(exc))
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         return redirect("stock_transfer_result", pk=movement.pk)
 
@@ -315,7 +339,9 @@ class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 occurred_at=form.cleaned_data["occurred_at"],
             )
         except StockServiceError as exc:
-            form.add_error(None, str(exc))
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
             return self.form_invalid(form)
         messages.success(self.request, _("Початковий залишок збережено."))
         return redirect("movement_list")

@@ -5,7 +5,14 @@
 {% with barcode_scanner_id="receive-barcode-scanner" %}{% include "core/includes/barcode_scanner.html" %}{% endwith %}
 <h1 class="mb-3">{% trans "Прихід товару" %}</h1>
 <form method="post" class="card content-card"><div class="card-body">
-{% csrf_token %}{{ form.non_field_errors }}
+{% csrf_token %}
+{% if form.non_field_errors %}
+    <div class="alert alert-danger border-danger fw-semibold" role="alert">
+        {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="row g-3">{% for field in form %}<div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.field.widget.input_type == 'checkbox' %}<div class="form-check">{{ field }}</div>{% else %}{{ field }}{% endif %}<div class="text-danger small">{{ field.errors }}</div></div>{% endfor %}</div>
 <div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">{% trans "Зберегти прихід" %}</button></div>
 </div></form>

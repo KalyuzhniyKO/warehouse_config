@@ -11,7 +11,14 @@
     <a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a>
 </div>
 <form method="post" class="card content-card"><div class="card-body">
-{% csrf_token %}{{ form.non_field_errors }}
+{% csrf_token %}
+{% if form.non_field_errors %}
+    <div class="alert alert-danger border-danger fw-semibold" role="alert">
+        {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="row g-3">{% for field in form %}<div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>{% endfor %}</div>
 <div class="mt-4 d-flex flex-wrap gap-2"><button class="btn btn-primary" type="submit">{% trans "Списати" %}</button><a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a></div>
 </div></form>

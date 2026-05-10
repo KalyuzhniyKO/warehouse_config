@@ -256,6 +256,7 @@ class StockIssueInterfaceTests(TestCase):
 
     def test_stock_issue_rejects_quantity_greater_than_balance(self):
         self.client.force_login(self.storekeeper)
+        movement_count = StockMovement.objects.count()
         response = self.client.post(
             reverse("stock_issue"),
             {
@@ -274,6 +275,32 @@ class StockIssueInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Недостатньо залишку для видачі")
+        self.assertContains(response, "alert-danger")
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+        self.balance.refresh_from_db()
+        self.assertEqual(self.balance.qty, Decimal("7.000"))
+
+    def test_stock_writeoff_rejects_quantity_greater_than_balance_with_alert(self):
+        self.client.force_login(self.storekeeper)
+        movement_count = StockMovement.objects.count()
+        response = self.client.post(
+            "/uk/stock/writeoff/",
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "99.000",
+                "writeoff_reason": "other",
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T12:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Недостатньо залишку для списання")
+        self.assertContains(response, "alert-danger")
+        self.assertEqual(StockMovement.objects.count(), movement_count)
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.qty, Decimal("7.000"))
 
@@ -356,6 +383,11 @@ class StockIssueInterfaceTests(TestCase):
 
 class StockOperationWorkflowTests(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        call_command("compilemessages", locale=["en", "uk"], verbosity=0)
+
     def setUp(self):
         call_command("init_roles", stdout=StringIO())
         self.user = get_user_model().objects.create_user("workflow", password="pass")
@@ -426,6 +458,72 @@ class StockOperationWorkflowTests(TestCase):
                 item=self.item, location=self.destination_location
             ).qty,
             Decimal("2.000"),
+        )
+
+    def _transfer_data(self, **overrides):
+        data = {
+            "item": self.item.pk,
+            "source_warehouse": self.warehouse.pk,
+            "source_location": self.location.pk,
+            "destination_warehouse": self.destination_warehouse.pk,
+            "destination_location": self.destination_location.pk,
+            "qty": "2.000",
+            "comment": "Insufficient transfer",
+            "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+        }
+        data.update(overrides)
+        return data
+
+    def test_transfer_rejects_insufficient_source_stock_with_ukrainian_alert(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("1.000")
+        )
+        movement_count = StockMovement.objects.filter(
+            movement_type=StockMovement.MovementType.TRANSFER
+        ).count()
+
+        response = self.client.post("/uk/stock/transfer/", self._transfer_data())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/stock_transfer_form.html")
+        self.assertContains(response, "Недостатньо залишку на локації-відправнику")
+        self.assertContains(response, "alert-danger")
+        self.assertEqual(
+            StockMovement.objects.filter(
+                movement_type=StockMovement.MovementType.TRANSFER
+            ).count(),
+            movement_count,
+        )
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, location=self.location).qty,
+            Decimal("1.000"),
+        )
+        self.assertFalse(
+            StockBalance.objects.filter(
+                item=self.item, location=self.destination_location
+            ).exists()
+        )
+
+    def test_transfer_insufficient_stock_uses_english_message_on_english_page(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("1.000")
+        )
+
+        response = self.client.post("/en/stock/transfer/", self._transfer_data())
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "Not enough stock at the source location. Check stock before transfer.",
+            html,
+        )
+        self.assertIn("alert-danger", html)
+        self.assertNotIn("Недостатньо залишку на локації-відправнику", html)
+        self.assertFalse(
+            StockMovement.objects.filter(
+                movement_type=StockMovement.MovementType.TRANSFER,
+                comment="Insufficient transfer",
+            ).exists()
         )
 
     def test_transfer_result_page_shows_item_quantity_source_and_destination(self):

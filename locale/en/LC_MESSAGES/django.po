@@ -397,6 +397,10 @@ msgstr "Destination location"
 msgid "Неможливо перемістити товар у ту саму локацію."
 msgstr "Cannot transfer stock to the same location."
 
+#: core/views/stock_operations.py:275
+msgid "Неможливо перемістити товар у ту саму локацію. Виберіть іншу локацію-отримувач."
+msgstr "Cannot transfer stock to the same location. Choose another destination location."
+
 #: core/models.py:9
 msgid "active"
 msgstr "active"
@@ -1085,8 +1089,8 @@ msgid "Документ ще не додано."
 msgstr "The document has not been added yet."
 
 #: core/views/stock_operations.py:157
-msgid "Недостатньо залишку для видачі."
-msgstr "Not enough stock to issue."
+msgid "Недостатньо залишку для видачі. Перевірте залишки перед видачею."
+msgstr "Not enough stock to issue. Check stock before issuing."
 
 #: core/views/stock_operations.py:186
 #, python-format
@@ -1104,12 +1108,12 @@ msgid "Коментар: %(comment)s"
 msgstr "Comment: %(comment)s"
 
 #: core/views/stock_operations.py:222
-msgid "Недостатньо залишку для списання."
-msgstr "Not enough stock to write off."
+msgid "Недостатньо залишку для списання. Перевірте залишки перед списанням."
+msgstr "Not enough stock to write off. Check stock before write-off."
 
 #: core/views/stock_operations.py:267
-msgid "Недостатньо залишку для переміщення."
-msgstr "Not enough stock to transfer."
+msgid "Недостатньо залишку на локації-відправнику. Перевірте залишки перед переміщенням."
+msgstr "Not enough stock at the source location. Check stock before transfer."
 
 #: core/views/stock_operations.py:320
 msgid "Початковий залишок збережено."
