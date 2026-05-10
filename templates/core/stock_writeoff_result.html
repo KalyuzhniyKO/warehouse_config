@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Списання виконано" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% trans "Списання виконано" %}</h1>
+<div class="card content-card"><div class="card-body">
+<dl class="row">
+<dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
+<dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
+<dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ movement.source_location.warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ movement.source_location }}</dd>
+<dt class="col-sm-3">{% trans "Дата операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i" }}</dd>
+<dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ movement.comment|linebreaksbr|default:"—" }}</dd>
+</dl>
+<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_writeoff' %}">{% trans "Нове списання" %}</a><a class="btn btn-outline-primary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a><a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a></div>
+</div></div>
+{% endblock %}

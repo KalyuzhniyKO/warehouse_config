@@ -93,6 +93,40 @@ class StockIssueForm(StockOperationForm):
         return normalize_text(self.cleaned_data.get("document_number"))
 
 
+class StockWriteOffForm(StockOperationForm):
+    qty = forms.DecimalField(
+        label=_("Кількість"), min_value=Decimal("0.001"), max_digits=18, decimal_places=3
+    )
+    writeoff_reason = forms.ChoiceField(
+        label=_("Причина списання"),
+        choices=[
+            ("repair", _("Використано для ремонту")),
+            ("damaged", _("Зіпсовано")),
+            ("lost", _("Втрачено")),
+            ("defect", _("Брак")),
+            ("other", _("Інше")),
+        ],
+    )
+    document_number = forms.CharField(label=_("Номер документа"), required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["writeoff_reason"].initial = "other"
+        self.order_fields([
+            "item",
+            "warehouse",
+            "location",
+            "qty",
+            "writeoff_reason",
+            "document_number",
+            "comment",
+            "occurred_at",
+        ])
+
+    def clean_document_number(self):
+        return normalize_text(self.cleaned_data.get("document_number"))
+
+
 class StockTransferForm(forms.Form):
     item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.none())
     source_warehouse = forms.ModelChoiceField(

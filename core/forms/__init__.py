@@ -29,6 +29,7 @@ from core.forms.stock_operations import (
     StockOperationForm,
     StockReceiveForm,
     StockTransferForm,
+    StockWriteOffForm,
 )
 
 __all__ = [
@@ -54,6 +55,7 @@ __all__ = [
     "StockOperationForm",
     "StockReceiveForm",
     "StockTransferForm",
+    "StockWriteOffForm",
     "UnitForm",
     "WarehouseForm",
     "active_queryset",

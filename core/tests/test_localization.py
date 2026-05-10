@@ -134,6 +134,16 @@ class DashboardLocalizationTests(TestCase):
 
         translation.activate("uk")
 
+    def test_english_dashboard_contains_stock_writeoff(self):
+        response = self.dashboard_for(self.admin, "/en/")
+
+        self.assertContains(response, "Stock write-off")
+
+    def test_ukrainian_dashboard_contains_stock_writeoff(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+
+        self.assertContains(response, "Списання товару")
+
     def test_english_dashboard_contains_stock_transfer(self):
         response = self.dashboard_for(self.admin, "/en/")
 
@@ -196,6 +206,7 @@ class DashboardLocalizationTests(TestCase):
             "Прихід товару",
             "Видача товару",
             "Переміщення товару",
+            "Списання товару",
             "Початкові залишки",
             "Інвентаризація",
             "Залишки",
@@ -208,6 +219,7 @@ class DashboardLocalizationTests(TestCase):
             "Stock issue",
             "Initial balances",
             "Stock transfer",
+            "Stock write-off",
             "Stock movements",
             "Open",
         ]:
@@ -225,6 +237,7 @@ class DashboardLocalizationTests(TestCase):
             "Stock receipt",
             "Stock issue",
             "Stock transfer",
+            "Stock write-off",
             "Initial balances",
             "Inventory count",
             "Stock balances",
@@ -239,6 +252,7 @@ class DashboardLocalizationTests(TestCase):
             "Видача товару",
             "Початкові залишки",
             "Переміщення товару",
+            "Списання товару",
             "Рухи товарів",
             "Відкрити",
         ]:
@@ -253,6 +267,7 @@ class DashboardLocalizationTests(TestCase):
             "Видача товару",
             "Початкові залишки",
             "Переміщення товару",
+            "Списання товару",
             "Залишки",
             "Рухи товарів",
             "Довідники",
@@ -269,6 +284,7 @@ class DashboardLocalizationTests(TestCase):
             "/en/stock/receive/",
             "/en/stock/issue/",
             "/en/stock/transfer/",
+            "/en/stock/writeoff/",
             "/en/stock/initial/",
             "/en/stock/inventory/",
         ]:
@@ -287,6 +303,7 @@ class DashboardLocalizationTests(TestCase):
             "Stock receipt",
             "Stock issue",
             "Stock transfer",
+            "Stock write-off",
             "Initial balances",
             "Stock movements",
             "Stock balances",
@@ -306,6 +323,7 @@ class DashboardLocalizationTests(TestCase):
             "/uk/stock/receive/",
             "/uk/stock/issue/",
             "/uk/stock/transfer/",
+            "/uk/stock/writeoff/",
             "/uk/stock/initial/",
             "/uk/stock/inventory/",
         ]:
@@ -331,6 +349,7 @@ class DashboardLocalizationTests(TestCase):
             "Видача товару",
             "Початкові залишки",
             "Переміщення товару",
+            "Списання товару",
             "Керування",
         ]:
             self.assertNotIn(phrase, html)

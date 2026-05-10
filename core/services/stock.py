@@ -214,7 +214,7 @@ def return_stock(*, item, location, qty, recipient=None, comment=""):
     return movement
 
 
-def writeoff_stock(*, item, location, qty, comment=""):
+def writeoff_stock(*, item, location, qty, comment="", occurred_at=None):
     """Write off stock from a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
@@ -226,6 +226,7 @@ def writeoff_stock(*, item, location, qty, comment=""):
             qty=qty,
             source_location=location,
             comment=comment,
+            occurred_at=occurred_at,
         )
     return movement
 

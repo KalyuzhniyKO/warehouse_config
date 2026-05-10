@@ -1882,3 +1882,48 @@ msgstr "Log in"
 
 #~ msgid "Контроль"
 #~ msgstr "Control"
+
+msgid "Списання товару"
+msgstr "Stock write-off"
+
+msgid "Списуйте товар, який використано, зіпсовано, втрачено або визнано браком."
+msgstr "Write off items that were used, damaged, lost, or marked as defective."
+
+msgid "Списуйте товар, який використано, зіпсовано або втрачено."
+msgstr "Write off items that were used, damaged, or lost."
+
+msgid "Причина списання"
+msgstr "Write-off reason"
+
+msgid "Використано для ремонту"
+msgstr "Used for repair"
+
+msgid "Зіпсовано"
+msgstr "Damaged"
+
+msgid "Втрачено"
+msgstr "Lost"
+
+msgid "Брак"
+msgstr "Defect"
+
+msgid "Списати"
+msgstr "Write off"
+
+msgid "Списання виконано"
+msgstr "Write-off completed"
+
+msgid "Нове списання"
+msgstr "New write-off"
+
+msgid "Недостатньо залишку для списання."
+msgstr "Not enough stock to write off."
+
+msgid "Причина списання: %(reason)s"
+msgstr "Write-off reason: %(reason)s"
+
+msgid "Номер документа: %(document_number)s"
+msgstr "Document number: %(document_number)s"
+
+msgid "Коментар: %(comment)s"
+msgstr "Comment: %(comment)s"

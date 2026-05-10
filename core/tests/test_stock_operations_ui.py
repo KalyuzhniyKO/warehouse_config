@@ -185,6 +185,20 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Видача товару")
         self.assertNotContains(response, "Отримувачі")
 
+    def test_storekeeper_sees_stock_writeoff_on_dashboard(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get("/uk/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Списання товару")
+
+    def test_auditor_does_not_see_stock_writeoff_on_dashboard(self):
+        self.client.force_login(self.auditor)
+        response = self.client.get("/uk/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Списання товару")
+
     def test_stock_issue_page_available_to_storekeeper(self):
         self.client.force_login(self.storekeeper)
         response = self.client.get(reverse("stock_issue"))
@@ -262,6 +276,64 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Недостатньо залишку для видачі")
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.qty, Decimal("7.000"))
+
+    def test_stock_writeoff_page_available_to_storekeeper(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get("/uk/stock/writeoff/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Списання товару")
+        self.assertContains(response, "writeoff-barcode-scanner")
+
+    def test_stock_writeoff_post_decreases_balance_and_creates_writeoff_movement(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            "/uk/stock/writeoff/",
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "2.000",
+                "writeoff_reason": "damaged",
+                "document_number": "WO-1",
+                "comment": "Damaged cable",
+                "occurred_at": "2026-01-15T13:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.balance.refresh_from_db()
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(self.balance.qty, Decimal("5.000"))
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.WRITEOFF)
+        self.assertEqual(movement.source_location, self.location)
+        self.assertIsNone(movement.destination_location)
+        self.assertIn("Причина списання: Зіпсовано", movement.comment)
+        self.assertIn("Номер документа: WO-1", movement.comment)
+        self.assertIn("Коментар: Damaged cable", movement.comment)
+
+    def test_stock_writeoff_result_page_shows_item_quantity_and_location(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.WRITEOFF,
+            item=self.item,
+            qty=Decimal("2.000"),
+            source_location=self.location,
+            comment="Причина списання: Зіпсовано",
+        )
+
+        response = self.client.get(f"/uk/stock/writeoff/{movement.pk}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Кабель ВВГ")
+        self.assertContains(response, "2,000")
+        self.assertContains(response, "A1")
+
+    def test_auditor_cannot_access_stock_writeoff_form(self):
+        self.client.force_login(self.auditor)
+        response = self.client.get("/uk/stock/writeoff/")
+
+        self.assertEqual(response.status_code, 403)
 
     def test_movements_show_translated_issue_reason(self):
         StockMovement.objects.create(
