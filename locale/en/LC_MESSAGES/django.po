@@ -2172,3 +2172,11 @@ msgstr "Use locations"
 #: core/views/management.py:197
 msgid "Налаштування збережено."
 msgstr "Settings saved."
+
+#: core/forms/stock_operations.py templates/core/includes/locations_disabled_notice.html
+msgid "Локації вимкнено. Операція буде виконана по складу."
+msgstr "Locations are disabled. The operation will be performed by warehouse."
+
+#: core/forms/stock_operations.py
+msgid "Неможливо перемістити товар у той самий склад."
+msgstr "Cannot transfer stock to the same warehouse."

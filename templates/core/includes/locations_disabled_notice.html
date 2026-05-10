@@ -1,0 +1,6 @@
+{% load i18n %}
+{% if form.use_locations == False %}
+    <div class="alert alert-info py-2 small" role="status">
+        {% trans "Локації вимкнено. Операція буде виконана по складу." %}
+    </div>
+{% endif %}

@@ -12,6 +12,7 @@
 </div>
 <form method="post" class="card content-card"><div class="card-body">
 {% csrf_token %}
+{% include "core/includes/locations_disabled_notice.html" %}
 {% if form.non_field_errors %}
     <div class="alert alert-danger border-danger fw-semibold" role="alert">
         {% for error in form.non_field_errors %}
