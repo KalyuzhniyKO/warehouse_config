@@ -1965,6 +1965,14 @@ msgstr "Find item"
 msgid "Знайдіть номенклатуру за назвою або кодом."
 msgstr "Find an item by name or code."
 
+#: templates/core/storekeeper_workplace.html:56
+msgid "Пошук товару"
+msgstr "Item search"
+
+#: templates/core/storekeeper_workplace.html:61
+msgid "Знайти"
+msgstr "Search"
+
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
 msgstr "Language"

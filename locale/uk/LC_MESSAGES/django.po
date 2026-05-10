@@ -1967,6 +1967,14 @@ msgstr "Знайти товар"
 msgid "Знайдіть номенклатуру за назвою або кодом."
 msgstr "Знайдіть номенклатуру за назвою або кодом."
 
+#: templates/core/storekeeper_workplace.html:56
+msgid "Пошук товару"
+msgstr "Пошук товару"
+
+#: templates/core/storekeeper_workplace.html:61
+msgid "Знайти"
+msgstr "Знайти"
+
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
 msgstr "Мова"
