@@ -88,10 +88,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "core/dashboard.html"
     storekeeper_template_name = "core/storekeeper_workplace.html"
 
-    def get_template_names(self):
+    def is_storekeeper_workplace(self):
         user = self.request.user
         is_storekeeper = user.groups.filter(name="Комірник").exists()
         is_warehouse_admin = user.groups.filter(name="Адміністратор складу").exists()
-        if is_storekeeper and not user.is_superuser and not is_warehouse_admin:
+        return is_storekeeper and not user.is_superuser and not is_warehouse_admin
+
+    def get_template_names(self):
+        if self.is_storekeeper_workplace():
             return [self.storekeeper_template_name]
         return [self.template_name]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_storekeeper_workplace"] = self.is_storekeeper_workplace()
+        return context
