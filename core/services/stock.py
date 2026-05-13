@@ -15,6 +15,18 @@ from core.services.barcodes import ensure_item_barcode
 QTY_QUANT = Decimal("0.001")
 
 
+def find_best_stock_balance_for_issue(item):
+    """Return the active positive balance with the largest quantity for *item*."""
+    if item is None:
+        return None
+    return (
+        StockBalance.objects.filter(item=item, is_active=True, qty__gt=0)
+        .select_related("location", "location__warehouse")
+        .order_by("-qty", "location__warehouse__name", "location__name", "pk")
+        .first()
+    )
+
+
 class StockServiceError(ValueError):
     """Base exception for stock service validation errors."""
 

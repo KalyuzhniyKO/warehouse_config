@@ -9,7 +9,7 @@
         <form class="row g-2 align-items-end" method="get" action="{% url 'stock_issue' %}">
             <div class="col-12 col-lg">
                 <label class="form-label fw-semibold" for="issue-barcode-input">{% trans "Сканувати штрихкод" %}</label>
-                <input id="issue-barcode-input" class="form-control form-control-lg" type="text" name="barcode" value="{{ barcode_query }}" autofocus autocomplete="off" placeholder="{% trans 'Сканувати штрихкод' %}">
+                <input id="issue-barcode-input" class="form-control form-control-lg" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Сканувати штрихкод' %}">
             </div>
             <div class="col-12 col-lg-auto">
                 <button class="btn btn-primary btn-lg w-100" type="submit">{% translate "Знайти" context "barcode action" %}</button>
@@ -17,18 +17,20 @@
         </form>
         {% if scanned_item_context %}
             <div class="alert alert-success mt-3 mb-0" role="status">
-                <div class="fw-semibold">{{ scanned_item_context.item.name }}</div>
+                <div><span class="fw-semibold">{% trans "Знайдений товар" %}:</span> {{ scanned_item_context.item.name }}</div>
                 <div>{% trans "Внутрішній код" %}: {{ scanned_item_context.item.internal_code|default:"—" }}</div>
                 <div>{% trans "Штрихкод" %}: {{ scanned_item_context.item.barcode_value|default:"—" }}</div>
-                <div>{% trans "Доступний залишок" %}: {{ scanned_item_context.available_qty }}</div>
+                <div><span class="fw-semibold">{% trans "Доступний залишок" %}:</span> {{ scanned_item_context.available_qty }}</div>
             </div>
+        {% elif not barcode_query %}
+            <p class="text-muted fs-5 mt-3 mb-0">{% trans "Відскануйте штрихкод товару, щоб продовжити." %}</p>
         {% endif %}
     </div>
 </div>
 
+{% if show_issue_form %}
 <form method="post" class="card content-card"><div class="card-body">
 {% csrf_token %}
-{% include "core/includes/locations_disabled_notice.html" %}
 {% if form.non_field_errors %}
     <div class="alert alert-danger border-danger fw-semibold" role="alert">
         {% for error in form.non_field_errors %}
@@ -36,29 +38,22 @@
         {% endfor %}
     </div>
 {% endif %}
+{% for hidden in form.hidden_fields %}
+    {{ hidden }}
+    {% if hidden.errors %}<div class="text-danger small">{{ hidden.errors }}</div>{% endif %}
+{% endfor %}
 <div class="row g-3">
-    {% for field in form %}
-        {% if field.name == 'item' or field.name == 'warehouse' or field.name == 'location' or field.name == 'qty' or field.name == 'recipient' %}
-            <div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>
+    {% for field in form.visible_fields %}
+        {% if field.name == 'qty' or field.name == 'recipient' or field.name == 'department' %}
+            <div class="col-12 col-lg-6">
+                <label class="form-label fs-5 fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <div class="text-danger small">{{ field.errors }}</div>
+            </div>
         {% endif %}
     {% endfor %}
 </div>
-<div class="accordion mt-3" id="issue-extra-fields">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="issue-extra-heading">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#issue-extra-collapse" aria-expanded="false" aria-controls="issue-extra-collapse">{% trans "Додаткові поля" %}</button>
-        </h2>
-        <div id="issue-extra-collapse" class="accordion-collapse collapse" aria-labelledby="issue-extra-heading" data-bs-parent="#issue-extra-fields">
-            <div class="accordion-body"><div class="row g-3">
-                {% for field in form %}
-                    {% if field.name != 'item' and field.name != 'warehouse' and field.name != 'location' and field.name != 'qty' and field.name != 'recipient' %}
-                        <div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>
-                    {% endif %}
-                {% endfor %}
-            </div></div>
-        </div>
-    </div>
-</div>
-<div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">{% trans "Видача товару" %}</button></div>
+<div class="mt-4 d-grid"><button class="btn btn-primary btn-lg" type="submit">{% trans "Видати товар" %}</button></div>
 </div></form>
+{% endif %}
 {% endblock %}

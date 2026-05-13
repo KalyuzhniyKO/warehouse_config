@@ -105,9 +105,15 @@ class StockIssueForm(StockOperationForm):
     issue_reason = forms.ChoiceField(
         label=_("Тип видачі"), choices=StockMovement.IssueReason.choices
     )
-    department = forms.CharField(label=_("Цех / підрозділ"), required=False)
+    department = forms.CharField(
+        label=_("Цех / місце використання"),
+        required=True,
+        error_messages={
+            "required": _("Вкажіть цех або місце використання товару."),
+        },
+    )
     recipient = forms.ModelChoiceField(
-        label=_("Отримувач / відповідальний"),
+        label=_("Хто взяв товар"),
         queryset=Recipient.objects.none(),
         required=True,
         error_messages={
@@ -120,6 +126,23 @@ class StockIssueForm(StockOperationForm):
         super().__init__(*args, **kwargs)
         self.fields["recipient"].queryset = Recipient.objects.filter(is_active=True)
         self.fields["issue_reason"].initial = StockMovement.IssueReason.OTHER
+        self.fields["issue_reason"].required = False
+        self.fields["document_number"].required = False
+        self.fields["comment"].required = False
+        for field_name in [
+            "item",
+            "warehouse",
+            "location",
+            "issue_reason",
+            "document_number",
+            "comment",
+            "occurred_at",
+        ]:
+            if field_name in self.fields:
+                self.fields[field_name].widget = forms.HiddenInput()
+        self.fields["qty"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["department"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
         self.order_fields(
             [
                 "item",
@@ -127,8 +150,8 @@ class StockIssueForm(StockOperationForm):
                 "location",
                 "qty",
                 "issue_reason",
-                "department",
                 "recipient",
+                "department",
                 "document_number",
                 "comment",
                 "occurred_at",

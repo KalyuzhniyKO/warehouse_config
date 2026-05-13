@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-13 16:45+0300\n"
+"POT-Creation-Date: 2026-05-13 20:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr "Period to"
 #: core/forms/stock_operations.py:45 core/models.py:108 core/models.py:220
 #: core/models.py:252 core/models.py:348 core/views/analytics.py:215
 #: core/views/directories.py:352 core/views/inventory.py:113
-#: core/views/stock_operations.py:259 templates/core/inventory_detail.html:25
+#: core/views/stock_operations.py:297 templates/core/inventory_detail.html:25
 #: templates/core/inventory_list.html:20
 #: templates/core/stock_issue_result.html:10
 #: templates/core/stock_receive_result.html:10
@@ -43,7 +43,7 @@ msgstr "Warehouse"
 #: core/forms/inventory.py:11 core/forms/stock_operations.py:48
 #: core/models.py:110 core/models.py:247 core/models.py:274 core/models.py:317
 #: core/models.py:354 core/models.py:410 core/views/analytics.py:216
-#: core/views/inventory.py:118 core/views/stock_operations.py:260
+#: core/views/inventory.py:118 core/views/stock_operations.py:298
 #: templates/core/inventory_count.html:30
 #: templates/core/inventory_detail.html:26
 #: templates/core/inventory_line_table.html:9
@@ -61,13 +61,13 @@ msgid "Категорія"
 msgstr "Category"
 
 #: core/forms/analytics.py:36 core/forms/filters.py:21 core/forms/filters.py:48
-#: core/forms/stock_operations.py:43 core/forms/stock_operations.py:182
+#: core/forms/stock_operations.py:43 core/forms/stock_operations.py:208
 #: core/models.py:107 core/models.py:179 core/models.py:180 core/models.py:311
 #: core/models.py:404 core/models.py:474 core/models.py:593
 #: core/views/analytics.py:213 core/views/directories.py:307
 #: core/views/inventory.py:115 core/views/management.py:141
-#: core/views/stock_operations.py:255 templates/base.html:122
-#: templates/base.html:192 templates/core/dashboard.html:43
+#: core/views/stock_operations.py:293 templates/base.html:138
+#: templates/base.html:209 templates/core/dashboard.html:43
 #: templates/core/inventory_count.html:28
 #: templates/core/inventory_line_table.html:7
 #: templates/core/item_label_print.html:7
@@ -78,7 +78,7 @@ msgid "Номенклатура"
 msgstr "Items"
 
 #: core/forms/analytics.py:41 core/forms/filters.py:44
-#: core/views/analytics.py:212 core/views/stock_operations.py:249
+#: core/views/analytics.py:212 core/views/stock_operations.py:287
 #: templates/core/stockmovement_list.html:13
 msgid "Тип операції"
 msgstr "Operation type"
@@ -196,7 +196,7 @@ msgid "Додаткова інформація про отримувача."
 msgstr "Additional information about the recipient."
 
 #: core/forms/directories.py:146 core/views/directories.py:318
-#: core/views/stock_operations.py:256 templates/core/stock_issue_form.html:21
+#: core/views/stock_operations.py:294 templates/core/stock_issue_form.html:21
 #: templates/core/stock_receive_form.html:21
 #: templates/core/stockbalance_list.html:36
 msgid "Внутрішній код"
@@ -253,19 +253,18 @@ msgstr "Issue type"
 msgid "Усі типи видачі"
 msgstr "All issue types"
 
-#: core/forms/filters.py:62 core/forms/stock_operations.py:108
-#: core/models.py:517 templates/core/stock_issue_result.html:13
+#: core/forms/filters.py:62 core/models.py:517
 #: templates/core/stockmovement_list.html:13
 msgid "Цех / підрозділ"
 msgstr "Workshop / department"
 
-#: core/forms/filters.py:63 core/forms/stock_operations.py:114
-#: core/forms/stock_operations.py:159 core/models.py:518
+#: core/forms/filters.py:63 core/forms/stock_operations.py:123
+#: core/forms/stock_operations.py:185 core/models.py:518
 msgid "Номер документа"
 msgstr "Document number"
 
 #: core/forms/inventory.py:16 core/forms/inventory.py:59
-#: core/forms/stock_operations.py:54 core/forms/stock_operations.py:202
+#: core/forms/stock_operations.py:54 core/forms/stock_operations.py:228
 #: templates/core/inventory_count.html:34
 #: templates/core/inventory_detail.html:31
 #: templates/core/inventory_line_table.html:13
@@ -276,7 +275,7 @@ msgid "Коментар"
 msgstr "Comment"
 
 #: core/forms/inventory.py:42 core/forms/stock_operations.py:94
-#: core/forms/stock_operations.py:267 core/forms/stock_operations.py:275
+#: core/forms/stock_operations.py:293 core/forms/stock_operations.py:301
 msgid "Локація має належати вибраному складу."
 msgstr "The location must belong to the selected warehouse."
 
@@ -398,9 +397,9 @@ msgstr "New password"
 msgid "Локації вимкнено. Операція буде виконана по складу."
 msgstr "Locations are disabled. The operation will be performed by warehouse."
 
-#: core/forms/stock_operations.py:51 core/forms/stock_operations.py:144
-#: core/forms/stock_operations.py:196 core/views/analytics.py:214
-#: core/views/stock_operations.py:258 templates/core/stock_issue_result.html:9
+#: core/forms/stock_operations.py:51 core/forms/stock_operations.py:170
+#: core/forms/stock_operations.py:222 core/views/analytics.py:214
+#: core/views/stock_operations.py:296 templates/core/stock_issue_result.html:9
 #: templates/core/stock_receive_result.html:9
 #: templates/core/stock_transfer_result.html:9
 #: templates/core/stock_writeoff_result.html:9
@@ -409,7 +408,7 @@ msgstr "Locations are disabled. The operation will be performed by warehouse."
 msgid "Кількість"
 msgstr "Quantity"
 
-#: core/forms/stock_operations.py:57 core/forms/stock_operations.py:205
+#: core/forms/stock_operations.py:57 core/forms/stock_operations.py:231
 #: templates/core/stock_transfer_result.html:14
 #: templates/core/stock_writeoff_result.html:12
 msgid "Дата операції"
@@ -419,59 +418,72 @@ msgstr "Operation date"
 msgid "Надрукувати етикетку після збереження"
 msgstr "Print label after saving"
 
-#: core/forms/stock_operations.py:110 core/views/stock_operations.py:264
-msgid "Отримувач / відповідальний"
-msgstr "Recipient / responsible person"
+#: core/forms/stock_operations.py:109 core/views/stock_operations.py:307
+#: templates/core/stock_issue_result.html:13
+msgid "Цех / місце використання"
+msgstr "Department / place of use"
 
-#: core/forms/stock_operations.py:150
+#: core/forms/stock_operations.py:112
+msgid "Вкажіть цех або місце використання товару."
+msgstr "Specify the department or place where the item will be used."
+
+#: core/forms/stock_operations.py:116
+msgid "Хто взяв товар"
+msgstr "Who takes the item"
+
+#: core/forms/stock_operations.py:120
+msgid "Оберіть, хто бере товар."
+msgstr "Choose who takes the item."
+
+#: core/forms/stock_operations.py:176
 msgid "Причина списання"
 msgstr "Write-off reason"
 
-#: core/forms/stock_operations.py:152
+#: core/forms/stock_operations.py:178
 msgid "Використано для ремонту"
 msgstr "Used for repair"
 
-#: core/forms/stock_operations.py:153
+#: core/forms/stock_operations.py:179
 msgid "Зіпсовано"
 msgstr "Damaged"
 
-#: core/forms/stock_operations.py:154
+#: core/forms/stock_operations.py:180
 msgid "Втрачено"
 msgstr "Lost"
 
-#: core/forms/stock_operations.py:155
+#: core/forms/stock_operations.py:181
 msgid "Брак"
 msgstr "Defect"
 
-#: core/forms/stock_operations.py:156 core/models.py:458
+#: core/forms/stock_operations.py:182 core/models.py:458
 msgid "Інше"
 msgstr "Other"
 
-#: core/forms/stock_operations.py:184
+#: core/forms/stock_operations.py:210
 #: templates/core/stock_transfer_result.html:10
 msgid "Склад-відправник"
 msgstr "Source warehouse"
 
-#: core/forms/stock_operations.py:187
+#: core/forms/stock_operations.py:213
 #: templates/core/stock_transfer_result.html:11
 msgid "Локація-відправник"
 msgstr "Source location"
 
-#: core/forms/stock_operations.py:190
+#: core/forms/stock_operations.py:216
 #: templates/core/stock_transfer_result.html:12
 msgid "Склад-отримувач"
 msgstr "Destination warehouse"
 
-#: core/forms/stock_operations.py:193
+#: core/forms/stock_operations.py:219
 #: templates/core/stock_transfer_result.html:13
 msgid "Локація-отримувач"
 msgstr "Destination location"
 
-#: core/forms/stock_operations.py:247
+#: core/forms/stock_operations.py:273
 msgid "Неможливо перемістити товар у той самий склад."
 msgstr "Cannot transfer stock to the same warehouse."
 
-#: core/forms/stock_operations.py:284
+#: core/forms/stock_operations.py:310
 msgid "Неможливо перемістити товар у ту саму локацію."
 msgstr "Cannot transfer stock to the same location."
 
@@ -508,7 +520,7 @@ msgid "symbol"
 msgstr "symbol"
 
 #: core/models.py:46 core/views/directories.py:259 core/views/management.py:151
-#: templates/base.html:125 templates/base.html:195
+#: templates/base.html:141 templates/base.html:212
 #: templates/core/dashboard.html:46 templates/core/management/dashboard.html:66
 msgid "Одиниці виміру"
 msgstr "Units of measure"
@@ -518,7 +530,7 @@ msgid "parent category"
 msgstr "parent category"
 
 #: core/models.py:71 core/views/directories.py:274 core/views/management.py:146
-#: templates/base.html:124 templates/base.html:194
+#: templates/base.html:140 templates/base.html:211
 #: templates/core/dashboard.html:45 templates/core/management/dashboard.html:57
 msgid "Категорії"
 msgstr "Categories"
@@ -540,7 +552,7 @@ msgid "notes"
 msgstr "notes"
 
 #: core/models.py:91 core/views/directories.py:288 core/views/management.py:166
-#: templates/base.html:130 templates/base.html:200
+#: templates/base.html:146 templates/base.html:217
 #: templates/core/dashboard.html:51 templates/core/management/dashboard.html:75
 msgid "Отримувачі"
 msgstr "Recipients"
@@ -599,7 +611,7 @@ msgid "address"
 msgstr "address"
 
 #: core/models.py:221 core/views/directories.py:328
-#: core/views/management.py:156 templates/base.html:127 templates/base.html:197
+#: core/views/management.py:156 templates/base.html:143 templates/base.html:214
 #: templates/core/dashboard.html:48 templates/core/management/dashboard.html:34
 msgid "Склади"
 msgstr "Warehouses"
@@ -613,7 +625,7 @@ msgid "location type"
 msgstr "location type"
 
 #: core/models.py:275 core/views/directories.py:342
-#: core/views/management.py:161 templates/base.html:128 templates/base.html:198
+#: core/views/management.py:161 templates/base.html:144 templates/base.html:215
 #: templates/core/dashboard.html:49 templates/core/management/dashboard.html:46
 msgid "Локації"
 msgstr "Locations"
@@ -630,7 +642,7 @@ msgstr "quantity"
 msgid "Залишок"
 msgstr "Surplus"
 
-#: core/models.py:325 templates/base.html:119 templates/base.html:189
+#: core/models.py:325 templates/base.html:135 templates/base.html:206
 #: templates/core/dashboard.html:29
 #: templates/core/management/dashboard.html:137
 #: templates/core/stockbalance_list.html:3
@@ -778,8 +790,8 @@ msgstr "occurred at"
 msgid "Рух товарів"
 msgstr "Stock movements"
 
-#: core/models.py:524 core/views/management.py:297 templates/base.html:120
-#: templates/base.html:190 templates/core/dashboard.html:30
+#: core/models.py:524 core/views/management.py:297 templates/base.html:136
+#: templates/base.html:207 templates/core/dashboard.html:30
 #: templates/core/management/dashboard.html:146
 #: templates/core/stockmovement_list.html:3
 #: templates/core/stockmovement_list.html:6
@@ -794,7 +806,7 @@ msgstr ""
 msgid "default"
 msgstr ""
 
-#: core/models.py:539 templates/base.html:136 templates/base.html:206
+#: core/models.py:539 templates/base.html:152 templates/base.html:223
 #: templates/core/dashboard.html:62
 #: templates/core/management/dashboard.html:112
 #: templates/core/printer_list.html:3 templates/core/printer_list.html:5
@@ -833,7 +845,7 @@ msgstr "barcode"
 msgid "Шаблон етикеток"
 msgstr "Label templates"
 
-#: core/models.py:570 templates/base.html:137 templates/base.html:207
+#: core/models.py:570 templates/base.html:153 templates/base.html:224
 #: templates/core/dashboard.html:63 templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
 #: templates/core/management/dashboard.html:121
@@ -899,6 +911,10 @@ msgstr "Standard 58×40 mm"
 #: core/services/labels.py:275
 msgid "Невідома помилка друку."
 msgstr "Unknown print error."
+
+#: core/services/stock.py:197
+msgid "Для видачі товару потрібно вказати отримувача."
+msgstr "Recipient is required to issue stock."
 
 #: core/views/analytics.py:211 templates/core/stockmovement_list.html:13
 msgid "Дата"
@@ -1023,7 +1039,7 @@ msgid "Архівувати номенклатуру"
 msgstr "Archive nomenclature"
 
 #: core/views/directories.py:319 core/views/directories.py:337
-#: core/views/directories.py:355 core/views/stock_operations.py:257
+#: core/views/directories.py:355 core/views/stock_operations.py:295
 #: templates/core/inventory_count.html:29
 #: templates/core/inventory_line_table.html:8
 #: templates/core/item_label_print.html:7
@@ -1201,7 +1217,7 @@ msgstr "Printers and label printing"
 msgid "Штрихкоди"
 msgstr "Barcodes"
 
-#: core/views/management.py:295 templates/base.html:109 templates/base.html:178
+#: core/views/management.py:295 templates/base.html:125 templates/base.html:195
 #: templates/core/dashboard.html:16
 msgid "Прихід товару"
 msgstr "Stock receipt"
@@ -1215,83 +1231,94 @@ msgstr "Initial balance"
 msgid "Документ ще не додано."
 msgstr "The document has not been added yet."
 
-#: core/views/stock_operations.py:102
+#: core/views/stock_operations.py:103
 msgid "Товар за цим штрихкодом не знайдено."
 msgstr "Item with this barcode was not found."
 
-#: core/views/stock_operations.py:198
+#: core/views/stock_operations.py:178
+msgid "Склад і локацію визначено автоматично."
+msgstr "Warehouse and location were selected automatically."
+
+#: core/views/stock_operations.py:180
+msgid "Товар знайдено, але доступного залишку для видачі немає."
+msgstr "Item was found, but there is no available stock to issue."
+
+#: core/views/stock_operations.py:236
 msgid "Недостатньо залишку для видачі. Перевірте залишки перед видачею."
 msgstr "Not enough stock to issue. Check stock before issuing."
 
-#: core/views/stock_operations.py:232 templates/base.html:110
-#: templates/base.html:179 templates/core/dashboard.html:17
+#: core/views/stock_operations.py:270 templates/base.html:126
+#: templates/base.html:196 templates/core/dashboard.html:17
 #: templates/core/stock_issue_form.html:3
 #: templates/core/stock_issue_form.html:5
-#: templates/core/stock_issue_form.html:62
 #: templates/core/stock_issue_result.html:3
 #: templates/core/stock_issue_result.html:5
 msgid "Видача товару"
 msgstr "Stock issue"
 
-#: core/views/stock_operations.py:237 templates/core/stock_receive_form.html:3
+#: core/views/stock_operations.py:275 templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_form.html:5
 msgid "Повернення товару"
 msgstr "Return item"
 
-#: core/views/stock_operations.py:244
+#: core/views/stock_operations.py:282
 msgid "Контрольний талон складської операції"
 msgstr "Warehouse operation control slip"
 
-#: core/views/stock_operations.py:246
+#: core/views/stock_operations.py:284
 msgid "Друк"
 msgstr "Print"
 
-#: core/views/stock_operations.py:247
+#: core/views/stock_operations.py:285
 msgid "Назад"
 msgstr "Back"
 
-#: core/views/stock_operations.py:248
+#: core/views/stock_operations.py:286
 msgid "ID операції"
 msgstr "Operation ID"
 
-#: core/views/stock_operations.py:253
+#: core/views/stock_operations.py:291
 msgid "Дата і час операції"
 msgstr "Operation date and time"
 
-#: core/views/stock_operations.py:267
+#: core/views/stock_operations.py:302
+msgid "Отримувач / відповідальний"
+msgstr "Recipient / responsible person"
+
+#: core/views/stock_operations.py:310
 msgid "Коментар / документ"
 msgstr "Comment / document"
 
-#: core/views/stock_operations.py:272
+#: core/views/stock_operations.py:315
 msgid "Час для перевірки по відео:"
 msgstr "Video check time:"
 
-#: core/views/stock_operations.py:308
+#: core/views/stock_operations.py:351
 #, python-format
 msgid "Причина списання: %(reason)s"
 msgstr "Write-off reason: %(reason)s"
 
-#: core/views/stock_operations.py:310
+#: core/views/stock_operations.py:353
 #, python-format
 msgid "Номер документа: %(document_number)s"
 msgstr "Document number: %(document_number)s"
 
-#: core/views/stock_operations.py:312
+#: core/views/stock_operations.py:355
 #, python-format
 msgid "Коментар: %(comment)s"
 msgstr "Comment: %(comment)s"
 
-#: core/views/stock_operations.py:345
+#: core/views/stock_operations.py:388
 msgid "Недостатньо залишку для списання. Перевірте залишки перед списанням."
 msgstr "Not enough stock to write off. Check stock before write-off."
 
-#: core/views/stock_operations.py:396
+#: core/views/stock_operations.py:439
 msgid ""
 "Недостатньо залишку на локації-відправнику. Перевірте залишки перед "
 "переміщенням."
 msgstr "Not enough stock at the source location. Check stock before transfer."
 
-#: core/views/stock_operations.py:403
+#: core/views/stock_operations.py:446
 msgid ""
 "Неможливо перемістити товар у ту саму локацію. Виберіть іншу локацію-"
 "отримувач."
@@ -1299,7 +1326,7 @@ msgstr ""
 "Cannot transfer stock to the same location. Choose another destination "
 "location."
 
-#: core/views/stock_operations.py:460
+#: core/views/stock_operations.py:503
 msgid "Початковий залишок збережено."
 msgstr "Opening balance"
 
@@ -1308,7 +1335,7 @@ msgstr "Opening balance"
 msgid "YANTOS · Складський облік"
 msgstr "YANTOS · Warehouse management"
 
-#: templates/base.html:92 templates/core/dashboard.html:3
+#: templates/base.html:97 templates/core/dashboard.html:3
 #: templates/core/directory_form.html:3 templates/core/directory_list.html:3
 #: templates/core/initial_balance_form.html:3
 #: templates/core/inventory_create.html:3 templates/core/inventory_list.html:3
@@ -1337,58 +1364,61 @@ msgstr "YANTOS · Warehouse management"
 msgid "Складський облік"
 msgstr "Warehouse management"
 
-#: templates/base.html:95
+#: templates/base.html:106 templates/base.html:170
+msgid "Вийти"
+msgstr "Log out"
+
+#: templates/base.html:111
 msgid "Перемкнути навігацію"
 msgstr "Toggle navigation"
 
-#: templates/base.html:102 templates/base.html:171
+#: templates/base.html:118 templates/base.html:188
 #: templates/core/storekeeper_workplace.html:3
-#: templates/core/storekeeper_workplace.html:48
-#: templates/core/storekeeper_workplace.html:56
+#: templates/core/storekeeper_workplace.html:68
 msgid "Склад самообслуговування"
 msgstr "Warehouse self-service"
 
-#: templates/base.html:103 templates/base.html:172
-#: templates/core/storekeeper_workplace.html:59
-#: templates/core/storekeeper_workplace.html:63
+#: templates/base.html:119 templates/base.html:189
+#: templates/core/storekeeper_workplace.html:73
+#: templates/core/storekeeper_workplace.html:76
 msgid "Взяти товар"
 msgstr "Take item"
 
-#: templates/base.html:104 templates/base.html:173
-#: templates/core/storekeeper_workplace.html:70
-#: templates/core/storekeeper_workplace.html:74
+#: templates/base.html:120 templates/base.html:190
+#: templates/core/storekeeper_workplace.html:79
+#: templates/core/storekeeper_workplace.html:82
 msgid "Повернути товар"
 msgstr "Return item"
 
-#: templates/base.html:106 templates/base.html:175
+#: templates/base.html:122 templates/base.html:192
 #: templates/core/dashboard.html:3 templates/core/dashboard.html:7
 msgid "Головна"
 msgstr "Home"
 
-#: templates/base.html:108 templates/base.html:177 templates/base.html:185
+#: templates/base.html:124 templates/base.html:194 templates/base.html:202
 #: templates/core/dashboard.html:14
 msgid "Складські операції"
 msgstr "Warehouse operations"
 
-#: templates/base.html:111 templates/base.html:180
+#: templates/base.html:127 templates/base.html:197
 #: templates/core/dashboard.html:18 templates/core/stock_transfer_form.html:3
 #: templates/core/stock_transfer_form.html:8
 msgid "Переміщення товару"
 msgstr "Stock transfer"
 
-#: templates/base.html:112 templates/base.html:181
+#: templates/base.html:128 templates/base.html:198
 #: templates/core/dashboard.html:19 templates/core/stock_writeoff_form.html:3
 #: templates/core/stock_writeoff_form.html:8
 msgid "Списання товару"
 msgstr "Stock write-off"
 
-#: templates/base.html:113 templates/base.html:182
+#: templates/base.html:129 templates/base.html:199
 #: templates/core/dashboard.html:20
 msgid "Початкові залишки"
 msgstr "Initial balances"
 
-#: templates/base.html:114 templates/base.html:116 templates/base.html:183
-#: templates/base.html:186 templates/core/dashboard.html:21
+#: templates/base.html:130 templates/base.html:132 templates/base.html:200
+#: templates/base.html:203 templates/core/dashboard.html:21
 #: templates/core/dashboard.html:32 templates/core/inventory_count.html:3
 #: templates/core/inventory_detail.html:3
 #: templates/core/inventory_detail.html:6 templates/core/inventory_list.html:3
@@ -1397,54 +1427,50 @@ msgstr "Initial balances"
 msgid "Інвентаризація"
 msgstr "Inventory count"
 
-#: templates/base.html:118 templates/base.html:188
+#: templates/base.html:134 templates/base.html:205
 #: templates/core/dashboard.html:27
 #: templates/core/management/dashboard.html:132
 msgid "Контроль і звіти"
 msgstr "Control and reports"
 
-#: templates/base.html:121 templates/base.html:191
+#: templates/base.html:137 templates/base.html:208
 #: templates/core/dashboard.html:41 templates/core/management/dashboard.html:15
 #: templates/core/management/directories.html:3
 #: templates/core/management/directories.html:5
 msgid "Довідники"
 msgstr "Directories"
 
-#: templates/base.html:133 templates/base.html:203
+#: templates/base.html:149 templates/base.html:220
 #: templates/core/dashboard.html:58
 #: templates/core/management/dashboard.html:107
 msgid "Етикетки"
 msgstr "Labels"
 
-#: templates/base.html:134 templates/base.html:204
+#: templates/base.html:150 templates/base.html:221
 #: templates/core/dashboard.html:60
 msgid "Друк етикеток"
 msgstr "Print labels"
 
-#: templates/base.html:141 templates/base.html:211
+#: templates/base.html:157 templates/base.html:228
 #: templates/core/dashboard.html:70
 msgid "Адміністрування"
 msgstr "Administration"
 
-#: templates/base.html:142 templates/base.html:212
+#: templates/base.html:158 templates/base.html:229
 #: templates/core/dashboard.html:73
 msgid "Керування"
 msgstr "Management"
 
-#: templates/base.html:144 templates/base.html:214
+#: templates/base.html:160 templates/base.html:231
 #: templates/core/dashboard.html:75
 msgid "Допомога"
 msgstr "Help"
 
-#: templates/base.html:154
-msgid "Вийти"
-msgstr "Log out"
-
-#: templates/base.html:167
+#: templates/base.html:184
 msgid "Навігація"
 msgstr "Navigation"
 
-#: templates/base.html:227
+#: templates/base.html:244
 msgid "Закрити"
 msgstr "Close"
 
@@ -2026,15 +2052,22 @@ msgctxt "barcode action"
 msgid "Знайти"
 msgstr "Find"
 
+#: templates/core/stock_issue_form.html:20
+msgid "Знайдений товар"
+msgstr "Found item"
+
 #: templates/core/stock_issue_form.html:23
 #: templates/core/stock_receive_form.html:23
 msgid "Доступний залишок"
 msgstr "Available stock"
 
-#: templates/core/stock_issue_form.html:49
-#: templates/core/stock_receive_form.html:49
-msgid "Додаткові поля"
-msgstr "Additional fields"
+#: templates/core/stock_issue_form.html:26
+msgid "Відскануйте штрихкод товару, щоб продовжити."
+msgstr "Scan the item barcode to continue."
+
+#: templates/core/stock_issue_form.html:56
+msgid "Видати товар"
+msgstr "Take item"
 
 #: templates/core/stock_issue_result.html:8
 #: templates/core/stock_receive_result.html:8
@@ -2080,6 +2113,10 @@ msgstr "To stock movements"
 #: templates/core/stockmovement_list.html:8
 msgid "До залишків"
 msgstr "To stock balances"
+
+#: templates/core/stock_receive_form.html:49
+msgid "Додаткові поля"
+msgstr "Additional fields"
 
 #: templates/core/stock_receive_form.html:62
 msgid "Зберегти прихід"
@@ -2162,21 +2199,10 @@ msgstr "To"
 msgid "Немає рухів за вибраними фільтрами."
 msgstr "No movements for the selected filters."
 
-#: templates/core/storekeeper_workplace.html:70 templates/core/storekeeper_workplace.html:74
+#: templates/core/storekeeper_workplace.html:69
+#: templates/core/storekeeper_workplace.html:72
 msgid "Оберіть дію"
 msgstr "Choose an action"
-
-#: templates/core/storekeeper_workplace.html:49
-msgid "Оберіть дію, відскануйте товар і вкажіть кількість."
-msgstr "Choose an action, scan the item and enter the quantity."
-
-#: templates/core/storekeeper_workplace.html:64
-msgid "Скануйте штрихкод, введіть кількість і підтвердьте отримання товару."
-msgstr "Scan the barcode, enter the quantity and confirm taking the item."
-
-#: templates/core/storekeeper_workplace.html:75
-msgid "Скануйте штрихкод, введіть кількість і підтвердьте повернення товару."
-msgstr "Scan the barcode, enter the quantity and confirm returning the item."
 
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
@@ -2190,19 +2216,19 @@ msgstr "Login"
 msgid "Увійти"
 msgstr "Log in"
 
-#: core/services/stock.py
-msgid "Для видачі товару потрібно вказати отримувача."
-msgstr "Recipient is required to issue stock."
+#~ msgid "Оберіть дію, відскануйте товар і вкажіть кількість."
+#~ msgstr "Choose an action, scan the item and enter the quantity."
 
-#: core/forms/stock_operations.py
-msgid "Оберіть, хто бере товар."
-msgstr "Choose who takes the item."
+#~ msgid "Скануйте штрихкод, введіть кількість і підтвердьте отримання товару."
+#~ msgstr "Scan the barcode, enter the quantity and confirm taking the item."
+
+#~ msgid ""
+#~ "Скануйте штрихкод, введіть кількість і підтвердьте повернення товару."
+#~ msgstr ""
+#~ "Scan the barcode, enter the quantity and confirm returning the item."
 
 #~ msgid "Прийняти товар"
 #~ msgstr "Receive goods"
-
-#~ msgid "Видати товар"
-#~ msgstr "Issue goods"
 
 #~ msgid "Перемістити товар"
 #~ msgstr "Transfer goods"
@@ -2274,9 +2300,6 @@ msgstr "Choose who takes the item."
 
 #~ msgid "Створити в Django Admin"
 #~ msgstr "Create in Django Admin"
-
-#~ msgid "Знайти товар"
-#~ msgstr "Find item"
 
 #~ msgid "Знайдіть номенклатуру за назвою або кодом."
 #~ msgstr "Find an item by name or code."
@@ -2370,6 +2393,3 @@ msgstr "Choose who takes the item."
 
 #~ msgid "Розширене адміністрування"
 #~ msgstr "Advanced administration"
-
-#~ msgid "Недостатньо залишку для видачі"
-#~ msgstr "Not enough stock to issue"
