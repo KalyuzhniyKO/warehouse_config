@@ -1,0 +1,134 @@
+{% load i18n %}
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE|default:'uk' }}">
+<head>
+    <meta charset="utf-8">
+    <title>{{ labels.title }}</title>
+    <style>
+        @page { size: A4; margin: 16mm; }
+        body {
+            background: #fff;
+            color: #000;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.4;
+            margin: 0;
+        }
+        .no-print {
+            margin: 0 0 16px;
+        }
+        .no-print button,
+        .no-print a {
+            background: #fff;
+            border: 1px solid #000;
+            color: #000;
+            display: inline-block;
+            font: inherit;
+            margin-right: 8px;
+            padding: 6px 12px;
+            text-decoration: none;
+        }
+        .slip {
+            border: 1px solid #000;
+            max-width: 150mm;
+            padding: 12mm;
+        }
+        h1 {
+            font-size: 20px;
+            margin: 0 0 14px;
+        }
+        dl {
+            display: grid;
+            grid-template-columns: 52mm 1fr;
+            margin: 0;
+            row-gap: 6px;
+        }
+        dt {
+            font-weight: 700;
+        }
+        dd {
+            margin: 0;
+        }
+        .video-time {
+            border: 1px solid #000;
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 16px;
+            padding: 10px;
+        }
+        .video-time div {
+            font-size: 18px;
+            margin-top: 4px;
+        }
+        @media print {
+            .no-print {
+                display: none;
+            }
+            .slip {
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print">
+        <button type="button" onclick="window.print()">{{ labels.print }}</button>
+        <button type="button" onclick="window.history.back()">{{ labels.back }}</button>
+    </div>
+
+    <main class="slip">
+        <h1>{{ labels.title }}</h1>
+        <dl>
+            <dt>{{ labels.operation_id }}</dt>
+            <dd>{{ movement.pk }}</dd>
+
+            <dt>{{ labels.operation_type }}</dt>
+            <dd>{{ operation_type }}</dd>
+
+            <dt>{{ labels.occurred_at }}</dt>
+            <dd>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
+
+            <dt>{{ labels.item }}</dt>
+            <dd>{{ movement.item }}</dd>
+
+            <dt>{{ labels.internal_code }}</dt>
+            <dd>{{ movement.item.internal_code|default:"—" }}</dd>
+
+            {% if movement.item.barcode %}
+            <dt>{{ labels.barcode }}</dt>
+            <dd>{{ movement.item.barcode.barcode }}</dd>
+            {% endif %}
+
+            <dt>{{ labels.qty }}</dt>
+            <dd>{{ movement.qty }}</dd>
+
+            <dt>{{ labels.warehouse }}</dt>
+            <dd>{{ warehouse|default:"—" }}</dd>
+
+            {% if location %}
+            <dt>{{ labels.location }}</dt>
+            <dd>{{ location }}</dd>
+            {% endif %}
+
+            {% if movement.recipient %}
+            <dt>{{ labels.responsible }}</dt>
+            <dd>{{ movement.recipient }}</dd>
+            {% endif %}
+
+            {% if movement.document_number or movement.comment %}
+            <dt>{{ labels.comment_document }}</dt>
+            <dd>
+                {% if movement.document_number %}{{ movement.document_number }}{% endif %}
+                {% if movement.document_number and movement.comment %}<br>{% endif %}
+                {% if movement.comment %}{{ movement.comment|linebreaksbr }}{% endif %}
+            </dd>
+            {% endif %}
+        </dl>
+
+        <section class="video-time">
+            {{ labels.video_time }}
+            <div>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</div>
+        </section>
+    </main>
+</body>
+</html>

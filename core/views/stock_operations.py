@@ -15,7 +15,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -206,6 +206,82 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
             form.add_error(None, message)
             return self.form_invalid(form)
         return redirect("stock_issue_result", pk=movement.pk)
+
+
+class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = STOCK_VIEW_GROUPS
+    template_name = "core/stock_movement_print.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        movement = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item",
+                "item__barcode",
+                "source_location",
+                "source_location__warehouse",
+                "destination_location",
+                "destination_location__warehouse",
+                "recipient",
+            ),
+            pk=self.kwargs["pk"],
+        )
+        location = movement.source_location or movement.destination_location
+        is_english = get_language() == "en"
+        if movement.movement_type == StockMovement.MovementType.OUT:
+            operation_type = "Issue item" if is_english else _("Видача товару")
+        elif movement.movement_type in {
+            StockMovement.MovementType.IN,
+            StockMovement.MovementType.RETURN,
+        }:
+            operation_type = "Return item" if is_english else _("Повернення товару")
+        else:
+            operation_type = movement.get_movement_type_display()
+        labels = {
+            "title": (
+                "Warehouse operation control slip"
+                if is_english
+                else _("Контрольний талон складської операції")
+            ),
+            "print": "Print" if is_english else _("Друк"),
+            "back": "Back" if is_english else _("Назад"),
+            "operation_id": "Operation ID" if is_english else _("ID операції"),
+            "operation_type": "Operation type" if is_english else _("Тип операції"),
+            "occurred_at": (
+                "Operation date and time"
+                if is_english
+                else _("Дата і час операції")
+            ),
+            "item": "Item" if is_english else _("Номенклатура"),
+            "internal_code": "Internal code" if is_english else _("Внутрішній код"),
+            "barcode": "Barcode" if is_english else _("Штрихкод"),
+            "qty": "Quantity" if is_english else _("Кількість"),
+            "warehouse": "Warehouse" if is_english else _("Склад"),
+            "location": "Location" if is_english else _("Локація"),
+            "responsible": (
+                "Recipient / responsible person"
+                if is_english
+                else _("Отримувач / відповідальний")
+            ),
+            "comment_document": (
+                "Comment / document" if is_english else _("Коментар / документ")
+            ),
+            "video_time": (
+                "Video check time:"
+                if is_english
+                else _("Час для перевірки по відео:")
+            ),
+        }
+        context.update(
+            {
+                "labels": labels,
+                "movement": movement,
+                "operation_type": operation_type,
+                "location": location,
+                "warehouse": location.warehouse if location else None,
+            }
+        )
+        return context
 
 
 class StockIssueResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
