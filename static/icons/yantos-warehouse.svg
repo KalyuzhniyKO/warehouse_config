@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">YANTOS Warehouse</title>
+  <desc id="desc">Yellow YANTOS Warehouse app icon with WH lettering.</desc>
+  <rect width="512" height="512" rx="96" fill="#f5c400"/>
+  <rect x="72" y="72" width="368" height="368" rx="72" fill="#111827"/>
+  <text x="256" y="302" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="126" font-weight="800" fill="#f5c400">WH</text>
+  <path d="M146 358h220" stroke="#f5c400" stroke-width="24" stroke-linecap="round"/>
+</svg>
