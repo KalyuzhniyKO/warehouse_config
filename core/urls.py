@@ -202,6 +202,11 @@ urlpatterns = [
     path("stock/writeoff/<int:pk>/", views.StockWriteOffResultView.as_view(), name="stock_writeoff_result"),
     path("stock/initial/", views.InitialBalanceView.as_view(), name="stock_initial"),
     path("stock/movements/", views.StockMovementListView.as_view(), name="movement_list"),
+    path(
+        "stock/movements/<int:pk>/print/",
+        views.StockMovementPrintView.as_view(),
+        name="stock_movement_print",
+    ),
     path("labels/item/<int:pk>/download/", views.ItemLabelDownloadView.as_view(), name="item_label_download"),
     path("labels/item/<int:pk>/print/", views.ItemLabelPrintView.as_view(), name="item_label_print"),
     path("settings/printers/", views.PrinterListView.as_view(), name="printer_list"),

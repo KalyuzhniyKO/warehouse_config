@@ -257,6 +257,116 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
         self.assertEqual(movement.issue_reason, StockMovement.IssueReason.SALE)
 
+    def test_stock_issue_result_page_links_control_slip(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "2.000",
+                "issue_reason": StockMovement.IssueReason.SALE,
+                "department": "Sales",
+                "recipient": self.recipient.pk,
+                "document_number": "SO-PRINT",
+                "comment": "",
+                "occurred_at": "2026-05-13T10:06",
+            },
+            follow=True,
+        )
+
+        movement = StockMovement.objects.get(document_number="SO-PRINT")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(response, reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+
+    def test_stock_receive_result_page_links_control_slip(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "2.000",
+                "comment": "RETURN-PRINT",
+                "occurred_at": "2026-05-13T10:06",
+            },
+            follow=True,
+        )
+
+        movement = StockMovement.objects.get(comment="RETURN-PRINT")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(response, reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+
+    def test_stock_movement_print_page_is_read_only_and_contains_control_data(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.250"),
+            source_location=self.location,
+            recipient=self.recipient,
+            document_number="CAM-1",
+            comment="Camera check",
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+        movement_count = StockMovement.objects.count()
+        movement_qty = movement.qty
+        balance_qty = self.balance.qty
+
+        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        self.balance.refresh_from_db()
+        movement.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Контрольний талон складської операції")
+        self.assertContains(response, self.item.name)
+        self.assertContains(response, "1,250")
+        self.assertContains(response, "2026-05-13 10:06:32")
+        self.assertContains(response, "Час для перевірки по відео:")
+        self.assertNotContains(response, "Видав")
+        self.assertNotContains(response, "Отримав")
+        self.assertNotContains(response, "Перевірив")
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+        self.assertEqual(movement.qty, movement_qty)
+        self.assertEqual(self.balance.qty, balance_qty)
+
+    def test_auditor_can_open_stock_movement_print_page(self):
+        self.client.force_login(self.auditor)
+        movement = StockMovement.objects.filter(movement_type=StockMovement.MovementType.IN).first()
+
+        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Контрольний талон складської операції")
+
+    def test_english_stock_movement_print_page_uses_english_only_control_labels(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+
+        response = self.client.get(f"/en/stock/movements/{movement.pk}/print/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Warehouse operation control slip", html)
+        self.assertIn("Video check time:", html)
+        self.assertNotIn("Контрольний талон складської операції", html)
+        self.assertNotIn("Час для перевірки по відео", html)
+        self.assertNotIn("Друкувати контрольний талон", html)
+
     def test_stock_issue_post_stores_repair_reason_and_department(self):
         self.client.force_login(self.storekeeper)
         response = self.client.post(
