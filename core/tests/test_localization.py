@@ -154,24 +154,17 @@ class DashboardLocalizationTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Storekeeper workplace", html)
+        main_html = html[html.index('<main class="col-12">'):]
+        self.assertIn("Storekeeper workplace", main_html)
         for phrase in [
-            "Receive goods",
-            "Issue goods",
-            "Transfer goods",
-            "Write off goods",
-            "Run inventory count",
-            "Check stock",
-            "Print label",
-            "Item search",
-            "Search",
+            "Issue item",
+            "Return item",
             "Help",
         ]:
-            self.assertIn(phrase, html)
+            self.assertIn(phrase, main_html)
         for phrase in [
             "Робоче місце комірника",
-            "Прийняти товар",
-            "Видати товар",
+            "Повернення товару",
             "Перемістити товар",
             "Списати товар",
             "Провести інвентаризацію",
@@ -182,32 +175,25 @@ class DashboardLocalizationTests(TestCase):
             "Знайти",
             "Допомога",
         ]:
-            self.assertNotIn(phrase, html)
+            self.assertNotIn(phrase, main_html)
 
     def test_ukrainian_storekeeper_workplace_uses_only_ukrainian_action_terms(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Робоче місце комірника", html)
+        main_html = html[html.index('<main class="col-12">'):]
+        self.assertIn("Робоче місце комірника", main_html)
         for phrase in [
-            "Прийняти товар",
-            "Видати товар",
-            "Перемістити товар",
-            "Списати товар",
-            "Провести інвентаризацію",
-            "Перевірити залишки",
-            "Надрукувати етикетку",
-            "Пошук товару",
-            "Назва, внутрішній код або штрихкод",
-            "Знайти",
+            "Видача товару",
+            "Повернення товару",
             "Допомога",
         ]:
-            self.assertIn(phrase, html)
+            self.assertIn(phrase, main_html)
         for phrase in [
             "Storekeeper workplace",
-            "Receive goods",
-            "Issue goods",
+            "Issue item",
+            "Return item",
             "Transfer goods",
             "Write off goods",
             "Run inventory count",
@@ -217,7 +203,7 @@ class DashboardLocalizationTests(TestCase):
             "Search",
             "Help",
         ]:
-            self.assertNotIn(phrase, html)
+            self.assertNotIn(phrase, main_html)
 
     def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
         response = self.dashboard_for(self.admin, "/en/stock/transfer/")
@@ -430,14 +416,17 @@ class DashboardLocalizationTests(TestCase):
         ]:
             self.assertNotIn(phrase, html)
 
-    def test_ukrainian_storekeeper_workplace_keeps_autofocus_search(self):
+    def test_ukrainian_storekeeper_workplace_links_to_scanner_flows(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
         html = response.content.decode()
+        main_html = html[html.index('<main class="col-12">'):]
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Робоче місце комірника", html)
-        self.assertIn('id="storekeeper-item-search"', html)
-        self.assertIn("autofocus", html)
+        self.assertIn("Робоче місце комірника", main_html)
+        self.assertIn('/uk/stock/issue/', main_html)
+        self.assertIn('/uk/stock/receive/', main_html)
+        self.assertNotIn('id="storekeeper-item-search"', main_html)
+        self.assertNotIn("autofocus", main_html)
 
     def test_english_dashboard_has_no_new_ukrainian_phrases_and_keeps_yantos_brand(self):
         response = self.dashboard_for(self.admin, "/en/")

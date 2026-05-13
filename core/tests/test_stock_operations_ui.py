@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase, override_settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import (
@@ -112,6 +112,7 @@ class StockTransferFormTests(TestCase):
 class StockIssueInterfaceTests(TestCase):
 
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         self.admin = get_user_model().objects.create_user(
             username="admin", password="pw"
@@ -206,12 +207,16 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Видача товару")
         self.assertNotContains(response, "Отримувачі")
 
-    def test_storekeeper_sees_stock_writeoff_on_dashboard(self):
+    def test_storekeeper_dashboard_focuses_on_issue_and_return(self):
         self.client.force_login(self.storekeeper)
         response = self.client.get("/uk/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Списання товару")
+        self.assertContains(response, "Видача товару")
+        self.assertContains(response, "Повернення товару")
+        main_html = response.content.decode().split('<main class="col-12">', 1)[1]
+        self.assertNotIn("Списання товару", main_html)
+        self.assertNotIn("Переміщення товару", main_html)
 
     def test_auditor_does_not_see_stock_writeoff_on_dashboard(self):
         self.client.force_login(self.auditor)
@@ -410,6 +415,7 @@ class StockOperationWorkflowTests(TestCase):
         call_command("compilemessages", locale=["en", "uk"], verbosity=0)
 
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         self.user = get_user_model().objects.create_user("workflow", password="pass")
         self.user.groups.add(Group.objects.get(name="Адміністратор складу"))
@@ -808,17 +814,58 @@ class StockOperationWorkflowTests(TestCase):
 
     def test_receive_page_contains_barcode_scanner_field(self):
         response = self.client.get(reverse("stock_receive"))
+        html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "receive-barcode-scanner")
         self.assertContains(response, "Сканувати штрихкод")
+        self.assertIn('name="barcode"', html)
+        self.assertIn('autofocus autocomplete="off"', html)
 
     def test_issue_page_contains_barcode_scanner_field(self):
         response = self.client.get(reverse("stock_issue"))
+        html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "issue-barcode-scanner")
         self.assertContains(response, "Сканувати штрихкод")
+        self.assertIn('name="barcode"', html)
+        self.assertIn('autofocus autocomplete="off"', html)
+
+    def test_issue_get_barcode_prefills_item(self):
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"].initial["item"], self.item)
+        self.assertContains(response, self.item.name)
+        self.assertContains(response, self.item.barcode.barcode)
+
+    def test_receive_get_barcode_prefills_item(self):
+        response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["form"].initial["item"], self.item)
+        self.assertContains(response, self.item.name)
+        self.assertContains(response, self.item.barcode.barcode)
+
+    def test_unknown_barcode_shows_warning(self):
+        response = self.client.get(f'{reverse("stock_issue")}?barcode=UNKNOWN')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Товар за цим штрихкодом не знайдено.")
+
+    def test_english_stock_pages_show_english_scanner_labels(self):
+        issue_response = self.client.get("/en/stock/issue/")
+        receive_response = self.client.get("/en/stock/receive/")
+
+        self.assertContains(issue_response, "Scan barcode")
+        self.assertContains(issue_response, "Find")
+        self.assertNotContains(issue_response, "Сканувати штрихкод")
+        self.assertContains(receive_response, "Return item")
+        self.assertContains(receive_response, "Scan barcode")
+        self.assertNotContains(receive_response, "Повернення товару")
 
     def test_unauthorized_user_redirects_to_login(self):
         self.client.logout()

@@ -240,19 +240,15 @@ class DashboardPermissionTests(TestCase):
 
         self.assertTemplateUsed(response, "core/storekeeper_workplace.html")
         self.assertTrue(response.context["is_storekeeper_workplace"])
+        html = response.content.decode()
         for label in [
             "Робоче місце комірника",
-            "Прийняти товар",
-            "Видати товар",
-            "Перемістити товар",
-            "Списати товар",
-            "Провести інвентаризацію",
-            "Перевірити залишки",
-            "Надрукувати етикетку",
-            "Пошук товару",
+            "Видача товару",
+            "Повернення товару",
             "Допомога",
         ]:
             self.assertContains(response, label)
+        main_html = html[html.index('<main class="col-12">'):]
         for label in [
             "Категорії",
             "Одиниці виміру",
@@ -265,55 +261,32 @@ class DashboardPermissionTests(TestCase):
             "Початкові залишки",
             "Знайти товар",
             "Відкрити",
+            "Перемістити товар",
+            "Списати товар",
+            "Провести інвентаризацію",
+            "Перевірити залишки",
+            "Надрукувати етикетку",
+            "Пошук товару",
+            "Назва, внутрішній код або штрихкод",
         ]:
-            self.assertNotContains(response, label)
-
-    def test_storekeeper_workplace_has_quick_item_search(self):
-        response = self.dashboard_for(self.storekeeper, "/uk/")
-        html = response.content.decode()
-
-        self.assertContains(response, "Назва, внутрішній код або штрихкод")
-        self.assertIn(f'<form class="row g-2 align-items-end" method="get" action="{reverse("item_list")}"', html)
-        self.assertIn('type="search" name="q" autofocus', html)
-        self.assertNotContains(response, "Відкрити")
-
-    def test_storekeeper_quick_item_search_targets_item_list_q_parameter(self):
-        response = self.dashboard_for(self.storekeeper, "/uk/")
-        html = response.content.decode()
-
-        self.assertIn('method="get"', html)
-        self.assertIn(f'action="{reverse("item_list")}"', html)
-        self.assertIn('name="q"', html)
-
-    def test_storekeeper_item_list_search_finds_item_by_barcode(self):
-        unit = Unit.objects.create(name="Штука", symbol="шт")
-        item = Item.objects.create(
-            name="Кабель ВВГ", internal_code="CBL-1", unit=unit
-        )
-
-        response = self.dashboard_for(
-            self.storekeeper, f'{reverse("item_list")}?q={item.barcode.barcode}'
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, item.name)
-        self.assertContains(response, item.barcode.barcode)
+            self.assertNotIn(label, main_html)
 
     def test_storekeeper_workplace_primary_cards_are_links(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
         html = response.content.decode()
 
         for label, url_name in [
-            ("Прийняти товар", "stock_receive"),
-            ("Видати товар", "stock_issue"),
-            ("Перемістити товар", "stock_transfer"),
-            ("Списати товар", "stock_writeoff"),
+            ("Видача товару", "stock_issue"),
+            ("Повернення товару", "stock_receive"),
         ]:
             self.assertIn(
                 f'<a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{reverse(url_name)}"',
                 html,
             )
             self.assertIn(label, html)
+        main_html = html[html.index('<main class="col-12">'):]
+        for label in ["Перемістити товар", "Списати товар", "Прийняти товар"]:
+            self.assertNotIn(label, main_html)
 
     def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
@@ -323,13 +296,11 @@ class DashboardPermissionTests(TestCase):
         self.assertNotContains(response, "Навігація")
         self.assertIn('<main class="col-12">', html)
         self.assertNotIn('<main class="col-lg-10">', html)
-        for label in [
-            "Прийняти товар",
-            "Видати товар",
-            "Перемістити товар",
-            "Списати товар",
-        ]:
+        for label in ["Видача товару", "Повернення товару"]:
             self.assertContains(response, label)
+        main_html = html[html.index('<main class="col-12">'):]
+        for label in ["Перемістити товар", "Списати товар", "Прийняти товар"]:
+            self.assertNotIn(label, main_html)
 
     def test_storekeeper_internal_page_keeps_sidebar(self):
         response = self.dashboard_for(self.storekeeper, "/uk/stock/receive/")
