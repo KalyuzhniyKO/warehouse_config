@@ -66,6 +66,7 @@ from ..permissions import (
     user_in_groups,
 )
 from ..services import analytics as analytics_service
+from ..services.items import find_item_by_barcode
 from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
@@ -86,7 +87,44 @@ from ..services.stock import (
 
 
 
-class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+def stock_operation_barcode_context(item):
+    if item is None:
+        return None
+    available_qty = (
+        StockBalance.objects.filter(item=item, is_active=True).aggregate(total=Sum("qty"))["total"]
+        or 0
+    )
+    return {"item": item, "available_qty": available_qty}
+
+
+class BarcodePrefillMixin:
+    barcode_param = "barcode"
+    barcode_not_found_message = _("Товар за цим штрихкодом не знайдено.")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.scanned_barcode = request.GET.get(self.barcode_param, "").strip()
+        self.scanned_item = None
+        if request.method == "GET" and self.scanned_barcode:
+            self.scanned_item = find_item_by_barcode(self.scanned_barcode)
+            if self.scanned_item is None:
+                messages.warning(request, self.barcode_not_found_message)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if self.scanned_item is not None:
+            initial["item"] = self.scanned_item
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["barcode_query"] = self.scanned_barcode
+        context["scanned_item"] = self.scanned_item
+        context["scanned_item_context"] = stock_operation_barcode_context(self.scanned_item)
+        return context
+
+
+class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_receive_form.html"
     form_class = StockReceiveForm
@@ -132,7 +170,7 @@ class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         return context
 
 
-class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_issue_form.html"
     form_class = StockIssueForm

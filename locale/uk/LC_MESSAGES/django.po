@@ -2287,3 +2287,41 @@ msgstr "Увійти"
 
 #~ msgid "Недостатньо залишку для видачі"
 #~ msgstr "Недостатньо залишку для видачі"
+
+#: added for storekeeper barcode flow
+msgid "Повернення товару"
+msgstr "Повернення товару"
+
+#: added for storekeeper barcode flow
+msgid "Оберіть один із двох основних сценаріїв роботи зі сканером штрихкоду."
+msgstr "Оберіть один із двох основних сценаріїв роботи зі сканером штрихкоду."
+
+#: added for storekeeper barcode flow
+msgid "Скануйте штрихкод, виберіть кількість і оформіть видачу."
+msgstr "Скануйте штрихкод, виберіть кількість і оформіть видачу."
+
+#: added for storekeeper barcode flow
+msgid "Скануйте штрихкод, введіть кількість і поверніть товар на склад."
+msgstr "Скануйте штрихкод, введіть кількість і поверніть товар на склад."
+
+#: added for storekeeper barcode flow
+msgid "Товар за цим штрихкодом не знайдено."
+msgstr "Товар за цим штрихкодом не знайдено."
+
+#: added for storekeeper barcode flow
+msgid "Доступний залишок"
+msgstr "Доступний залишок"
+
+#: added for storekeeper barcode flow
+msgid "Додаткові поля"
+msgstr "Додаткові поля"
+
+#: added for storekeeper barcode flow
+msgctxt "storekeeper action"
+msgid "Видача товару"
+msgstr "Видача товару"
+
+#: added for storekeeper barcode flow
+msgctxt "barcode action"
+msgid "Знайти"
+msgstr "Знайти"
