@@ -243,7 +243,7 @@ class DashboardPermissionTests(TestCase):
         html = response.content.decode()
         for label in [
             "Склад самообслуговування",
-            "Оберіть дію, відскануйте товар і вкажіть кількість.",
+            "Оберіть дію",
             "Взяти товар",
             "Повернути товар",
         ]:
@@ -283,7 +283,7 @@ class DashboardPermissionTests(TestCase):
             ("Повернути товар", "stock_receive"),
         ]:
             self.assertIn(
-                f'<a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{reverse(url_name)}"',
+                f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse(url_name)}"',
                 html,
             )
             self.assertIn(label, html)
@@ -351,8 +351,7 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.storekeeper)
         html = response.content.decode()
 
-        mobile_start = html.index('navbar-nav me-auto mb-2 mb-lg-0 d-lg-none')
-        mobile_end = html.index('ms-auto d-flex', mobile_start)
-        mobile_menu = html[mobile_start:mobile_end]
-        self.assertNotIn("Керування", mobile_menu)
-        self.assertNotIn("management/", mobile_menu)
+        self.assertNotIn('navbar-nav me-auto mb-2 mb-lg-0 d-lg-none', html)
+        self.assertNotIn('navbar-toggler', html)
+        self.assertNotIn("Керування", html)
+        self.assertNotIn("management/", html)
