@@ -204,7 +204,7 @@ class StockIssueInterfaceTests(TestCase):
         response = self.client.get(reverse("dashboard"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Видача товару")
+        self.assertContains(response, "Взяти товар")
         self.assertNotContains(response, "Отримувачі")
 
     def test_storekeeper_dashboard_focuses_on_issue_and_return(self):
@@ -212,11 +212,13 @@ class StockIssueInterfaceTests(TestCase):
         response = self.client.get("/uk/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Видача товару")
-        self.assertContains(response, "Повернення товару")
+        self.assertContains(response, "Взяти товар")
+        self.assertContains(response, "Повернути товар")
         main_html = response.content.decode().split('<main class="col-12">', 1)[1]
         self.assertNotIn("Списання товару", main_html)
         self.assertNotIn("Переміщення товару", main_html)
+        self.assertNotIn("Робоче місце комірника", main_html)
+        self.assertNotIn("Комірник", main_html)
 
     def test_auditor_does_not_see_stock_writeoff_on_dashboard(self):
         self.client.force_login(self.auditor)
