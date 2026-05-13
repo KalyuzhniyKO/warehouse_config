@@ -7,6 +7,7 @@ row-level locks and every change is represented by a StockMovement record.
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.db import IntegrityError, transaction
+from django.utils.translation import gettext_lazy as _
 
 from core.models import StockBalance, StockMovement
 from core.services.barcodes import ensure_item_barcode
@@ -179,6 +180,10 @@ def issue_stock(
 ):
     """Issue stock from a location and record the business reason."""
     qty = validate_positive_qty(qty)
+    if recipient is None:
+        raise MissingRecipientError(
+            _("Для видачі товару потрібно вказати отримувача.")
+        )
     with transaction.atomic():
         balance = get_or_create_balance_locked(item, location)
         _decrease_balance(balance, qty)

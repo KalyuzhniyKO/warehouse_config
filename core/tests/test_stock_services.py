@@ -11,7 +11,14 @@ from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
-from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from ..forms import (
+    CategoryForm,
+    ItemForm,
+    LocationForm,
+    StockBalanceFilterForm,
+    StockIssueForm,
+    StockTransferForm,
+)
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -29,6 +36,24 @@ from ..models import (
     Unit,
     Warehouse,
 )
+
+
+_MESSAGES_COMPILED = None
+
+
+def _messages_compiled():
+    """True if locale catalogs were built; False if gettext msgfmt is missing."""
+    global _MESSAGES_COMPILED
+    if _MESSAGES_COMPILED is not None:
+        return _MESSAGES_COMPILED
+    from django.core.management.base import CommandError
+
+    try:
+        call_command("compilemessages", verbosity=0)
+        _MESSAGES_COMPILED = True
+    except CommandError:
+        _MESSAGES_COMPILED = False
+    return _MESSAGES_COMPILED
 
 
 class StockServiceTests(TestCase):
@@ -93,6 +118,7 @@ class StockServiceTests(TestCase):
             item=self.item,
             location=self.source_location,
             qty=Decimal("1.000"),
+            recipient=self.recipient,
             issue_reason=StockMovement.IssueReason.REPAIR,
             department="  Repair shop  ",
             document_number="REQ-7",
@@ -119,6 +145,90 @@ class StockServiceTests(TestCase):
 
         self.assertEqual(self.get_balance_qty(), Decimal("2.000"))
         self.assertEqual(StockMovement.objects.count(), 1)
+
+    def test_issue_stock_without_recipient_raises_missing_recipient_error(self):
+        from django.utils import translation
+
+        from ..services.stock import MissingRecipientError, issue_stock, receive_stock
+
+        receive_stock(
+            item=self.item, location=self.source_location, qty=Decimal("2.000")
+        )
+        with translation.override("uk"):
+            with self.assertRaises(MissingRecipientError) as ctx:
+                issue_stock(
+                    item=self.item,
+                    location=self.source_location,
+                    qty=Decimal("1.000"),
+                )
+            self.assertEqual(
+                str(ctx.exception),
+                "Для видачі товару потрібно вказати отримувача.",
+            )
+        if not _messages_compiled():
+            self.skipTest("GNU gettext msgfmt is not available; skipping EN assertion")
+        with translation.override("en"):
+            with self.assertRaises(MissingRecipientError) as ctx:
+                issue_stock(
+                    item=self.item,
+                    location=self.source_location,
+                    qty=Decimal("1.000"),
+                )
+            self.assertEqual(
+                str(ctx.exception),
+                "Recipient is required to issue stock.",
+            )
+
+    def test_stock_issue_form_invalid_without_recipient_uk(self):
+        from django.utils import translation
+
+        with translation.override("uk"):
+            form = StockIssueForm(
+                data={
+                    "item": self.item.pk,
+                    "warehouse": self.warehouse.pk,
+                    "location": self.source_location.pk,
+                    "qty": "1.000",
+                    "issue_reason": StockMovement.IssueReason.OTHER,
+                    "department": "",
+                    "document_number": "",
+                    "comment": "",
+                    "occurred_at": "2026-01-15T10:00",
+                }
+            )
+            self.assertFalse(form.is_valid())
+            self.assertIn("recipient", form.errors)
+            self.assertEqual(
+                str(form.errors["recipient"][0]),
+                "Оберіть, хто бере товар.",
+            )
+
+    def test_stock_issue_form_invalid_without_recipient_en(self):
+        from django.utils import translation
+
+        if not _messages_compiled():
+            self.skipTest("GNU gettext msgfmt is not available; skipping EN assertion")
+
+        with translation.override("en"):
+            form = StockIssueForm(
+                data={
+                    "item": self.item.pk,
+                    "warehouse": self.warehouse.pk,
+                    "location": self.source_location.pk,
+                    "qty": "1.000",
+                    "issue_reason": StockMovement.IssueReason.OTHER,
+                    "department": "",
+                    "document_number": "",
+                    "comment": "",
+                    "occurred_at": "2026-01-15T10:00",
+                }
+            )
+            self.assertFalse(form.is_valid())
+            self.assertIn("recipient", form.errors)
+            self.assertEqual(
+                str(form.errors["recipient"][0]),
+                "Choose who takes the item.",
+            )
 
     def test_writeoff_stock_decreases_balance_and_creates_movement(self):
         from ..services.stock import receive_stock, writeoff_stock
