@@ -334,8 +334,8 @@ msgstr "notatki"
 msgid "Отримувачі"
 msgstr "Odbiorcy"
 
-#: core/models.py:85 core/models.py:224
-msgid "rack"
+#: core/models.py:109 core/models.py:248
+msgid "Стелаж"
 msgstr "stojak"
 
 #: core/models.py:88 core/models.py:145 core/models.py:186 core/models.py:241

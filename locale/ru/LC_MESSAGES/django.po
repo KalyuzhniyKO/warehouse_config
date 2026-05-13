@@ -225,8 +225,8 @@ msgstr "позиция"
 msgid "warehouse"
 msgstr "склад"
 
-#: core/models.py:85 core/models.py:208
-msgid "rack"
+#: core/models.py:109 core/models.py:248
+msgid "Стелаж"
 msgstr "стеллаж"
 
 #: core/models.py:86 core/models.py:207 core/models.py:234 core/models.py:269

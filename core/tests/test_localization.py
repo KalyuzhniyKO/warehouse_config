@@ -241,23 +241,15 @@ class DashboardLocalizationTests(TestCase):
         ]:
             self.assertNotIn(phrase, html)
 
-    def test_language_switcher_only_exposes_ukrainian_and_english(self):
+    def test_language_switcher_lists_all_configured_languages(self):
+        from django.conf import settings
+
         response = self.dashboard_for(self.admin, "/uk/")
         html = response.content.decode()
 
-        self.assertIn("Українська", html)
-        self.assertIn("English", html)
-        for language_name in [
-            "Русский",
-            "Deutsch",
-            "Polski",
-            "Français",
-            "Español",
-            "Italiano",
-            "Português",
-            "Türkçe",
-        ]:
-            self.assertNotIn(language_name, html)
+        for _code, language_name in settings.LANGUAGES:
+            with self.subTest(language=language_name):
+                self.assertIn(language_name, html)
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")

@@ -106,7 +106,7 @@ class BarcodeRegistry(ActiveModel):
     class Prefix(models.TextChoices):
         ITEM = "ITM", _("Номенклатура")
         WAREHOUSE = "WH", _("Склад")
-        RACK = "RCK", _("rack")
+        RACK = "RCK", _("Стелаж")
         LOCATION = "LOC", _("Локація")
 
     barcode = models.CharField(_("barcode"), max_length=64, unique=True)
@@ -245,7 +245,7 @@ class Warehouse(ActiveModel):
 class Location(ActiveModel):
     class LocationType(models.TextChoices):
         LOCATION = "location", _("Локація")
-        RACK = "rack", _("rack")
+        RACK = "rack", _("Стелаж")
 
     warehouse = models.ForeignKey(
         Warehouse,

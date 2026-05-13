@@ -546,8 +546,8 @@ msgid "Отримувачі"
 msgstr "Recipients"
 
 #: core/models.py:109 core/models.py:248
-msgid "rack"
-msgstr "rack"
+msgid "Стелаж"
+msgstr "Rack"
 
 #: core/models.py:112 core/models.py:169 core/models.py:210 core/models.py:265
 #: core/models.py:414 core/models.py:595
