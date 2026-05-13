@@ -2167,6 +2167,10 @@ msgstr "Куди"
 msgid "Немає рухів за вибраними фільтрами."
 msgstr "Немає рухів за вибраними фільтрами."
 
+#: templates/core/storekeeper_workplace.html:70 templates/core/storekeeper_workplace.html:74
+msgid "Оберіть дію"
+msgstr "Оберіть дію"
+
 #: templates/core/storekeeper_workplace.html:49
 msgid "Оберіть дію, відскануйте товар і вкажіть кількість."
 msgstr "Оберіть дію, відскануйте товар і вкажіть кількість."

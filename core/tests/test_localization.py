@@ -159,7 +159,7 @@ class DashboardLocalizationTests(TestCase):
         for phrase in [
             "Take item",
             "Return item",
-            "Choose an action, scan the item and enter the quantity.",
+            "Choose an action",
         ]:
             self.assertIn(phrase, main_html)
         for phrase in [
@@ -190,7 +190,7 @@ class DashboardLocalizationTests(TestCase):
         for phrase in [
             "Взяти товар",
             "Повернути товар",
-            "Оберіть дію, відскануйте товар і вкажіть кількість.",
+            "Оберіть дію",
         ]:
             self.assertIn(phrase, main_html)
         for phrase in [
@@ -211,6 +211,54 @@ class DashboardLocalizationTests(TestCase):
             "Допомога",
         ]:
             self.assertNotIn(phrase, main_html)
+
+    def test_ukrainian_storekeeper_workplace_removes_complex_navigation(self):
+        response = self.dashboard_for(self.storekeeper, "/uk/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Склад самообслуговування", html)
+        self.assertIn("Взяти товар", html)
+        self.assertIn("Повернути товар", html)
+        self.assertNotIn('class="navbar-toggler"', html)
+        self.assertNotIn("Навігація", html)
+        for phrase in [
+            "Інвентаризація",
+            "Аналітика",
+            "Номенклатура",
+            "Користувачі",
+            "Рухи товарів",
+            "Довідники",
+            "Керування",
+            "Допомога",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_english_storekeeper_workplace_has_no_ukrainian_action_phrases(self):
+        response = self.dashboard_for(self.storekeeper, "/en/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Warehouse self-service", html)
+        self.assertIn("Take item", html)
+        self.assertIn("Return item", html)
+        for phrase in [
+            "Склад самообслуговування",
+            "Оберіть дію",
+            "Взяти товар",
+            "Повернути товар",
+        ]:
+            self.assertNotIn(phrase, html)
+
+    def test_admin_dashboard_keeps_navigation(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Навігація", html)
+        self.assertIn("Інвентаризація", html)
+        self.assertIn("Номенклатура", html)
+        self.assertIn("Керування", html)
 
     def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
         response = self.dashboard_for(self.admin, "/en/stock/transfer/")
@@ -247,9 +295,9 @@ class DashboardLocalizationTests(TestCase):
         response = self.dashboard_for(self.admin, "/uk/")
         html = response.content.decode()
 
-        for _code, language_name in settings.LANGUAGES:
+        for language_code, language_name in settings.LANGUAGES:
             with self.subTest(language=language_name):
-                self.assertIn(language_name, html)
+                self.assertIn(f'value="{language_code}"', html)
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")

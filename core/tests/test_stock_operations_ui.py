@@ -589,6 +589,7 @@ class StockOperationWorkflowTests(TestCase):
         self.destination_location = Location.objects.create(
             warehouse=self.destination_warehouse, name="Workflow destination location"
         )
+        self.recipient = Recipient.objects.create(name="Workflow recipient")
 
     def test_receive_stock_ui_increases_balance_creates_movement_and_barcode(self):
         self.item.barcode = None

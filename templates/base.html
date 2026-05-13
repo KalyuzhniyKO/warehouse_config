@@ -97,6 +97,17 @@
                 <span class="brand-subtitle">{% trans "Складський облік" %}</span>
             </span>
         </a>
+        {% if is_storekeeper_workplace %}
+            <div class="ms-auto d-flex align-items-center gap-2 gap-sm-3 navbar-text">
+                {% include "includes/language_switcher.html" %}
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'logout' %}" class="m-0">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-light btn-sm" type="submit">{% trans "Вийти" %}</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% else %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{% trans 'Перемкнути навігацію' %}">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -161,6 +172,7 @@
                 {% endif %}
             </div>
         </div>
+        {% endif %}
     </div>
 </nav>
 <div class="container-fluid app-shell py-4">
