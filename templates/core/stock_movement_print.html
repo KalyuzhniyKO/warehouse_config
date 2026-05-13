@@ -135,5 +135,13 @@
             <div>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</div>
         </section>
     </main>
+
+    {% if request.GET.autoprint == "1" %}
+    <script>
+        window.addEventListener("load", function () {
+            window.print();
+        });
+    </script>
+    {% endif %}
 </body>
 </html>

@@ -275,13 +275,26 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         is_english = get_language() == "en"
         if movement.movement_type == StockMovement.MovementType.OUT:
             operation_type = "Issue item" if is_english else _("Видача товару")
+            responsible_label = (
+                "Who takes the item" if is_english else _("Хто взяв товар")
+            )
         elif movement.movement_type in {
             StockMovement.MovementType.IN,
             StockMovement.MovementType.RETURN,
         }:
             operation_type = "Return item" if is_english else _("Повернення товару")
+            responsible_label = (
+                "Recipient / responsible person"
+                if is_english
+                else _("Отримувач / відповідальний")
+            )
         else:
             operation_type = movement.get_movement_type_display()
+            responsible_label = (
+                "Recipient / responsible person"
+                if is_english
+                else _("Отримувач / відповідальний")
+            )
         labels = {
             "title": (
                 "Warehouse operation control slip"
@@ -303,11 +316,7 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
             "qty": "Quantity" if is_english else _("Кількість"),
             "warehouse": "Warehouse" if is_english else _("Склад"),
             "location": "Location" if is_english else _("Локація"),
-            "responsible": (
-                "Recipient / responsible person"
-                if is_english
-                else _("Отримувач / відповідальний")
-            ),
+            "responsible": responsible_label,
             "department": (
                 "Department / place of use"
                 if is_english
