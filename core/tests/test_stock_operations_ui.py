@@ -380,7 +380,7 @@ class StockIssueInterfaceTests(TestCase):
                 "qty": "1.000",
                 "issue_reason": StockMovement.IssueReason.REPAIR,
                 "department": "Ремонтний цех",
-                "recipient": "",
+                "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",
                 "occurred_at": "2026-01-15T11:00",
@@ -404,7 +404,7 @@ class StockIssueInterfaceTests(TestCase):
                 "qty": "99.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
                 "department": "",
-                "recipient": "",
+                "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",
                 "occurred_at": "2026-01-15T12:00",
@@ -417,6 +417,51 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(StockMovement.objects.count(), movement_count)
         self.balance.refresh_from_db()
         self.assertEqual(self.balance.qty, Decimal("7.000"))
+
+    def test_stock_issue_post_without_recipient_fails_validation_uk(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            "/uk/stock/issue/",
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T12:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Оберіть, хто бере товар.")
+
+    def test_stock_issue_post_without_recipient_fails_validation_en(self):
+        from .test_stock_services import _messages_compiled
+
+        if not _messages_compiled():
+            self.skipTest("GNU gettext msgfmt is not available; skipping EN assertion")
+
+        self.client.force_login(self.storekeeper)
+        response = self.client.post(
+            "/en/stock/issue/",
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T12:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Choose who takes the item.")
 
     def test_stock_writeoff_rejects_quantity_greater_than_balance_with_alert(self):
         self.client.force_login(self.storekeeper)
@@ -764,7 +809,7 @@ class StockOperationWorkflowTests(TestCase):
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
                 "department": "",
-                "recipient": "",
+                "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Default issue",
                 "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
@@ -890,7 +935,7 @@ class StockOperationWorkflowTests(TestCase):
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
                 "department": "",
-                "recipient": "",
+                "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Too much default issue",
                 "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),

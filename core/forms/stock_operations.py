@@ -109,7 +109,10 @@ class StockIssueForm(StockOperationForm):
     recipient = forms.ModelChoiceField(
         label=_("Отримувач / відповідальний"),
         queryset=Recipient.objects.none(),
-        required=False,
+        required=True,
+        error_messages={
+            "required": _("Оберіть, хто бере товар."),
+        },
     )
     document_number = forms.CharField(label=_("Номер документа"), required=False)
 

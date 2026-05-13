@@ -2186,6 +2186,14 @@ msgstr "Login"
 msgid "Увійти"
 msgstr "Log in"
 
+#: core/services/stock.py
+msgid "Для видачі товару потрібно вказати отримувача."
+msgstr "Recipient is required to issue stock."
+
+#: core/forms/stock_operations.py
+msgid "Оберіть, хто бере товар."
+msgstr "Choose who takes the item."
+
 #~ msgid "Прийняти товар"
 #~ msgstr "Receive goods"
 
