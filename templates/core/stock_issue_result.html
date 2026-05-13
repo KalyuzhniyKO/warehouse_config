@@ -7,13 +7,11 @@
 <dl class="row">
 <dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
 <dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
-<dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ movement.source_location.warehouse }}</dd>
-<dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ movement.source_location }}</dd>
-<dt class="col-sm-3">{% trans "Тип видачі" %}</dt><dd class="col-sm-9">{{ movement.get_issue_reason_display|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Хто взяв товар" %}</dt><dd class="col-sm-9">{{ movement.recipient|default:"—" }}</dd>
 <dt class="col-sm-3">{% trans "Цех / місце використання" %}</dt><dd class="col-sm-9">{{ movement.department|default:"—" }}</dd>
-<dt class="col-sm-3">{% trans "Документ" %}</dt><dd class="col-sm-9">{{ movement.document_number|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Дата і час операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
 <dt class="col-sm-3">{% trans "Залишок після операції" %}</dt><dd class="col-sm-9">{{ balance_after }}</dd>
 </dl>
-<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друкувати контрольний талон" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a><a class="btn btn-outline-primary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a><a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a></div>
+<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_movement_print' movement.pk %}?autoprint=1">{% trans "Друкувати контрольний талон" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a></div>
 </div></div>
 {% endblock %}

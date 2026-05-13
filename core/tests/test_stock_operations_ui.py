@@ -260,7 +260,7 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
         self.assertEqual(movement.issue_reason, StockMovement.IssueReason.SALE)
 
-    def test_stock_issue_result_page_links_control_slip(self):
+    def test_stock_issue_result_page_is_simple_and_links_autoprint_control_slip(self):
         self.client.force_login(self.storekeeper)
         response = self.client.post(
             reverse("stock_issue"),
@@ -280,9 +280,64 @@ class StockIssueInterfaceTests(TestCase):
         )
 
         movement = StockMovement.objects.get(document_number="SO-PRINT")
+        print_url = reverse("stock_movement_print", kwargs={"pk": movement.pk})
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Товар")
+        self.assertContains(response, self.item.name)
+        self.assertContains(response, "Кількість")
+        self.assertContains(response, "2,000")
+        self.assertContains(response, "Хто взяв товар")
+        self.assertContains(response, self.recipient.name)
+        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, "Sales")
+        self.assertContains(response, "Дата і час операції")
+        self.assertContains(response, "2026-05-13 10:06:00")
+        self.assertContains(response, "Залишок після операції")
+        self.assertContains(response, "5,000")
         self.assertContains(response, "Друкувати контрольний талон")
-        self.assertContains(response, reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        self.assertContains(response, f"{print_url}?autoprint=1")
+        self.assertContains(response, "Нова видача")
+        self.assertNotContains(response, "Тип видачі")
+        self.assertNotContains(response, "Документ")
+        self.assertNotContains(response, "Коментар")
+        self.assertNotContains(response, "До рухів товарів")
+        self.assertNotContains(response, "До залишків")
+
+    def test_english_stock_issue_result_page_uses_english_only_tablet_labels(self):
+        from .test_stock_services import _messages_compiled
+
+        if not _messages_compiled():
+            self.skipTest("GNU gettext msgfmt is not available; skipping EN assertion")
+
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            recipient=self.recipient,
+            department="Assembly",
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+
+        response = self.client.get(f"/en/stock/issue/{movement.pk}/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Item", html)
+        self.assertIn("Quantity", html)
+        self.assertIn("Who takes the item", html)
+        self.assertIn("Department / place of use", html)
+        self.assertIn("Operation date and time", html)
+        self.assertIn("Balance after operation", html)
+        self.assertIn("Print control slip", html)
+        self.assertIn("New issue", html)
+        self.assertNotIn("Товар", html)
+        self.assertNotIn("Хто взяв товар", html)
+        self.assertNotIn("Цех / місце використання", html)
+        self.assertNotIn("Друкувати контрольний талон", html)
 
     def test_stock_receive_result_page_links_control_slip(self):
         self.client.force_login(self.storekeeper)
@@ -331,6 +386,8 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, self.item.name)
         self.assertContains(response, "1,250")
         self.assertContains(response, "2026-05-13 10:06:32")
+        self.assertContains(response, "Хто взяв товар")
+        self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Час для перевірки по відео:")
         self.assertNotContains(response, "Видав")
         self.assertNotContains(response, "Отримав")
@@ -338,6 +395,35 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(StockMovement.objects.count(), movement_count)
         self.assertEqual(movement.qty, movement_qty)
         self.assertEqual(self.balance.qty, balance_qty)
+
+    def test_stock_movement_print_page_autoprint_is_opt_in(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            recipient=self.recipient,
+            department="Монтаж",
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+        print_url = reverse("stock_movement_print", kwargs={"pk": movement.pk})
+
+        response = self.client.get(print_url)
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('onclick="window.print()"', html)
+        self.assertNotIn('window.addEventListener("load"', html)
+
+        response = self.client.get(f"{print_url}?autoprint=1")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('window.addEventListener("load"', html)
+        self.assertIn("window.print();", html)
 
     def test_auditor_can_open_stock_movement_print_page(self):
         self.client.force_login(self.auditor)
@@ -355,6 +441,8 @@ class StockIssueInterfaceTests(TestCase):
             item=self.item,
             qty=Decimal("1.000"),
             source_location=self.location,
+            recipient=self.recipient,
+            department="Assembly",
             occurred_at=timezone.datetime(
                 2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
             ),
@@ -365,6 +453,10 @@ class StockIssueInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Warehouse operation control slip", html)
+        self.assertIn("Who takes the item", html)
+        self.assertIn(self.recipient.name, html)
+        self.assertIn("Department / place of use", html)
+        self.assertIn("Assembly", html)
         self.assertIn("Video check time:", html)
         self.assertNotIn("Контрольний талон складської операції", html)
         self.assertNotIn("Час для перевірки по відео", html)
