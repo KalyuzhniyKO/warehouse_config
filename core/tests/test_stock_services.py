@@ -75,6 +75,34 @@ class StockServiceTests(TestCase):
         location = location or self.source_location
         return StockBalance.objects.get(item=self.item, location=location).qty
 
+
+    def test_find_best_stock_balance_for_issue_returns_largest_positive_active_balance(self):
+        from ..services.stock import find_best_stock_balance_for_issue
+
+        inactive_balance = StockBalance.objects.create(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("20.000"),
+            is_active=False,
+        )
+        larger_balance = StockBalance.objects.create(
+            item=self.item, location=self.target_location, qty=Decimal("8.000")
+        )
+
+        balance = find_best_stock_balance_for_issue(self.item)
+
+        self.assertEqual(balance, larger_balance)
+        self.assertNotEqual(balance, inactive_balance)
+
+    def test_find_best_stock_balance_for_issue_returns_none_without_positive_balance(self):
+        from ..services.stock import find_best_stock_balance_for_issue
+
+        StockBalance.objects.create(
+            item=self.item, location=self.source_location, qty=Decimal("0.000")
+        )
+
+        self.assertIsNone(find_best_stock_balance_for_issue(self.item))
+
     def test_receive_stock_increases_balance_and_creates_movement(self):
         from ..services.stock import receive_stock
 

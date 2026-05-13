@@ -16,6 +16,7 @@ from ..forms import (
     ItemForm,
     LocationForm,
     StockBalanceFilterForm,
+    StockIssueForm,
     StockTransferForm,
 )
 from ..services.locations import (
@@ -403,7 +404,7 @@ class StockIssueInterfaceTests(TestCase):
                 "location": self.location.pk,
                 "qty": "99.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "",
+                "department": "Repair shop",
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",
@@ -809,7 +810,7 @@ class StockOperationWorkflowTests(TestCase):
                 "warehouse": self.warehouse.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "",
+                "department": "Default shop",
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Default issue",
@@ -935,7 +936,7 @@ class StockOperationWorkflowTests(TestCase):
                 "warehouse": self.warehouse.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "",
+                "department": "Default shop",
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Too much default issue",
@@ -986,17 +987,171 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Сканувати штрихкод")
         self.assertIn('name="barcode"', html)
-        self.assertIn('autofocus autocomplete="off"', html)
+        self.assertIn('autocomplete="off"', html)
+        self.assertNotIn('autofocus', html)
 
-    def test_issue_get_barcode_prefills_item(self):
+    def test_issue_get_barcode_prefills_item_and_stock_source(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
         response = self.client.get(
             f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
         )
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["form"].initial["item"], self.item)
+        self.assertEqual(response.context["form"].initial["warehouse"], self.warehouse)
+        self.assertEqual(response.context["form"].initial["location"], self.location)
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
+        self.assertContains(response, "Склад і локацію визначено автоматично.")
+
+    def test_issue_get_barcode_chooses_largest_positive_balance(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+        larger_balance = StockBalance.objects.create(
+            item=self.item, location=self.destination_location, qty=Decimal("9.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["best_stock_balance"], larger_balance)
+        self.assertEqual(response.context["form"].initial["location"], self.destination_location)
+        self.assertEqual(response.context["form"].initial["warehouse"], self.destination_warehouse)
+
+    def test_issue_get_barcode_with_no_stock_shows_warning(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("0.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response, "Товар знайдено, але доступного залишку для видачі немає."
+        )
+        self.assertFalse(response.context["show_issue_form"])
+
+
+    def test_issue_page_hides_manual_stock_source_and_comment_fields(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn('for="id_warehouse"', html)
+        self.assertNotIn('for="id_location"', html)
+        self.assertNotIn('for="id_comment"', html)
+        self.assertNotContains(response, "Коментар")
+        self.assertContains(response, "Кількість")
+        self.assertContains(response, "Хто взяв товар")
+        self.assertContains(response, "Цех / місце використання")
+
+    def test_issue_department_is_required(self):
+        form = StockIssueForm(
+            data={
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "recipient": self.recipient.pk,
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("department", form.errors)
+        self.assertEqual(
+            str(form.errors["department"][0]),
+            "Вкажіть цех або місце використання товару.",
+        )
+
+    def test_issue_post_after_barcode_without_manual_stock_source_saves_department(self):
+        balance = StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+        get_response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+        form = get_response.context["form"]
+
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": form.initial["item"].pk,
+                "warehouse": form.initial["warehouse"].pk,
+                "location": form.initial["location"].pk,
+                "qty": "2.000",
+                "issue_reason": form.initial["issue_reason"],
+                "department": "Монтажна дільниця",
+                "recipient": self.recipient.pk,
+                "document_number": "",
+                "comment": "",
+                "occurred_at": form.initial["occurred_at"],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        balance.refresh_from_db()
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(balance.qty, Decimal("5.000"))
+        self.assertEqual(movement.source_location, self.location)
+        self.assertEqual(movement.department, "Монтажна дільниця")
+        self.assertEqual(movement.issue_reason, StockMovement.IssueReason.OTHER)
+        self.assertEqual(movement.comment, "")
+
+    def test_control_slip_shows_issue_department(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            recipient=self.recipient,
+            department="Компресорна",
+        )
+
+        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, "Компресорна")
+
+    def test_english_issue_page_has_no_ukrainian_tablet_phrases(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
+        response = self.client.get(
+            f'/en/stock/issue/?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Scan barcode", html)
+        self.assertIn("Found item", html)
+        self.assertIn("Available stock", html)
+        self.assertIn("Who takes the item", html)
+        self.assertIn("Department / place of use", html)
+        self.assertIn("Take item", html)
+        self.assertNotIn("Сканувати штрихкод", html)
+        self.assertNotIn("Цех / місце використання", html)
+        self.assertNotIn("Коментар", html)
 
     def test_receive_get_barcode_prefills_item(self):
         response = self.client.get(

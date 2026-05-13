@@ -79,6 +79,7 @@ from ..services.stock import (
     SameLocationTransferError,
     StockServiceError,
     create_initial_balance,
+    find_best_stock_balance_for_issue,
     issue_stock,
     receive_stock,
     transfer_stock,
@@ -131,7 +132,9 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         return initial
 
     def form_valid(self, form):
@@ -174,11 +177,51 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_issue_form.html"
     form_class = StockIssueForm
+    auto_selected_message = _("Склад і локацію визначено автоматично.")
+    no_available_stock_message = _(
+        "Товар знайдено, але доступного залишку для видачі немає."
+    )
+
+    def get_best_stock_balance(self):
+        if not hasattr(self, "best_stock_balance"):
+            self.best_stock_balance = find_best_stock_balance_for_issue(
+                self.scanned_item
+            )
+        return self.best_stock_balance
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
+        initial["issue_reason"] = StockMovement.IssueReason.OTHER
+        initial["document_number"] = ""
+        initial["comment"] = ""
+        best_balance = self.get_best_stock_balance()
+        if best_balance is not None:
+            initial["warehouse"] = best_balance.location.warehouse
+            initial["location"] = best_balance.location
         return initial
+
+    def get(self, request, *args, **kwargs):
+        if self.scanned_item is not None:
+            if self.get_best_stock_balance() is not None:
+                messages.success(request, self.auto_selected_message)
+            else:
+                messages.warning(request, self.no_available_stock_message)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["best_stock_balance"] = self.get_best_stock_balance()
+        context["show_issue_form"] = (
+            self.request.method == "POST"
+            or (
+                self.scanned_item is not None
+                and self.get_best_stock_balance() is not None
+            )
+        )
+        return context
 
     def form_valid(self, form):
         try:
@@ -187,7 +230,9 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
                 location=form.cleaned_data["location"],
                 qty=form.cleaned_data["qty"],
                 recipient=form.cleaned_data["recipient"],
-                issue_reason=form.cleaned_data["issue_reason"],
+                issue_reason=(
+                    form.cleaned_data["issue_reason"] or StockMovement.IssueReason.OTHER
+                ),
                 department=form.cleaned_data["department"],
                 document_number=form.cleaned_data["document_number"],
                 comment=form.cleaned_data["comment"],
@@ -263,6 +308,11 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
                 if is_english
                 else _("Отримувач / відповідальний")
             ),
+            "department": (
+                "Department / place of use"
+                if is_english
+                else _("Цех / місце використання")
+            ),
             "comment_document": (
                 "Comment / document" if is_english else _("Коментар / документ")
             ),
@@ -320,7 +370,9 @@ class StockWriteOffView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         return initial
 
     def form_valid(self, form):
@@ -378,7 +430,9 @@ class StockTransferView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         return initial
 
     def form_valid(self, form):
@@ -440,7 +494,9 @@ class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         return initial
 
     def form_valid(self, form):

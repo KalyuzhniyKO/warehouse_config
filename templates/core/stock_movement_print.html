@@ -115,6 +115,11 @@
             <dd>{{ movement.recipient }}</dd>
             {% endif %}
 
+            {% if movement.department %}
+            <dt>{{ labels.department }}</dt>
+            <dd>{{ movement.department }}</dd>
+            {% endif %}
+
             {% if movement.document_number or movement.comment %}
             <dt>{{ labels.comment_document }}</dt>
             <dd>
