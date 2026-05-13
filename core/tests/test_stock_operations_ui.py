@@ -850,11 +850,23 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
 
-    def test_unknown_barcode_shows_warning(self):
-        response = self.client.get(f'{reverse("stock_issue")}?barcode=UNKNOWN')
+    def test_unknown_barcode_shows_ukrainian_warning_on_issue_and_receive(self):
+        for url_name in ["stock_issue", "stock_receive"]:
+            with self.subTest(url_name=url_name):
+                response = self.client.get(f'{reverse(url_name)}?barcode=UNKNOWN')
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Товар за цим штрихкодом не знайдено.")
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Товар за цим штрихкодом не знайдено.")
+                self.assertNotContains(response, "Item with this barcode was not found.")
+
+    def test_unknown_barcode_shows_english_warning_on_issue_and_receive(self):
+        for path in ["/en/stock/issue/", "/en/stock/receive/"]:
+            with self.subTest(path=path):
+                response = self.client.get(f"{path}?barcode=UNKNOWN")
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "Item with this barcode was not found.")
+                self.assertNotContains(response, "Товар за цим штрихкодом не знайдено.")
 
     def test_english_stock_pages_show_english_scanner_labels(self):
         issue_response = self.client.get("/en/stock/issue/")
