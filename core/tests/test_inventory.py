@@ -340,12 +340,12 @@ class InventoryInterfaceTests(TestCase):
 
         self.assertContains(response, "Інвентаризація")
 
-    def test_storekeeper_sees_inventory_menu_item(self):
+    def test_storekeeper_self_service_hides_inventory_menu_item(self):
         self.login(self.storekeeper)
 
         response = self.client.get(reverse("dashboard"))
 
-        self.assertContains(response, "Інвентаризація")
+        self.assertNotContains(response, "Інвентаризація")
 
     def test_auditor_does_not_see_new_inventory_button(self):
         self.login(self.auditor)

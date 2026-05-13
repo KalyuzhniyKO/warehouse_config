@@ -110,7 +110,7 @@ class ManagementPermissionTests(TestCase):
         self.client.force_login(self.storekeeper)
         response = self.client.get(reverse("dashboard"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Робоче місце комірника")
+        self.assertContains(response, "Склад самообслуговування")
         for label in [
             "Керування",
             "Аналітика",
@@ -204,10 +204,10 @@ class DashboardPermissionTests(TestCase):
 
         self.assertContains(response, "Переміщення товару")
 
-    def test_storekeeper_dashboard_shows_stock_transfer_card(self):
+    def test_user_self_service_dashboard_hides_stock_transfer_card(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
 
-        self.assertContains(response, "Перемістити товар")
+        self.assertNotContains(response, "Перемістити товар")
 
     def test_auditor_dashboard_hides_stock_transfer_card(self):
         response = self.dashboard_for(self.auditor, "/uk/")
@@ -242,10 +242,10 @@ class DashboardPermissionTests(TestCase):
         self.assertTrue(response.context["is_storekeeper_workplace"])
         html = response.content.decode()
         for label in [
-            "Робоче місце комірника",
-            "Видача товару",
-            "Повернення товару",
-            "Допомога",
+            "Склад самообслуговування",
+            "Оберіть дію, відскануйте товар і вкажіть кількість.",
+            "Взяти товар",
+            "Повернути товар",
         ]:
             self.assertContains(response, label)
         main_html = html[html.index('<main class="col-12">'):]
@@ -268,6 +268,9 @@ class DashboardPermissionTests(TestCase):
             "Надрукувати етикетку",
             "Пошук товару",
             "Назва, внутрішній код або штрихкод",
+            "Робоче місце комірника",
+            "Комірник",
+            "Допомога",
         ]:
             self.assertNotIn(label, main_html)
 
@@ -276,8 +279,8 @@ class DashboardPermissionTests(TestCase):
         html = response.content.decode()
 
         for label, url_name in [
-            ("Видача товару", "stock_issue"),
-            ("Повернення товару", "stock_receive"),
+            ("Взяти товар", "stock_issue"),
+            ("Повернути товар", "stock_receive"),
         ]:
             self.assertIn(
                 f'<a class="card storekeeper-action-card h-100 text-decoration-none text-reset" href="{reverse(url_name)}"',
@@ -285,21 +288,21 @@ class DashboardPermissionTests(TestCase):
             )
             self.assertIn(label, html)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Прийняти товар"]:
+        for label in ["Перемістити товар", "Списати товар", "Прийняти товар", "Видача товару", "Повернення товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
         html = response.content.decode()
 
-        self.assertContains(response, "Робоче місце комірника")
+        self.assertContains(response, "Склад самообслуговування")
         self.assertNotContains(response, "Навігація")
         self.assertIn('<main class="col-12">', html)
         self.assertNotIn('<main class="col-lg-10">', html)
-        for label in ["Видача товару", "Повернення товару"]:
+        for label in ["Взяти товар", "Повернути товар"]:
             self.assertContains(response, label)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Прийняти товар"]:
+        for label in ["Перемістити товар", "Списати товар", "Прийняти товар", "Видача товару", "Повернення товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_internal_page_keeps_sidebar(self):
@@ -319,7 +322,7 @@ class DashboardPermissionTests(TestCase):
         self.assertContains(response, "Навігація")
         self.assertContains(response, "Головна")
         self.assertContains(response, "Довідники")
-        self.assertNotContains(response, "Робоче місце комірника")
+        self.assertNotContains(response, "Склад самообслуговування")
         self.assertNotContains(response, "Пошук товару")
         self.assertNotContains(response, "autofocus")
 

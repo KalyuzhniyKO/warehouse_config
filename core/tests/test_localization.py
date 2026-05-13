@@ -155,15 +155,16 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         main_html = html[html.index('<main class="col-12">'):]
-        self.assertIn("Storekeeper workplace", main_html)
+        self.assertIn("Warehouse self-service", main_html)
         for phrase in [
-            "Issue item",
+            "Take item",
             "Return item",
-            "Help",
+            "Choose an action, scan the item and enter the quantity.",
         ]:
             self.assertIn(phrase, main_html)
         for phrase in [
             "Робоче місце комірника",
+            "Комірник",
             "Повернення товару",
             "Перемістити товар",
             "Списати товар",
@@ -174,6 +175,8 @@ class DashboardLocalizationTests(TestCase):
             "Назва, внутрішній код або штрихкод",
             "Знайти",
             "Допомога",
+            "Взяти товар",
+            "Повернути товар",
         ]:
             self.assertNotIn(phrase, main_html)
 
@@ -183,15 +186,16 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         main_html = html[html.index('<main class="col-12">'):]
-        self.assertIn("Робоче місце комірника", main_html)
+        self.assertIn("Склад самообслуговування", main_html)
         for phrase in [
-            "Видача товару",
-            "Повернення товару",
-            "Допомога",
+            "Взяти товар",
+            "Повернути товар",
+            "Оберіть дію, відскануйте товар і вкажіть кількість.",
         ]:
             self.assertIn(phrase, main_html)
         for phrase in [
             "Storekeeper workplace",
+            "Storekeeper",
             "Issue item",
             "Return item",
             "Transfer goods",
@@ -202,6 +206,9 @@ class DashboardLocalizationTests(TestCase):
             "Item search",
             "Search",
             "Help",
+            "Видача товару",
+            "Повернення товару",
+            "Допомога",
         ]:
             self.assertNotIn(phrase, main_html)
 
@@ -422,7 +429,11 @@ class DashboardLocalizationTests(TestCase):
         main_html = html[html.index('<main class="col-12">'):]
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Робоче місце комірника", main_html)
+        self.assertIn("Склад самообслуговування", main_html)
+        self.assertIn("Взяти товар", main_html)
+        self.assertIn("Повернути товар", main_html)
+        self.assertNotIn("Робоче місце комірника", main_html)
+        self.assertNotIn("Комірник", main_html)
         self.assertIn('/uk/stock/issue/', main_html)
         self.assertIn('/uk/stock/receive/', main_html)
         self.assertNotIn('id="storekeeper-item-search"', main_html)

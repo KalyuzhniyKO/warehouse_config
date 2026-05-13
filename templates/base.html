@@ -99,16 +99,9 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 d-lg-none">
                 {% with is_storekeeper=user|in_group:"Комірник" is_warehouse_admin=user|in_group:"Адміністратор складу" %}
                     {% if is_storekeeper and not user.is_superuser and not is_warehouse_admin %}
-                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Прийняти товар" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_issue' %}">{% trans "Видати товар" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_transfer' %}">{% trans "Перемістити товар" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_writeoff' %}">{% trans "Списати товар" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'inventory_list' %}">{% translate "Інвентаризація" context "storekeeper short menu" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% translate "Залишки" context "storekeeper short menu" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% translate "Номенклатура" context "storekeeper short menu" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'item_list' %}">{% trans "Надрукувати етикетку" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'help' %}">{% trans "Допомога" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Склад самообслуговування" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_issue' %}">{% trans "Взяти товар" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Повернути товар" %}</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                         {% if user.is_superuser or is_warehouse_admin or is_storekeeper %}
@@ -175,16 +168,9 @@
                         <nav class="d-grid gap-1">
                             {% with is_storekeeper=user|in_group:"Комірник" is_warehouse_admin=user|in_group:"Адміністратор складу" %}
                                 {% if is_storekeeper and not user.is_superuser and not is_warehouse_admin %}
-                                    <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Головна" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Прийняти товар" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Видати товар" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stock_transfer' %}">🔀 {% trans "Перемістити товар" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stock_writeoff' %}">🗑️ {% trans "Списати товар" %}</a>
-                                    <a class="sidebar-link" href="{% url 'inventory_list' %}">🧮 {% translate "Інвентаризація" context "storekeeper short menu" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% translate "Залишки" context "storekeeper short menu" %}</a>
-                                    <a class="sidebar-link" href="{% url 'item_list' %}">📦 {% translate "Номенклатура" context "storekeeper short menu" %}</a>
-                                    <a class="sidebar-link" href="{% url 'item_list' %}">🏷️ {% trans "Надрукувати етикетку" %}</a>
-                                    <a class="sidebar-link" href="{% url 'help' %}">❓ {% trans "Допомога" %}</a>
+                                    <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Склад самообслуговування" %}</a>
+                                    <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Взяти товар" %}</a>
+                                    <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Повернути товар" %}</a>
                                 {% else %}
                                     <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Головна" %}</a>
                                     {% if user.is_superuser or is_warehouse_admin or is_storekeeper %}
