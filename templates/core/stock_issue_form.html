@@ -47,7 +47,15 @@
         {% if field.name == 'qty' or field.name == 'recipient' or field.name == 'department' %}
             <div class="col-12 col-lg-6">
                 <label class="form-label fs-5 fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
+                {% if field.name == 'qty' %}
+                    <div class="input-group input-group-lg quantity-stepper" data-qty-stepper>
+                        <button type="button" class="btn btn-outline-secondary btn-lg fw-bold fs-3 px-4" data-qty-decrement aria-label="−">−</button>
+                        {{ field }}
+                        <button type="button" class="btn btn-outline-secondary btn-lg fw-bold fs-3 px-4" data-qty-increment aria-label="+">+</button>
+                    </div>
+                {% else %}
+                    {{ field }}
+                {% endif %}
                 <div class="text-danger small">{{ field.errors }}</div>
             </div>
         {% endif %}
@@ -56,4 +64,38 @@
 <div class="mt-4 d-grid"><button class="btn btn-primary btn-lg" type="submit">{% trans "Видати товар" %}</button></div>
 </div></form>
 {% endif %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("[data-qty-stepper]").forEach(function (stepper) {
+            var input = stepper.querySelector("input");
+            var decrement = stepper.querySelector("[data-qty-decrement]");
+            var increment = stepper.querySelector("[data-qty-increment]");
+
+            if (!input || !decrement || !increment) {
+                return;
+            }
+
+            var normalizeQuantity = function () {
+                var value = parseInt(input.value, 10);
+                if (Number.isNaN(value) || value < 1) {
+                    value = 1;
+                }
+                input.value = value;
+                return value;
+            };
+
+            decrement.addEventListener("click", function () {
+                input.value = Math.max(1, normalizeQuantity() - 1);
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+            increment.addEventListener("click", function () {
+                input.value = normalizeQuantity() + 1;
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+            input.addEventListener("blur", normalizeQuantity);
+            input.form && input.form.addEventListener("submit", normalizeQuantity);
+            normalizeQuantity();
+        });
+    });
+</script>
 {% endblock %}
