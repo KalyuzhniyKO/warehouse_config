@@ -7,6 +7,8 @@
 <dl class="row">
 <dt class="col-sm-4">{% trans "Товар" %}</dt><dd class="col-sm-8">{{ movement.item }}</dd>
 <dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty }}</dd>
+<dt class="col-sm-4">{% trans "Хто повернув товар" %}</dt><dd class="col-sm-8">{{ movement.recipient|default:"—" }}</dd>
+<dt class="col-sm-4">{% trans "Цех / місце використання" %}</dt><dd class="col-sm-8">{{ movement.department|default:"—" }}</dd>
 <dt class="col-sm-4">{% trans "Дата і час операції" %}</dt><dd class="col-sm-8">{{ movement.occurred_at }}</dd>
 </dl>
 <div class="d-grid gap-2 d-sm-flex"><a class="btn btn-primary btn-lg" href="{% url 'stock_receive' %}">{% trans "Нова операція повернення" %}</a></div>
