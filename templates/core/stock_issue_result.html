@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Видача товару" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Видачу виконано" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% trans "Видача товару" %}</h1>
+<h1 class="mb-3">{% trans "Видачу виконано" %}</h1>
 <div class="card content-card"><div class="card-body">
 <dl class="row">
 <dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
@@ -12,6 +12,6 @@
 <dt class="col-sm-3">{% trans "Дата і час операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
 <dt class="col-sm-3">{% trans "Залишок після операції" %}</dt><dd class="col-sm-9">{{ balance_after }}</dd>
 </dl>
-<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_movement_print' movement.pk %}?autoprint=1">{% trans "Друкувати контрольний талон" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a></div>
+<div class="d-grid gap-2 d-sm-flex"><a class="btn btn-primary btn-lg" href="{% url 'stock_movement_print' movement.pk %}?autoprint=1">{% trans "Друкувати контрольний талон" %}</a><a class="btn btn-outline-primary btn-lg" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a></div>
 </div></div>
 {% endblock %}
