@@ -1261,9 +1261,38 @@ class StockOperationWorkflowTests(TestCase):
             "Оберіть цех або місце використання",
         )
         self.assertEqual(
+            form.fields["qty"].widget.attrs["class"],
+            "form-control form-control-lg text-center",
+        )
+        self.assertEqual(form.fields["qty"].widget.attrs["min"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["step"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["inputmode"], "numeric")
+        self.assertEqual(
             form.fields["department"].widget.attrs["class"],
             "form-select form-select-lg",
         )
+
+    def test_issue_quantity_stepper_controls_and_attrs(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('data-qty-stepper', html)
+        self.assertIn('data-qty-decrement', html)
+        self.assertIn('data-qty-increment', html)
+        self.assertIn('name="qty"', html)
+        self.assertIn('min="1"', html)
+        self.assertIn('step="1"', html)
+        self.assertIn('inputmode="numeric"', html)
+        self.assertIn('pattern="[0-9]*"', html)
+        self.assertIn('text-center', html)
+        self.assertIn('normalizeQuantity', html)
 
     def test_issue_form_cleans_department_to_usage_place_name(self):
         form = StockIssueForm(
@@ -1471,6 +1500,9 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Who takes the item", html)
         self.assertIn("Department / place of use", html)
         self.assertIn("Take item", html)
+        self.assertIn('data-qty-decrement', html)
+        self.assertIn('data-qty-increment', html)
+        self.assertIn('inputmode="numeric"', html)
         self.assertNotIn("Сканувати штрихкод", html)
         self.assertNotIn("Цех / місце використання", html)
         self.assertNotIn("Коментар", html)
@@ -1519,8 +1551,12 @@ class StockOperationWorkflowTests(TestCase):
             "Оберіть цех або місце використання",
         )
         self.assertEqual(
-            form.fields["qty"].widget.attrs["class"], "form-control form-control-lg"
+            form.fields["qty"].widget.attrs["class"],
+            "form-control form-control-lg text-center",
         )
+        self.assertEqual(form.fields["qty"].widget.attrs["min"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["step"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["inputmode"], "numeric")
         self.assertEqual(
             form.fields["recipient"].widget.attrs["class"],
             "form-select form-select-lg",
@@ -1529,6 +1565,24 @@ class StockOperationWorkflowTests(TestCase):
             form.fields["department"].widget.attrs["class"],
             "form-select form-select-lg",
         )
+
+    def test_receive_quantity_stepper_controls_and_attrs(self):
+        response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('data-qty-stepper', html)
+        self.assertIn('data-qty-decrement', html)
+        self.assertIn('data-qty-increment', html)
+        self.assertIn('name="qty"', html)
+        self.assertIn('min="1"', html)
+        self.assertIn('step="1"', html)
+        self.assertIn('inputmode="numeric"', html)
+        self.assertIn('pattern="[0-9]*"', html)
+        self.assertIn('text-center', html)
+        self.assertIn('normalizeQuantity', html)
 
     def test_receive_form_requires_recipient_and_department(self):
         form = StockReceiveForm(
@@ -1685,6 +1739,9 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Department / place of use")
         self.assertContains(response, "Return item")
         self.assertContains(response, "Return data was selected automatically.")
+        self.assertContains(response, 'data-qty-decrement')
+        self.assertContains(response, 'data-qty-increment')
+        self.assertContains(response, 'inputmode="numeric"')
         self.assertNotContains(response, "Відскануйте штрихкод товару")
         self.assertNotContains(response, "Локацію повернення визначено автоматично")
         self.assertNotContains(response, "Дані для повернення визначено автоматично")

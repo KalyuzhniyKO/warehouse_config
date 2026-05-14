@@ -139,7 +139,15 @@ class StockReceiveForm(StockOperationForm):
         ]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
-        self.fields["qty"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["qty"].widget.attrs.update(
+            {
+                "class": "form-control form-control-lg text-center",
+                "min": "1",
+                "step": "1",
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+            }
+        )
         self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
         self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
         self.order_fields(
@@ -210,7 +218,15 @@ class StockIssueForm(StockOperationForm):
         ]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
-        self.fields["qty"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["qty"].widget.attrs.update(
+            {
+                "class": "form-control form-control-lg text-center",
+                "min": "1",
+                "step": "1",
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+            }
+        )
         self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
         self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
         self.order_fields(
