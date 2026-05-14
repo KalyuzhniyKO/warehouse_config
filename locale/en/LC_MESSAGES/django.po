@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-14 15:20+0300\n"
+"POT-Creation-Date: 2026-05-14 18:20+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,7 +57,7 @@ msgid "Категорія"
 msgstr "Category"
 
 #: core/forms/analytics.py:36 core/forms/filters.py:21 core/forms/filters.py:48
-#: core/forms/stock_operations.py:44 core/forms/stock_operations.py:281
+#: core/forms/stock_operations.py:44 core/forms/stock_operations.py:297
 #: core/models.py:120 core/models.py:192 core/models.py:193 core/models.py:324
 #: core/models.py:417 core/models.py:487 core/models.py:606
 #: core/views/analytics.py:213 core/views/directories.py:307
@@ -238,7 +238,7 @@ msgstr "Date from"
 msgid "Дата до"
 msgstr "Date to"
 
-#: core/forms/filters.py:58 core/forms/stock_operations.py:168
+#: core/forms/filters.py:58 core/forms/stock_operations.py:176
 #: core/models.py:525 templates/core/stockmovement_list.html:13
 msgid "Тип видачі"
 msgstr "Issue type"
@@ -252,13 +252,13 @@ msgstr "All issue types"
 msgid "Цех / підрозділ"
 msgstr "Workshop / department"
 
-#: core/forms/filters.py:63 core/forms/stock_operations.py:187
-#: core/forms/stock_operations.py:258 core/models.py:531
+#: core/forms/filters.py:63 core/forms/stock_operations.py:195
+#: core/forms/stock_operations.py:274 core/models.py:531
 msgid "Номер документа"
 msgstr "Document number"
 
 #: core/forms/inventory.py:16 core/forms/inventory.py:59
-#: core/forms/stock_operations.py:55 core/forms/stock_operations.py:301
+#: core/forms/stock_operations.py:55 core/forms/stock_operations.py:317
 #: templates/core/inventory_count.html:34
 #: templates/core/inventory_detail.html:31
 #: templates/core/inventory_line_table.html:13
@@ -269,7 +269,7 @@ msgid "Коментар"
 msgstr "Comment"
 
 #: core/forms/inventory.py:42 core/forms/stock_operations.py:95
-#: core/forms/stock_operations.py:366 core/forms/stock_operations.py:374
+#: core/forms/stock_operations.py:382 core/forms/stock_operations.py:390
 msgid "Локація має належати вибраному складу."
 msgstr "The location must belong to the selected warehouse."
 
@@ -348,7 +348,7 @@ msgstr "Superuser groups cannot be changed through this UI."
 msgid "Superuser не можна деактивувати через цей UI."
 msgstr "A superuser cannot be deactivated through this UI."
 
-#: core/forms/management.py:80
+#: core/forms/management.py:80 templates/registration/login.html:119
 msgid "Пароль"
 msgstr "Password"
 
@@ -391,8 +391,8 @@ msgstr "New password"
 msgid "Локації вимкнено. Операція буде виконана по складу."
 msgstr "Locations are disabled. The operation will be performed by warehouse."
 
-#: core/forms/stock_operations.py:52 core/forms/stock_operations.py:243
-#: core/forms/stock_operations.py:295 core/views/analytics.py:214
+#: core/forms/stock_operations.py:52 core/forms/stock_operations.py:259
+#: core/forms/stock_operations.py:311 core/views/analytics.py:214
 #: core/views/stock_operations.py:336 templates/core/stock_issue_result.html:9
 #: templates/core/stock_receive_result.html:9
 #: templates/core/stock_transfer_result.html:9
@@ -402,7 +402,7 @@ msgstr "Locations are disabled. The operation will be performed by warehouse."
 msgid "Кількість"
 msgstr "Quantity"
 
-#: core/forms/stock_operations.py:58 core/forms/stock_operations.py:304
+#: core/forms/stock_operations.py:58 core/forms/stock_operations.py:320
 #: templates/core/stock_transfer_result.html:14
 #: templates/core/stock_writeoff_result.html:12
 msgid "Дата операції"
@@ -416,18 +416,18 @@ msgstr "Who returns the item"
 msgid "Оберіть, хто повертає товар."
 msgstr "Choose who returns the item."
 
-#: core/forms/stock_operations.py:109 core/forms/stock_operations.py:171
+#: core/forms/stock_operations.py:109 core/forms/stock_operations.py:179
 #: core/models.py:87 core/views/stock_operations.py:340
 #: templates/core/stock_issue_result.html:11
 #: templates/core/stock_receive_result.html:11
 msgid "Цех / місце використання"
 msgstr "Department / place of use"
 
-#: core/forms/stock_operations.py:112 core/forms/stock_operations.py:174
+#: core/forms/stock_operations.py:112 core/forms/stock_operations.py:182
 msgid "Оберіть цех або місце використання"
 msgstr "Choose department or place of use"
 
-#: core/forms/stock_operations.py:114 core/forms/stock_operations.py:176
+#: core/forms/stock_operations.py:114 core/forms/stock_operations.py:184
 msgid "Оберіть цех або місце використання."
 msgstr "Choose department or place of use."
 
@@ -435,68 +435,68 @@ msgstr "Choose department or place of use."
 msgid "Надрукувати етикетку після збереження"
 msgstr "Print label after saving"
 
-#: core/forms/stock_operations.py:127 core/forms/stock_operations.py:195
+#: core/forms/stock_operations.py:127 core/forms/stock_operations.py:203
 msgid "Налаштуйте хоча б одне активне місце використання."
 msgstr "Configure at least one active place of use."
 
-#: core/forms/stock_operations.py:180 core/views/stock_operations.py:316
+#: core/forms/stock_operations.py:188 core/views/stock_operations.py:316
 #: templates/core/stock_issue_result.html:10
 msgid "Хто взяв товар"
 msgstr "Who takes the item"
 
-#: core/forms/stock_operations.py:184
+#: core/forms/stock_operations.py:192
 msgid "Оберіть, хто бере товар."
 msgstr "Choose who takes the item."
 
-#: core/forms/stock_operations.py:249
+#: core/forms/stock_operations.py:265
 msgid "Причина списання"
 msgstr "Write-off reason"
 
-#: core/forms/stock_operations.py:251
+#: core/forms/stock_operations.py:267
 msgid "Використано для ремонту"
 msgstr "Used for repair"
 
-#: core/forms/stock_operations.py:252
+#: core/forms/stock_operations.py:268
 msgid "Зіпсовано"
 msgstr "Damaged"
 
-#: core/forms/stock_operations.py:253
+#: core/forms/stock_operations.py:269
 msgid "Втрачено"
 msgstr "Lost"
 
-#: core/forms/stock_operations.py:254
+#: core/forms/stock_operations.py:270
 msgid "Брак"
 msgstr "Defect"
 
-#: core/forms/stock_operations.py:255 core/models.py:471
+#: core/forms/stock_operations.py:271 core/models.py:471
 msgid "Інше"
 msgstr "Other"
 
-#: core/forms/stock_operations.py:283
+#: core/forms/stock_operations.py:299
 #: templates/core/stock_transfer_result.html:10
 msgid "Склад-відправник"
 msgstr "Source warehouse"
 
-#: core/forms/stock_operations.py:286
+#: core/forms/stock_operations.py:302
 #: templates/core/stock_transfer_result.html:11
 msgid "Локація-відправник"
 msgstr "Source location"
 
-#: core/forms/stock_operations.py:289
+#: core/forms/stock_operations.py:305
 #: templates/core/stock_transfer_result.html:12
 msgid "Склад-отримувач"
 msgstr "Destination warehouse"
 
-#: core/forms/stock_operations.py:292
+#: core/forms/stock_operations.py:308
 #: templates/core/stock_transfer_result.html:13
 msgid "Локація-отримувач"
 msgstr "Destination location"
 
-#: core/forms/stock_operations.py:346
+#: core/forms/stock_operations.py:362
 msgid "Неможливо перемістити товар у той самий склад."
 msgstr "Cannot transfer stock to the same warehouse."
 
-#: core/forms/stock_operations.py:383
+#: core/forms/stock_operations.py:399
 msgid "Неможливо перемістити товар у ту саму локацію."
 msgstr "Cannot transfer stock to the same location."
 
@@ -1371,10 +1371,9 @@ msgstr ""
 msgid "Початковий залишок збережено."
 msgstr "Opening balance"
 
-#: templates/base.html:2 templates/registration/login.html:4
-#: templates/registration/login.html:10
+#: templates/base.html:2 templates/registration/login.html:2
 msgid "YANTOS · Складський облік"
-msgstr "YANTOS · Warehouse management"
+msgstr "YANTOS · Warehouse accounting"
 
 #: templates/base.html:97 templates/core/dashboard.html:3
 #: templates/core/directory_form.html:3 templates/core/directory_list.html:3
@@ -1426,7 +1425,7 @@ msgid "Взяти товар"
 msgstr "Take item"
 
 #: templates/base.html:120 templates/base.html:190
-#: templates/core/stock_receive_form.html:58
+#: templates/core/stock_receive_form.html:66
 #: templates/core/storekeeper_workplace.html:79
 #: templates/core/storekeeper_workplace.html:82
 msgid "Повернути товар"
@@ -2108,7 +2107,7 @@ msgstr "Available stock"
 msgid "Відскануйте штрихкод товару, щоб продовжити."
 msgstr "Scan the item barcode to continue."
 
-#: templates/core/stock_issue_form.html:56
+#: templates/core/stock_issue_form.html:64
 msgid "Видати товар"
 msgstr "Take item"
 
@@ -2229,13 +2228,21 @@ msgstr "Choose an action"
 msgid "Мова"
 msgstr "Language"
 
-#: templates/registration/login.html:4 templates/registration/login.html:9
+#: templates/registration/login.html:8
 msgid "Вхід"
-msgstr "Login"
+msgstr "Sign in"
 
-#: templates/registration/login.html:14
+#: templates/registration/login.html:82
+msgid "Вхід до складського термінала"
+msgstr "Warehouse terminal sign in"
+
+#: templates/registration/login.html:101
+msgid "Ім’я користувача"
+msgstr "Username"
+
+#: templates/registration/login.html:134
 msgid "Увійти"
-msgstr "Log in"
+msgstr "Sign in"
 
 #~ msgid "Вкажіть цех або місце використання товару."
 #~ msgstr "Specify the department or place where the item will be used."
