@@ -1507,8 +1507,20 @@ class StockOperationWorkflowTests(TestCase):
         main_html = html.split('<main class="col-12">', 1)[1]
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("Warehouse self-service", main_html)
+        self.assertIn("Choose an action", main_html)
         self.assertIn("Take item", main_html)
         self.assertIn("Return item", main_html)
+        self.assertIn("Scan an item and record stock issue.", main_html)
+        self.assertIn("Scan an item and record stock return.", main_html)
+        self.assertIn(
+            f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse("stock_issue")}"',
+            main_html,
+        )
+        self.assertIn(
+            f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse("stock_receive")}"',
+            main_html,
+        )
         self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
         for phrase in [
             "Взяти товар",
@@ -1516,6 +1528,9 @@ class StockOperationWorkflowTests(TestCase):
             "Рухи товарів",
             "Залишки",
             "Інвентаризація",
+            "Складські налаштування",
+            "Зіскануйте товар і зафіксуйте видачу зі складу.",
+            "Зіскануйте товар і зафіксуйте повернення на склад.",
         ]:
             self.assertNotIn(phrase, main_html)
 

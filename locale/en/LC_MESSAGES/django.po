@@ -2258,6 +2258,15 @@ msgstr "No movements for the selected filters."
 msgid "Оберіть дію"
 msgstr "Choose an action"
 
+
+#: templates/core/storekeeper_workplace.html:90
+msgid "Зіскануйте товар і зафіксуйте видачу зі складу."
+msgstr "Scan an item and record stock issue."
+
+#: templates/core/storekeeper_workplace.html:101
+msgid "Зіскануйте товар і зафіксуйте повернення на склад."
+msgstr "Scan an item and record stock return."
+
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
 msgstr "Language"

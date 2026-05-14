@@ -246,6 +246,8 @@ class DashboardPermissionTests(TestCase):
             "Оберіть дію",
             "Взяти товар",
             "Повернути товар",
+            "Зіскануйте товар і зафіксуйте видачу зі складу.",
+            "Зіскануйте товар і зафіксуйте повернення на склад.",
         ]:
             self.assertContains(response, label)
         main_html = html[html.index('<main class="col-12">'):]
@@ -258,6 +260,10 @@ class DashboardPermissionTests(TestCase):
             "Керування",
             "Отримувачі",
             "Довідники",
+            "Рухи товарів",
+            "Залишки",
+            "Інвентаризація",
+            "Складські налаштування",
             "Початкові залишки",
             "Знайти товар",
             "Відкрити",
@@ -284,6 +290,10 @@ class DashboardPermissionTests(TestCase):
         ]:
             self.assertIn(
                 f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse(url_name)}"',
+                html,
+            )
+            self.assertIn(
+                f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse(url_name)}" aria-label="{label}"',
                 html,
             )
             self.assertIn(label, html)
