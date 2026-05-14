@@ -2142,6 +2142,20 @@ msgstr "Повернення виконано"
 msgid "Нова операція повернення"
 msgstr "Нова операція повернення"
 
+
+#: templates/core/stock_issue_result.html:9
+msgid "Товар видано зі складу"
+msgstr "Товар видано зі складу"
+
+#: templates/core/stock_receive_result.html:9
+msgid "Товар повернено на склад"
+msgstr "Товар повернено на склад"
+
+#: templates/core/stock_issue_result.html:48
+#: templates/core/stock_receive_result.html:42
+msgid "На головний екран"
+msgstr "На головний екран"
+
 #: templates/core/stock_transfer_form.html:11
 #: templates/core/stock_transfer_form.html:24
 #: templates/core/stock_transfer_result.html:17
