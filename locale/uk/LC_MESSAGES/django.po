@@ -2091,6 +2091,26 @@ msgstr "Доступні ролі"
 msgid "Налаштування"
 msgstr "Налаштування"
 
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Сканування товару"
+msgstr "Сканування товару"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Відскануйте штрихкод товару або введіть його вручну"
+msgstr "Відскануйте штрихкод товару або введіть його вручну"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Штрихкод товару"
+msgstr "Штрихкод товару"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Знайти товар"
+msgstr "Знайти товар"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Назва товару"
+msgstr "Назва товару"
+
 #: templates/core/stock_issue_form.html:15
 #: templates/core/stock_receive_form.html:15
 msgctxt "barcode action"

@@ -4,26 +4,52 @@
 {% block content %}
 <h1 class="mb-3">{% trans "Видача товару" %}</h1>
 
-<div class="card content-card mb-4">
-    <div class="card-body">
-        <form class="row g-2 align-items-end" method="get" action="{% url 'stock_issue' %}">
+<div class="card content-card shadow-sm rounded-4 mb-4">
+    <div class="card-body p-4 p-lg-5">
+        <div class="mb-4">
+            <h2 class="h4 fw-bold mb-2">{% trans "Сканування товару" %}</h2>
+            <p class="text-muted fs-5 mb-0">{% trans "Відскануйте штрихкод товару або введіть його вручну" %}</p>
+        </div>
+        <form class="row g-3 align-items-stretch" method="get" action="{% url 'stock_issue' %}">
             <div class="col-12 col-lg">
-                <label class="form-label fw-semibold" for="issue-barcode-input">{% trans "Сканувати штрихкод" %}</label>
-                <input id="issue-barcode-input" class="form-control form-control-lg" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Сканувати штрихкод' %}">
+                <label class="visually-hidden" for="issue-barcode-input">{% trans "Штрихкод товару" %}</label>
+                <input id="issue-barcode-input" class="form-control form-control-lg py-3 fs-4" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Штрихкод товару' %}">
             </div>
-            <div class="col-12 col-lg-auto">
-                <button class="btn btn-primary btn-lg w-100" type="submit">{% translate "Знайти" context "barcode action" %}</button>
+            <div class="col-12 col-lg-auto d-grid">
+                <button class="btn btn-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти товар" %}</button>
             </div>
+            {% if barcode_query %}
+                <div class="col-12 col-lg-auto d-grid">
+                    <a class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" href="{% url 'stock_issue' %}">{% trans "Очистити" %}</a>
+                </div>
+            {% endif %}
         </form>
         {% if scanned_item_context %}
-            <div class="alert alert-success mt-3 mb-0" role="status">
-                <div><span class="fw-semibold">{% trans "Знайдений товар" %}:</span> {{ scanned_item_context.item.name }}</div>
-                <div>{% trans "Внутрішній код" %}: {{ scanned_item_context.item.internal_code|default:"—" }}</div>
-                <div>{% trans "Штрихкод" %}: {{ scanned_item_context.item.barcode_value|default:"—" }}</div>
-                <div><span class="fw-semibold">{% trans "Доступний залишок" %}:</span> {{ scanned_item_context.available_qty }}</div>
+            <div class="alert alert-success border-0 shadow-sm rounded-4 mt-4 mb-0" role="status">
+                <div class="fw-bold fs-5 mb-3">{% trans "Знайдений товар" %}</div>
+                <dl class="row mb-0 gy-2">
+                    <dt class="col-sm-4 text-muted">{% trans "Назва товару" %}</dt>
+                    <dd class="col-sm-8 fw-semibold mb-0">{{ scanned_item_context.item.name }}</dd>
+                    {% if scanned_item_context.item.internal_code %}
+                        <dt class="col-sm-4 text-muted">{% trans "Внутрішній код" %}</dt>
+                        <dd class="col-sm-8 mb-0">{{ scanned_item_context.item.internal_code }}</dd>
+                    {% endif %}
+                    {% if scanned_item_context.item.barcode_value %}
+                        <dt class="col-sm-4 text-muted">{% trans "Штрихкод" %}</dt>
+                        <dd class="col-sm-8 mb-0">{{ scanned_item_context.item.barcode_value }}</dd>
+                    {% endif %}
+                    <dt class="col-sm-4 text-muted">{% trans "Доступний залишок" %}</dt>
+                    <dd class="col-sm-8 fw-semibold mb-0">{{ scanned_item_context.available_qty }}</dd>
+                </dl>
             </div>
-        {% elif not barcode_query %}
-            <p class="text-muted fs-5 mt-3 mb-0">{% trans "Відскануйте штрихкод товару, щоб продовжити." %}</p>
+        {% elif barcode_query %}
+            <div class="alert alert-warning rounded-4 mt-4 mb-0" role="alert">
+                {% trans "Товар за цим штрихкодом не знайдено." %}
+            </div>
+        {% else %}
+            <div class="alert alert-info rounded-4 mt-4 mb-0" role="status">
+                {% trans "Відскануйте штрихкод товару або введіть його вручну" %}
+            </div>
         {% endif %}
     </div>
 </div>
