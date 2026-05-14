@@ -2087,6 +2087,26 @@ msgstr "Available roles"
 msgid "Налаштування"
 msgstr "Settings"
 
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Сканування товару"
+msgstr "Scan item"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Відскануйте штрихкод товару або введіть його вручну"
+msgstr "Scan the item barcode or enter it manually"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Штрихкод товару"
+msgstr "Item barcode"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Знайти товар"
+msgstr "Find item"
+
+#: templates/core/stock_issue_form.html templates/core/stock_receive_form.html
+msgid "Назва товару"
+msgstr "Item name"
+
 #: templates/core/stock_issue_form.html:15
 #: templates/core/stock_receive_form.html:15
 msgctxt "barcode action"

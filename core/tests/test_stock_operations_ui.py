@@ -1163,27 +1163,40 @@ class StockOperationWorkflowTests(TestCase):
             ).exists()
         )
 
-    def test_receive_page_contains_barcode_scanner_field(self):
+    def test_receive_page_contains_tablet_scan_card(self):
         response = self.client.get(reverse("stock_receive"))
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Сканувати штрихкод")
+        self.assertContains(response, "Сканування товару")
         self.assertContains(
-            response, "Відскануйте штрихкод товару, щоб продовжити."
+            response, "Відскануйте штрихкод товару або введіть його вручну"
         )
+        self.assertContains(response, "Знайти товар")
+        self.assertIn('class="card content-card shadow-sm rounded-4 mb-4"', html)
         self.assertIn('name="barcode"', html)
         self.assertIn('autocomplete="off"', html)
+        self.assertIn('placeholder="Штрихкод товару"', html)
+        self.assertIn('form-control form-control-lg py-3 fs-4', html)
+        self.assertIn('btn btn-primary btn-lg px-4 py-3 fw-semibold', html)
         self.assertNotIn('autofocus', html)
 
-    def test_issue_page_contains_barcode_scanner_field(self):
+    def test_issue_page_contains_tablet_scan_card(self):
         response = self.client.get(reverse("stock_issue"))
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Сканувати штрихкод")
+        self.assertContains(response, "Сканування товару")
+        self.assertContains(
+            response, "Відскануйте штрихкод товару або введіть його вручну"
+        )
+        self.assertContains(response, "Знайти товар")
+        self.assertIn('class="card content-card shadow-sm rounded-4 mb-4"', html)
         self.assertIn('name="barcode"', html)
         self.assertIn('autocomplete="off"', html)
+        self.assertIn('placeholder="Штрихкод товару"', html)
+        self.assertIn('form-control form-control-lg py-3 fs-4', html)
+        self.assertIn('btn btn-primary btn-lg px-4 py-3 fw-semibold', html)
         self.assertNotIn('autofocus', html)
 
     def test_issue_get_barcode_prefills_item_and_stock_source(self):
@@ -1199,8 +1212,16 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.context["form"].initial["item"], self.item)
         self.assertEqual(response.context["form"].initial["warehouse"], self.warehouse)
         self.assertEqual(response.context["form"].initial["location"], self.location)
+        self.assertContains(response, "Очистити")
+        self.assertContains(response, f'href="{reverse("stock_issue")}"', html=False)
+        self.assertContains(response, "Знайдений товар")
+        self.assertContains(response, "Назва товару")
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
+        self.assertContains(response, "Доступний залишок")
+        self.assertEqual(
+            response.context["scanned_item_context"]["available_qty"], Decimal("7.000")
+        )
         self.assertContains(response, "Дані для видачі визначено автоматично.")
 
     def test_issue_get_barcode_chooses_largest_positive_balance(self):
@@ -1509,7 +1530,7 @@ class StockOperationWorkflowTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Scan barcode", html)
+        self.assertIn("Scan item", html)
         self.assertIn("Found item", html)
         self.assertIn("Available stock", html)
         self.assertIn("Who takes the item", html)
@@ -1518,7 +1539,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn('data-qty-decrement', html)
         self.assertIn('data-qty-increment', html)
         self.assertIn('inputmode="numeric"', html)
-        self.assertNotIn("Сканувати штрихкод", html)
+        self.assertNotIn("Сканування товару", html)
         self.assertNotIn("Цех / місце використання", html)
         self.assertNotIn("Коментар", html)
 
@@ -1531,6 +1552,10 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.context["form"].initial["item"], self.item)
         self.assertIn("warehouse", response.context["form"].initial)
         self.assertIn("location", response.context["form"].initial)
+        self.assertContains(response, "Очистити")
+        self.assertContains(response, f'href="{reverse("stock_receive")}"', html=False)
+        self.assertContains(response, "Знайдений товар")
+        self.assertContains(response, "Назва товару")
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
         self.assertContains(response, "Дані для повернення визначено автоматично.")
@@ -1756,7 +1781,7 @@ class StockOperationWorkflowTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Scan barcode")
+        self.assertContains(response, "Scan item")
         self.assertContains(response, "Found item")
         self.assertContains(response, "Quantity")
         self.assertContains(response, "Who returns the item")
@@ -1766,7 +1791,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, 'data-qty-decrement')
         self.assertContains(response, 'data-qty-increment')
         self.assertContains(response, 'inputmode="numeric"')
-        self.assertNotContains(response, "Відскануйте штрихкод товару")
+        self.assertNotContains(response, "Сканування товару")
         self.assertNotContains(response, "Локацію повернення визначено автоматично")
         self.assertNotContains(response, "Дані для повернення визначено автоматично")
         self.assertNotContains(response, "Цех / місце використання")
@@ -1794,11 +1819,12 @@ class StockOperationWorkflowTests(TestCase):
         issue_response = self.client.get("/en/stock/issue/")
         receive_response = self.client.get("/en/stock/receive/")
 
-        self.assertContains(issue_response, "Scan barcode")
-        self.assertContains(issue_response, "Find")
-        self.assertNotContains(issue_response, "Сканувати штрихкод")
+        self.assertContains(issue_response, "Scan item")
+        self.assertContains(issue_response, "Find item")
+        self.assertNotContains(issue_response, "Сканування товару")
         self.assertContains(receive_response, "Return item")
-        self.assertContains(receive_response, "Scan barcode")
+        self.assertContains(receive_response, "Scan item")
+        self.assertContains(receive_response, "Find item")
         self.assertNotContains(receive_response, "Повернення товару")
 
     def test_unauthorized_user_redirects_to_login(self):
