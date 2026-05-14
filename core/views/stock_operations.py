@@ -15,7 +15,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language, gettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -130,7 +130,7 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_receive_form.html"
     form_class = StockReceiveForm
-    auto_selected_message = _("Локацію повернення визначено автоматично.")
+    auto_selected_message = _("Дані для повернення визначено автоматично.")
     no_return_location_message = _(
         "Товар знайдено, але локацію для повернення не налаштовано."
     )
@@ -212,7 +212,7 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_issue_form.html"
     form_class = StockIssueForm
-    auto_selected_message = _("Склад і локацію визначено автоматично.")
+    auto_selected_message = _("Дані для видачі визначено автоматично.")
     no_available_stock_message = _(
         "Товар знайдено, але доступного залишку для видачі немає."
     )
@@ -307,68 +307,39 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
             pk=self.kwargs["pk"],
         )
         location = movement.source_location or movement.destination_location
-        is_english = get_language() == "en"
+        is_self_service_movement = movement.movement_type in {
+            StockMovement.MovementType.OUT,
+            StockMovement.MovementType.RETURN,
+        }
         if movement.movement_type == StockMovement.MovementType.OUT:
-            operation_type = "Issue item" if is_english else _("Видача товару")
-            responsible_label = (
-                "Who takes the item" if is_english else _("Хто взяв товар")
-            )
+            operation_type = _("Видача товару")
+            responsible_label = _("Хто взяв товар")
         elif movement.movement_type == StockMovement.MovementType.RETURN:
-            operation_type = "Return item" if is_english else _("Повернення товару")
-            responsible_label = (
-                "Who returned the item"
-                if is_english
-                else _("Хто повернув товар")
-            )
+            operation_type = _("Повернення товару")
+            responsible_label = _("Хто повернув товар")
         elif movement.movement_type == StockMovement.MovementType.IN:
-            operation_type = "Return item" if is_english else _("Повернення товару")
-            responsible_label = (
-                "Recipient / responsible person"
-                if is_english
-                else _("Отримувач / відповідальний")
-            )
+            operation_type = _("Повернення товару")
+            responsible_label = _("Отримувач / відповідальний")
         else:
             operation_type = movement.get_movement_type_display()
-            responsible_label = (
-                "Recipient / responsible person"
-                if is_english
-                else _("Отримувач / відповідальний")
-            )
+            responsible_label = _("Отримувач / відповідальний")
         labels = {
-            "title": (
-                "Warehouse operation control slip"
-                if is_english
-                else _("Контрольний талон складської операції")
-            ),
-            "print": "Print" if is_english else _("Друк"),
-            "back": "Back" if is_english else _("Назад"),
-            "operation_id": "Operation ID" if is_english else _("ID операції"),
-            "operation_type": "Operation type" if is_english else _("Тип операції"),
-            "occurred_at": (
-                "Operation date and time"
-                if is_english
-                else _("Дата і час операції")
-            ),
-            "item": "Item" if is_english else _("Товар"),
-            "internal_code": "Internal code" if is_english else _("Внутрішній код"),
-            "barcode": "Barcode" if is_english else _("Штрихкод"),
-            "qty": "Quantity" if is_english else _("Кількість"),
-            "warehouse": "Warehouse" if is_english else _("Склад"),
-            "location": "Location" if is_english else _("Локація"),
+            "title": _("Контрольний талон складської операції"),
+            "print": _("Друк"),
+            "back": _("Назад"),
+            "operation_id": _("ID операції"),
+            "operation_type": _("Тип операції"),
+            "occurred_at": _("Дата і час операції"),
+            "item": _("Товар"),
+            "internal_code": _("Внутрішній код"),
+            "barcode": _("Штрихкод"),
+            "qty": _("Кількість"),
+            "warehouse": _("Склад"),
+            "location": _("Локація"),
             "responsible": responsible_label,
-            "department": (
-                "Department / place of use"
-                if is_english
-                else _("Цех / місце використання")
-            ),
-            "comment_document": (
-                "Comment / document" if is_english else _("Коментар / документ")
-            ),
-            "video_time": (
-                "Video check time:"
-                if is_english
-                else _("Час для перевірки по відео:")
-            ),
+            "department": _("Цех / місце використання"),
+            "comment_document": _("Коментар / документ"),
+            "video_time": _("Час для перевірки по відео:"),
         }
         context.update(
             {
@@ -377,9 +348,7 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
                 "operation_type": operation_type,
                 "location": location,
                 "warehouse": location.warehouse if location else None,
-                "is_return_movement": (
-                    movement.movement_type == StockMovement.MovementType.RETURN
-                ),
+                "is_self_service_movement": is_self_service_movement,
             }
         )
         return context

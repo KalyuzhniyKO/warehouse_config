@@ -223,8 +223,12 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Взяти товар")
         self.assertContains(response, "Повернути товар")
         main_html = response.content.decode().split('<main class="col-12">', 1)[1]
+        self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
         self.assertNotIn("Списання товару", main_html)
         self.assertNotIn("Переміщення товару", main_html)
+        self.assertNotIn("Рухи товарів", main_html)
+        self.assertNotIn("Залишки", main_html)
+        self.assertNotIn("Інвентаризація", main_html)
         self.assertNotIn("Робоче місце комірника", main_html)
         self.assertNotIn("Комірник", main_html)
 
@@ -289,6 +293,7 @@ class StockIssueInterfaceTests(TestCase):
         movement = StockMovement.objects.get(document_number="SO-PRINT")
         print_url = reverse("stock_movement_print", kwargs={"pk": movement.pk})
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Видачу виконано")
         self.assertContains(response, "Товар")
         self.assertContains(response, self.item.name)
         self.assertContains(response, "Кількість")
@@ -304,6 +309,8 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Друкувати контрольний талон")
         self.assertContains(response, f"{print_url}?autoprint=1")
         self.assertContains(response, "Нова видача")
+        self.assertNotContains(response, ">Склад</dt>")
+        self.assertNotContains(response, ">Локація</dt>")
         self.assertNotContains(response, "Тип видачі")
         self.assertNotContains(response, "Документ")
         self.assertNotContains(response, "Коментар")
@@ -415,6 +422,11 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Хто взяв товар")
         self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Час для перевірки по відео:")
+        self.assertNotContains(response, ">Склад</dt>")
+        self.assertNotContains(response, ">Локація</dt>")
+        self.assertNotContains(response, "CAM-1")
+        self.assertNotContains(response, "Camera check")
+        self.assertNotContains(response, "Коментар / документ")
         self.assertNotContains(response, "Видав")
         self.assertNotContains(response, "Отримав")
         self.assertNotContains(response, "Перевірив")
@@ -1174,7 +1186,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.context["form"].initial["location"], self.location)
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
-        self.assertContains(response, "Склад і локацію визначено автоматично.")
+        self.assertContains(response, "Дані для видачі визначено автоматично.")
 
     def test_issue_get_barcode_chooses_largest_positive_balance(self):
         StockBalance.objects.create(
@@ -1222,8 +1234,16 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn('for="id_warehouse"', html)
         self.assertNotIn('for="id_location"', html)
+        self.assertNotIn('for="id_issue_reason"', html)
+        self.assertNotIn('for="id_document_number"', html)
         self.assertNotIn('for="id_comment"', html)
+        self.assertNotIn('for="id_occurred_at"', html)
+        self.assertNotContains(response, ">Склад</label>")
+        self.assertNotContains(response, ">Локація</label>")
+        self.assertNotContains(response, "Тип видачі")
+        self.assertNotContains(response, "Документ")
         self.assertNotContains(response, "Коментар")
+        self.assertNotContains(response, "Дата операції")
         self.assertContains(response, "Кількість")
         self.assertContains(response, "Хто взяв товар")
         self.assertContains(response, "Цех / місце використання")
@@ -1409,6 +1429,31 @@ class StockOperationWorkflowTests(TestCase):
         self.assertNotContains(response, "Legacy comment place")
         self.assertNotContains(response, "Коментар / документ")
 
+
+    def test_english_self_service_home_has_only_two_clean_actions(self):
+        storekeeper = get_user_model().objects.create_user(
+            "workflow_storekeeper", password="pass"
+        )
+        storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        self.client.force_login(storekeeper)
+
+        response = self.client.get("/en/")
+        html = response.content.decode()
+        main_html = html.split('<main class="col-12">', 1)[1]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Take item", main_html)
+        self.assertIn("Return item", main_html)
+        self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
+        for phrase in [
+            "Взяти товар",
+            "Повернути товар",
+            "Рухи товарів",
+            "Залишки",
+            "Інвентаризація",
+        ]:
+            self.assertNotIn(phrase, main_html)
+
     def test_english_issue_page_has_no_ukrainian_tablet_phrases(self):
         StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("7.000")
@@ -1441,7 +1486,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("location", response.context["form"].initial)
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
-        self.assertContains(response, "Локацію повернення визначено автоматично.")
+        self.assertContains(response, "Дані для повернення визначено автоматично.")
 
     def test_receive_form_hides_manual_warehouse_location_and_service_fields(self):
         response = self.client.get(
@@ -1451,7 +1496,9 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, ">Склад</label>")
         self.assertNotContains(response, ">Локація</label>")
-        self.assertNotContains(response, ">Коментар</label>")
+        self.assertNotContains(response, "Документ")
+        self.assertNotContains(response, "Коментар")
+        self.assertNotContains(response, "Дата операції")
         self.assertNotContains(response, "Надрукувати етикетку")
         self.assertContains(response, "Кількість")
         self.assertContains(response, "Хто повертає товар")
@@ -1567,6 +1614,8 @@ class StockOperationWorkflowTests(TestCase):
         html = response.content.decode()
         self.assertNotIn(">Склад</dt>", html)
         self.assertNotIn(">Локація</dt>", html)
+        self.assertNotIn("До рухів товарів", html)
+        self.assertNotIn("До залишків", html)
         self.assertNotIn(">Документ</dt>", html)
         self.assertNotIn(">Коментар</dt>", html)
         self.assertNotIn("До рухів товарів</a>", html)
@@ -1635,9 +1684,10 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Who returns the item")
         self.assertContains(response, "Department / place of use")
         self.assertContains(response, "Return item")
-        self.assertContains(response, "Return location was selected automatically.")
+        self.assertContains(response, "Return data was selected automatically.")
         self.assertNotContains(response, "Відскануйте штрихкод товару")
         self.assertNotContains(response, "Локацію повернення визначено автоматично")
+        self.assertNotContains(response, "Дані для повернення визначено автоматично")
         self.assertNotContains(response, "Цех / місце використання")
 
 

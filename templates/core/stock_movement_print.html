@@ -102,7 +102,7 @@
             <dt>{{ labels.qty }}</dt>
             <dd>{{ movement.qty }}</dd>
 
-            {% if not is_return_movement %}
+            {% if not is_self_service_movement %}
             <dt>{{ labels.warehouse }}</dt>
             <dd>{{ warehouse|default:"—" }}</dd>
 
@@ -122,7 +122,7 @@
             <dd>{{ movement.department }}</dd>
             {% endif %}
 
-            {% if not is_return_movement %}
+            {% if not is_self_service_movement %}
             {% if movement.document_number or movement.comment %}
             <dt>{{ labels.comment_document }}</dt>
             <dd>
