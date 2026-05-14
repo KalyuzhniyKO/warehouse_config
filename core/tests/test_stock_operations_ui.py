@@ -1,6 +1,7 @@
 from decimal import Decimal
 from pathlib import Path
 from unittest import mock
+from django import forms
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
@@ -39,6 +40,7 @@ from ..models import (
     StockMovement,
     SystemSettings,
     Unit,
+    UsagePlace,
     Warehouse,
 )
 
@@ -151,6 +153,10 @@ class StockIssueInterfaceTests(TestCase):
             warehouse=self.other_warehouse, name="B1"
         )
         self.recipient = Recipient.objects.create(name="Цех 1")
+        self.usage_place = UsagePlace.objects.create(name="Sales")
+        self.inactive_usage_place = UsagePlace.objects.create(
+            name="Archived place", is_active=False
+        )
         self.balance = StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("7.000")
         )
@@ -245,7 +251,7 @@ class StockIssueInterfaceTests(TestCase):
                 "location": self.location.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.SALE,
-                "department": "Sales",
+                "department": self.usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "SO-1",
                 "comment": "",
@@ -270,7 +276,7 @@ class StockIssueInterfaceTests(TestCase):
                 "location": self.location.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.SALE,
-                "department": "Sales",
+                "department": self.usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "SO-PRINT",
                 "comment": "",
@@ -464,6 +470,7 @@ class StockIssueInterfaceTests(TestCase):
 
     def test_stock_issue_post_stores_repair_reason_and_department(self):
         self.client.force_login(self.storekeeper)
+        usage_place = UsagePlace.objects.create(name="Ремонтний цех")
         response = self.client.post(
             reverse("stock_issue"),
             {
@@ -472,7 +479,7 @@ class StockIssueInterfaceTests(TestCase):
                 "location": self.location.pk,
                 "qty": "1.000",
                 "issue_reason": StockMovement.IssueReason.REPAIR,
-                "department": "Ремонтний цех",
+                "department": usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",
@@ -496,7 +503,7 @@ class StockIssueInterfaceTests(TestCase):
                 "location": self.location.pk,
                 "qty": "99.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "Repair shop",
+                "department": self.usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",
@@ -683,6 +690,10 @@ class StockOperationWorkflowTests(TestCase):
             warehouse=self.destination_warehouse, name="Workflow destination location"
         )
         self.recipient = Recipient.objects.create(name="Workflow recipient")
+        self.usage_place = UsagePlace.objects.create(name="Sales")
+        self.inactive_usage_place = UsagePlace.objects.create(
+            name="Archived place", is_active=False
+        )
 
     def test_receive_stock_ui_increases_balance_creates_movement_and_barcode(self):
         self.item.barcode = None
@@ -902,7 +913,7 @@ class StockOperationWorkflowTests(TestCase):
                 "warehouse": self.warehouse.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "Default shop",
+                "department": self.usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Default issue",
@@ -1028,7 +1039,7 @@ class StockOperationWorkflowTests(TestCase):
                 "warehouse": self.warehouse.pk,
                 "qty": "2.000",
                 "issue_reason": StockMovement.IssueReason.OTHER,
-                "department": "Default shop",
+                "department": self.usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "Too much default issue",
@@ -1150,6 +1161,55 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Кількість")
         self.assertContains(response, "Хто взяв товар")
         self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, 'class="form-select form-select-lg"')
+
+    def test_issue_form_lists_only_active_usage_places(self):
+        form = StockIssueForm()
+        choices = list(form.fields["department"].queryset)
+
+        self.assertIsInstance(form.fields["department"].widget, forms.Select)
+        self.assertIn(self.usage_place, choices)
+        self.assertNotIn(self.inactive_usage_place, choices)
+        self.assertEqual(
+            form.fields["department"].empty_label,
+            "Оберіть цех або місце використання",
+        )
+        self.assertEqual(
+            form.fields["department"].widget.attrs["class"],
+            "form-select form-select-lg",
+        )
+
+    def test_issue_form_cleans_department_to_usage_place_name(self):
+        form = StockIssueForm(
+            data={
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": self.usage_place.pk,
+                "recipient": self.recipient.pk,
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["department"], "Sales")
+
+    def test_issue_page_lists_only_active_usage_places(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sales")
+        self.assertNotContains(response, "Archived place")
 
     def test_issue_department_is_required(self):
         form = StockIssueForm(
@@ -1171,7 +1231,31 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("department", form.errors)
         self.assertEqual(
             str(form.errors["department"][0]),
-            "Вкажіть цех або місце використання товару.",
+            "Оберіть цех або місце використання.",
+        )
+
+    def test_issue_form_without_active_usage_places_requires_configuration(self):
+        UsagePlace.objects.update(is_active=False)
+        form = StockIssueForm(
+            data={
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": "",
+                "recipient": self.recipient.pk,
+                "document_number": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("department", form.errors)
+        self.assertEqual(
+            str(form.errors["department"][0]),
+            "Налаштуйте хоча б одне активне місце використання.",
         )
 
     def test_issue_post_after_barcode_without_manual_stock_source_saves_department(self):
@@ -1182,6 +1266,7 @@ class StockOperationWorkflowTests(TestCase):
             f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
         )
         form = get_response.context["form"]
+        usage_place = UsagePlace.objects.create(name="Монтажна дільниця")
 
         response = self.client.post(
             reverse("stock_issue"),
@@ -1191,7 +1276,7 @@ class StockOperationWorkflowTests(TestCase):
                 "location": form.initial["location"].pk,
                 "qty": "2.000",
                 "issue_reason": form.initial["issue_reason"],
-                "department": "Монтажна дільниця",
+                "department": usage_place.pk,
                 "recipient": self.recipient.pk,
                 "document_number": "",
                 "comment": "",

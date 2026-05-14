@@ -423,6 +423,18 @@ msgstr "Print label after saving"
 msgid "Цех / місце використання"
 msgstr "Department / place of use"
 
+#: core/forms/stock_operations.py
+msgid "Оберіть цех або місце використання"
+msgstr "Choose department or place of use"
+
+#: core/forms/stock_operations.py
+msgid "Оберіть цех або місце використання."
+msgstr "Choose department or place of use."
+
+#: core/forms/stock_operations.py
+msgid "Налаштуйте хоча б одне активне місце використання."
+msgstr "Configure at least one active place of use."
+
 #: core/forms/stock_operations.py:112
 msgid "Вкажіть цех або місце використання товару."
 msgstr "Specify the department or place where the item will be used."

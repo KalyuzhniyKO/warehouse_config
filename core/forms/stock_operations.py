@@ -10,6 +10,7 @@ from core.models import (
     Recipient,
     StockMovement,
     SystemSettings,
+    UsagePlace,
     Warehouse,
 )
 from core.services.locations import get_default_location_for_warehouse
@@ -105,11 +106,13 @@ class StockIssueForm(StockOperationForm):
     issue_reason = forms.ChoiceField(
         label=_("Тип видачі"), choices=StockMovement.IssueReason.choices
     )
-    department = forms.CharField(
+    department = forms.ModelChoiceField(
         label=_("Цех / місце використання"),
+        queryset=UsagePlace.objects.none(),
         required=True,
+        empty_label=_("Оберіть цех або місце використання"),
         error_messages={
-            "required": _("Вкажіть цех або місце використання товару."),
+            "required": _("Оберіть цех або місце використання."),
         },
     )
     recipient = forms.ModelChoiceField(
@@ -124,6 +127,12 @@ class StockIssueForm(StockOperationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        usage_places = UsagePlace.objects.filter(is_active=True).order_by("name")
+        self.fields["department"].queryset = usage_places
+        if not usage_places.exists():
+            self.fields["department"].error_messages["required"] = _(
+                "Налаштуйте хоча б одне активне місце використання."
+            )
         self.fields["recipient"].queryset = Recipient.objects.filter(is_active=True)
         self.fields["issue_reason"].initial = StockMovement.IssueReason.OTHER
         self.fields["issue_reason"].required = False
@@ -141,7 +150,7 @@ class StockIssueForm(StockOperationForm):
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
         self.fields["qty"].widget.attrs["class"] = "form-control form-control-lg"
-        self.fields["department"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
         self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
         self.order_fields(
             [
@@ -159,7 +168,10 @@ class StockIssueForm(StockOperationForm):
         )
 
     def clean_department(self):
-        return normalize_text(self.cleaned_data.get("department"))
+        usage_place = self.cleaned_data.get("department")
+        if usage_place:
+            return usage_place.name
+        return ""
 
     def clean_document_number(self):
         return normalize_text(self.cleaned_data.get("document_number"))
