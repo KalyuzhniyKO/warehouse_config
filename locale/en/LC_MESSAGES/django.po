@@ -2110,6 +2110,7 @@ msgstr "Take item"
 
 #: templates/core/stock_issue_result.html:8
 #: templates/core/stock_receive_result.html:8
+#: core/views/stock_operations.py:352
 #: templates/core/stock_transfer_result.html:8
 #: templates/core/stock_writeoff_result.html:8
 msgid "Товар"
@@ -2120,6 +2121,7 @@ msgid "Залишок після операції"
 msgstr "Balance after operation"
 
 #: templates/core/stock_issue_result.html:15
+#: templates/core/stock_receive_result.html:14
 msgid "Друкувати контрольний талон"
 msgstr "Print control slip"
 

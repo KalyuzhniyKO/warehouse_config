@@ -375,10 +375,12 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Цех / місце використання")
         self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
+        self.assertContains(response, "2026")
         self.assertContains(response, "Нова операція повернення")
-        self.assertNotContains(response, "Друкувати контрольний талон")
-        self.assertNotContains(
-            response, reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(
+            response,
+            f'{reverse("stock_movement_print", kwargs={"pk": movement.pk})}?autoprint=1',
         )
 
     def test_stock_movement_print_page_is_read_only_and_contains_control_data(self):
@@ -427,6 +429,35 @@ class StockIssueInterfaceTests(TestCase):
             item=self.item,
             qty=Decimal("1.000"),
             source_location=self.location,
+            recipient=self.recipient,
+            department="Монтаж",
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+        print_url = reverse("stock_movement_print", kwargs={"pk": movement.pk})
+
+        response = self.client.get(print_url)
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('onclick="window.print()"', html)
+        self.assertNotIn('window.addEventListener("load"', html)
+
+        response = self.client.get(f"{print_url}?autoprint=1")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('window.addEventListener("load"', html)
+        self.assertIn("window.print();", html)
+
+    def test_return_stock_movement_print_page_autoprint_is_opt_in(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.RETURN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
             recipient=self.recipient,
             department="Монтаж",
             occurred_at=timezone.datetime(
@@ -1354,7 +1385,7 @@ class StockOperationWorkflowTests(TestCase):
             destination_location=self.location,
             recipient=self.recipient,
             department="Компресорна",
-            comment="",
+            comment="Legacy comment place",
         )
 
         response = self.client.get(
@@ -1362,10 +1393,21 @@ class StockOperationWorkflowTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Контрольний талон складської операції")
+        self.assertContains(response, "ID операції")
+        self.assertContains(response, "Тип операції")
+        self.assertContains(response, "Дата і час операції")
+        self.assertContains(response, "Товар")
+        self.assertContains(response, "Внутрішній код")
+        if self.item.barcode_id:
+            self.assertContains(response, "Штрихкод")
+        self.assertContains(response, "Кількість")
         self.assertContains(response, "Хто повернув товар")
         self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Цех / місце використання")
         self.assertContains(response, "Компресорна")
+        self.assertNotContains(response, "Legacy comment place")
+        self.assertNotContains(response, "Коментар / документ")
 
     def test_english_issue_page_has_no_ukrainian_tablet_phrases(self):
         StockBalance.objects.create(
@@ -1499,6 +1541,9 @@ class StockOperationWorkflowTests(TestCase):
             recipient=self.recipient,
             department=self.usage_place.name,
             comment="",
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
         )
 
         response = self.client.get(reverse("stock_receive_result", args=[movement.pk]))
@@ -1512,11 +1557,20 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Цех / місце використання")
         self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
+        self.assertContains(response, "2026")
         self.assertContains(response, "Нова операція повернення")
+        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(
+            response,
+            f'{reverse("stock_movement_print", kwargs={"pk": movement.pk})}?autoprint=1',
+        )
         html = response.content.decode()
         self.assertNotIn(">Склад</dt>", html)
         self.assertNotIn(">Локація</dt>", html)
+        self.assertNotIn(">Документ</dt>", html)
+        self.assertNotIn(">Коментар</dt>", html)
         self.assertNotIn("До рухів товарів</a>", html)
+        self.assertNotIn("До залишків</a>", html)
 
     def test_english_receive_result_page_has_no_ukrainian_tablet_phrases(self):
         movement = StockMovement.objects.create(
@@ -1536,6 +1590,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Return completed", html)
         self.assertIn("Who returned the item", html)
         self.assertIn("Department / place of use", html)
+        self.assertIn("Print control slip", html)
         self.assertIn("New return", html)
         self.assertNotIn("Повернення виконано", html)
         self.assertNotIn("Хто повернув товар", html)
@@ -1556,6 +1611,13 @@ class StockOperationWorkflowTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
+        self.assertIn("Warehouse operation control slip", html)
+        self.assertIn("Operation ID", html)
+        self.assertIn("Operation type", html)
+        self.assertIn("Operation date and time", html)
+        self.assertIn("Item", html)
+        self.assertIn("Internal code", html)
+        self.assertIn("Quantity", html)
         self.assertIn("Who returned the item", html)
         self.assertIn("Department / place of use", html)
         self.assertNotIn("Хто повернув товар", html)
