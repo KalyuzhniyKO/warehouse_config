@@ -243,7 +243,9 @@ def issue_stock(
     return movement
 
 
-def return_stock(*, item, location, qty, recipient=None, comment=""):
+def return_stock(
+    *, item, location, qty, recipient=None, department="", comment="", occurred_at=None
+):
     """Return stock back into a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
@@ -255,7 +257,9 @@ def return_stock(*, item, location, qty, recipient=None, comment=""):
             qty=qty,
             destination_location=location,
             recipient=recipient,
+            department=(department or "").strip(),
             comment=comment,
+            occurred_at=occurred_at,
         )
     return movement
 

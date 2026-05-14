@@ -422,6 +422,7 @@ class StockServiceTests(TestCase):
             location=self.source_location,
             qty=Decimal("2.000"),
             recipient=self.recipient,
+            department="  Assembly  ",
         )
 
         self.assertEqual(self.get_balance_qty(), Decimal("3.000"))
@@ -430,7 +431,37 @@ class StockServiceTests(TestCase):
         )
         self.assertEqual(returned.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(returned.recipient, self.recipient)
+        self.assertEqual(returned.department, "Assembly")
         self.assertEqual(StockMovement.objects.count(), 2)
+
+
+    def test_return_stock_defaults_keep_existing_callers_working(self):
+        from ..services.stock import return_stock
+
+        movement = return_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+        )
+
+        self.assertEqual(self.get_balance_qty(), Decimal("1.000"))
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
+        self.assertIsNone(movement.recipient)
+        self.assertEqual(movement.department, "")
+        self.assertEqual(movement.comment, "")
+
+    def test_return_stock_stores_occurred_at(self):
+        from ..services.stock import return_stock
+
+        occurred_at = timezone.now()
+        movement = return_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+            occurred_at=occurred_at,
+        )
+
+        self.assertEqual(movement.occurred_at, occurred_at)
 
     def test_quantity_is_stored_with_three_decimal_places(self):
         from ..services.stock import receive_stock

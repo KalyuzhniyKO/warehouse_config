@@ -175,7 +175,9 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
                 location=form.cleaned_data["location"],
                 qty=form.cleaned_data["qty"],
                 recipient=form.cleaned_data["recipient"],
-                comment=form.cleaned_data["department"],
+                department=form.cleaned_data["department"],
+                comment=form.cleaned_data.get("comment", ""),
+                occurred_at=form.cleaned_data.get("occurred_at"),
             )
         except StockServiceError as exc:
             message = str(exc)
@@ -194,7 +196,11 @@ class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         context = super().get_context_data(**kwargs)
         context["movement"] = get_object_or_404(
             StockMovement.objects.select_related(
-                "item", "item__barcode", "destination_location", "destination_location__warehouse"
+                "item",
+                "item__barcode",
+                "destination_location",
+                "destination_location__warehouse",
+                "recipient",
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.RETURN,
@@ -307,10 +313,14 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
             responsible_label = (
                 "Who takes the item" if is_english else _("Хто взяв товар")
             )
-        elif movement.movement_type in {
-            StockMovement.MovementType.IN,
-            StockMovement.MovementType.RETURN,
-        }:
+        elif movement.movement_type == StockMovement.MovementType.RETURN:
+            operation_type = "Return item" if is_english else _("Повернення товару")
+            responsible_label = (
+                "Who returned the item"
+                if is_english
+                else _("Хто повернув товар")
+            )
+        elif movement.movement_type == StockMovement.MovementType.IN:
             operation_type = "Return item" if is_english else _("Повернення товару")
             responsible_label = (
                 "Recipient / responsible person"

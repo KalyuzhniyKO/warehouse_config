@@ -363,14 +363,23 @@ class StockIssueInterfaceTests(TestCase):
             follow=True,
         )
 
-        movement = StockMovement.objects.get(comment=self.usage_place.name)
+        movement = StockMovement.objects.get(department=self.usage_place.name)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
+        self.assertEqual(movement.recipient, self.recipient)
+        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.comment, "")
         self.assertContains(response, "Повернення виконано")
+        self.assertContains(response, "Хто повернув товар")
+        self.assertContains(response, self.recipient.name)
+        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "Нова операція повернення")
         self.assertNotContains(response, "Друкувати контрольний талон")
-        self.assertNotContains(response, reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        self.assertNotContains(
+            response, reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        )
 
     def test_stock_movement_print_page_is_read_only_and_contains_control_data(self):
         self.client.force_login(self.storekeeper)
@@ -390,7 +399,9 @@ class StockIssueInterfaceTests(TestCase):
         movement_qty = movement.qty
         balance_qty = self.balance.qty
 
-        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        response = self.client.get(
+            reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        )
         self.balance.refresh_from_db()
         movement.refresh_from_db()
 
@@ -442,7 +453,9 @@ class StockIssueInterfaceTests(TestCase):
         self.client.force_login(self.auditor)
         movement = StockMovement.objects.filter(movement_type=StockMovement.MovementType.IN).first()
 
-        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        response = self.client.get(
+            reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        )
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Контрольний талон складської операції")
@@ -725,11 +738,13 @@ class StockOperationWorkflowTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         balance = StockBalance.objects.get(item=self.item, location=return_location)
-        movement = StockMovement.objects.get(comment=self.usage_place.name)
+        movement = StockMovement.objects.get(department=self.usage_place.name)
         self.item.refresh_from_db()
         self.assertEqual(balance.qty, Decimal("7.000"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(movement.recipient, self.recipient)
+        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.comment, "")
         self.assertIsNotNone(self.item.barcode)
 
     def test_transfer_stock_ui_creates_transfer_movement(self):
@@ -876,8 +891,11 @@ class StockOperationWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         default_location = get_default_location_for_warehouse(self.warehouse)
-        movement = StockMovement.objects.get(comment=self.usage_place.name)
+        movement = StockMovement.objects.get(department=self.usage_place.name)
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
+        self.assertEqual(movement.recipient, self.recipient)
+        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.comment, "")
         self.assertEqual(movement.destination_location, default_location)
         self.assertEqual(movement.destination_location.name, DEFAULT_LOCATION_NAME)
         self.assertEqual(
@@ -1320,9 +1338,32 @@ class StockOperationWorkflowTests(TestCase):
             department="Компресорна",
         )
 
-        response = self.client.get(reverse("stock_movement_print", kwargs={"pk": movement.pk}))
+        response = self.client.get(
+            reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        )
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, "Компресорна")
+
+    def test_control_slip_shows_return_recipient_and_department(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.RETURN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            recipient=self.recipient,
+            department="Компресорна",
+            comment="",
+        )
+
+        response = self.client.get(
+            reverse("stock_movement_print", kwargs={"pk": movement.pk})
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Хто повернув товар")
+        self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Цех / місце використання")
         self.assertContains(response, "Компресорна")
 
@@ -1374,6 +1415,67 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Хто повертає товар")
         self.assertContains(response, "Цех / місце використання")
 
+    def test_receive_form_lists_only_active_usage_places_and_touch_fields(self):
+        form = StockReceiveForm()
+        choices = list(form.fields["department"].queryset)
+
+        self.assertIn("recipient", form.fields)
+        self.assertIn("department", form.fields)
+        self.assertTrue(form.fields["recipient"].required)
+        self.assertTrue(form.fields["department"].required)
+        self.assertIn(self.usage_place, choices)
+        self.assertNotIn(self.inactive_usage_place, choices)
+        self.assertEqual(
+            form.fields["department"].empty_label,
+            "Оберіть цех або місце використання",
+        )
+        self.assertEqual(
+            form.fields["qty"].widget.attrs["class"], "form-control form-control-lg"
+        )
+        self.assertEqual(
+            form.fields["recipient"].widget.attrs["class"],
+            "form-select form-select-lg",
+        )
+        self.assertEqual(
+            form.fields["department"].widget.attrs["class"],
+            "form-select form-select-lg",
+        )
+
+    def test_receive_form_requires_recipient_and_department(self):
+        form = StockReceiveForm(
+            data={
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "recipient": "",
+                "department": "",
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("recipient", form.errors)
+        self.assertIn("department", form.errors)
+
+    def test_receive_form_cleans_department_to_usage_place_name(self):
+        form = StockReceiveForm(
+            data={
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "recipient": self.recipient.pk,
+                "department": self.usage_place.pk,
+                "comment": "",
+                "occurred_at": "2026-01-15T10:00",
+            }
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["department"], "Sales")
+
     def test_receive_without_default_return_location_hides_submit(self):
         Location.objects.update(is_active=False)
 
@@ -1395,7 +1497,8 @@ class StockOperationWorkflowTests(TestCase):
             qty=Decimal("2.000"),
             destination_location=self.location,
             recipient=self.recipient,
-            comment=self.usage_place.name,
+            department=self.usage_place.name,
+            comment="",
         )
 
         response = self.client.get(reverse("stock_receive_result", args=[movement.pk]))
@@ -1404,12 +1507,59 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Повернення виконано")
         self.assertContains(response, self.item.name)
         self.assertContains(response, "2,000")
+        self.assertContains(response, "Хто повернув товар")
+        self.assertContains(response, self.recipient.name)
+        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "Нова операція повернення")
         html = response.content.decode()
         self.assertNotIn(">Склад</dt>", html)
         self.assertNotIn(">Локація</dt>", html)
         self.assertNotIn("До рухів товарів</a>", html)
+
+    def test_english_receive_result_page_has_no_ukrainian_tablet_phrases(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.RETURN,
+            item=self.item,
+            qty=Decimal("2.000"),
+            destination_location=self.location,
+            recipient=self.recipient,
+            department="Sales",
+            comment="",
+        )
+
+        response = self.client.get(f"/en/stock/receive/{movement.pk}/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Return completed", html)
+        self.assertIn("Who returned the item", html)
+        self.assertIn("Department / place of use", html)
+        self.assertIn("New return", html)
+        self.assertNotIn("Повернення виконано", html)
+        self.assertNotIn("Хто повернув товар", html)
+        self.assertNotIn("Цех / місце використання", html)
+
+    def test_english_return_control_slip_has_no_ukrainian_return_labels(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.RETURN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            recipient=self.recipient,
+            department="Sales",
+            comment="",
+        )
+
+        response = self.client.get(f"/en/stock/movements/{movement.pk}/print/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Who returned the item", html)
+        self.assertIn("Department / place of use", html)
+        self.assertNotIn("Хто повернув товар", html)
+        self.assertNotIn("Цех / місце використання", html)
 
     def test_english_receive_page_has_no_ukrainian_tablet_phrases(self):
         response = self.client.get(
