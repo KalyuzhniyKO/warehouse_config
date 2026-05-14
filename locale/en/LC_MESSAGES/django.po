@@ -2138,6 +2138,20 @@ msgstr "Return completed"
 msgid "Нова операція повернення"
 msgstr "New return"
 
+
+#: templates/core/stock_issue_result.html:9
+msgid "Товар видано зі складу"
+msgstr "Item has been issued from stock"
+
+#: templates/core/stock_receive_result.html:9
+msgid "Товар повернено на склад"
+msgstr "Item has been returned to stock"
+
+#: templates/core/stock_issue_result.html:48
+#: templates/core/stock_receive_result.html:42
+msgid "На головний екран"
+msgstr "Home"
+
 #: templates/core/stock_transfer_form.html:11
 #: templates/core/stock_transfer_form.html:24
 #: templates/core/stock_transfer_result.html:17
