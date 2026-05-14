@@ -349,7 +349,7 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
                 if is_english
                 else _("Дата і час операції")
             ),
-            "item": "Item" if is_english else _("Номенклатура"),
+            "item": "Item" if is_english else _("Товар"),
             "internal_code": "Internal code" if is_english else _("Внутрішній код"),
             "barcode": "Barcode" if is_english else _("Штрихкод"),
             "qty": "Quantity" if is_english else _("Кількість"),
@@ -377,6 +377,9 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
                 "operation_type": operation_type,
                 "location": location,
                 "warehouse": location.warehouse if location else None,
+                "is_return_movement": (
+                    movement.movement_type == StockMovement.MovementType.RETURN
+                ),
             }
         )
         return context
