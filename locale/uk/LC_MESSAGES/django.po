@@ -2263,6 +2263,15 @@ msgstr "Немає рухів за вибраними фільтрами."
 msgid "Оберіть дію"
 msgstr "Оберіть дію"
 
+
+#: templates/core/storekeeper_workplace.html:90
+msgid "Зіскануйте товар і зафіксуйте видачу зі складу."
+msgstr "Зіскануйте товар і зафіксуйте видачу зі складу."
+
+#: templates/core/storekeeper_workplace.html:101
+msgid "Зіскануйте товар і зафіксуйте повернення на склад."
+msgstr "Зіскануйте товар і зафіксуйте повернення на склад."
+
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
 msgstr "Мова"
