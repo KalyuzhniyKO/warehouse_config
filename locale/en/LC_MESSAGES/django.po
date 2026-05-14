@@ -2485,3 +2485,11 @@ msgstr "Sign in"
 
 #~ msgid "Розширене адміністрування"
 #~ msgstr "Advanced administration"
+
+#: core/views/stock_operations.py:76
+msgid "Операція вже була збережена."
+msgstr "This operation has already been saved."
+
+#: templates/core/stock_issue_form.html:94 templates/core/stock_receive_form.html:92
+msgid "Збереження..."
+msgstr "Saving..."

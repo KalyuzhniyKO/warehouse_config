@@ -1,5 +1,6 @@
 import csv
 import json
+import secrets
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -15,7 +16,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import get_language, gettext_lazy as _
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -88,6 +89,68 @@ from ..services.stock import (
 )
 
 
+SELF_SERVICE_OPERATION_TOKEN_FIELD = "operation_token"
+SELF_SERVICE_OPERATION_TOKENS_SESSION_KEY = "self_service_operation_tokens"
+SELF_SERVICE_OPERATION_TOKEN_LIMIT = 20
+
+
+class SelfServiceOperationTokenMixin:
+    duplicate_submission_message = _("Операція вже була збережена.")
+    duplicate_submission_message_en = "This operation has already been saved."
+    operation_token_field = SELF_SERVICE_OPERATION_TOKEN_FIELD
+    operation_tokens_session_key = SELF_SERVICE_OPERATION_TOKENS_SESSION_KEY
+    operation_token_limit = SELF_SERVICE_OPERATION_TOKEN_LIMIT
+    result_url_name = None
+
+    def get_operation_tokens(self):
+        return dict(self.request.session.get(self.operation_tokens_session_key, {}))
+
+    def save_operation_tokens(self, tokens):
+        while len(tokens) > self.operation_token_limit:
+            tokens.pop(next(iter(tokens)))
+        self.request.session[self.operation_tokens_session_key] = tokens
+        self.request.session.modified = True
+
+    def create_operation_token(self):
+        tokens = self.get_operation_tokens()
+        token = secrets.token_urlsafe(32)
+        tokens[token] = {"status": "pending"}
+        self.save_operation_tokens(tokens)
+        return token
+
+    def get_posted_operation_token(self):
+        return self.request.POST.get(self.operation_token_field, "").strip()
+
+    def mark_operation_token_used(self, movement):
+        token = self.get_posted_operation_token()
+        if not token:
+            return
+        tokens = self.get_operation_tokens()
+        tokens[token] = {"status": "used", "movement_pk": movement.pk}
+        self.save_operation_tokens(tokens)
+
+    def redirect_if_operation_token_used(self):
+        token = self.get_posted_operation_token()
+        if not token or self.result_url_name is None:
+            return None
+        token_data = self.get_operation_tokens().get(token) or {}
+        movement_pk = token_data.get("movement_pk")
+        if token_data.get("status") == "used" and movement_pk:
+            if get_language().startswith("en"):
+                message = self.duplicate_submission_message_en
+            else:
+                message = self.duplicate_submission_message
+            messages.info(self.request, message)
+            return redirect(self.result_url_name, pk=movement_pk)
+        return None
+
+    def get_operation_token_for_context(self, should_create):
+        if self.request.method == "POST":
+            return self.get_posted_operation_token()
+        if should_create:
+            return self.create_operation_token()
+        return ""
+
 
 def stock_operation_barcode_context(item):
     if item is None:
@@ -126,7 +189,13 @@ class BarcodePrefillMixin:
         return context
 
 
-class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin, FormView):
+class StockReceiveView(
+    LoginRequiredMixin,
+    GroupRequiredMixin,
+    BarcodePrefillMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_receive_form.html"
     form_class = StockReceiveForm
@@ -134,6 +203,7 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
     no_return_location_message = _(
         "Товар знайдено, але локацію для повернення не налаштовано."
     )
+    result_url_name = "stock_receive_result"
 
     def get_return_location(self):
         if not hasattr(self, "return_location"):
@@ -166,9 +236,16 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
         context["can_submit_receive"] = (
             self.scanned_item is not None and self.get_return_location() is not None
         )
+        context["operation_token"] = self.get_operation_token_for_context(
+            context["can_submit_receive"]
+        )
+        context["operation_token_field"] = self.operation_token_field
         return context
 
     def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
         try:
             movement = return_stock(
                 item=form.cleaned_data["item"],
@@ -184,6 +261,7 @@ class StockReceiveView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMix
             messages.error(self.request, message)
             form.add_error(None, message)
             return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
         url = reverse("stock_receive_result", kwargs={"pk": movement.pk})
         return redirect(url)
 
@@ -208,7 +286,13 @@ class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         return context
 
 
-class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin, FormView):
+class StockIssueView(
+    LoginRequiredMixin,
+    GroupRequiredMixin,
+    BarcodePrefillMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_issue_form.html"
     form_class = StockIssueForm
@@ -216,6 +300,7 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
     no_available_stock_message = _(
         "Товар знайдено, але доступного залишку для видачі немає."
     )
+    result_url_name = "stock_issue_result"
 
     def get_best_stock_balance(self):
         if not hasattr(self, "best_stock_balance"):
@@ -256,9 +341,16 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
                 and self.get_best_stock_balance() is not None
             )
         )
+        context["operation_token"] = self.get_operation_token_for_context(
+            context["show_issue_form"]
+        )
+        context["operation_token_field"] = self.operation_token_field
         return context
 
     def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
         try:
             movement = issue_stock(
                 item=form.cleaned_data["item"],
@@ -285,6 +377,7 @@ class StockIssueView(LoginRequiredMixin, GroupRequiredMixin, BarcodePrefillMixin
             messages.error(self.request, message)
             form.add_error(None, message)
             return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
         return redirect("stock_issue_result", pk=movement.pk)
 
 
