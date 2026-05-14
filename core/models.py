@@ -79,6 +79,19 @@ class Category(ActiveModel):
         return self.name
 
 
+class UsagePlace(ActiveModel):
+    name = models.CharField(_("name"), max_length=200, unique=True)
+    note = models.TextField(_("note"), blank=True)
+
+    class Meta:
+        verbose_name = _("Цех / місце використання")
+        verbose_name_plural = _("Цехи / місця використання")
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Recipient(ActiveModel):
     name = models.CharField(_("name"), max_length=200)
     contact_name = models.CharField(_("contact name"), max_length=150, blank=True)
