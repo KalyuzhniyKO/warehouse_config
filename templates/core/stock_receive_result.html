@@ -1,16 +1,14 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Результат приходу" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Повернення виконано" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% trans "Прихід товару збережено" %}</h1>
+<h1 class="mb-3">{% trans "Повернення виконано" %}</h1>
 <div class="card content-card"><div class="card-body">
 <dl class="row">
-<dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
-<dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
-<dt class="col-sm-3">{% trans "Склад" %}</dt><dd class="col-sm-9">{{ movement.destination_location.warehouse }}</dd>
-<dt class="col-sm-3">{% trans "Локація" %}</dt><dd class="col-sm-9">{{ movement.destination_location }}</dd>
-<dt class="col-sm-3">{% trans "Штрихкод" %}</dt><dd class="col-sm-9">{{ movement.item.barcode.barcode }}</dd>
+<dt class="col-sm-4">{% trans "Товар" %}</dt><dd class="col-sm-8">{{ movement.item }}</dd>
+<dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty }}</dd>
+<dt class="col-sm-4">{% trans "Дата і час операції" %}</dt><dd class="col-sm-8">{{ movement.occurred_at }}</dd>
 </dl>
-<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друкувати контрольний талон" %}</a><a class="btn btn-outline-primary" href="{% url 'item_label_print' movement.item.pk %}">{% trans "Надрукувати етикетку" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_receive' %}">{% trans "Новий прихід" %}</a><a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a><a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a></div>
+<div class="d-grid gap-2 d-sm-flex"><a class="btn btn-primary btn-lg" href="{% url 'stock_receive' %}">{% trans "Нова операція повернення" %}</a></div>
 </div></div>
 {% endblock %}

@@ -97,9 +97,70 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
 
 
 class StockReceiveForm(StockOperationForm):
+    recipient = forms.ModelChoiceField(
+        label=_("Хто повертає товар"),
+        queryset=Recipient.objects.none(),
+        required=True,
+        error_messages={
+            "required": _("Оберіть, хто повертає товар."),
+        },
+    )
+    department = forms.ModelChoiceField(
+        label=_("Цех / місце використання"),
+        queryset=UsagePlace.objects.none(),
+        required=True,
+        empty_label=_("Оберіть цех або місце використання"),
+        error_messages={
+            "required": _("Оберіть цех або місце використання."),
+        },
+    )
     print_label = forms.BooleanField(
         label=_("Надрукувати етикетку після збереження"), required=False
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        usage_places = UsagePlace.objects.filter(is_active=True).order_by("name")
+        self.fields["department"].queryset = usage_places
+        if not usage_places.exists():
+            self.fields["department"].error_messages["required"] = _(
+                "Налаштуйте хоча б одне активне місце використання."
+            )
+        self.fields["recipient"].queryset = Recipient.objects.filter(
+            is_active=True
+        ).order_by("name")
+        for field_name in [
+            "item",
+            "warehouse",
+            "location",
+            "comment",
+            "occurred_at",
+            "print_label",
+        ]:
+            if field_name in self.fields:
+                self.fields[field_name].widget = forms.HiddenInput()
+        self.fields["qty"].widget.attrs["class"] = "form-control form-control-lg"
+        self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
+        self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
+        self.order_fields(
+            [
+                "item",
+                "warehouse",
+                "location",
+                "qty",
+                "recipient",
+                "department",
+                "comment",
+                "occurred_at",
+                "print_label",
+            ]
+        )
+
+    def clean_department(self):
+        usage_place = self.cleaned_data.get("department")
+        if usage_place:
+            return usage_place.name
+        return ""
 
 
 class StockIssueForm(StockOperationForm):

@@ -9,26 +9,30 @@
         <form class="row g-2 align-items-end" method="get" action="{% url 'stock_receive' %}">
             <div class="col-12 col-lg">
                 <label class="form-label fw-semibold" for="receive-barcode-input">{% trans "Сканувати штрихкод" %}</label>
-                <input id="receive-barcode-input" class="form-control form-control-lg" type="text" name="barcode" value="{{ barcode_query }}" autofocus autocomplete="off" placeholder="{% trans 'Сканувати штрихкод' %}">
+                <input id="receive-barcode-input" class="form-control form-control-lg" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Сканувати штрихкод' %}">
             </div>
             <div class="col-12 col-lg-auto">
                 <button class="btn btn-primary btn-lg w-100" type="submit">{% translate "Знайти" context "barcode action" %}</button>
             </div>
         </form>
+        {% if not barcode_query %}
+            <div class="alert alert-info mt-3 mb-0" role="status">
+                {% trans "Відскануйте штрихкод товару, щоб продовжити." %}
+            </div>
+        {% endif %}
         {% if scanned_item_context %}
             <div class="alert alert-success mt-3 mb-0" role="status">
-                <div class="fw-semibold">{{ scanned_item_context.item.name }}</div>
+                <div class="fw-semibold">{% trans "Знайдений товар" %}: {{ scanned_item_context.item.name }}</div>
                 <div>{% trans "Внутрішній код" %}: {{ scanned_item_context.item.internal_code|default:"—" }}</div>
                 <div>{% trans "Штрихкод" %}: {{ scanned_item_context.item.barcode_value|default:"—" }}</div>
-                <div>{% trans "Доступний залишок" %}: {{ scanned_item_context.available_qty }}</div>
             </div>
         {% endif %}
     </div>
 </div>
 
+{% if can_submit_receive %}
 <form method="post" class="card content-card"><div class="card-body">
 {% csrf_token %}
-{% include "core/includes/locations_disabled_notice.html" %}
 {% if form.non_field_errors %}
     <div class="alert alert-danger border-danger fw-semibold" role="alert">
         {% for error in form.non_field_errors %}
@@ -36,29 +40,23 @@
         {% endfor %}
     </div>
 {% endif %}
+{% for field in form %}
+    {% if field.is_hidden %}{{ field }}{% endif %}
+{% endfor %}
 <div class="row g-3">
     {% for field in form %}
-        {% if field.name == 'item' or field.name == 'warehouse' or field.name == 'location' or field.name == 'qty' %}
-            <div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}<div class="text-danger small">{{ field.errors }}</div></div>
+        {% if field.name == 'qty' or field.name == 'recipient' or field.name == 'department' %}
+            <div class="col-12 col-lg-6">
+                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <div class="text-danger small">{{ field.errors }}</div>
+            </div>
         {% endif %}
     {% endfor %}
 </div>
-<div class="accordion mt-3" id="receive-extra-fields">
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="receive-extra-heading">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#receive-extra-collapse" aria-expanded="false" aria-controls="receive-extra-collapse">{% trans "Додаткові поля" %}</button>
-        </h2>
-        <div id="receive-extra-collapse" class="accordion-collapse collapse" aria-labelledby="receive-extra-heading" data-bs-parent="#receive-extra-fields">
-            <div class="accordion-body"><div class="row g-3">
-                {% for field in form %}
-                    {% if field.name != 'item' and field.name != 'warehouse' and field.name != 'location' and field.name != 'qty' %}
-                        <div class="col-md-6"><label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.field.widget.input_type == 'checkbox' %}<div class="form-check">{{ field }}</div>{% else %}{{ field }}{% endif %}<div class="text-danger small">{{ field.errors }}</div></div>
-                    {% endif %}
-                {% endfor %}
-            </div></div>
-        </div>
-    </div>
+<div class="mt-4 d-grid">
+    <button class="btn btn-primary btn-lg w-100" type="submit">{% trans "Повернути товар" %}</button>
 </div>
-<div class="mt-4 d-flex gap-2"><button class="btn btn-primary" type="submit">{% trans "Зберегти прихід" %}</button></div>
 </div></form>
+{% endif %}
 {% endblock %}

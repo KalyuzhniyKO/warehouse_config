@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 
-from core.models import StockBalance, StockMovement
+from core.models import Location, StockBalance, StockMovement
 from core.services.barcodes import ensure_item_barcode
 
 QTY_QUANT = Decimal("0.001")
@@ -25,6 +25,35 @@ def find_best_stock_balance_for_issue(item):
         .order_by("-qty", "location__warehouse__name", "location__name", "pk")
         .first()
     )
+
+
+def find_default_stock_return_location():
+    """Return the default active stock location for self-service returns."""
+    locations = Location.objects.filter(
+        is_active=True, warehouse__is_active=True
+    ).select_related("warehouse")
+    preferred_names = {
+        "основна локація",
+        "основная локация",
+        "main location",
+        "default location",
+    }
+    preferred_location = (
+        locations.filter(name__in=preferred_names)
+        .order_by("warehouse__name", "name", "pk")
+        .first()
+    )
+    if preferred_location is not None:
+        return preferred_location
+    for preferred_name in preferred_names:
+        preferred_location = (
+            locations.filter(name__iexact=preferred_name)
+            .order_by("warehouse__name", "name", "pk")
+            .first()
+        )
+        if preferred_location is not None:
+            return preferred_location
+    return locations.order_by("warehouse__name", "name", "pk").first()
 
 
 class StockServiceError(ValueError):
