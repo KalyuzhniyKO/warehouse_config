@@ -2393,3 +2393,11 @@ msgstr "Log in"
 
 #~ msgid "Розширене адміністрування"
 #~ msgstr "Advanced administration"
+
+#: core/models.py
+msgid "Цехи / місця використання"
+msgstr "Departments / places of use"
+
+#: core/models.py
+msgid "note"
+msgstr "note"

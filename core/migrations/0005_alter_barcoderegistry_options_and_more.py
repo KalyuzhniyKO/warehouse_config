@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ("ITM", "Номенклатура"),
                     ("WH", "Склад"),
-                    ("RCK", "rack"),
+                    ("RCK", "Стелаж"),
                     ("LOC", "Локація"),
                 ],
                 max_length=3,
@@ -136,7 +136,7 @@ class Migration(migrations.Migration):
                 choices=[
                     ("ITM", "Номенклатура"),
                     ("WH", "Склад"),
-                    ("RCK", "rack"),
+                    ("RCK", "Стелаж"),
                     ("LOC", "Локація"),
                 ],
                 max_length=3,
@@ -170,7 +170,7 @@ class Migration(migrations.Migration):
             model_name="location",
             name="location_type",
             field=models.CharField(
-                choices=[("location", "Локація"), ("rack", "rack")],
+                choices=[("location", "Локація"), ("rack", "Стелаж")],
                 default="location",
                 max_length=20,
                 verbose_name="location type",
