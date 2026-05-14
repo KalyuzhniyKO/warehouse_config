@@ -1224,6 +1224,60 @@ class StockOperationWorkflowTests(TestCase):
         )
         self.assertContains(response, "Дані для видачі визначено автоматично.")
 
+
+    def test_issue_get_barcode_contains_operation_token_and_disable_submit_attrs(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+
+        response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["operation_token"])
+        self.assertIn('name="operation_token"', html)
+        self.assertIn('value="%s"' % response.context["operation_token"], html)
+        self.assertIn('data-disable-on-submit', html)
+        self.assertIn('data-submit-button', html)
+        self.assertIn('data-saving-label="Збереження..."', html)
+
+    def test_issue_duplicate_post_with_same_operation_token_redirects_without_second_movement(self):
+        StockBalance.objects.create(
+            item=self.item, location=self.location, qty=Decimal("7.000")
+        )
+        get_response = self.client.get(
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}'
+        )
+        form = get_response.context["form"]
+        token = get_response.context["operation_token"]
+        movement_count = StockMovement.objects.count()
+        data = {
+            "operation_token": token,
+            "item": form.initial["item"].pk,
+            "warehouse": form.initial["warehouse"].pk,
+            "location": form.initial["location"].pk,
+            "qty": "2.000",
+            "issue_reason": form.initial["issue_reason"],
+            "department": self.usage_place.pk,
+            "recipient": self.recipient.pk,
+            "document_number": "",
+            "comment": "",
+            "occurred_at": form.initial["occurred_at"],
+        }
+
+        first_response = self.client.post(reverse("stock_issue"), data)
+        second_response = self.client.post(reverse("stock_issue"), data)
+
+        self.assertEqual(first_response.status_code, 302)
+        self.assertEqual(second_response.status_code, 302)
+        self.assertEqual(second_response["Location"], first_response["Location"])
+        self.assertEqual(
+            StockMovement.objects.count(),
+            movement_count + 1,
+        )
+
     def test_issue_get_barcode_chooses_largest_positive_balance(self):
         StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("7.000")
@@ -1554,9 +1608,25 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn('data-qty-decrement', html)
         self.assertIn('data-qty-increment', html)
         self.assertIn('inputmode="numeric"', html)
+        self.assertIn('data-saving-label="Saving..."', html)
+        self.assertNotIn("Збереження...", html)
+        self.assertNotIn("Операція вже була збережена.", html)
         self.assertNotIn("Сканування товару", html)
         self.assertNotIn("Цех / місце використання", html)
         self.assertNotIn("Коментар", html)
+
+
+    def test_english_receive_page_has_no_ukrainian_new_submit_messages(self):
+        response = self.client.get(
+            f'/en/stock/receive/?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('name="operation_token"', html)
+        self.assertIn('data-saving-label="Saving..."', html)
+        self.assertNotIn("Збереження...", html)
+        self.assertNotIn("Операція вже була збережена.", html)
 
     def test_receive_get_barcode_prefills_item(self):
         response = self.client.get(
@@ -1574,6 +1644,51 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, self.item.name)
         self.assertContains(response, self.item.barcode.barcode)
         self.assertContains(response, "Дані для повернення визначено автоматично.")
+
+
+    def test_receive_get_barcode_contains_operation_token_and_disable_submit_attrs(self):
+        response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["operation_token"])
+        self.assertIn('name="operation_token"', html)
+        self.assertIn('value="%s"' % response.context["operation_token"], html)
+        self.assertIn('data-disable-on-submit', html)
+        self.assertIn('data-submit-button', html)
+        self.assertIn('data-saving-label="Збереження..."', html)
+
+    def test_receive_duplicate_post_with_same_operation_token_redirects_without_second_movement(self):
+        get_response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+        form = get_response.context["form"]
+        token = get_response.context["operation_token"]
+        movement_count = StockMovement.objects.count()
+        data = {
+            "operation_token": token,
+            "item": form.initial["item"].pk,
+            "warehouse": form.initial["warehouse"].pk,
+            "location": form.initial["location"].pk,
+            "qty": "2.000",
+            "recipient": self.recipient.pk,
+            "department": self.usage_place.pk,
+            "comment": "",
+            "occurred_at": form.initial["occurred_at"],
+        }
+
+        first_response = self.client.post(reverse("stock_receive"), data)
+        second_response = self.client.post(reverse("stock_receive"), data)
+
+        self.assertEqual(first_response.status_code, 302)
+        self.assertEqual(second_response.status_code, 302)
+        self.assertEqual(second_response["Location"], first_response["Location"])
+        self.assertEqual(
+            StockMovement.objects.count(),
+            movement_count + 1,
+        )
 
     def test_receive_form_hides_manual_warehouse_location_and_service_fields(self):
         response = self.client.get(

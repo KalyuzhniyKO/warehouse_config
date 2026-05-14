@@ -2,6 +2,7 @@
 {% load i18n %}
 {% block title %}{% trans "Видача товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
+{% get_current_language as LANGUAGE_CODE %}
 <h1 class="mb-3">{% trans "Видача товару" %}</h1>
 
 <div class="card content-card shadow-sm rounded-4 mb-4">
@@ -55,8 +56,11 @@
 </div>
 
 {% if show_issue_form %}
-<form method="post" class="card content-card"><div class="card-body">
+<form method="post" class="card content-card" data-disable-on-submit><div class="card-body">
 {% csrf_token %}
+{% if operation_token %}
+    <input type="hidden" name="{{ operation_token_field }}" value="{{ operation_token }}">
+{% endif %}
 {% if form.non_field_errors %}
     <div class="alert alert-danger border-danger fw-semibold" role="alert">
         {% for error in form.non_field_errors %}
@@ -87,11 +91,25 @@
         {% endif %}
     {% endfor %}
 </div>
-<div class="mt-4 d-grid"><button class="btn btn-primary btn-lg" type="submit">{% trans "Видати товар" %}</button></div>
+<div class="mt-4 d-grid"><button class="btn btn-primary btn-lg" type="submit" data-submit-button data-saving-label="{% if LANGUAGE_CODE == 'en' %}Saving...{% else %}{% trans 'Збереження...' %}{% endif %}">{% trans "Видати товар" %}</button></div>
 </div></form>
 {% endif %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("form[data-disable-on-submit]").forEach(function (form) {
+            form.addEventListener("submit", function () {
+                var submitButton = form.querySelector("[data-submit-button]");
+
+                if (!submitButton || submitButton.disabled) {
+                    return;
+                }
+
+                submitButton.dataset.originalLabel = submitButton.textContent;
+                submitButton.textContent = submitButton.dataset.savingLabel;
+                submitButton.disabled = true;
+            });
+        });
+
         document.querySelectorAll("[data-qty-stepper]").forEach(function (stepper) {
             var input = stepper.querySelector("input");
             var decrement = stepper.querySelector("[data-qty-decrement]");
