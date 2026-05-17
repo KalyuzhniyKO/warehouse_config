@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import IntegrityError, models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -22,7 +22,14 @@ class SystemSettings(models.Model):
         instance = cls.objects.order_by("id").first()
         if instance is not None:
             return instance
-        return cls.objects.create(use_locations=True)
+
+        try:
+            return cls.objects.create(pk=1, use_locations=True)
+        except IntegrityError:
+            instance = cls.objects.order_by("id").first()
+            if instance is None:
+                raise
+            return instance
 
     def __str__(self):
         return str(_("Налаштування системи"))

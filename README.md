@@ -262,6 +262,7 @@ source venv/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 cp .env.example .env
+# For local development, edit .env and set DJANGO_DEBUG=True explicitly.
 python manage.py check
 python manage.py migrate
 python manage.py test
@@ -293,7 +294,7 @@ python manage.py runserver 0.0.0.0:8000
 python manage.py seed_demo_data --clear-demo --clear-users
 ```
 
-Для SQLite у локальному `.env` можна використати такий приклад:
+`DJANGO_DEBUG` має production-safe default `False`; для локальної розробки встановлюйте `DJANGO_DEBUG=True` явно. Для SQLite у локальному `.env` можна використати такий приклад:
 
 ```env
 DJANGO_SECRET_KEY=dev-only-secret-key-change-me
