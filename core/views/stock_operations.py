@@ -152,6 +152,19 @@ class SelfServiceOperationTokenMixin:
         return ""
 
 
+def is_self_service_storekeeper(user):
+    is_storekeeper = user.groups.filter(name="Комірник").exists()
+    is_warehouse_admin = user.groups.filter(name="Адміністратор складу").exists()
+    return is_storekeeper and not user.is_superuser and not is_warehouse_admin
+
+
+class SelfServiceShellContextMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_storekeeper_workplace"] = is_self_service_storekeeper(self.request.user)
+        return context
+
+
 def stock_operation_barcode_context(item):
     if item is None:
         return None
@@ -191,6 +204,7 @@ class BarcodePrefillMixin:
 
 class StockReceiveView(
     LoginRequiredMixin,
+    SelfServiceShellContextMixin,
     GroupRequiredMixin,
     BarcodePrefillMixin,
     SelfServiceOperationTokenMixin,
@@ -266,7 +280,9 @@ class StockReceiveView(
         return redirect(url)
 
 
-class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class StockReceiveResultView(
+    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_receive_result.html"
 
@@ -288,6 +304,7 @@ class StockReceiveResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
 
 class StockIssueView(
     LoginRequiredMixin,
+    SelfServiceShellContextMixin,
     GroupRequiredMixin,
     BarcodePrefillMixin,
     SelfServiceOperationTokenMixin,
@@ -381,7 +398,9 @@ class StockIssueView(
         return redirect("stock_issue_result", pk=movement.pk)
 
 
-class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class StockMovementPrintView(
+    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
+):
     group_names = STOCK_VIEW_GROUPS
     template_name = "core/stock_movement_print.html"
 
@@ -447,7 +466,9 @@ class StockMovementPrintView(LoginRequiredMixin, GroupRequiredMixin, TemplateVie
         return context
 
 
-class StockIssueResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class StockIssueResultView(
+    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_issue_result.html"
 

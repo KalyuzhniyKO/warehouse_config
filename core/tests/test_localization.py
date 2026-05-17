@@ -225,9 +225,9 @@ class DashboardLocalizationTests(TestCase):
         for phrase in [
             "Інвентаризація",
             "Аналітика",
-            "Номенклатура",
+            "Товари / матеріали",
             "Користувачі",
-            "Рухи товарів",
+            "Журнал операцій",
             "Довідники",
             "Керування",
             "Допомога",
@@ -257,7 +257,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Навігація", html)
         self.assertIn("Інвентаризація", html)
-        self.assertIn("Номенклатура", html)
+        self.assertIn("Товари / матеріали", html)
         self.assertIn("Керування", html)
 
     def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
@@ -305,15 +305,15 @@ class DashboardLocalizationTests(TestCase):
 
         for phrase in [
             "Головна",
-            "Складські операції",
+            "Операції складу",
             "Прихід товару",
             "Видача товару",
             "Переміщення товару",
             "Списання товару",
             "Початкові залишки",
             "Інвентаризація",
-            "Залишки",
-            "Рухи товарів",
+            "Залишки на складі",
+            "Журнал операцій",
         ]:
             self.assertIn(phrase, html)
         for phrase in [
@@ -323,7 +323,7 @@ class DashboardLocalizationTests(TestCase):
             "Initial balances",
             "Stock transfer",
             "Stock write-off",
-            "Stock movements",
+            "Operation journal",
             "Open",
         ]:
             self.assertNotIn(phrase, html)
@@ -344,19 +344,19 @@ class DashboardLocalizationTests(TestCase):
             "Initial balances",
             "Inventory count",
             "Stock balances",
-            "Stock movements",
+            "Operation journal",
             "Open",
         ]:
             self.assertIn(phrase, html)
         for phrase in [
             "Головна",
-            "Складські операції",
+            "Операції складу",
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",
             "Переміщення товару",
             "Списання товару",
-            "Рухи товарів",
+            "Журнал операцій",
             "Відкрити",
         ]:
             self.assertNotIn(phrase, html)
@@ -365,14 +365,14 @@ class DashboardLocalizationTests(TestCase):
         forbidden_phrases = [
             "Головна",
             "Навігація",
-            "Складські операції",
+            "Операції складу",
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",
             "Переміщення товару",
             "Списання товару",
-            "Залишки",
-            "Рухи товарів",
+            "Залишки на складі",
+            "Журнал операцій",
             "Довідники",
             "Етикетки",
             "Адміністрування",
@@ -445,19 +445,19 @@ class DashboardLocalizationTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Warehouse administration", html)
+        self.assertIn("Warehouse management", html)
         self.assertIn("Directories", html)
         self.assertIn("Users and roles", html)
-        self.assertIn("System settings", html)
+        self.assertIn("Warehouse settings", html)
         for phrase in [
-            "Адміністрування складу",
+            "Керування складом",
             "Керуйте довідниками",
             "Довідники",
-            "Номенклатура",
+            "Товари / матеріали",
             "Склади",
             "Локації",
             "Користувачі та ролі",
-            "Налаштування системи",
+            "Налаштування складу",
             "Довідка адміністратора",
             "Відкрити",
         ]:
@@ -487,7 +487,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("YANTOS", html)
         self.assertIn("Warehouse operations", html)
         for phrase in [
-            "Складські операції",
+            "Операції складу",
             "Прихід товару",
             "Видача товару",
             "Початкові залишки",

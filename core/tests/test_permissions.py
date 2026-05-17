@@ -223,7 +223,7 @@ class DashboardPermissionTests(TestCase):
     def test_admin_dashboard_contains_required_groups_and_operations(self):
         response = self.dashboard_for(self.admin)
 
-        self.assertContains(response, "Складські операції")
+        self.assertContains(response, "Операції складу")
         self.assertContains(response, "Контроль")
         self.assertContains(response, "Довідники")
         for label in [
@@ -258,12 +258,12 @@ class DashboardPermissionTests(TestCase):
             "Шаблони етикеток",
             "Аналітика",
             "Керування",
-            "Отримувачі",
+            "Працівники / отримувачі",
             "Довідники",
-            "Рухи товарів",
-            "Залишки",
+            "Журнал операцій",
+            "Залишки на складі",
             "Інвентаризація",
-            "Складські налаштування",
+            "Налаштування складу",
             "Початкові залишки",
             "Знайти товар",
             "Відкрити",
@@ -315,13 +315,14 @@ class DashboardPermissionTests(TestCase):
         for label in ["Перемістити товар", "Списати товар", "Прийняти товар", "Видача товару", "Повернення товару"]:
             self.assertNotIn(label, main_html)
 
-    def test_storekeeper_internal_page_keeps_sidebar(self):
+    def test_storekeeper_self_service_receive_page_hides_sidebar(self):
         response = self.dashboard_for(self.storekeeper, "/uk/stock/receive/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Навігація")
-        self.assertIn('<main class="col-lg-10">', html)
+        self.assertNotContains(response, "Навігація")
+        self.assertIn('<main class="col-12">', html)
+        self.assertNotIn('<main class="col-lg-10">', html)
 
     def test_warehouse_admin_keeps_full_dashboard(self):
         response = self.dashboard_for(self.admin, "/uk/")
@@ -341,13 +342,13 @@ class DashboardPermissionTests(TestCase):
 
         for label in ["Прихід товару", "Видача товару", "Переміщення товару", "Початкові залишки"]:
             self.assertNotContains(response, label)
-        for label in ["Залишки", "Рухи товарів", "Інвентаризація"]:
+        for label in ["Залишки на складі", "Журнал операцій", "Інвентаризація"]:
             self.assertContains(response, label)
 
     def test_storekeeper_sidebar_hides_recipients(self):
         response = self.dashboard_for(self.storekeeper)
 
-        self.assertNotContains(response, "Отримувачі")
+        self.assertNotContains(response, "Працівники / отримувачі")
         self.assertNotContains(response, "Довідники")
 
     def test_auditor_sidebar_hides_create_operations(self):
