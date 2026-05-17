@@ -2363,8 +2363,6 @@ msgstr "Sign in"
 #~ msgid "Перевірити залишки"
 #~ msgstr "Check stock"
 
-#~ msgid "Керування складом"
-#~ msgstr "Warehouse management"
 
 #~ msgid ""
 #~ "Операційна панель для адміністрування складу, аналітики та довідників."
@@ -2493,3 +2491,84 @@ msgstr "This operation has already been saved."
 #: templates/core/stock_issue_form.html:94 templates/core/stock_receive_form.html:92
 msgid "Збереження..."
 msgstr "Saving..."
+
+msgid "Працівники / отримувачі"
+msgstr "Employees / recipients"
+
+msgid "Створити працівника / отримувача"
+msgstr "Create employee / recipient"
+
+msgid "Редагувати працівника / отримувача"
+msgstr "Edit employee / recipient"
+
+msgid "Архівувати працівника / отримувача"
+msgstr "Archive employee / recipient"
+
+msgid "Товари / матеріали"
+msgstr "Items / materials"
+
+msgid "Створити товар / матеріал"
+msgstr "Create item / material"
+
+msgid "Редагувати товар / матеріал"
+msgstr "Edit item / material"
+
+msgid "Архівувати товар / матеріал"
+msgstr "Archive item / material"
+
+msgid "Журнал операцій"
+msgstr "Operation journal"
+
+msgid "Операції складу"
+msgstr "Warehouse operations"
+
+msgid "Залишки на складі"
+msgstr "Stock balances"
+
+msgid "Налаштування складу"
+msgstr "Warehouse settings"
+
+msgid "Керуйте товарами, працівниками, залишками, журналом операцій і налаштуваннями складу."
+msgstr "Manage items, employees, stock balances, the operation journal, and warehouse settings."
+
+msgid "Номенклатура товарів і матеріалів, їхні коди, штрихкоди та облікові дані."
+msgstr "Item and material catalog with codes, barcodes, and accounting data."
+
+msgid "Групування товарів і матеріалів для швидкої навігації."
+msgstr "Groups for quick navigation across items and materials."
+
+msgid "Люди або підрозділи, які беруть чи повертають товар у self-service процесі."
+msgstr "People or departments that take or return items in the self-service process."
+
+msgid "Поточні залишки товарів і матеріалів по складах і локаціях."
+msgstr "Current item and material balances by warehouse and location."
+
+msgid "Журнал операцій складу: взяття, повернення, приходи, переміщення та списання."
+msgstr "Warehouse operation journal: takes, returns, receipts, transfers, and write-offs."
+
+msgid "Параметри складу для режиму локацій та щоденної роботи."
+msgstr "Warehouse parameters for location mode and daily work."
+
+msgid "Товари / матеріали — це номенклатура складу; Працівники / отримувачі — люди або підрозділи, які беруть чи повертають товар; Місця використання — цех, дільниця або місце фактичного використання."
+msgstr "Items / materials are the warehouse catalog; Employees / recipients are people or departments that take or return items; Usage places are the shop, area, or actual place of use."
+
+msgid "Номенклатура товарів і матеріалів, які обліковуються на складі."
+msgstr "Catalog of items and materials tracked in the warehouse."
+
+msgid "Групи для швидкої навігації по товарах і матеріалах."
+msgstr "Groups for quick navigation across items and materials."
+
+msgid "Одиниці обліку для товарів, матеріалів і складських операцій."
+msgstr "Units of measure for items, materials, and warehouse operations."
+
+msgid "Склади, де ведеться облік залишків."
+msgstr "Warehouses where stock balances are tracked."
+
+msgid "Люди або підрозділи, які беруть чи повертають товар."
+msgstr "People or departments that take or return items."
+
+msgid "Перегляньте журнал операцій складу."
+msgstr "Review the warehouse operation journal."
+
+msgid "Керування складом"
+msgstr "Warehouse management"

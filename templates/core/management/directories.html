@@ -2,10 +2,11 @@
 {% load i18n %}
 {% block title %}{% trans "Довідники" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="h3 mb-4">{% trans "Довідники" %}</h1>
+<h1 class="h3 mb-2">{% trans "Довідники" %}</h1>
+<p class="text-muted mb-4">{% trans "Товари / матеріали — це номенклатура складу; Працівники / отримувачі — люди або підрозділи, які беруть чи повертають товар; Місця використання — цех, дільниця або місце фактичного використання." %}</p>
 <div class="row g-3">
     {% for directory in directories %}
-        <div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{{ directory.url }}"><div class="card-body"><h2 class="h5">{{ directory.title }}</h2><div class="text-muted">{% trans "Записів" %}: {{ directory.count }}</div></div></a></div>
+        <div class="col-md-4"><a class="card content-card text-decoration-none h-100" href="{{ directory.url }}"><div class="card-body"><h2 class="h5">{{ directory.title }}</h2><p class="text-muted mb-2">{{ directory.description }}</p><div class="text-muted">{% trans "Записів" %}: {{ directory.count }}</div></div></a></div>
     {% endfor %}
 </div>
 {% endblock %}

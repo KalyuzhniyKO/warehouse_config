@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Адміністрування складу" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Керування складом" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-1">{% trans "Адміністрування складу" %}</h1>
-        <p class="text-muted mb-0">{% trans "Керуйте довідниками, користувачами, етикетками та налаштуваннями системи." %}</p>
+        <h1 class="h3 mb-1">{% trans "Керування складом" %}</h1>
+        <p class="text-muted mb-0">{% trans "Керуйте товарами, працівниками, залишками, журналом операцій і налаштуваннями складу." %}</p>
     </div>
 </div>
 
@@ -19,10 +19,10 @@
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <div class="d-flex align-items-start justify-content-between gap-2">
-                        <h3 class="h6 mb-0">📦 {% trans "Номенклатура" %}</h3>
+                        <h3 class="h6 mb-0">📦 {% trans "Товари / матеріали" %}</h3>
                         <span class="badge text-bg-light">{{ counts.items|default:0 }}</span>
                     </div>
-                    <p class="text-muted small mb-2">{% trans "Товари, коди, штрихкоди та основні облікові дані." %}</p>
+                    <p class="text-muted small mb-2">{% trans "Номенклатура товарів і матеріалів, їхні коди, штрихкоди та облікові дані." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">🗂️ {% trans "Категорії" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Групування номенклатури для швидкої навігації." %}</p>
+                    <p class="text-muted small mb-2">{% trans "Групування товарів і матеріалів для швидкої навігації." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'category_list' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>
@@ -72,8 +72,8 @@
         <div class="col-sm-6 col-xl-4">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">👥 {% trans "Отримувачі" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Підрозділи, клієнти або інші отримувачі видачі." %}</p>
+                    <h3 class="h6 mb-0">👥 {% trans "Працівники / отримувачі" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Люди або підрозділи, які беруть чи повертають товар у self-service процесі." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'recipient_list' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>
@@ -134,8 +134,8 @@
         <div class="col-sm-6 col-xl-4">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">📊 {% trans "Залишки" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Поточні залишки товарів по складах і локаціях." %}</p>
+                    <h3 class="h6 mb-0">📊 {% trans "Залишки на складі" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Поточні залишки товарів і матеріалів по складах і локаціях." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>
@@ -143,8 +143,8 @@
         <div class="col-sm-6 col-xl-4">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">🔁 {% trans "Рухи товарів" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Журнал приходів, видач, переміщень і списань." %}</p>
+                    <h3 class="h6 mb-0">🔁 {% trans "Журнал операцій" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Журнал операцій складу: взяття, повернення, приходи, переміщення та списання." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'movement_list' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>
@@ -170,8 +170,8 @@
         <div class="col-sm-6 col-xl-4">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">⚙️ {% trans "Налаштування системи" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Службові параметри та адміністративні налаштування." %}</p>
+                    <h3 class="h6 mb-0">⚙️ {% trans "Налаштування складу" %}</h3>
+                    <p class="text-muted small mb-2">{% trans "Параметри складу для режиму локацій та щоденної роботи." %}</p>
                     <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_settings' %}">{% trans "Відкрити" %}</a>
                 </div>
             </div>

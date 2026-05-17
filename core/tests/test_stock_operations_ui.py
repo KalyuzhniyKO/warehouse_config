@@ -193,6 +193,95 @@ class StockIssueInterfaceTests(TestCase):
             ),
         )
 
+
+    def assert_self_service_shell(self, response):
+        html = response.content.decode()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<main class="col-12">', html)
+        self.assertNotIn('<aside class="col-lg-2 d-none d-lg-block">', html)
+        self.assertNotIn('class="sidebar-link', html)
+        self.assertNotIn('id="mainNavbar"', html)
+        self.assertNotIn('navbar-toggler', html)
+        for href in [
+            reverse("stock_transfer"),
+            reverse("stock_writeoff"),
+            reverse("stock_initial"),
+            reverse("inventory_list"),
+            reverse("stockbalance_list"),
+            reverse("movement_list"),
+            reverse("item_list"),
+            reverse("category_list"),
+            reverse("unit_list"),
+            reverse("warehouse_list"),
+            reverse("location_list"),
+            reverse("recipient_list"),
+            reverse("printer_list"),
+            reverse("labeltemplate_list"),
+            reverse("management_dashboard"),
+        ]:
+            self.assertNotIn(f'href="{href}"', html)
+
+    def test_storekeeper_self_service_stock_pages_hide_sidebar_and_admin_links(self):
+        self.client.force_login(self.storekeeper)
+        out_movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            recipient=self.recipient,
+            department=self.usage_place.name,
+        )
+        return_movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.RETURN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            recipient=self.recipient,
+            department=self.usage_place.name,
+        )
+        pages = [
+            reverse("dashboard"),
+            reverse("stock_issue"),
+            reverse("stock_receive"),
+            reverse("stock_issue_result", kwargs={"pk": out_movement.pk}),
+            reverse("stock_receive_result", kwargs={"pk": return_movement.pk}),
+        ]
+        for path in pages:
+            with self.subTest(path=path):
+                self.assert_self_service_shell(self.client.get(path))
+
+        print_response = self.client.get(
+            reverse("stock_movement_print", kwargs={"pk": out_movement.pk})
+        )
+        print_html = print_response.content.decode()
+        self.assertEqual(print_response.status_code, 200)
+        self.assertNotIn('class="sidebar-link', print_html)
+        self.assertNotIn("Навігація", print_html)
+        self.assertNotIn(reverse("management_dashboard"), print_html)
+
+    def test_storekeeper_tablet_issue_and_receive_controls_remain_touch_friendly(self):
+        self.client.force_login(self.storekeeper)
+        for url_name in ["stock_issue", "stock_receive"]:
+            with self.subTest(url_name=url_name):
+                response = self.client.get(
+                    f'{reverse(url_name)}?barcode={self.item.barcode.barcode}'
+                )
+                html = response.content.decode()
+
+                self.assertEqual(response.status_code, 200)
+                self.assertIn('name="barcode"', html)
+                self.assertIn('autocomplete="off"', html)
+                self.assertNotIn('autofocus', html)
+                self.assertIn('data-qty-stepper', html)
+                self.assertIn('data-qty-decrement', html)
+                self.assertIn('data-qty-increment', html)
+                self.assertIn('class="form-select form-select-lg"', html)
+                self.assertIn('name="recipient"', html)
+                self.assertIn('name="department"', html)
+                self.assertIn('data-disable-on-submit', html)
+                self.assertIn('data-submit-button', html)
+                self.assertIn('data-saving-label="Збереження..."', html)
+
     def test_pr17_stock_pages_available_to_storekeeper(self):
         self.client.force_login(self.storekeeper)
         for url_name in [
@@ -213,7 +302,7 @@ class StockIssueInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Взяти товар")
-        self.assertNotContains(response, "Отримувачі")
+        self.assertNotContains(response, "Працівники / отримувачі")
 
     def test_storekeeper_dashboard_focuses_on_issue_and_return(self):
         self.client.force_login(self.storekeeper)
@@ -226,8 +315,8 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
         self.assertNotIn("Списання товару", main_html)
         self.assertNotIn("Переміщення товару", main_html)
-        self.assertNotIn("Рухи товарів", main_html)
-        self.assertNotIn("Залишки", main_html)
+        self.assertNotIn("Журнал операцій", main_html)
+        self.assertNotIn("Залишки на складі", main_html)
         self.assertNotIn("Інвентаризація", main_html)
         self.assertNotIn("Робоче місце комірника", main_html)
         self.assertNotIn("Комірник", main_html)
@@ -1579,10 +1668,10 @@ class StockOperationWorkflowTests(TestCase):
         for phrase in [
             "Взяти товар",
             "Повернути товар",
-            "Рухи товарів",
-            "Залишки",
+            "Журнал операцій",
+            "Залишки на складі",
             "Інвентаризація",
-            "Складські налаштування",
+            "Налаштування складу",
             "Зіскануйте товар і зафіксуйте видачу зі складу.",
             "Зіскануйте товар і зафіксуйте повернення на склад.",
         ]:

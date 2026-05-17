@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Налаштування системи" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Налаштування складу" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="card content-card">
     <div class="card-body">
-        <h1 class="h3 mb-4">{% trans "Налаштування системи" %}</h1>
+        <h1 class="h3 mb-4">{% trans "Налаштування складу" %}</h1>
         <form method="post" novalidate>
             {% csrf_token %}
             {% if form.non_field_errors %}

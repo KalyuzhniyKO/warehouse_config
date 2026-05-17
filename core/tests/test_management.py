@@ -134,9 +134,9 @@ class ManagementInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         for text in [
-            "Адміністрування складу",
+            "Керування складом",
             "Довідники",
-            "Номенклатура",
+            "Товари / матеріали",
             "Склади",
             "Локації",
             "Користувачі та доступ",
@@ -153,7 +153,7 @@ class ManagementInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertNotContains(
-            response, "Адміністрування складу", status_code=403
+            response, "Керування складом", status_code=403
         )
 
     def test_superuser_sees_system_management_cards(self):
@@ -162,7 +162,7 @@ class ManagementInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Система")
-        self.assertContains(response, "Налаштування системи")
+        self.assertContains(response, "Налаштування складу")
         self.assertContains(response, "Довідка адміністратора")
 
     def test_superuser_sees_technical_django_admin_card(self):
@@ -373,7 +373,7 @@ class ManagementInterfaceTests(TestCase):
             "Штрихкоди",
             "Прихід товару",
             "Початковий залишок",
-            "Рухи товарів",
+            "Журнал операцій",
         ]:
             self.assertContains(response, text)
 
@@ -429,7 +429,7 @@ class ManagementInterfaceTests(TestCase):
         response = self.client.get(reverse("management_settings"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Налаштування системи")
+        self.assertContains(response, "Налаштування складу")
         self.assertContains(response, "Використовувати локації")
         self.assertContains(response, "Зберегти")
 
@@ -466,10 +466,10 @@ class ManagementInterfaceTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("System settings", html)
+        self.assertIn("Warehouse settings", html)
         self.assertIn("Use locations", html)
         for phrase in [
-            "Налаштування системи",
+            "Налаштування складу",
             "Використовувати локації",
             "Зберегти",
             "Налаштування збережено.",

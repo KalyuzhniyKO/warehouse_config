@@ -138,32 +138,38 @@ class ManagementDirectoriesView(LoginRequiredMixin, GroupRequiredMixin, Template
         context = super().get_context_data(**kwargs)
         context["directories"] = [
             {
-                "title": _("Номенклатура"),
+                "title": _("Товари / матеріали"),
+                "description": _("Номенклатура товарів і матеріалів, які обліковуються на складі."),
                 "count": Item.objects.count(),
                 "url": reverse("item_list"),
             },
             {
                 "title": _("Категорії"),
+                "description": _("Групи для швидкої навігації по товарах і матеріалах."),
                 "count": Category.objects.count(),
                 "url": reverse("category_list"),
             },
             {
                 "title": _("Одиниці виміру"),
+                "description": _("Одиниці обліку для товарів, матеріалів і складських операцій."),
                 "count": Unit.objects.count(),
                 "url": reverse("unit_list"),
             },
             {
                 "title": _("Склади"),
+                "description": _("Склади, де ведеться облік залишків."),
                 "count": Warehouse.objects.count(),
                 "url": reverse("warehouse_list"),
             },
             {
                 "title": _("Локації"),
+                "description": _("Комірки, зони та місця зберігання на складах."),
                 "count": Location.objects.count(),
                 "url": reverse("location_list"),
             },
             {
-                "title": _("Отримувачі"),
+                "title": _("Працівники / отримувачі"),
+                "description": _("Люди або підрозділи, які беруть чи повертають товар."),
                 "count": Recipient.objects.count(),
                 "url": reverse("recipient_list"),
             },
@@ -294,7 +300,7 @@ HELP_SECTIONS = [
     {"title": _("Штрихкоди"), "filename": "USER_GUIDE.md", "anchor": "Штрихкоди", "admin_only": False},
     {"title": _("Прихід товару"), "filename": "USER_GUIDE.md", "anchor": "Прихід товару", "admin_only": False},
     {"title": _("Початковий залишок"), "filename": "USER_GUIDE.md", "anchor": "Початковий залишок", "admin_only": False},
-    {"title": _("Рухи товарів"), "filename": "USER_GUIDE.md", "anchor": "Рухи товарів", "admin_only": False},
+    {"title": _("Журнал операцій"), "filename": "USER_GUIDE.md", "anchor": "Рухи товарів", "admin_only": False},
 ]
 
 
