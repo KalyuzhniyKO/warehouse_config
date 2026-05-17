@@ -16,7 +16,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
-from django.utils.translation import get_language, gettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -96,7 +96,6 @@ SELF_SERVICE_OPERATION_TOKEN_LIMIT = 20
 
 class SelfServiceOperationTokenMixin:
     duplicate_submission_message = _("Операція вже була збережена.")
-    duplicate_submission_message_en = "This operation has already been saved."
     operation_token_field = SELF_SERVICE_OPERATION_TOKEN_FIELD
     operation_tokens_session_key = SELF_SERVICE_OPERATION_TOKENS_SESSION_KEY
     operation_token_limit = SELF_SERVICE_OPERATION_TOKEN_LIMIT
@@ -136,11 +135,7 @@ class SelfServiceOperationTokenMixin:
         token_data = self.get_operation_tokens().get(token) or {}
         movement_pk = token_data.get("movement_pk")
         if token_data.get("status") == "used" and movement_pk:
-            if get_language().startswith("en"):
-                message = self.duplicate_submission_message_en
-            else:
-                message = self.duplicate_submission_message
-            messages.info(self.request, message)
+            messages.info(self.request, self.duplicate_submission_message)
             return redirect(self.result_url_name, pk=movement_pk)
         return None
 
