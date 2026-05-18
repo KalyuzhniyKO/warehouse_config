@@ -12,14 +12,16 @@ class PwaSupportTests(TestCase):
             return b"".join(response.streaming_content)
         return response.content
 
-    def test_static_manifest_webmanifest_opens_with_required_install_fields(self):
-        response = self.client.get("/static/manifest.webmanifest")
+    def test_root_manifest_webmanifest_opens_with_required_install_fields(self):
+        response = self.client.get("/manifest.webmanifest")
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "application/manifest+json")
         manifest = json.loads(self.streamed_content(response))
         self.assertEqual(manifest["name"], "YANTOS Warehouse")
         self.assertEqual(manifest["short_name"], "Warehouse")
         self.assertEqual(manifest["start_url"], "/uk/")
+        self.assertEqual(manifest["scope"], "/")
         self.assertEqual(manifest["display"], "standalone")
         self.assertEqual(manifest["theme_color"], "#f5c400")
         self.assertEqual(
@@ -41,11 +43,12 @@ class PwaSupportTests(TestCase):
         self.assertIn("<svg", icon.read_text())
         self.assertIn("WH", icon.read_text())
 
-    def test_base_template_includes_static_manifest_and_tablet_pwa_meta_tags(self):
+    def test_base_template_includes_root_manifest_and_tablet_pwa_meta_tags(self):
         template = Path("templates/base.html").read_text()
 
         self.assertIn('{% load i18n static core_extras %}', template)
-        self.assertIn('rel="manifest" href="{% static \'manifest.webmanifest\' %}"', template)
+        self.assertIn('rel="manifest" href="{% url \'webmanifest\' %}"', template)
+        self.assertNotIn('/static/manifest.webmanifest', template)
         self.assertIn('name="theme-color" content="#f5c400"', template)
         self.assertIn('name="mobile-web-app-capable" content="yes"', template)
         self.assertIn('name="apple-mobile-web-app-capable" content="yes"', template)
@@ -90,7 +93,8 @@ class PwaSupportTests(TestCase):
         response = self.client.get("/uk/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'rel="manifest" href="/static/manifest.webmanifest"')
+        self.assertContains(response, 'rel="manifest" href="/manifest.webmanifest"')
+        self.assertNotContains(response, '/static/manifest.webmanifest')
         self.assertContains(response, 'name="theme-color" content="#f5c400"')
 
     def test_no_binary_assets_were_added(self):

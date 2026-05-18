@@ -30,10 +30,12 @@ def service_worker(request):
 def webmanifest(request):
     return static_text_asset("manifest.webmanifest", "application/manifest+json")
 
+
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
     path("service-worker.js", service_worker, name="service_worker"),
-    path("static/manifest.webmanifest", webmanifest, name="webmanifest"),
+    path("manifest.webmanifest", webmanifest, name="webmanifest"),
+    path("static/manifest.webmanifest", webmanifest, name="webmanifest_legacy"),
 ]
 
 urlpatterns += i18n_patterns(
