@@ -1,78 +1,86 @@
-# Deploy warehouse_config on Ubuntu Server with Apache2 and Gunicorn
+# Deploy warehouse_config on Ubuntu Server with Apache2, Gunicorn, and systemd
 
-This guide deploys the Django warehouse system on Ubuntu Server with this request flow:
+This guide deploys the Django warehouse system on Ubuntu `server01` with the production request flow:
 
 ```text
-Apache2 -> reverse proxy -> Gunicorn -> Django
+Apache reverse proxy -> Gunicorn managed by systemd -> Django -> MySQL
 ```
 
-The deployment uses Apache2 only. The examples below keep the application on a separate Apache VirtualHost at port `8081` so existing Apache sites such as Zabbix can continue to use their current ports and configuration.
+`python manage.py runserver 0.0.0.0:8000` is only a temporary test command. It is not a production application server. After Gunicorn/systemd is configured, stop any old `runserver` process and keep the application running through `warehouse-gunicorn.service`.
 
-## Assumptions
+The examples use these server values:
 
-- Apache2 is already installed.
-- MySQL is already installed and has a database/user prepared for the application.
-- CUPS and GNU gettext are already installed.
-- The application path is `/opt/warehouse_config`.
-- The Linux service user is `warehouse`.
-- The Django project module is `config`.
-- The Gunicorn WSGI application is `config.wsgi:application`.
+- Project path: `/opt/warehouse_config`
+- Runtime user: `warehouse`
+- Sudo/admin user: `ilovewindows`
+- Virtual environment: `/opt/warehouse_config/venv`
+- Database: MySQL `warehouse_db`
+- Gunicorn bind: `127.0.0.1:8001`
+- Apache VirtualHost port: `8081`
+- LAN URLs: `http://10.52.83.10/` and `http://100.111.213.115/`
+
+The Apache example keeps the application on port `8081` so existing Apache sites can continue to use their current ports. If this warehouse site should be the only site on port `80`, change the VirtualHost/listen port consistently and update `.env` CSRF origins to match the real browser URL.
 
 ## 1. Install required OS packages
 
 ```bash
 sudo apt update
-sudo apt install python3 python3-venv python3-pip apache2 libapache2-mod-proxy-html gettext
+sudo apt install python3 python3-venv python3-pip apache2 gettext
 sudo a2enmod proxy proxy_http headers
 ```
 
-If you prefer to build or use packages that require MySQL headers later, install the development packages too:
+The Python dependency list uses `PyMySQL`, so `mysqlclient` is not required. For packages that need MySQL headers later, install the development packages too:
 
 ```bash
 sudo apt install pkg-config default-libmysqlclient-dev build-essential
 ```
 
-The Python dependency list uses `PyMySQL`, so `mysqlclient` is not required by this project. For MySQL 8, PyMySQL also needs the `cryptography` package to authenticate with the default `caching_sha2_password` / `sha256_password` methods; install it through `requirements.txt` as shown below.
-
 ## 2. Create the service user and project directory
 
+Create the runtime user if it does not already exist:
+
 ```bash
-sudo adduser --system --group --home /opt/warehouse_config warehouse
-sudo mkdir -p /opt/warehouse_config
-sudo chown warehouse:www-data /opt/warehouse_config
+id warehouse || sudo adduser --system --group --home /opt/warehouse_config warehouse
 ```
 
-Copy or clone the repository into `/opt/warehouse_config`, then ensure ownership is correct:
+Create `/opt/warehouse_config`, clone or copy the repository there, and make the runtime user own it:
 
 ```bash
+sudo mkdir -p /opt/warehouse_config
+sudo chown warehouse:www-data /opt/warehouse_config
+cd /opt/warehouse_config
+# Example: sudo -u warehouse git clone <repo-url> /opt/warehouse_config
 sudo chown -R warehouse:www-data /opt/warehouse_config
 ```
 
-Create runtime directories for Django logs, Gunicorn logs, and MySQL backups:
+Create the Django/Gunicorn log directory required by the default production settings:
 
 ```bash
 sudo mkdir -p /var/log/warehouse_config
-sudo mkdir -p /var/backups/warehouse_config
 sudo chown -R warehouse:www-data /var/log/warehouse_config
-sudo chown -R warehouse:www-data /var/backups/warehouse_config
 sudo chmod 750 /var/log/warehouse_config
+```
+
+Optional backup directory for the documented MySQL backup timer:
+
+```bash
+sudo mkdir -p /var/backups/warehouse_config
+sudo chown -R warehouse:www-data /var/backups/warehouse_config
 sudo chmod 750 /var/backups/warehouse_config
 ```
 
-When `DEBUG=False`, Django writes production logs to `/var/log/warehouse_config/django.log` and `/var/log/warehouse_config/errors.log` under `LOG_DIR` (`/var/log/warehouse_config` by default). Gunicorn writes access and error logs to `/var/log/warehouse_config/gunicorn-access.log` and `/var/log/warehouse_config/gunicorn-error.log`. The Gunicorn process user `warehouse` must have write access to this directory; the `chown warehouse:www-data` and `chmod 750` commands above provide that access while keeping logs private from other users.
-
-## 3. Create a virtual environment
+## 3. Create the virtual environment and install requirements
 
 ```bash
 cd /opt/warehouse_config
-sudo -u warehouse python3 -m venv venv
+sudo -u warehouse python3 -m venv /opt/warehouse_config/venv
 sudo -u warehouse /opt/warehouse_config/venv/bin/pip install --upgrade pip
 sudo -u warehouse /opt/warehouse_config/venv/bin/pip install -r requirements.txt
 ```
 
-Do not skip `pip install -r requirements.txt`: it installs Django, PyMySQL, Gunicorn, and `cryptography`. Without `cryptography`, `python manage.py migrate` against MySQL 8 can fail with `RuntimeError: 'cryptography' package is required for sha256_password or caching_sha2_password auth methods`.
+Do not skip `pip install -r requirements.txt`: it installs Django, PyMySQL, Gunicorn, and `cryptography`. Without `cryptography`, MySQL 8 authentication can fail for `sha256_password` or `caching_sha2_password` users.
 
-## 4. Configure environment variables
+## 4. Create and configure `.env`
 
 Create `/opt/warehouse_config/.env` from the example file:
 
@@ -82,13 +90,13 @@ sudo -u warehouse cp .env.example .env
 sudo -u warehouse nano .env
 ```
 
-Example production values:
+Example production values for the current LAN deployment:
 
 ```env
 DJANGO_SECRET_KEY=replace-with-a-long-random-secret
 DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=10.52.83.10,localhost,127.0.0.1
-DJANGO_CSRF_TRUSTED_ORIGINS=http://10.52.83.10:8081,http://10.52.83.10
+DJANGO_ALLOWED_HOSTS=10.52.83.10,100.111.213.115,localhost,127.0.0.1
+DJANGO_CSRF_TRUSTED_ORIGINS=http://10.52.83.10:8081,http://100.111.213.115:8081
 DJANGO_LANGUAGE_CODE=uk
 DJANGO_TIME_ZONE=Europe/Kyiv
 DJANGO_DB_CONN_MAX_AGE=60
@@ -107,17 +115,13 @@ DB_HOST=localhost
 DB_PORT=3306
 ```
 
-The `DB_PASSWORD` value in `.env` must exactly match the password of the MySQL user named in `DB_USER` for the configured host. A mismatch in characters, letter case, whitespace, or using a password from another MySQL account will cause authentication failures during `python manage.py migrate` and other Django database commands.
+Do not commit real passwords or secrets. The `DB_PASSWORD` value in `.env` must exactly match the password of the MySQL user named in `DB_USER` for the configured host.
 
-`DJANGO_CSRF_TRUSTED_ORIGINS` must include the URL scheme for every origin, for example `http://10.52.83.10:8081` or `https://warehouse.example.com`. Django 4+ rejects scheme-less values such as `10.52.83.10:8081`.
+`DJANGO_CSRF_TRUSTED_ORIGINS` must include the URL scheme for every origin, for example `http://10.52.83.10:8081`. Django rejects scheme-less values such as `10.52.83.10:8081`.
 
 For a LAN HTTP test on port `8081`, keep `DJANGO_SESSION_COOKIE_SECURE`, `DJANGO_CSRF_COOKIE_SECURE`, and `DJANGO_SECURE_SSL_REDIRECT` unset or set to `False`; secure cookies and SSL redirect require HTTPS. For HTTPS production behind Apache, enable those three flags with `True`.
 
-`DJANGO_DB_CONN_MAX_AGE=60` enables persistent database connections for MySQL. Use `0` or leave it unset if you want Django to close database connections at the end of each request.
-
-For production, enable the standard Django password validators with `DJANGO_ENABLE_PASSWORD_VALIDATORS=True`.
-
-Keep `.env` private:
+Keep `.env` private but readable by the service:
 
 ```bash
 sudo chmod 640 /opt/warehouse_config/.env
@@ -126,65 +130,109 @@ sudo chown warehouse:www-data /opt/warehouse_config/.env
 
 ## 5. Run Django setup commands
 
+Run database, role, static asset, translation, and configuration checks before starting the service:
+
 ```bash
 cd /opt/warehouse_config
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py check
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py migrate
+sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py init_roles
+sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic --noinput
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py compilemessages
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
+sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py check
+```
+
+Create an admin user if the deployment does not already have one:
+
+```bash
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py createsuperuser
 ```
 
-Supported interface languages are `uk` — Українська and `en` — English. The repository stores only gettext source files (`locale/*/LC_MESSAGES/django.po`). Compiled gettext binaries (`*.mo`) are intentionally ignored and must be generated on the server with `python manage.py compilemessages` after each `git pull` that changes translations.
+Supported interface languages are `uk` — Українська and `en` — English. The repository stores gettext source files (`locale/*/LC_MESSAGES/django.po`), while compiled gettext binaries (`*.mo`) are intentionally not committed and must be generated on the server with `python manage.py compilemessages`.
 
-## 6. Test Gunicorn manually
+## 6. Stop any temporary `runserver`
 
-Run Gunicorn on localhost port `8001`:
+If a temporary test server is still running, stop it before enabling systemd/Gunicorn:
+
+```bash
+sudo pkill -f "manage.py runserver" 2>/dev/null || true
+```
+
+Use `runserver` only for short manual tests during troubleshooting. Production traffic should go through Apache and the `warehouse-gunicorn` systemd service.
+
+## 7. Install and start the Gunicorn systemd service
+
+The service example is `deploy/systemd/warehouse-gunicorn.service`. It runs as `warehouse`, reads `/opt/warehouse_config/.env`, starts in `/opt/warehouse_config`, and binds Gunicorn to `127.0.0.1:8001` with `config.wsgi:application`.
+
+Install and start it:
 
 ```bash
 cd /opt/warehouse_config
-sudo -u warehouse /opt/warehouse_config/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8001 config.wsgi:application
-```
-
-In another shell, verify that Django responds:
-
-```bash
-curl http://127.0.0.1:8001/
-```
-
-Stop the manual Gunicorn process after this check.
-
-## 7. Install the systemd service
-
-Copy the example service file and start it:
-
-```bash
-sudo cp /opt/warehouse_config/docs/warehouse-gunicorn.service.example /etc/systemd/system/warehouse-gunicorn.service
+sudo cp deploy/systemd/warehouse-gunicorn.service /etc/systemd/system/warehouse-gunicorn.service
 sudo systemctl daemon-reload
-sudo systemctl enable --now warehouse-gunicorn
+sudo systemctl enable warehouse-gunicorn
+sudo systemctl start warehouse-gunicorn
 sudo systemctl status warehouse-gunicorn
 ```
 
-The service uses this WSGI application:
+The service logs Gunicorn access/error output to journald with `--access-logfile -` and `--error-logfile -`.
 
-```text
-config.wsgi:application
+## 8. Configure Apache2 reverse proxy
+
+Apache must listen on the VirtualHost port used in the example. Add this line to `/etc/apache2/ports.conf` if it is not already present:
+
+```apache
+Listen 8081
 ```
 
-The example Gunicorn service also configures log files with these options:
+Install the reverse proxy site:
 
-```text
---access-logfile /var/log/warehouse_config/gunicorn-access.log
---error-logfile /var/log/warehouse_config/gunicorn-error.log
+```bash
+cd /opt/warehouse_config
+sudo cp deploy/apache/warehouse.conf.example /etc/apache2/sites-available/warehouse.conf
+sudo a2enmod proxy proxy_http headers
+sudo a2ensite warehouse.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2
 ```
 
-## 8. Install daily MySQL backups
+The Apache example serves `/static/` directly from `STATIC_ROOT` at `/opt/warehouse_config/staticfiles/` and sends everything else to Gunicorn at `127.0.0.1:8001`:
+
+```apache
+Alias /static/ /opt/warehouse_config/staticfiles/
+ProxyPass /static/ !
+ProxyPass / http://127.0.0.1:8001/
+ProxyPassReverse / http://127.0.0.1:8001/
+```
+
+Do not add aliases for `/manifest.webmanifest` or `/service-worker.js`. Those root-level PWA endpoints must reach Django/Gunicorn so Django can return the correct content type and service-worker headers. Only `/static/` is intercepted by Apache.
+
+## 9. Verification commands
+
+Check Gunicorn directly and Apache through the reverse proxy:
+
+```bash
+curl -I http://127.0.0.1:8001/uk/
+curl -I http://127.0.0.1:8081/uk/
+curl -I http://127.0.0.1:8081/manifest.webmanifest
+curl -I http://127.0.0.1:8081/service-worker.js
+```
+
+Expected results:
+
+- `curl -I http://127.0.0.1:8001/uk/` returns a Django response directly from Gunicorn.
+- `curl -I http://127.0.0.1:8081/uk/` returns the same application through Apache.
+- `/manifest.webmanifest` and `/service-worker.js` return through Apache but are proxied to Django/Gunicorn, not served from `/static/`.
+- `sudo systemctl status warehouse-gunicorn` reports the service is active.
+- `sudo apache2ctl configtest` returns `Syntax OK`.
+
+For a LAN browser check, open the configured Apache URL, for example `http://10.52.83.10:8081/uk/` or `http://100.111.213.115:8081/uk/` if the host/firewall exposes port `8081`.
+
+## 10. Install daily MySQL backups (optional but recommended)
 
 The backup script stores compressed MySQL dumps in `/var/backups/warehouse_config`, writes operational logs to `/var/log/warehouse_config/backup.log`, keeps backups for 30 days, and targets RPO 24h / RTO 4h. See `docs/BACKUP_AND_RESTORE.md` for the full restore procedure.
 
-Copy and enable the systemd timer:
-
 ```bash
+cd /opt/warehouse_config
 sudo cp docs/warehouse-backup.service.example /etc/systemd/system/warehouse-backup.service
 sudo cp docs/warehouse-backup.timer.example /etc/systemd/system/warehouse-backup.timer
 sudo systemctl daemon-reload
@@ -200,78 +248,70 @@ sudo systemctl status warehouse-backup.service
 sudo tail -n 100 /var/log/warehouse_config/backup.log
 ```
 
-## 9. Install logrotate for application logs
+## 11. Install logrotate for application logs
 
 ```bash
+cd /opt/warehouse_config
 sudo cp docs/logrotate-warehouse_config.example /etc/logrotate.d/warehouse_config
 sudo logrotate -d /etc/logrotate.d/warehouse_config
 ```
 
-## 10. Configure Apache2 reverse proxy
+## 12. Troubleshooting
 
-Apache must listen on port `8081`. Add this line to `/etc/apache2/ports.conf` if it is not already present:
-
-```apache
-Listen 8081
-```
-
-Install the separate VirtualHost. This avoids changing existing Apache/Zabbix sites:
+View recent Gunicorn service logs:
 
 ```bash
-sudo cp /opt/warehouse_config/docs/apache-warehouse.conf.example /etc/apache2/sites-available/warehouse.conf
-sudo a2ensite warehouse.conf
-sudo apache2ctl configtest
+journalctl -u warehouse-gunicorn -n 100 --no-pager
+journalctl -u warehouse-gunicorn -f
+```
+
+Restart or reload services after changes:
+
+```bash
+sudo systemctl restart warehouse-gunicorn
 sudo systemctl reload apache2
 ```
 
-The VirtualHost proxies dynamic requests to Gunicorn at `127.0.0.1:8001` and serves collected static files from `/opt/warehouse_config/staticfiles/`.
-`/static/` is intentionally served directly by Apache from `STATIC_ROOT`, but PWA root assets must still reach Django/Gunicorn: `/manifest.webmanifest` serves the web app manifest and `/service-worker.js` serves the service worker with `Service-Worker-Allowed: /`. Do not move these endpoints under `/static/`; an Apache `Alias /static/` can intercept `/static/manifest.webmanifest` before the Django view runs.
-
-## 11. Verification commands
-
-Run the Django checks:
+Check whether the old temporary runserver port, the Gunicorn port, or the Apache port is listening:
 
 ```bash
-cd /opt/warehouse_config
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py check
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py migrate
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py compilemessages
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
-sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py test
+ss -ltnp | grep -E '8000|8001|8081'
 ```
 
-Check services and HTTP endpoints. The manifest and service worker checks intentionally use root-level URLs so Apache does not satisfy them from the `/static/` alias:
+Check Gunicorn directly:
 
 ```bash
-curl -I http://127.0.0.1:8081/manifest.webmanifest
-curl -I http://127.0.0.1:8081/service-worker.js
-sudo systemctl status warehouse-gunicorn
-sudo apache2ctl configtest
-curl http://127.0.0.1:8001/
-curl http://10.52.83.10:8081/
+curl -I http://127.0.0.1:8001/uk/
 ```
 
-Expected results:
+Check Apache:
 
-- `python manage.py check` reports no issues.
-- Gunicorn service is active.
-- `apache2ctl configtest` returns `Syntax OK`.
-- `curl http://127.0.0.1:8001/` returns the Django homepage through Gunicorn.
-- `curl http://10.52.83.10:8081/` returns the Django homepage through Apache2 reverse proxy.
+```bash
+curl -I http://127.0.0.1:8081/uk/
+```
 
-## Налаштування складності паролів
+If `8000` is still listening for `manage.py runserver`, stop it:
 
-Для локальної закритої мережі складу можна залишити прості паролі дозволеними:
+```bash
+sudo pkill -f "manage.py runserver" 2>/dev/null || true
+```
+
+## Password complexity setting
+
+For a closed local warehouse network, password validators can be disabled only if that is an intentional administrative decision:
 
 ```env
-DJANGO_ENABLE_PASSWORD_VALIDATORS=false
+DJANGO_ENABLE_PASSWORD_VALIDATORS=False
 ```
 
-Це також значення за замовчуванням, якщо змінна не задана. Якщо сайт доступний публічно або через інтернет, увімкніть стандартні валідатори Django:
+For production, keep the standard Django password validators enabled:
 
 ```env
-DJANGO_ENABLE_PASSWORD_VALIDATORS=true
+DJANGO_ENABLE_PASSWORD_VALIDATORS=True
 ```
 
-Після зміни `.env` перезапустіть сервіс застосунку.
+After changing `.env`, restart the application service:
 
+```bash
+sudo systemctl restart warehouse-gunicorn
+```
