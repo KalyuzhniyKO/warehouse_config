@@ -4,9 +4,14 @@ from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.urls import reverse
 
 
 class PwaSupportTests(TestCase):
+    def test_pwa_root_endpoint_url_names_resolve_outside_static_alias(self):
+        self.assertEqual(reverse("webmanifest"), "/manifest.webmanifest")
+        self.assertEqual(reverse("service_worker"), "/service-worker.js")
+
     def streamed_content(self, response):
         if response.streaming:
             return b"".join(response.streaming_content)
