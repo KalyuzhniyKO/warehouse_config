@@ -254,6 +254,7 @@ class SwitchLanguageUrlTests(TestCase):
         self.assert_switch_url("/uk/", "en", "/en/")
         self.assert_switch_url("/en/items/", "uk", "/uk/items/")
         self.assert_switch_url("/en/items/", "ru", "/ru/items/")
+        self.assert_switch_url("/ru/items/", "it", "/it/items/")
 
     def test_preserves_query_string(self):
         self.assert_switch_url("/uk/items/?q=test", "en", "/en/items/?q=test")
@@ -262,6 +263,7 @@ class SwitchLanguageUrlTests(TestCase):
         self.assert_switch_url("/admin/", "en", "/en/admin/")
         self.assert_switch_url("/", "uk", "/uk/")
         self.assert_switch_url("/", "ru", "/ru/")
+        self.assert_switch_url("/", "it", "/it/")
 
 
 class DashboardLocalizationTests(TestCase):
@@ -291,6 +293,8 @@ class DashboardLocalizationTests(TestCase):
             language = "en"
         elif path and path.startswith("/ru/"):
             language = "ru"
+        elif path and path.startswith("/it/"):
+            language = "it"
         translation.activate(language)
         self.client.force_login(user)
         return self.client.get(path or reverse("dashboard"))
@@ -470,6 +474,21 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertIn(("ru", "Русский"), settings.LANGUAGES)
 
+    def test_settings_include_italian_language(self):
+        from django.conf import settings
+
+        self.assertIn(("it", "Italiano"), settings.LANGUAGES)
+
+    def test_italian_login_page_opens(self):
+        self.client.logout()
+
+        response = self.client.get("/it/accounts/login/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Accedi", html)
+        self.assertIn("Password", html)
+
     def test_russian_storekeeper_self_service_smoke(self):
         response = self.dashboard_for(self.storekeeper, "/ru/")
         html = response.content.decode()
@@ -478,6 +497,17 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Склад самообслуживания", html)
         self.assertIn("Взять товар", html)
         self.assertIn("Вернуть товар", html)
+        self.assertNotIn("Взяти товар", html)
+        self.assertNotIn("Повернути товар", html)
+
+    def test_italian_storekeeper_self_service_smoke(self):
+        response = self.dashboard_for(self.storekeeper, "/it/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Magazzino self-service", html)
+        self.assertIn("Prelevare prodotto", html)
+        self.assertIn("Restituire prodotto", html)
         self.assertNotIn("Взяти товар", html)
         self.assertNotIn("Повернути товар", html)
 
