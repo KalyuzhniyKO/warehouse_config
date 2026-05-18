@@ -45,3 +45,19 @@ class DeploymentAssetTests(SimpleTestCase):
         self.assertIn("curl -I http://127.0.0.1:8081/manifest.webmanifest", docs)
         self.assertIn("curl -I http://127.0.0.1:8081/service-worker.js", docs)
         self.assertIn('sudo pkill -f "manage.py runserver" 2>/dev/null || true', docs)
+
+    def test_server01_gunicorn_switchover_runbook_exists_with_key_markers(self):
+        runbook_path = PROJECT_ROOT / "docs/SERVER01_GUNICORN_SWITCHOVER.md"
+        self.assertTrue(runbook_path.exists())
+
+        runbook = runbook_path.read_text()
+
+        self.assertIn("warehouse-gunicorn", runbook)
+        self.assertIn("/opt/warehouse_config", runbook)
+        self.assertIn("systemctl restart warehouse-gunicorn", runbook)
+        self.assertIn("curl -I http://127.0.0.1:8081/manifest.webmanifest", runbook)
+        self.assertIn("curl -I http://127.0.0.1:8081/service-worker.js", runbook)
+        self.assertIn("curl -I http://10.52.83.10/manifest.webmanifest", runbook)
+        self.assertIn("curl -I http://10.52.83.10/service-worker.js", runbook)
+        self.assertIn("emergency temporary fallback", runbook)
+        self.assertIn("python manage.py runserver 0.0.0.0:8000", runbook)
