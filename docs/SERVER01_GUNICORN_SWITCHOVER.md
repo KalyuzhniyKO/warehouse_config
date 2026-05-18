@@ -85,6 +85,8 @@ sudo ls -la /etc/apache2/sites-enabled/
 sudo cp /etc/apache2/sites-available/warehouse.conf /etc/apache2/sites-available/warehouse.conf.bak.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
 ```
 
+If the server already has a custom Apache config, keep that backup and do not overwrite it until the diff is reviewed. If the VirtualHost runs on `8081`, verify URLs with `:8081`; if Apache listens on `80`, verify URLs without a port.
+
 If port `8081` is still intended for this deployment, install the provided example:
 
 ```bash
@@ -114,12 +116,23 @@ curl -I http://10.52.83.10/manifest.webmanifest
 curl -I http://10.52.83.10/service-worker.js
 ```
 
+Tailscale checks:
+
+```bash
+curl -I http://100.111.213.115/uk/
+curl -I http://100.111.213.115/manifest.webmanifest
+curl -I http://100.111.213.115/service-worker.js
+```
+
 If the Apache VirtualHost is reachable on port `8081`, also check:
 
 ```bash
 curl -I http://10.52.83.10:8081/uk/
 curl -I http://10.52.83.10:8081/manifest.webmanifest
 curl -I http://10.52.83.10:8081/service-worker.js
+curl -I http://100.111.213.115:8081/uk/
+curl -I http://100.111.213.115:8081/manifest.webmanifest
+curl -I http://100.111.213.115:8081/service-worker.js
 ```
 
 ## 8. Troubleshooting
