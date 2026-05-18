@@ -240,9 +240,11 @@ sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py test
 ```
 
-Check services and HTTP endpoints:
+Check services and HTTP endpoints. The manifest and service worker checks intentionally use root-level URLs so Apache does not satisfy them from the `/static/` alias:
 
 ```bash
+curl -I http://127.0.0.1:8081/manifest.webmanifest
+curl -I http://127.0.0.1:8081/service-worker.js
 sudo systemctl status warehouse-gunicorn
 sudo apache2ctl configtest
 curl http://127.0.0.1:8001/
