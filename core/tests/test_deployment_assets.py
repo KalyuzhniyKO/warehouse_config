@@ -59,5 +59,7 @@ class DeploymentAssetTests(SimpleTestCase):
         self.assertIn("curl -I http://127.0.0.1:8081/service-worker.js", runbook)
         self.assertIn("curl -I http://10.52.83.10/manifest.webmanifest", runbook)
         self.assertIn("curl -I http://10.52.83.10/service-worker.js", runbook)
+        self.assertIn("curl -I http://100.111.213.115/manifest.webmanifest", runbook)
+        self.assertIn("curl -I http://100.111.213.115/service-worker.js", runbook)
         self.assertIn("emergency temporary fallback", runbook)
         self.assertIn("python manage.py runserver 0.0.0.0:8000", runbook)
