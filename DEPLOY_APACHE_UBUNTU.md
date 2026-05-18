@@ -59,7 +59,7 @@ sudo chmod 750 /var/log/warehouse_config
 sudo chmod 750 /var/backups/warehouse_config
 ```
 
-Django writes production logs to `/var/log/warehouse_config/django.log` and `/var/log/warehouse_config/errors.log`. Gunicorn writes access and error logs to `/var/log/warehouse_config/gunicorn-access.log` and `/var/log/warehouse_config/gunicorn-error.log`.
+When `DEBUG=False`, Django writes production logs to `/var/log/warehouse_config/django.log` and `/var/log/warehouse_config/errors.log` under `LOG_DIR` (`/var/log/warehouse_config` by default). Gunicorn writes access and error logs to `/var/log/warehouse_config/gunicorn-access.log` and `/var/log/warehouse_config/gunicorn-error.log`. The Gunicorn process user `warehouse` must have write access to this directory; the `chown warehouse:www-data` and `chmod 750` commands above provide that access while keeping logs private from other users.
 
 ## 3. Create a virtual environment
 
@@ -91,6 +91,13 @@ DJANGO_ALLOWED_HOSTS=10.52.83.10,localhost,127.0.0.1
 DJANGO_CSRF_TRUSTED_ORIGINS=http://10.52.83.10:8081,http://10.52.83.10
 DJANGO_LANGUAGE_CODE=uk
 DJANGO_TIME_ZONE=Europe/Kyiv
+DJANGO_DB_CONN_MAX_AGE=60
+DJANGO_ENABLE_PASSWORD_VALIDATORS=True
+
+# Keep these disabled for LAN HTTP tests. Enable them only when the site is served over HTTPS.
+# DJANGO_SESSION_COOKIE_SECURE=True
+# DJANGO_CSRF_COOKIE_SECURE=True
+# DJANGO_SECURE_SSL_REDIRECT=True
 
 DB_ENGINE=django.db.backends.mysql
 DB_NAME=warehouse_db
@@ -101,6 +108,14 @@ DB_PORT=3306
 ```
 
 The `DB_PASSWORD` value in `.env` must exactly match the password of the MySQL user named in `DB_USER` for the configured host. A mismatch in characters, letter case, whitespace, or using a password from another MySQL account will cause authentication failures during `python manage.py migrate` and other Django database commands.
+
+`DJANGO_CSRF_TRUSTED_ORIGINS` must include the URL scheme for every origin, for example `http://10.52.83.10:8081` or `https://warehouse.example.com`. Django 4+ rejects scheme-less values such as `10.52.83.10:8081`.
+
+For a LAN HTTP test on port `8081`, keep `DJANGO_SESSION_COOKIE_SECURE`, `DJANGO_CSRF_COOKIE_SECURE`, and `DJANGO_SECURE_SSL_REDIRECT` unset or set to `False`; secure cookies and SSL redirect require HTTPS. For HTTPS production behind Apache, enable those three flags with `True`.
+
+`DJANGO_DB_CONN_MAX_AGE=60` enables persistent database connections for MySQL. Use `0` or leave it unset if you want Django to close database connections at the end of each request.
+
+For production, enable the standard Django password validators with `DJANGO_ENABLE_PASSWORD_VALIDATORS=True`.
 
 Keep `.env` private:
 
@@ -120,7 +135,7 @@ sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py collectstatic
 sudo -u warehouse /opt/warehouse_config/venv/bin/python manage.py createsuperuser
 ```
 
-Supported interface languages are `uk` — Українська, `ru` — Русский, `en` — English, `de` — Deutsch, `pl` — Polski, `fr` — Français, `es` — Español, `it` — Italiano, `pt` — Português, and `tr` — Türkçe. The repository stores only gettext source files (`locale/*/LC_MESSAGES/django.po`). Compiled gettext binaries (`*.mo`) are intentionally ignored and must be generated on the server with `python manage.py compilemessages` after each `git pull` that changes translations.
+Supported interface languages are `uk` — Українська and `en` — English. The repository stores only gettext source files (`locale/*/LC_MESSAGES/django.po`). Compiled gettext binaries (`*.mo`) are intentionally ignored and must be generated on the server with `python manage.py compilemessages` after each `git pull` that changes translations.
 
 ## 6. Test Gunicorn manually
 

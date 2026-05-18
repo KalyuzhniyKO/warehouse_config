@@ -12,24 +12,17 @@ from core.services.barcodes import BarcodeGenerationError, generate_barcode
 
 
 class SettingsSafetyTests(TestCase):
-    def test_django_debug_defaults_to_false_without_env_var(self):
+    def run_settings_subprocess(self, code, extra_env=None, unset_env=()):
         project_root = Path(__file__).resolve().parents[2]
         env = os.environ.copy()
-        env.pop("DJANGO_DEBUG", None)
+        for name in unset_env:
+            env.pop(name, None)
+        if extra_env:
+            env.update(extra_env)
         env["PYTHONPATH"] = str(project_root)
 
-        result = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                (
-                    "import os, dotenv; "
-                    "dotenv.load_dotenv = lambda *args, **kwargs: None; "
-                    "os.environ.pop('DJANGO_DEBUG', None); "
-                    "import config.settings; "
-                    "print(config.settings.DEBUG)"
-                ),
-            ],
+        return subprocess.run(
+            [sys.executable, "-c", code],
             cwd=project_root,
             env=env,
             check=True,
@@ -37,7 +30,51 @@ class SettingsSafetyTests(TestCase):
             text=True,
         )
 
+    def test_django_debug_defaults_to_false_without_env_var(self):
+        result = self.run_settings_subprocess(
+            (
+                "import os, dotenv; "
+                "dotenv.load_dotenv = lambda *args, **kwargs: None; "
+                "os.environ.pop('DJANGO_DEBUG', None); "
+                "import config.settings; "
+                "print(config.settings.DEBUG)"
+            ),
+            unset_env=("DJANGO_DEBUG",),
+        )
+
         self.assertEqual(result.stdout.strip(), "False")
+
+    def test_security_flags_can_be_enabled_from_env(self):
+        result = self.run_settings_subprocess(
+            (
+                "import dotenv; "
+                "dotenv.load_dotenv = lambda *args, **kwargs: None; "
+                "import config.settings; "
+                "print(config.settings.SESSION_COOKIE_SECURE); "
+                "print(config.settings.CSRF_COOKIE_SECURE); "
+                "print(config.settings.SECURE_SSL_REDIRECT)"
+            ),
+            extra_env={
+                "DJANGO_SESSION_COOKIE_SECURE": "True",
+                "DJANGO_CSRF_COOKIE_SECURE": "True",
+                "DJANGO_SECURE_SSL_REDIRECT": "True",
+            },
+        )
+
+        self.assertEqual(result.stdout.splitlines(), ["True", "True", "True"])
+
+    def test_database_conn_max_age_reads_from_env(self):
+        result = self.run_settings_subprocess(
+            (
+                "import dotenv; "
+                "dotenv.load_dotenv = lambda *args, **kwargs: None; "
+                "import config.settings; "
+                "print(config.settings.DATABASES['default']['CONN_MAX_AGE'])"
+            ),
+            extra_env={"DJANGO_DB_CONN_MAX_AGE": "60"},
+        )
+
+        self.assertEqual(result.stdout.strip(), "60")
 
 
 class BarcodeGenerationSafetyTests(TestCase):
