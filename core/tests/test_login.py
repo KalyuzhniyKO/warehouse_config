@@ -78,3 +78,15 @@ class TabletLoginScreenTests(TestCase):
         self.assertContains(response, "Ім’я користувача")
         self.assertContains(response, "Пароль")
         self.assertContains(response, "Увійти")
+
+    def test_russian_login_page_uses_russian_copy(self):
+        response = self.client.get("/ru/accounts/login/")
+
+        self.assertContains(response, "YANTOS · Складской учет")
+        self.assertContains(response, "Вход в складской терминал")
+        self.assertContains(response, "Имя пользователя")
+        self.assertContains(response, "Пароль")
+        self.assertContains(response, "Войти")
+        self.assertNotContains(response, "Вхід до складського термінала")
+        self.assertNotContains(response, "Ім’я користувача")
+        self.assertNotContains(response, "Увійти")
