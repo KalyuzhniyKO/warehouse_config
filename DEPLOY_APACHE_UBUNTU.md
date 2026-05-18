@@ -225,6 +225,7 @@ sudo systemctl reload apache2
 ```
 
 The VirtualHost proxies dynamic requests to Gunicorn at `127.0.0.1:8001` and serves collected static files from `/opt/warehouse_config/staticfiles/`.
+`/static/` is intentionally served directly by Apache from `STATIC_ROOT`, but PWA root assets must still reach Django/Gunicorn: `/manifest.webmanifest` serves the web app manifest and `/service-worker.js` serves the service worker with `Service-Worker-Allowed: /`. Do not move these endpoints under `/static/`; an Apache `Alias /static/` can intercept `/static/manifest.webmanifest` before the Django view runs.
 
 ## 11. Verification commands
 

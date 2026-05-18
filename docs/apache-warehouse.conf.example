@@ -8,6 +8,9 @@
         Require all granted
     </Directory>
 
+    # Apache serves only collected static assets. Root-level PWA endpoints
+    # (/manifest.webmanifest and /service-worker.js) must continue to proxy
+    # to Django/Gunicorn so Django can set the expected content type/headers.
     ProxyPass /static/ !
     ProxyPass / http://127.0.0.1:8001/
     ProxyPassReverse / http://127.0.0.1:8001/
