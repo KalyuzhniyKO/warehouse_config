@@ -5,13 +5,18 @@ from django.db import IntegrityError, transaction
 from core.models import BarcodeRegistry, BarcodeSequence, Item, Location, Warehouse
 
 BARCODE_PADDING = 10
+BARCODE_MAX_ATTEMPTS = 1000
+
+
+class BarcodeGenerationError(RuntimeError):
+    """Raised when a unique barcode cannot be reserved safely."""
 
 
 def _normalize_prefix(prefix):
     return str(prefix).strip().upper()
 
 
-def generate_barcode(prefix):
+def generate_barcode(prefix, max_attempts=BARCODE_MAX_ATTEMPTS):
     """Generate and reserve a globally unique barcode for *prefix*."""
     prefix = _normalize_prefix(prefix)
     with transaction.atomic():
@@ -23,20 +28,25 @@ def generate_barcode(prefix):
             sequence.padding = BARCODE_PADDING
             sequence.save(update_fields=["padding", "updated_at"])
 
-        while True:
+        for _attempt in range(max_attempts):
             barcode = f"{prefix}{sequence.next_number:0{BARCODE_PADDING}d}"
             sequence.next_number += 1
             sequence.save(update_fields=["next_number", "updated_at"])
             if not BarcodeRegistry.objects.filter(barcode=barcode).exists():
                 return barcode
 
+    raise BarcodeGenerationError(
+        f"Unable to generate a unique barcode for prefix {prefix!r} "
+        f"after {max_attempts} attempts."
+    )
 
-def create_barcode_registry(prefix, description=""):
+
+def create_barcode_registry(prefix, description="", max_attempts=BARCODE_MAX_ATTEMPTS):
     """Create a BarcodeRegistry row using the next number for *prefix*."""
     prefix = _normalize_prefix(prefix)
     description = (description or "").strip()
-    while True:
-        barcode = generate_barcode(prefix)
+    for _attempt in range(max_attempts):
+        barcode = generate_barcode(prefix, max_attempts=max_attempts)
         try:
             with transaction.atomic():
                 return BarcodeRegistry.objects.create(
@@ -46,6 +56,11 @@ def create_barcode_registry(prefix, description=""):
                 )
         except IntegrityError:
             continue
+
+    raise BarcodeGenerationError(
+        f"Unable to reserve a unique barcode for prefix {prefix!r} "
+        f"after {max_attempts} attempts."
+    )
 
 
 def ensure_item_barcode(item):

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -41,7 +42,7 @@ def _env_list(name, default=None):
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-only-change-me")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = _env_bool("DJANGO_DEBUG", default=True)
+DEBUG = _env_bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 CSRF_TRUSTED_ORIGINS = _env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
@@ -178,23 +179,29 @@ LOGGING_HANDLERS = {
     }
 }
 
-if not DEBUG:
+RUNNING_TESTS = "test" in sys.argv
+
+if not DEBUG and not RUNNING_TESTS:
     LOGGING_HANDLERS = {
         "django_file": {
             "class": "logging.handlers.WatchedFileHandler",
             "filename": str(LOG_DIR / "django.log"),
+            "delay": True,
             "formatter": "standard",
             "level": "INFO",
         },
         "errors_file": {
             "class": "logging.handlers.WatchedFileHandler",
             "filename": str(LOG_DIR / "errors.log"),
+            "delay": True,
             "formatter": "standard",
             "level": "ERROR",
         },
     }
 
-LOGGING_ACTIVE_HANDLERS = ["console"] if DEBUG else ["django_file", "errors_file"]
+LOGGING_ACTIVE_HANDLERS = (
+    ["console"] if DEBUG or RUNNING_TESTS else ["django_file", "errors_file"]
+)
 
 LOGGING = {
     "version": 1,
