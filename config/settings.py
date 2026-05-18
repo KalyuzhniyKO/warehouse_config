@@ -147,6 +147,7 @@ LANGUAGE_CODE = os.getenv("DJANGO_LANGUAGE_CODE", "uk")
 LANGUAGES = [
     ("uk", "Українська"),
     ("en", "English"),
+    ("ru", "Русский"),
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]

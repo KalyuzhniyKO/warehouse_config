@@ -253,6 +253,7 @@ class SwitchLanguageUrlTests(TestCase):
     def test_replaces_existing_language_prefix(self):
         self.assert_switch_url("/uk/", "en", "/en/")
         self.assert_switch_url("/en/items/", "uk", "/uk/items/")
+        self.assert_switch_url("/en/items/", "ru", "/ru/items/")
 
     def test_preserves_query_string(self):
         self.assert_switch_url("/uk/items/?q=test", "en", "/en/items/?q=test")
@@ -260,6 +261,7 @@ class SwitchLanguageUrlTests(TestCase):
     def test_adds_language_prefix_when_missing(self):
         self.assert_switch_url("/admin/", "en", "/en/admin/")
         self.assert_switch_url("/", "uk", "/uk/")
+        self.assert_switch_url("/", "ru", "/ru/")
 
 
 class DashboardLocalizationTests(TestCase):
@@ -284,7 +286,12 @@ class DashboardLocalizationTests(TestCase):
     def dashboard_for(self, user, path=None):
         from django.utils import translation
 
-        translation.activate("en" if path and path.startswith("/en/") else "uk")
+        language = "uk"
+        if path and path.startswith("/en/"):
+            language = "en"
+        elif path and path.startswith("/ru/"):
+            language = "ru"
+        translation.activate(language)
         self.client.force_login(user)
         return self.client.get(path or reverse("dashboard"))
 
@@ -457,6 +464,22 @@ class DashboardLocalizationTests(TestCase):
         for language_code, language_name in settings.LANGUAGES:
             with self.subTest(language=language_name):
                 self.assertIn(f'value="{language_code}"', html)
+
+    def test_settings_include_russian_language(self):
+        from django.conf import settings
+
+        self.assertIn(("ru", "Русский"), settings.LANGUAGES)
+
+    def test_russian_storekeeper_self_service_smoke(self):
+        response = self.dashboard_for(self.storekeeper, "/ru/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Склад самообслуживания", html)
+        self.assertIn("Взять товар", html)
+        self.assertIn("Вернуть товар", html)
+        self.assertNotIn("Взяти товар", html)
+        self.assertNotIn("Повернути товар", html)
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")
