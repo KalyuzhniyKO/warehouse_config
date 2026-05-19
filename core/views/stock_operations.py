@@ -35,6 +35,7 @@ from ..forms import (
     StockIssueForm,
     StockMovementFilterForm,
     StockReceiveForm,
+    StockReturnForm,
     StockTransferForm,
     StockWriteOffForm,
     UnitForm,
@@ -83,6 +84,7 @@ from ..services.stock import (
     find_best_stock_balance_for_issue,
     find_default_stock_return_location,
     issue_stock,
+    receive_stock,
     return_stock,
     transfer_stock,
     writeoff_stock,
@@ -256,7 +258,7 @@ class StockReceiveView(
         if duplicate_redirect is not None:
             return duplicate_redirect
         try:
-            movement = return_stock(
+            movement = receive_stock(
                 item=form.cleaned_data["item"],
                 location=form.cleaned_data["location"],
                 qty=form.cleaned_data["qty"],
@@ -275,6 +277,67 @@ class StockReceiveView(
         return redirect(url)
 
 
+
+
+class StockReturnView(
+    LoginRequiredMixin,
+    SelfServiceShellContextMixin,
+    GroupRequiredMixin,
+    BarcodePrefillMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
+    group_names = STOCK_EDIT_GROUPS
+    template_name = "core/stock_return_form.html"
+    form_class = StockReturnForm
+    auto_selected_message = _("Дані для повернення визначено автоматично.")
+    no_return_location_message = _("Товар знайдено, але локацію для повернення не налаштовано.")
+    result_url_name = "stock_receive_result"
+
+    def get_return_location(self):
+        if not hasattr(self, "return_location"):
+            self.return_location = find_default_stock_return_location()
+        return self.return_location
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["comment"] = ""
+        return_location = self.get_return_location()
+        if self.scanned_item is not None and return_location is not None:
+            initial["warehouse"] = return_location.warehouse
+            initial["location"] = return_location
+        return initial
+
+    def get(self, request, *args, **kwargs):
+        if self.scanned_item is not None:
+            if self.get_return_location() is not None:
+                messages.success(request, self.auto_selected_message)
+            else:
+                messages.error(request, self.no_return_location_message)
+        return super().get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["return_location"] = self.get_return_location()
+        context["can_submit_receive"] = (self.scanned_item is not None and self.get_return_location() is not None)
+        context["operation_token"] = self.get_operation_token_for_context(context["can_submit_receive"])
+        context["operation_token_field"] = self.operation_token_field
+        return context
+
+    def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
+        try:
+            movement = return_stock(item=form.cleaned_data["item"], location=form.cleaned_data["location"], qty=form.cleaned_data["qty"], recipient=form.cleaned_data["recipient"], department=form.cleaned_data["department"], comment=form.cleaned_data.get("comment", ""), occurred_at=form.cleaned_data.get("occurred_at"))
+        except StockServiceError as exc:
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
+            return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
+        return redirect(reverse("stock_receive_result", kwargs={"pk": movement.pk}))
 class StockReceiveResultView(
     LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
 ):
@@ -292,7 +355,7 @@ class StockReceiveResultView(
                 "recipient",
             ),
             pk=self.kwargs["pk"],
-            movement_type=StockMovement.MovementType.RETURN,
+            movement_type__in=[StockMovement.MovementType.IN, StockMovement.MovementType.RETURN],
         )
         return context
 
@@ -425,7 +488,7 @@ class StockMovementPrintView(
             operation_type = _("Повернення товару")
             responsible_label = _("Хто повернув товар")
         elif movement.movement_type == StockMovement.MovementType.IN:
-            operation_type = _("Повернення товару")
+            operation_type = _("Прихід товару")
             responsible_label = _("Отримувач / відповідальний")
         else:
             operation_type = movement.get_movement_type_display()

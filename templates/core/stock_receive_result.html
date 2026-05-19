@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Прихід виконано" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% if movement.movement_type == movement.MovementType.RETURN %}{% trans "Повернення товару" %}{% else %}{% trans "Прихід товару" %}{% endif %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <section class="mx-auto py-4 py-md-5" style="max-width: 860px;" aria-labelledby="operation-success-title">
     <div class="text-center mb-4 mb-md-5">
         <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success text-white shadow-sm mb-4" style="width: 6rem; height: 6rem; font-size: 4rem; line-height: 1;" aria-hidden="true">✓</div>
-        <h1 id="operation-success-title" class="display-5 fw-bold mb-3">{% trans "Прихід виконано" %}</h1>
-        <p class="fs-3 text-muted mb-0">{% trans "Товар оприбутковано на склад" %}</p>
+        <h1 id="operation-success-title" class="display-5 fw-bold mb-3">{% if movement.movement_type == movement.MovementType.RETURN %}{% trans "Повернення товару" %}{% else %}{% trans "Прихід товару" %}{% endif %}</h1>
+        <p class="fs-3 text-muted mb-0">{% if movement.movement_type == movement.MovementType.RETURN %}{% trans "Товар повернено" %}{% else %}{% trans "Товар оприбутковано" %}{% endif %}</p>
     </div>
 
     <div class="card content-card shadow-sm rounded-4 border-0 mb-4">
@@ -18,11 +18,8 @@
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Кількість" %}</dt>
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.qty }}</dd>
 
-                <dt class="col-md-5 text-muted fw-semibold">{% trans "Одержувач" %}</dt>
-                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.recipient|default:"—" }}</dd>
-
-                <dt class="col-md-5 text-muted fw-semibold">{% trans "Склад / локація" %}</dt>
-                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.department|default:"—" }}</dd>
+                {% if movement.recipient %}<dt class="col-md-5 text-muted fw-semibold">{% trans "Хто повертає" %}</dt><dd class="col-md-7 mb-0 fw-semibold">{{ movement.recipient }}</dd>{% endif %}
+                {% if movement.department %}<dt class="col-md-5 text-muted fw-semibold">{% trans "Місце використання" %}</dt><dd class="col-md-7 mb-0 fw-semibold">{{ movement.department }}</dd>{% endif %}
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Дата і час операції" %}</dt>
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
