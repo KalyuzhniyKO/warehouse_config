@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-18 14:51+0300\n"
+"POT-Creation-Date: 2026-05-19 21:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -346,7 +346,6 @@ msgid "Superuser не можна деактивувати через цей UI."
 msgstr ""
 
 #: core/forms/management.py:80 templates/registration/login.html:119
-#| msgid "Контроль"
 msgid "Пароль"
 msgstr "Password"
 
@@ -413,19 +412,16 @@ msgid "Дата операції"
 msgstr "Data operazione"
 
 #: core/forms/stock_operations.py:101
-#| msgid "Показувати назву товару"
 msgid "Хто повертає товар"
 msgstr "Dipendente / destinatario"
 
 #: core/forms/stock_operations.py:105
-#| msgid "Внесіть стартову кількість товарів."
 msgid "Оберіть, хто повертає товар."
 msgstr "Selezionare dipendente."
 
 #: core/forms/stock_operations.py:109 core/forms/stock_operations.py:179
 #: core/models.py:94 core/views/stock_operations.py:447
 #: templates/core/stock_issue_result.html:24
-#: templates/core/stock_receive_result.html:24
 msgid "Цех / місце використання"
 msgstr "Luogo di utilizzo"
 
@@ -447,12 +443,10 @@ msgstr ""
 
 #: core/forms/stock_operations.py:188 core/views/stock_operations.py:423
 #: templates/core/stock_issue_result.html:21
-#| msgid "Видача товару"
 msgid "Хто взяв товар"
 msgstr "Dipendente / destinatario"
 
 #: core/forms/stock_operations.py:192
-#| msgid "Внесіть стартову кількість товарів."
 msgid "Оберіть, хто бере товар."
 msgstr "Selezionare dipendente."
 
@@ -1073,7 +1067,6 @@ msgstr "Categoria di archivio"
 #: core/views/directories.py:288 core/views/management.py:171
 #: templates/base.html:146 templates/base.html:217
 #: templates/core/dashboard.html:51 templates/core/management/dashboard.html:75
-#| msgid "Архівувати отримувача"
 msgid "Працівники / отримувачі"
 msgstr "Dipendenti / destinatari"
 
@@ -1104,7 +1097,6 @@ msgstr "Contatto"
 #: templates/core/dashboard.html:43 templates/core/management/dashboard.html:22
 #: templates/core/stockbalance_list.html:36
 #: templates/core/stockmovement_list.html:13
-#| msgid "Товари та матеріали"
 msgid "Товари / матеріали"
 msgstr "Prodotti / materiali"
 
@@ -1351,7 +1343,8 @@ msgid "Штрихкоди"
 msgstr "Codici a barre"
 
 #: core/views/management.py:301 templates/base.html:125 templates/base.html:195
-#: templates/core/dashboard.html:16
+#: templates/core/dashboard.html:16 templates/core/stock_receive_form.html:3
+#: templates/core/stock_receive_form.html:5
 msgid "Прихід товару"
 msgstr "Ricevimento merce"
 
@@ -1365,7 +1358,6 @@ msgstr "Saldo iniziale"
 #: templates/core/management/dashboard.html:146
 #: templates/core/stockmovement_list.html:3
 #: templates/core/stockmovement_list.html:6
-#| msgid "Дата операції"
 msgid "Журнал операцій"
 msgstr "Registro operazioni"
 
@@ -1374,13 +1366,11 @@ msgid "Документ ще не додано."
 msgstr "Il documento non è valido."
 
 #: core/views/stock_operations.py:98
-#| msgid "Інвентаризацію вже завершено."
 msgid "Операція вже була збережена."
 msgstr "Operazione già salvata."
 
 #: core/views/stock_operations.py:175 templates/core/stock_issue_form.html:47
 #: templates/core/stock_receive_form.html:45
-#| msgid "Штрихкод не знайдено."
 msgid "Товар за цим штрихкодом не знайдено."
 msgstr "Prodotto non trovato"
 
@@ -1416,15 +1406,12 @@ msgid "Видача товару"
 msgstr "Emissione di azioni"
 
 #: core/views/stock_operations.py:425 core/views/stock_operations.py:428
-#: templates/core/stock_receive_form.html:3
-#: templates/core/stock_receive_form.html:5
 #, fuzzy
 #| msgid "Показувати назву товару"
 msgid "Повернення товару"
 msgstr "Trova il tuo posto"
 
 #: core/views/stock_operations.py:426
-#: templates/core/stock_receive_result.html:21
 #, fuzzy
 #| msgid "До рухів товарів"
 msgid "Хто повернув товар"
@@ -1563,22 +1550,16 @@ msgstr "Attiva/disattiva la navigazione"
 #: templates/base.html:118 templates/base.html:188
 #: templates/core/storekeeper_workplace.html:3
 #: templates/core/storekeeper_workplace.html:79
-#| msgid "Тільки для технічного обслуговування."
 msgid "Склад самообслуговування"
 msgstr "Magazzino self-service"
 
 #: templates/base.html:119 templates/base.html:189
 #: templates/core/storekeeper_workplace.html:85
 #: templates/core/storekeeper_workplace.html:89
-#| msgid "Рухи товарів"
 msgid "Взяти товар"
 msgstr "Prelevare prodotto"
 
 #: templates/base.html:120 templates/base.html:190
-#: templates/core/stock_receive_form.html:91
-#: templates/core/storekeeper_workplace.html:96
-#: templates/core/storekeeper_workplace.html:100
-#| msgid "Прихід товару"
 msgid "Повернути товар"
 msgstr "Restituire prodotto"
 
@@ -1589,7 +1570,6 @@ msgstr "Home"
 
 #: templates/base.html:124 templates/base.html:194 templates/base.html:202
 #: templates/core/dashboard.html:14
-#| msgid "Видача зі складу"
 msgid "Операції складу"
 msgstr "Operazioni di magazzino"
 
@@ -1635,7 +1615,6 @@ msgstr "Controllo e report"
 #: templates/core/management/dashboard.html:137
 #: templates/core/stockbalance_list.html:3
 #: templates/core/stockbalance_list.html:7
-#| msgid "Видача зі складу"
 msgid "Залишки на складі"
 msgstr "Giacenze di magazzino"
 
@@ -2192,7 +2171,6 @@ msgstr "Nome del sistema"
 #: templates/core/management/dashboard.html:173
 #: templates/core/management/settings.html:3
 #: templates/core/management/settings.html:7
-#| msgid "Налаштування"
 msgid "Налаштування складу"
 msgstr "Impostazioni magazzino"
 
@@ -2314,13 +2292,11 @@ msgstr ""
 #: templates/core/stock_issue_form.html:16
 #: templates/core/stock_receive_form.html:15
 #: templates/core/stock_receive_form.html:16
-#| msgid "Прихід товару"
 msgid "Штрихкод товару"
 msgstr "Codice a barre del prodotto"
 
 #: templates/core/stock_issue_form.html:19
 #: templates/core/stock_receive_form.html:19
-#| msgid "Видача товару"
 msgid "Знайти товар"
 msgstr "Trovare prodotto"
 
@@ -2339,13 +2315,11 @@ msgid "Назва товару"
 msgstr "Emissione di azioni"
 
 #: templates/core/stock_issue_form.html:41
-#| msgid "Початковий залишок"
 msgid "Доступний залишок"
 msgstr "Giacenza disponibile"
 
 #: templates/core/stock_issue_form.html:93
 #: templates/core/stock_receive_form.html:91
-#| msgid "Зберегти"
 msgid "Збереження..."
 msgstr "Salvataggio..."
 
@@ -2388,24 +2362,42 @@ msgstr "Nuovo numero"
 msgid "На головний екран"
 msgstr ""
 
+#: templates/core/stock_receive_form.html:91
+#, fuzzy
+#| msgid "Видача товару"
+msgid "Оприбуткувати товар"
+msgstr "Emissione di azioni"
+
 #: templates/core/stock_receive_result.html:3
 #: templates/core/stock_receive_result.html:8
 #, fuzzy
-#| msgid "Керування складом"
-msgid "Повернення виконано"
-msgstr "Gestione"
+#| msgid "Видача зі складу"
+msgid "Прихід виконано"
+msgstr "Emissione dal magazzino"
 
 #: templates/core/stock_receive_result.html:9
 #, fuzzy
 #| msgid "Панель керування складом"
-msgid "Товар повернено на склад"
+msgid "Товар оприбутковано на склад"
 msgstr "Pannello di copertura"
+
+#: templates/core/stock_receive_result.html:21
+#, fuzzy
+#| msgid "Отримувач"
+msgid "Одержувач"
+msgstr "Destinatario"
+
+#: templates/core/stock_receive_result.html:24
+#, fuzzy
+#| msgid "Тип локації"
+msgid "Склад / локація"
+msgstr "Tipo di ubicazione"
 
 #: templates/core/stock_receive_result.html:35
 #, fuzzy
-#| msgid "Нова операція"
-msgid "Нова операція повернення"
-msgstr "Nuova operazione"
+#| msgid "Прихід товару"
+msgid "Новий прихід товару"
+msgstr "Ricevimento merce"
 
 #: templates/core/stock_transfer_form.html:11
 #: templates/core/stock_transfer_form.html:24
@@ -2511,9 +2503,18 @@ msgstr "Scegliere un'azione"
 msgid "Зіскануйте товар і зафіксуйте видачу зі складу."
 msgstr "Record goods issued from the warehouse."
 
+#: templates/core/storekeeper_workplace.html:96
+#: templates/core/storekeeper_workplace.html:100
+#, fuzzy
+#| msgid "Видача товару"
+msgid "Прийняти товар"
+msgstr "Emissione di azioni"
+
 #: templates/core/storekeeper_workplace.html:101
-msgid "Зіскануйте товар і зафіксуйте повернення на склад."
-msgstr ""
+#, fuzzy
+#| msgid "Оформіть видачу товарів зі складу."
+msgid "Зіскануйте товар і зафіксуйте прихід на склад."
+msgstr "Record goods issued from the warehouse."
 
 #: templates/includes/language_switcher.html:9
 msgid "Мова"
@@ -2528,13 +2529,22 @@ msgid "Вхід до складського термінала"
 msgstr "Accesso al terminale di magazzino"
 
 #: templates/registration/login.html:101
-#| msgid "Інструкція користувача"
 msgid "Ім’я користувача"
 msgstr "Utente"
 
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Accedi"
+
+#, fuzzy
+#~| msgid "Керування складом"
+#~ msgid "Повернення виконано"
+#~ msgstr "Gestione"
+
+#, fuzzy
+#~| msgid "Нова операція"
+#~ msgid "Нова операція повернення"
+#~ msgstr "Nuova operazione"
 
 #~ msgid "Створити номенклатуру"
 #~ msgstr "Creare una nomenclatura"

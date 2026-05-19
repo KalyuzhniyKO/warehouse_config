@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-17 23:14+0300\n"
+"POT-Creation-Date: 2026-05-19 21:30+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,8 +30,8 @@ msgstr "Період до"
 
 #: core/forms/analytics.py:19 core/forms/directories.py:234
 #: core/forms/filters.py:9 core/forms/filters.py:49 core/forms/inventory.py:9
-#: core/forms/stock_operations.py:46 core/models.py:121 core/models.py:233
-#: core/models.py:265 core/models.py:361 core/views/analytics.py:215
+#: core/forms/stock_operations.py:46 core/models.py:128 core/models.py:240
+#: core/models.py:272 core/models.py:368 core/views/analytics.py:215
 #: core/views/directories.py:352 core/views/inventory.py:113
 #: core/views/stock_operations.py:444 templates/core/inventory_detail.html:25
 #: templates/core/inventory_list.html:20
@@ -42,8 +42,8 @@ msgstr "Склад"
 
 #: core/forms/analytics.py:24 core/forms/filters.py:14 core/forms/filters.py:51
 #: core/forms/inventory.py:11 core/forms/stock_operations.py:49
-#: core/models.py:123 core/models.py:260 core/models.py:287 core/models.py:330
-#: core/models.py:367 core/models.py:423 core/views/analytics.py:216
+#: core/models.py:130 core/models.py:267 core/models.py:294 core/models.py:337
+#: core/models.py:374 core/models.py:430 core/views/analytics.py:216
 #: core/views/inventory.py:118 core/views/stock_operations.py:445
 #: templates/core/inventory_count.html:30
 #: templates/core/inventory_detail.html:26
@@ -54,15 +54,15 @@ msgstr "Склад"
 msgid "Локація"
 msgstr "Локація"
 
-#: core/forms/analytics.py:31 core/forms/directories.py:147 core/models.py:70
-#: core/models.py:168 core/views/directories.py:320
+#: core/forms/analytics.py:31 core/forms/directories.py:147 core/models.py:77
+#: core/models.py:175 core/views/directories.py:320
 msgid "Категорія"
 msgstr "Категорія"
 
 #: core/forms/analytics.py:36 core/forms/filters.py:21 core/forms/filters.py:48
 #: core/forms/stock_operations.py:44 core/forms/stock_operations.py:297
-#: core/models.py:120 core/models.py:192 core/models.py:193 core/models.py:324
-#: core/models.py:417 core/models.py:487 core/models.py:606
+#: core/models.py:127 core/models.py:199 core/models.py:200 core/models.py:331
+#: core/models.py:424 core/models.py:494 core/models.py:613
 #: core/views/analytics.py:213 core/views/inventory.py:115
 #: templates/core/inventory_count.html:28
 #: templates/core/inventory_line_table.html:7
@@ -80,7 +80,7 @@ msgstr "Тип операції"
 msgid "Усі операції"
 msgstr "Усі операції"
 
-#: core/forms/analytics.py:46 core/models.py:103 core/models.py:510
+#: core/forms/analytics.py:46 core/models.py:110 core/models.py:517
 #: core/views/analytics.py:217 templates/core/stockmovement_list.html:13
 msgid "Отримувач"
 msgstr "Отримувач"
@@ -195,7 +195,7 @@ msgstr "Додаткова інформація про отримувача."
 msgid "Внутрішній код"
 msgstr "Внутрішній код"
 
-#: core/forms/directories.py:148 core/models.py:45 core/models.py:176
+#: core/forms/directories.py:148 core/models.py:52 core/models.py:183
 #: templates/core/stockbalance_list.html:36
 msgid "Одиниця виміру"
 msgstr "Одиниця виміру"
@@ -237,7 +237,7 @@ msgid "Дата до"
 msgstr "Дата до"
 
 #: core/forms/filters.py:58 core/forms/stock_operations.py:176
-#: core/models.py:525 templates/core/stockmovement_list.html:13
+#: core/models.py:532 templates/core/stockmovement_list.html:13
 msgid "Тип видачі"
 msgstr "Тип видачі"
 
@@ -245,13 +245,13 @@ msgstr "Тип видачі"
 msgid "Усі типи видачі"
 msgstr "Усі типи видачі"
 
-#: core/forms/filters.py:62 core/models.py:530
+#: core/forms/filters.py:62 core/models.py:537
 #: templates/core/stockmovement_list.html:13
 msgid "Цех / підрозділ"
 msgstr "Цех / підрозділ"
 
 #: core/forms/filters.py:63 core/forms/stock_operations.py:195
-#: core/forms/stock_operations.py:274 core/models.py:531
+#: core/forms/stock_operations.py:274 core/models.py:538
 msgid "Номер документа"
 msgstr "Номер документа"
 
@@ -310,7 +310,7 @@ msgstr "Показувати текст штрихкоду"
 msgid "Тип штрихкоду"
 msgstr "Тип штрихкоду"
 
-#: core/forms/labels.py:49 core/models.py:551 core/models.py:603
+#: core/forms/labels.py:49 core/models.py:558 core/models.py:610
 msgid "Принтер"
 msgstr "Принтер"
 
@@ -415,9 +415,8 @@ msgid "Оберіть, хто повертає товар."
 msgstr "Оберіть, хто повертає товар."
 
 #: core/forms/stock_operations.py:109 core/forms/stock_operations.py:179
-#: core/models.py:87 core/views/stock_operations.py:447
+#: core/models.py:94 core/views/stock_operations.py:447
 #: templates/core/stock_issue_result.html:24
-#: templates/core/stock_receive_result.html:24
 msgid "Цех / місце використання"
 msgstr "Цех / місце використання"
 
@@ -466,7 +465,7 @@ msgstr "Втрачено"
 msgid "Брак"
 msgstr "Брак"
 
-#: core/forms/stock_operations.py:271 core/models.py:471
+#: core/forms/stock_operations.py:271 core/models.py:478
 msgid "Інше"
 msgstr "Інше"
 
@@ -502,392 +501,392 @@ msgstr "Неможливо перемістити товар у ту саму л
 msgid "Використовувати локації"
 msgstr "Використовувати локації"
 
-#: core/models.py:13 core/models.py:33 core/models.py:617
+#: core/models.py:13 core/models.py:40 core/models.py:624
 msgid "created at"
 msgstr "створено"
 
-#: core/models.py:14 core/models.py:34
+#: core/models.py:14 core/models.py:41
 msgid "updated at"
 msgstr "оновлено"
 
-#: core/models.py:17 core/models.py:18 core/models.py:28
+#: core/models.py:17 core/models.py:18 core/models.py:35
 msgid "Налаштування системи"
 msgstr "Налаштування системи"
 
-#: core/models.py:32
+#: core/models.py:39
 msgid "active"
 msgstr "активний"
 
-#: core/models.py:41 core/models.py:59 core/models.py:83 core/models.py:96
-#: core/models.py:162 core/models.py:220 core/models.py:269 core/models.py:545
-#: core/models.py:570
+#: core/models.py:48 core/models.py:66 core/models.py:90 core/models.py:103
+#: core/models.py:169 core/models.py:227 core/models.py:276 core/models.py:552
+#: core/models.py:577
 msgid "name"
 msgstr "назва"
 
-#: core/models.py:42
+#: core/models.py:49
 msgid "symbol"
 msgstr "позначення"
 
-#: core/models.py:46 core/views/directories.py:259 core/views/management.py:153
+#: core/models.py:53 core/views/directories.py:259 core/views/management.py:153
 #: templates/base.html:141 templates/base.html:212
 #: templates/core/dashboard.html:46 templates/core/management/dashboard.html:66
 msgid "Одиниці виміру"
 msgstr "Одиниці виміру"
 
-#: core/models.py:62
+#: core/models.py:69
 msgid "parent category"
 msgstr "батьківська категорія"
 
-#: core/models.py:71 core/views/directories.py:274 core/views/management.py:147
+#: core/models.py:78 core/views/directories.py:274 core/views/management.py:147
 #: templates/base.html:140 templates/base.html:211
 #: templates/core/dashboard.html:45 templates/core/management/dashboard.html:57
 msgid "Категорії"
 msgstr "Категорії"
 
-#: core/models.py:84
+#: core/models.py:91
 msgid "note"
 msgstr "note"
 
-#: core/models.py:88
+#: core/models.py:95
 msgid "Цехи / місця використання"
 msgstr "Цехи / місця використання"
 
-#: core/models.py:97
+#: core/models.py:104
 msgid "contact name"
 msgstr "контактна особа"
 
-#: core/models.py:98
+#: core/models.py:105
 msgid "phone"
 msgstr "телефон"
 
-#: core/models.py:99
+#: core/models.py:106
 msgid "email"
 msgstr "email"
 
-#: core/models.py:100
+#: core/models.py:107
 msgid "notes"
 msgstr "примітки"
 
-#: core/models.py:104
+#: core/models.py:111
 msgid "Отримувачі"
 msgstr "Отримувачі"
 
-#: core/models.py:122 core/models.py:261
+#: core/models.py:129 core/models.py:268
 msgid "Стелаж"
 msgstr "Стелаж"
 
-#: core/models.py:125 core/models.py:182 core/models.py:223 core/models.py:278
-#: core/models.py:427 core/models.py:608
+#: core/models.py:132 core/models.py:189 core/models.py:230 core/models.py:285
+#: core/models.py:434 core/models.py:615
 msgid "barcode"
 msgstr "штрихкод"
 
-#: core/models.py:126 core/models.py:147
+#: core/models.py:133 core/models.py:154
 msgid "prefix"
 msgstr "префікс"
 
-#: core/models.py:127 core/models.py:189 core/models.py:547
+#: core/models.py:134 core/models.py:196 core/models.py:554
 msgid "description"
 msgstr "опис"
 
-#: core/models.py:130 core/models.py:131
+#: core/models.py:137 core/models.py:138
 msgid "Реєстр штрихкодів"
 msgstr "Реєстр штрихкодів"
 
-#: core/models.py:138
+#: core/models.py:145
 msgid "Barcode must start with the selected prefix."
 msgstr "Штрихкод має починатися з вибраного префікса."
 
-#: core/models.py:149
+#: core/models.py:156
 msgid "next number"
 msgstr "наступний номер"
 
-#: core/models.py:150
+#: core/models.py:157
 msgid "padding"
 msgstr "довжина номера"
 
-#: core/models.py:153
+#: core/models.py:160
 msgid "Послідовність штрихкодів"
 msgstr "Послідовність штрихкодів"
 
-#: core/models.py:154
+#: core/models.py:161
 msgid "Послідовності штрихкодів"
 msgstr "Послідовності штрихкодів"
 
-#: core/models.py:164
+#: core/models.py:171
 msgid "internal code"
 msgstr "внутрішній код"
 
-#: core/models.py:199
+#: core/models.py:206
 msgid "Item barcode must use the ITM prefix."
 msgstr "Штрихкод номенклатури має використовувати префікс ITM."
 
-#: core/models.py:230
+#: core/models.py:237
 msgid "address"
 msgstr "address"
 
-#: core/models.py:234 core/views/directories.py:328
+#: core/models.py:241 core/views/directories.py:328
 #: core/views/management.py:159 templates/base.html:143 templates/base.html:214
 #: templates/core/dashboard.html:48 templates/core/management/dashboard.html:34
 msgid "Склади"
 msgstr "Склади"
 
-#: core/models.py:240
+#: core/models.py:247
 msgid "Warehouse barcode must use the WH prefix."
 msgstr "Штрихкод складу має використовувати префікс WH."
 
-#: core/models.py:271
+#: core/models.py:278
 msgid "location type"
 msgstr "location type"
 
-#: core/models.py:288 core/views/directories.py:342
+#: core/models.py:295 core/views/directories.py:342
 #: core/views/management.py:165 templates/base.html:144 templates/base.html:215
 #: templates/core/dashboard.html:49 templates/core/management/dashboard.html:46
 msgid "Локації"
 msgstr "Локації"
 
-#: core/models.py:302
+#: core/models.py:309
 msgid "Location barcode prefix does not match its type."
 msgstr "Префікс штрихкоду локації не відповідає її типу."
 
-#: core/models.py:334 core/models.py:491
+#: core/models.py:341 core/models.py:498
 msgid "quantity"
 msgstr "кількість"
 
-#: core/models.py:337
+#: core/models.py:344
 msgid "Залишок"
 msgstr "Залишок"
 
-#: core/models.py:338
+#: core/models.py:345
 msgid "Залишки"
 msgstr "Залишки"
 
-#: core/models.py:353
+#: core/models.py:360
 msgid "Draft"
 msgstr "Чернетка"
 
-#: core/models.py:354
+#: core/models.py:361
 msgid "In progress"
 msgstr "В процесі"
 
-#: core/models.py:355
+#: core/models.py:362
 msgid "Completed"
 msgstr "Завершена"
 
-#: core/models.py:356
+#: core/models.py:363
 msgid "Cancelled"
 msgstr "Скасована"
 
-#: core/models.py:358
+#: core/models.py:365
 msgid "number"
 msgstr "next number"
 
-#: core/models.py:374 core/models.py:614
+#: core/models.py:381 core/models.py:621
 msgid "status"
 msgstr ""
 
-#: core/models.py:379
+#: core/models.py:386
 msgid "started at"
 msgstr "created at"
 
-#: core/models.py:380
+#: core/models.py:387
 msgid "completed at"
 msgstr "Завершена"
 
-#: core/models.py:383
+#: core/models.py:390
 msgid "created by"
 msgstr "created at"
 
-#: core/models.py:391
+#: core/models.py:398
 msgid "approved by"
 msgstr ""
 
-#: core/models.py:397 core/models.py:437 core/models.py:533
+#: core/models.py:404 core/models.py:444 core/models.py:540
 msgid "comment"
 msgstr "коментар"
 
-#: core/models.py:400 core/models.py:411 core/models.py:518
+#: core/models.py:407 core/models.py:418 core/models.py:525
 msgid "Inventory count"
 msgstr "Інвентаризація"
 
-#: core/models.py:401
+#: core/models.py:408
 msgid "Inventory counts"
 msgstr "Інвентаризації"
 
-#: core/models.py:429
+#: core/models.py:436
 msgid "expected quantity"
 msgstr "quantity"
 
-#: core/models.py:432
+#: core/models.py:439
 msgid "actual quantity"
 msgstr "quantity"
 
-#: core/models.py:435
+#: core/models.py:442
 msgid "difference quantity"
 msgstr ""
 
-#: core/models.py:438
+#: core/models.py:445
 msgid "counted at"
 msgstr "created at"
 
-#: core/models.py:441
+#: core/models.py:448
 msgid "counted by"
 msgstr ""
 
-#: core/models.py:449
+#: core/models.py:456
 msgid "Inventory count line"
 msgstr "Рядок інвентаризації"
 
-#: core/models.py:450
+#: core/models.py:457
 msgid "Inventory count lines"
 msgstr "Рядки інвентаризації"
 
-#: core/models.py:468
+#: core/models.py:475
 msgid "Продаж"
 msgstr "Продаж"
 
-#: core/models.py:469
+#: core/models.py:476
 msgid "Ремонтні роботи"
 msgstr "Ремонтні роботи"
 
-#: core/models.py:470
+#: core/models.py:477
 msgid "Виробничі потреби"
 msgstr "Виробничі потреби"
 
-#: core/models.py:474
+#: core/models.py:481
 msgid "initial balance"
 msgstr "Початковий баланс"
 
-#: core/models.py:475
+#: core/models.py:482
 msgid "in"
 msgstr "Прихід"
 
-#: core/models.py:476
+#: core/models.py:483
 msgid "out"
 msgstr "Видача"
 
-#: core/models.py:477
+#: core/models.py:484
 msgid "return"
 msgstr "Повернення"
 
-#: core/models.py:478
+#: core/models.py:485
 msgid "write-off"
 msgstr "Списання"
 
-#: core/models.py:479
+#: core/models.py:486
 msgid "transfer"
 msgstr "Переміщення"
 
-#: core/models.py:480
+#: core/models.py:487
 msgid "adjustment"
 msgstr "Коригування"
 
-#: core/models.py:483
+#: core/models.py:490
 msgid "movement type"
 msgstr "тип операції"
 
-#: core/models.py:494
+#: core/models.py:501
 msgid "source location"
 msgstr "локація-джерело"
 
-#: core/models.py:502
+#: core/models.py:509
 msgid "destination location"
 msgstr "локація призначення"
 
-#: core/models.py:532
+#: core/models.py:539
 msgid "occurred at"
 msgstr "дата операції"
 
-#: core/models.py:536
+#: core/models.py:543
 msgid "Рух товарів"
 msgstr "Рух товарів"
 
-#: core/models.py:537
+#: core/models.py:544
 msgid "Рухи товарів"
 msgstr "Рухи товарів"
 
-#: core/models.py:546
+#: core/models.py:553
 msgid "system name"
 msgstr ""
 
-#: core/models.py:548 core/models.py:579
+#: core/models.py:555 core/models.py:586
 msgid "default"
 msgstr ""
 
-#: core/models.py:552 templates/base.html:152 templates/base.html:223
+#: core/models.py:559 templates/base.html:152 templates/base.html:223
 #: templates/core/dashboard.html:62
 #: templates/core/management/dashboard.html:112
 #: templates/core/printer_list.html:3 templates/core/printer_list.html:5
 msgid "Принтери"
 msgstr "Принтери"
 
-#: core/models.py:568
+#: core/models.py:575
 msgid "Code 128"
 msgstr ""
 
-#: core/models.py:571
+#: core/models.py:578
 msgid "width, mm"
 msgstr ""
 
-#: core/models.py:572
+#: core/models.py:579
 msgid "height, mm"
 msgstr ""
 
-#: core/models.py:573
+#: core/models.py:580
 msgid "show item name"
 msgstr ""
 
-#: core/models.py:574
+#: core/models.py:581
 msgid "show internal code"
 msgstr "internal code"
 
-#: core/models.py:575
+#: core/models.py:582
 msgid "show barcode text"
 msgstr ""
 
-#: core/models.py:577
+#: core/models.py:584
 msgid "barcode type"
 msgstr "barcode"
 
-#: core/models.py:582 core/models.py:610
+#: core/models.py:589 core/models.py:617
 msgid "Шаблон етикеток"
 msgstr "Шаблон етикеток"
 
-#: core/models.py:583 templates/base.html:153 templates/base.html:224
+#: core/models.py:590 templates/base.html:153 templates/base.html:224
 #: templates/core/dashboard.html:63 templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
 #: templates/core/management/dashboard.html:121
 msgid "Шаблони етикеток"
 msgstr "Шаблони етикеток"
 
-#: core/models.py:598
+#: core/models.py:605
 msgid "pending"
 msgstr "padding"
 
-#: core/models.py:599
+#: core/models.py:606
 msgid "printed"
 msgstr ""
 
-#: core/models.py:600
+#: core/models.py:607
 msgid "failed"
 msgstr ""
 
-#: core/models.py:612
+#: core/models.py:619
 msgid "copies"
 msgstr ""
 
-#: core/models.py:616
+#: core/models.py:623
 msgid "error message"
 msgstr ""
 
-#: core/models.py:618
+#: core/models.py:625
 msgid "printed at"
 msgstr "created at"
 
-#: core/models.py:620
+#: core/models.py:627
 msgid "user"
 msgstr ""
 
-#: core/models.py:624 core/models.py:625
+#: core/models.py:631 core/models.py:632
 msgid "Завдання друку"
 msgstr "Завдання друку"
 
@@ -1261,7 +1260,8 @@ msgid "Штрихкоди"
 msgstr "Штрихкоди"
 
 #: core/views/management.py:301 templates/base.html:125 templates/base.html:195
-#: templates/core/dashboard.html:16
+#: templates/core/dashboard.html:16 templates/core/stock_receive_form.html:3
+#: templates/core/stock_receive_form.html:5
 msgid "Прихід товару"
 msgstr "Прихід товару"
 
@@ -1319,13 +1319,10 @@ msgid "Видача товару"
 msgstr "Видача товару"
 
 #: core/views/stock_operations.py:425 core/views/stock_operations.py:428
-#: templates/core/stock_receive_form.html:3
-#: templates/core/stock_receive_form.html:5
 msgid "Повернення товару"
 msgstr "Повернення товару"
 
 #: core/views/stock_operations.py:426
-#: templates/core/stock_receive_result.html:21
 msgid "Хто повернув товар"
 msgstr "Хто повернув товар"
 
@@ -1462,9 +1459,6 @@ msgid "Взяти товар"
 msgstr "Взяти товар"
 
 #: templates/base.html:120 templates/base.html:190
-#: templates/core/stock_receive_form.html:91
-#: templates/core/storekeeper_workplace.html:96
-#: templates/core/storekeeper_workplace.html:100
 msgid "Повернути товар"
 msgstr "Повернути товар"
 
@@ -2216,18 +2210,42 @@ msgstr "Нова видача"
 msgid "На головний екран"
 msgstr "На головний екран"
 
+#: templates/core/stock_receive_form.html:91
+#, fuzzy
+#| msgid "Списати товар"
+msgid "Оприбуткувати товар"
+msgstr "Списати товар"
+
 #: templates/core/stock_receive_result.html:3
 #: templates/core/stock_receive_result.html:8
-msgid "Повернення виконано"
-msgstr "Повернення виконано"
+#, fuzzy
+#| msgid "Видачу виконано"
+msgid "Прихід виконано"
+msgstr "Видачу виконано"
 
 #: templates/core/stock_receive_result.html:9
-msgid "Товар повернено на склад"
+#, fuzzy
+#| msgid "Товар повернено на склад"
+msgid "Товар оприбутковано на склад"
 msgstr "Товар повернено на склад"
 
+#: templates/core/stock_receive_result.html:21
+#, fuzzy
+#| msgid "Отримувач"
+msgid "Одержувач"
+msgstr "Отримувач"
+
+#: templates/core/stock_receive_result.html:24
+#, fuzzy
+#| msgid "Тип локації"
+msgid "Склад / локація"
+msgstr "Тип локації"
+
 #: templates/core/stock_receive_result.html:35
-msgid "Нова операція повернення"
-msgstr "Нова операція повернення"
+#, fuzzy
+#| msgid "Прихід товару"
+msgid "Новий прихід товару"
+msgstr "Прихід товару"
 
 #: templates/core/stock_transfer_form.html:11
 #: templates/core/stock_transfer_form.html:24
@@ -2320,8 +2338,15 @@ msgstr "Оберіть дію"
 msgid "Зіскануйте товар і зафіксуйте видачу зі складу."
 msgstr "Зіскануйте товар і зафіксуйте видачу зі складу."
 
+#: templates/core/storekeeper_workplace.html:96
+#: templates/core/storekeeper_workplace.html:100
+msgid "Прийняти товар"
+msgstr "Прийняти товар"
+
 #: templates/core/storekeeper_workplace.html:101
-msgid "Зіскануйте товар і зафіксуйте повернення на склад."
+#, fuzzy
+#| msgid "Зіскануйте товар і зафіксуйте повернення на склад."
+msgid "Зіскануйте товар і зафіксуйте прихід на склад."
 msgstr "Зіскануйте товар і зафіксуйте повернення на склад."
 
 #: templates/includes/language_switcher.html:9
@@ -2343,6 +2368,12 @@ msgstr "Ім’я користувача"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Увійти"
+
+#~ msgid "Повернення виконано"
+#~ msgstr "Повернення виконано"
+
+#~ msgid "Нова операція повернення"
+#~ msgstr "Нова операція повернення"
 
 #~ msgid "Створити отримувача"
 #~ msgstr "Створити отримувача"
@@ -2440,14 +2471,8 @@ msgstr "Увійти"
 #~ msgstr ""
 #~ "Скануйте штрихкод, введіть кількість і підтвердьте повернення товару."
 
-#~ msgid "Прийняти товар"
-#~ msgstr "Прийняти товар"
-
 #~ msgid "Перемістити товар"
 #~ msgstr "Перемістити товар"
-
-#~ msgid "Списати товар"
-#~ msgstr "Списати товар"
 
 #~ msgctxt "storekeeper short menu"
 #~ msgid "Інвентаризація"

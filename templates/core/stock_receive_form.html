@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Повернення товару" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Прихід товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% trans "Повернення товару" %}</h1>
+<h1 class="mb-3">{% trans "Прихід товару" %}</h1>
 
 <div class="card content-card shadow-sm rounded-4 mb-4">
     <div class="card-body p-4 p-lg-5">
@@ -88,7 +88,7 @@
     {% endfor %}
 </div>
 <div class="mt-4 d-grid">
-    <button class="btn btn-primary btn-lg w-100" type="submit" data-submit-button data-saving-label="{% trans 'Збереження...' %}">{% trans "Повернути товар" %}</button>
+    <button class="btn btn-primary btn-lg w-100" type="submit" data-submit-button data-saving-label="{% trans 'Збереження...' %}">{% trans "Оприбуткувати товар" %}</button>
 </div>
 </div></form>
 {% endif %}
