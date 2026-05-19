@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-19 21:30+0300\n"
+"POT-Creation-Date: 2026-05-19 22:08+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,7 +30,7 @@ msgstr "Periodo fa"
 #: core/forms/stock_operations.py:46 core/models.py:128 core/models.py:240
 #: core/models.py:272 core/models.py:368 core/views/analytics.py:215
 #: core/views/directories.py:352 core/views/inventory.py:113
-#: core/views/stock_operations.py:444 templates/core/inventory_detail.html:25
+#: core/views/stock_operations.py:507 templates/core/inventory_detail.html:25
 #: templates/core/inventory_list.html:20
 #: templates/core/stock_writeoff_result.html:10
 #: templates/core/stockbalance_list.html:36
@@ -41,7 +41,7 @@ msgstr "Magazzino"
 #: core/forms/inventory.py:11 core/forms/stock_operations.py:49
 #: core/models.py:130 core/models.py:267 core/models.py:294 core/models.py:337
 #: core/models.py:374 core/models.py:430 core/views/analytics.py:216
-#: core/views/inventory.py:118 core/views/stock_operations.py:445
+#: core/views/inventory.py:118 core/views/stock_operations.py:508
 #: templates/core/inventory_count.html:30
 #: templates/core/inventory_detail.html:26
 #: templates/core/inventory_line_table.html:9
@@ -57,7 +57,7 @@ msgid "Категорія"
 msgstr "Categoria"
 
 #: core/forms/analytics.py:36 core/forms/filters.py:21 core/forms/filters.py:48
-#: core/forms/stock_operations.py:44 core/forms/stock_operations.py:297
+#: core/forms/stock_operations.py:44 core/forms/stock_operations.py:255
 #: core/models.py:127 core/models.py:199 core/models.py:200 core/models.py:331
 #: core/models.py:424 core/models.py:494 core/models.py:613
 #: core/views/analytics.py:213 core/views/inventory.py:115
@@ -68,7 +68,7 @@ msgid "Номенклатура"
 msgstr "Articoli"
 
 #: core/forms/analytics.py:41 core/forms/filters.py:44
-#: core/views/analytics.py:212 core/views/stock_operations.py:438
+#: core/views/analytics.py:212 core/views/stock_operations.py:501
 #: templates/core/stockmovement_list.html:13
 msgid "Тип операції"
 msgstr "Tipo di operazione"
@@ -186,8 +186,9 @@ msgid "Додаткова інформація про отримувача."
 msgstr "Ulteriori informazioni sul destinatario."
 
 #: core/forms/directories.py:146 core/views/directories.py:318
-#: core/views/stock_operations.py:441 templates/core/stock_issue_form.html:34
+#: core/views/stock_operations.py:504 templates/core/stock_issue_form.html:34
 #: templates/core/stock_receive_form.html:34
+#: templates/core/stock_return_form.html:34
 #: templates/core/stockbalance_list.html:36
 msgid "Внутрішній код"
 msgstr "Codice interno"
@@ -233,7 +234,7 @@ msgstr "Questo è tutto"
 msgid "Дата до"
 msgstr "Sì, sì"
 
-#: core/forms/filters.py:58 core/forms/stock_operations.py:176
+#: core/forms/filters.py:58 core/forms/stock_operations.py:134
 #: core/models.py:532 templates/core/stockmovement_list.html:13
 msgid "Тип видачі"
 msgstr "Tipo di problema"
@@ -247,13 +248,13 @@ msgstr "Tutti i tipi di problemi"
 msgid "Цех / підрозділ"
 msgstr "Officina/reparto"
 
-#: core/forms/filters.py:63 core/forms/stock_operations.py:195
-#: core/forms/stock_operations.py:274 core/models.py:538
+#: core/forms/filters.py:63 core/forms/stock_operations.py:153
+#: core/forms/stock_operations.py:232 core/models.py:538
 msgid "Номер документа"
 msgstr "Numero del documento"
 
 #: core/forms/inventory.py:16 core/forms/inventory.py:59
-#: core/forms/stock_operations.py:55 core/forms/stock_operations.py:317
+#: core/forms/stock_operations.py:55 core/forms/stock_operations.py:275
 #: templates/core/inventory_count.html:34
 #: templates/core/inventory_detail.html:31
 #: templates/core/inventory_line_table.html:13
@@ -264,7 +265,7 @@ msgid "Коментар"
 msgstr "Commento"
 
 #: core/forms/inventory.py:42 core/forms/stock_operations.py:95
-#: core/forms/stock_operations.py:382 core/forms/stock_operations.py:390
+#: core/forms/stock_operations.py:340 core/forms/stock_operations.py:348
 msgid "Локація має належати вибраному складу."
 msgstr "L’ubicazione deve appartenere al magazzino selezionato."
 
@@ -394,9 +395,9 @@ msgstr "Nuovo concetto"
 msgid "Локації вимкнено. Операція буде виконана по складу."
 msgstr "L’ubicazione deve appartenere al magazzino selezionato."
 
-#: core/forms/stock_operations.py:52 core/forms/stock_operations.py:259
-#: core/forms/stock_operations.py:311 core/views/analytics.py:214
-#: core/views/stock_operations.py:443 templates/core/stock_issue_result.html:18
+#: core/forms/stock_operations.py:52 core/forms/stock_operations.py:217
+#: core/forms/stock_operations.py:269 core/views/analytics.py:214
+#: core/views/stock_operations.py:506 templates/core/stock_issue_result.html:18
 #: templates/core/stock_receive_result.html:18
 #: templates/core/stock_transfer_result.html:9
 #: templates/core/stock_writeoff_result.html:9
@@ -405,112 +406,129 @@ msgstr "L’ubicazione deve appartenere al magazzino selezionato."
 msgid "Кількість"
 msgstr "Quantità"
 
-#: core/forms/stock_operations.py:58 core/forms/stock_operations.py:320
+#: core/forms/stock_operations.py:58 core/forms/stock_operations.py:278
 #: templates/core/stock_transfer_result.html:14
 #: templates/core/stock_writeoff_result.html:12
 msgid "Дата операції"
 msgstr "Data operazione"
 
-#: core/forms/stock_operations.py:101
-msgid "Хто повертає товар"
-msgstr "Dipendente / destinatario"
-
-#: core/forms/stock_operations.py:105
-msgid "Оберіть, хто повертає товар."
-msgstr "Selezionare dipendente."
-
-#: core/forms/stock_operations.py:109 core/forms/stock_operations.py:179
-#: core/models.py:94 core/views/stock_operations.py:447
-#: templates/core/stock_issue_result.html:24
-msgid "Цех / місце використання"
-msgstr "Luogo di utilizzo"
-
-#: core/forms/stock_operations.py:112 core/forms/stock_operations.py:182
-msgid "Оберіть цех або місце використання"
-msgstr "Selezionare luogo di utilizzo"
-
-#: core/forms/stock_operations.py:114 core/forms/stock_operations.py:184
-msgid "Оберіть цех або місце використання."
-msgstr "Selezionare luogo di utilizzo."
-
-#: core/forms/stock_operations.py:118
+#: core/forms/stock_operations.py:100
 msgid "Надрукувати етикетку після збереження"
 msgstr "Modificare l'etichetta dell'etichetta in modo imprevedibile"
 
-#: core/forms/stock_operations.py:127 core/forms/stock_operations.py:203
-msgid "Налаштуйте хоча б одне активне місце використання."
-msgstr ""
+#: core/forms/stock_operations.py:112
+#: templates/core/stock_receive_result.html:21
+#, fuzzy
+#| msgid "Хто повертає товар"
+msgid "Хто повертає"
+msgstr "Dipendente / destinatario"
 
-#: core/forms/stock_operations.py:188 core/views/stock_operations.py:423
+#: core/forms/stock_operations.py:112
+#, fuzzy
+#| msgid "Локацію знайдено."
+msgid "Виберіть працівника"
+msgstr "Posizione trovata."
+
+#: core/forms/stock_operations.py:113
+#: templates/core/stock_receive_result.html:22
+#, fuzzy
+#| msgid "Цех / місце використання"
+msgid "Місце використання"
+msgstr "Luogo di utilizzo"
+
+#: core/forms/stock_operations.py:113
+#, fuzzy
+#| msgid "Оберіть цех або місце використання"
+msgid "Виберіть місце використання"
+msgstr "Selezionare luogo di utilizzo"
+
+#: core/forms/stock_operations.py:137 core/models.py:94
+#: core/views/stock_operations.py:510 templates/core/stock_issue_result.html:24
+msgid "Цех / місце використання"
+msgstr "Luogo di utilizzo"
+
+#: core/forms/stock_operations.py:140
+msgid "Оберіть цех або місце використання"
+msgstr "Selezionare luogo di utilizzo"
+
+#: core/forms/stock_operations.py:142
+msgid "Оберіть цех або місце використання."
+msgstr "Selezionare luogo di utilizzo."
+
+#: core/forms/stock_operations.py:146 core/views/stock_operations.py:486
 #: templates/core/stock_issue_result.html:21
 msgid "Хто взяв товар"
 msgstr "Dipendente / destinatario"
 
-#: core/forms/stock_operations.py:192
+#: core/forms/stock_operations.py:150
 msgid "Оберіть, хто бере товар."
 msgstr "Selezionare dipendente."
 
-#: core/forms/stock_operations.py:265
+#: core/forms/stock_operations.py:161
+msgid "Налаштуйте хоча б одне активне місце використання."
+msgstr ""
+
+#: core/forms/stock_operations.py:223
 #, fuzzy
 #| msgid "Списання"
 msgid "Причина списання"
 msgstr "Descrizione"
 
-#: core/forms/stock_operations.py:267
+#: core/forms/stock_operations.py:225
 msgid "Використано для ремонту"
 msgstr ""
 
-#: core/forms/stock_operations.py:268
+#: core/forms/stock_operations.py:226
 msgid "Зіпсовано"
 msgstr ""
 
-#: core/forms/stock_operations.py:269
+#: core/forms/stock_operations.py:227
 msgid "Втрачено"
 msgstr ""
 
-#: core/forms/stock_operations.py:270
+#: core/forms/stock_operations.py:228
 msgid "Брак"
 msgstr ""
 
-#: core/forms/stock_operations.py:271 core/models.py:478
+#: core/forms/stock_operations.py:229 core/models.py:478
 msgid "Інше"
 msgstr "Altro"
 
-#: core/forms/stock_operations.py:299
+#: core/forms/stock_operations.py:257
 #: templates/core/stock_transfer_result.html:10
 #, fuzzy
 #| msgid "Складський облік"
 msgid "Склад-відправник"
 msgstr "Gestione magazzino"
 
-#: core/forms/stock_operations.py:302
+#: core/forms/stock_operations.py:260
 #: templates/core/stock_transfer_result.html:11
 #, fuzzy
 #| msgid "Локацію знайдено."
 msgid "Локація-відправник"
 msgstr "Posizione trovata."
 
-#: core/forms/stock_operations.py:305
+#: core/forms/stock_operations.py:263
 #: templates/core/stock_transfer_result.html:12
 #, fuzzy
 #| msgid "Створити отримувача"
 msgid "Склад-отримувач"
 msgstr "Crea destinatario"
 
-#: core/forms/stock_operations.py:308
+#: core/forms/stock_operations.py:266
 #: templates/core/stock_transfer_result.html:13
 #, fuzzy
 #| msgid "Топ-10 отримувачів"
 msgid "Локація-отримувач"
 msgstr "Top 10 destinatari"
 
-#: core/forms/stock_operations.py:362
+#: core/forms/stock_operations.py:320
 #, fuzzy
 #| msgid "Неможливо завершити скасовану інвентаризацію."
 msgid "Неможливо перемістити товар у той самий склад."
 msgstr "Impossibile completare un conteggio di inventario annullato."
 
-#: core/forms/stock_operations.py:399
+#: core/forms/stock_operations.py:357
 #, fuzzy
 #| msgid "Неможливо завершити скасовану інвентаризацію."
 msgid "Неможливо перемістити товар у ту саму локацію."
@@ -1119,12 +1137,13 @@ msgid "Архівувати товар / матеріал"
 msgstr "Beni e materiali"
 
 #: core/views/directories.py:319 core/views/directories.py:337
-#: core/views/directories.py:355 core/views/stock_operations.py:442
+#: core/views/directories.py:355 core/views/stock_operations.py:505
 #: templates/core/inventory_count.html:29
 #: templates/core/inventory_line_table.html:8
 #: templates/core/item_label_print.html:7
 #: templates/core/stock_issue_form.html:38
 #: templates/core/stock_receive_form.html:38
+#: templates/core/stock_return_form.html:38
 #: templates/core/stockbalance_list.html:36
 #: templates/core/stockmovement_list.html:13
 msgid "Штрихкод"
@@ -1342,9 +1361,12 @@ msgstr "Stampanti e etichette per documenti"
 msgid "Штрихкоди"
 msgstr "Codici a barre"
 
-#: core/views/management.py:301 templates/base.html:125 templates/base.html:195
+#: core/views/management.py:301 core/views/stock_operations.py:491
+#: templates/base.html:125 templates/base.html:195
 #: templates/core/dashboard.html:16 templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_form.html:5
+#: templates/core/stock_receive_result.html:3
+#: templates/core/stock_receive_result.html:8
 msgid "Прихід товару"
 msgstr "Ricevimento merce"
 
@@ -1365,144 +1387,149 @@ msgstr "Registro operazioni"
 msgid "Документ ще не додано."
 msgstr "Il documento non è valido."
 
-#: core/views/stock_operations.py:98
+#: core/views/stock_operations.py:100
 msgid "Операція вже була збережена."
 msgstr "Operazione già salvata."
 
-#: core/views/stock_operations.py:175 templates/core/stock_issue_form.html:47
+#: core/views/stock_operations.py:177 templates/core/stock_issue_form.html:47
 #: templates/core/stock_receive_form.html:45
+#: templates/core/stock_return_form.html:45
 msgid "Товар за цим штрихкодом не знайдено."
 msgstr "Prodotto non trovato"
 
-#: core/views/stock_operations.py:211
+#: core/views/stock_operations.py:213 core/views/stock_operations.py:293
 msgid "Дані для повернення визначено автоматично."
 msgstr ""
 
-#: core/views/stock_operations.py:213
+#: core/views/stock_operations.py:215 core/views/stock_operations.py:294
 msgid "Товар знайдено, але локацію для повернення не налаштовано."
 msgstr ""
 
-#: core/views/stock_operations.py:311
+#: core/views/stock_operations.py:374
 msgid "Дані для видачі визначено автоматично."
 msgstr ""
 
-#: core/views/stock_operations.py:313
+#: core/views/stock_operations.py:376
 #, fuzzy
 #| msgid "Недостатньо залишку для видачі."
 msgid "Товар знайдено, але доступного залишку для видачі немає."
 msgstr "Azioni insufficienti per l'emissione."
 
-#: core/views/stock_operations.py:382
+#: core/views/stock_operations.py:445
 #, fuzzy
 #| msgid "Недостатньо залишку для видачі."
 msgid "Недостатньо залишку для видачі. Перевірте залишки перед видачею."
 msgstr "Azioni insufficienti per l'emissione."
 
-#: core/views/stock_operations.py:422 templates/base.html:126
+#: core/views/stock_operations.py:485 templates/base.html:126
 #: templates/base.html:196 templates/core/dashboard.html:17
 #: templates/core/stock_issue_form.html:3
 #: templates/core/stock_issue_form.html:5
 msgid "Видача товару"
 msgstr "Emissione di azioni"
 
-#: core/views/stock_operations.py:425 core/views/stock_operations.py:428
+#: core/views/stock_operations.py:488
+#: templates/core/stock_receive_result.html:3
+#: templates/core/stock_receive_result.html:8
+#: templates/core/stock_return_form.html:3
+#: templates/core/stock_return_form.html:5
 #, fuzzy
 #| msgid "Показувати назву товару"
 msgid "Повернення товару"
 msgstr "Trova il tuo posto"
 
-#: core/views/stock_operations.py:426
+#: core/views/stock_operations.py:489
 #, fuzzy
 #| msgid "До рухів товарів"
 msgid "Хто повернув товар"
 msgstr "Ai movimenti"
 
-#: core/views/stock_operations.py:429 core/views/stock_operations.py:432
+#: core/views/stock_operations.py:492 core/views/stock_operations.py:495
 msgid "Отримувач / відповідальний"
 msgstr "Destinatario/responsabile"
 
-#: core/views/stock_operations.py:434
+#: core/views/stock_operations.py:497
 #, fuzzy
 #| msgid "Перегляньте історію складських операцій."
 msgid "Контрольний талон складської операції"
 msgstr "Review the history of warehouse operations."
 
-#: core/views/stock_operations.py:435
+#: core/views/stock_operations.py:498
 #, fuzzy
 #| msgid "Друкувати"
 msgid "Друк"
 msgstr "Stampa"
 
-#: core/views/stock_operations.py:436
+#: core/views/stock_operations.py:499
 msgid "Назад"
 msgstr "Indietro"
 
-#: core/views/stock_operations.py:437
+#: core/views/stock_operations.py:500
 #, fuzzy
 #| msgid "Тип операції"
 msgid "ID операції"
 msgstr "Tipo di operazione"
 
-#: core/views/stock_operations.py:439 templates/core/stock_issue_result.html:27
-#: templates/core/stock_receive_result.html:27
+#: core/views/stock_operations.py:502 templates/core/stock_issue_result.html:27
+#: templates/core/stock_receive_result.html:24
 #, fuzzy
 #| msgid "Дата операції"
 msgid "Дата і час операції"
 msgstr "Data operazione"
 
-#: core/views/stock_operations.py:440 templates/core/stock_issue_result.html:15
+#: core/views/stock_operations.py:503 templates/core/stock_issue_result.html:15
 #: templates/core/stock_receive_result.html:15
 #: templates/core/stock_transfer_result.html:8
 #: templates/core/stock_writeoff_result.html:8
 msgid "Товар"
 msgstr "Merce"
 
-#: core/views/stock_operations.py:448
+#: core/views/stock_operations.py:511
 #, fuzzy
 #| msgid "Номер документа"
 msgid "Коментар / документ"
 msgstr "Numero del documento"
 
-#: core/views/stock_operations.py:449
+#: core/views/stock_operations.py:512
 #, fuzzy
 #| msgid "Запис переміщено в архів."
 msgid "Час для перевірки по відео:"
 msgstr "Il record è stato spostato nell'archivio."
 
-#: core/views/stock_operations.py:487
+#: core/views/stock_operations.py:550
 #, python-format
 msgid "Причина списання: %(reason)s"
 msgstr ""
 
-#: core/views/stock_operations.py:489
+#: core/views/stock_operations.py:552
 #, fuzzy, python-format
 #| msgid "Номер документа"
 msgid "Номер документа: %(document_number)s"
 msgstr "Numero del documento"
 
-#: core/views/stock_operations.py:491
+#: core/views/stock_operations.py:554
 #, fuzzy, python-format
 #| msgid "Коментар"
 msgid "Коментар: %(comment)s"
 msgstr "Commento"
 
-#: core/views/stock_operations.py:526
+#: core/views/stock_operations.py:589
 msgid "Недостатньо залишку для списання. Перевірте залишки перед списанням."
 msgstr ""
 
-#: core/views/stock_operations.py:579
+#: core/views/stock_operations.py:642
 msgid ""
 "Недостатньо залишку на локації-відправнику. Перевірте залишки перед "
 "переміщенням."
 msgstr ""
 
-#: core/views/stock_operations.py:586
+#: core/views/stock_operations.py:649
 msgid ""
 "Неможливо перемістити товар у ту саму локацію. Виберіть іншу локацію-"
 "отримувач."
 msgstr ""
 
-#: core/views/stock_operations.py:645
+#: core/views/stock_operations.py:708
 msgid "Початковий залишок збережено."
 msgstr "Il coperchio è impreciso."
 
@@ -1529,6 +1556,7 @@ msgstr "YANTOS · Warehouse accounting"
 #: templates/core/stock_issue_result.html:3
 #: templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_result.html:3
+#: templates/core/stock_return_form.html:3
 #: templates/core/stock_transfer_form.html:3
 #: templates/core/stock_transfer_result.html:3
 #: templates/core/stock_writeoff_form.html:3
@@ -1560,6 +1588,9 @@ msgid "Взяти товар"
 msgstr "Prelevare prodotto"
 
 #: templates/base.html:120 templates/base.html:190
+#: templates/core/stock_return_form.html:91
+#: templates/core/storekeeper_workplace.html:96
+#: templates/core/storekeeper_workplace.html:100
 msgid "Повернути товар"
 msgstr "Restituire prodotto"
 
@@ -1920,6 +1951,7 @@ msgstr "Nome, internal_code o codice a barre"
 #: templates/core/inventory_count.html:18
 #: templates/core/stock_issue_form.html:23
 #: templates/core/stock_receive_form.html:23
+#: templates/core/stock_return_form.html:23
 #: templates/core/stockbalance_list.html:26
 #: templates/core/stockmovement_list.html:12
 msgid "Очистити"
@@ -2276,6 +2308,7 @@ msgstr "Impostazioni"
 
 #: templates/core/stock_issue_form.html:10
 #: templates/core/stock_receive_form.html:10
+#: templates/core/stock_return_form.html:10
 #, fuzzy
 #| msgid "Показувати назву товару"
 msgid "Сканування товару"
@@ -2285,6 +2318,8 @@ msgstr "Trova il tuo posto"
 #: templates/core/stock_issue_form.html:51
 #: templates/core/stock_receive_form.html:11
 #: templates/core/stock_receive_form.html:49
+#: templates/core/stock_return_form.html:11
+#: templates/core/stock_return_form.html:49
 msgid "Відскануйте штрихкод товару або введіть його вручну"
 msgstr ""
 
@@ -2292,16 +2327,20 @@ msgstr ""
 #: templates/core/stock_issue_form.html:16
 #: templates/core/stock_receive_form.html:15
 #: templates/core/stock_receive_form.html:16
+#: templates/core/stock_return_form.html:15
+#: templates/core/stock_return_form.html:16
 msgid "Штрихкод товару"
 msgstr "Codice a barre del prodotto"
 
 #: templates/core/stock_issue_form.html:19
 #: templates/core/stock_receive_form.html:19
+#: templates/core/stock_return_form.html:19
 msgid "Знайти товар"
 msgstr "Trovare prodotto"
 
 #: templates/core/stock_issue_form.html:29
 #: templates/core/stock_receive_form.html:29
+#: templates/core/stock_return_form.html:29
 #, fuzzy
 #| msgid "Унікальні товари"
 msgid "Знайдений товар"
@@ -2309,6 +2348,7 @@ msgstr "Prodotti unici"
 
 #: templates/core/stock_issue_form.html:31
 #: templates/core/stock_receive_form.html:31
+#: templates/core/stock_return_form.html:31
 #, fuzzy
 #| msgid "Видача товару"
 msgid "Назва товару"
@@ -2320,6 +2360,7 @@ msgstr "Giacenza disponibile"
 
 #: templates/core/stock_issue_form.html:93
 #: templates/core/stock_receive_form.html:91
+#: templates/core/stock_return_form.html:91
 msgid "Збереження..."
 msgstr "Salvataggio..."
 
@@ -2347,7 +2388,7 @@ msgid "Залишок після операції"
 msgstr "Saldo dopo l'operazione"
 
 #: templates/core/stock_issue_result.html:39
-#: templates/core/stock_receive_result.html:34
+#: templates/core/stock_receive_result.html:31
 #, fuzzy
 #| msgid "Архівувати отримувача"
 msgid "Друкувати контрольний талон"
@@ -2358,7 +2399,7 @@ msgid "Нова видача"
 msgstr "Nuovo numero"
 
 #: templates/core/stock_issue_result.html:41
-#: templates/core/stock_receive_result.html:36
+#: templates/core/stock_receive_result.html:33
 msgid "На головний екран"
 msgstr ""
 
@@ -2368,32 +2409,19 @@ msgstr ""
 msgid "Оприбуткувати товар"
 msgstr "Emissione di azioni"
 
-#: templates/core/stock_receive_result.html:3
-#: templates/core/stock_receive_result.html:8
+#: templates/core/stock_receive_result.html:9
 #, fuzzy
-#| msgid "Видача зі складу"
-msgid "Прихід виконано"
-msgstr "Emissione dal magazzino"
+#| msgid "Товар знайдено."
+msgid "Товар повернено"
+msgstr "Articolo trovato."
 
 #: templates/core/stock_receive_result.html:9
 #, fuzzy
 #| msgid "Панель керування складом"
-msgid "Товар оприбутковано на склад"
+msgid "Товар оприбутковано"
 msgstr "Pannello di copertura"
 
-#: templates/core/stock_receive_result.html:21
-#, fuzzy
-#| msgid "Отримувач"
-msgid "Одержувач"
-msgstr "Destinatario"
-
-#: templates/core/stock_receive_result.html:24
-#, fuzzy
-#| msgid "Тип локації"
-msgid "Склад / локація"
-msgstr "Tipo di ubicazione"
-
-#: templates/core/stock_receive_result.html:35
+#: templates/core/stock_receive_result.html:32
 #, fuzzy
 #| msgid "Прихід товару"
 msgid "Новий прихід товару"
@@ -2503,17 +2531,10 @@ msgstr "Scegliere un'azione"
 msgid "Зіскануйте товар і зафіксуйте видачу зі складу."
 msgstr "Record goods issued from the warehouse."
 
-#: templates/core/storekeeper_workplace.html:96
-#: templates/core/storekeeper_workplace.html:100
-#, fuzzy
-#| msgid "Видача товару"
-msgid "Прийняти товар"
-msgstr "Emissione di azioni"
-
 #: templates/core/storekeeper_workplace.html:101
 #, fuzzy
 #| msgid "Оформіть видачу товарів зі складу."
-msgid "Зіскануйте товар і зафіксуйте прихід на склад."
+msgid "Зіскануйте товар і зафіксуйте повернення на склад."
 msgstr "Record goods issued from the warehouse."
 
 #: templates/includes/language_switcher.html:9
@@ -2535,6 +2556,29 @@ msgstr "Utente"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Accedi"
+
+#~ msgid "Оберіть, хто повертає товар."
+#~ msgstr "Selezionare dipendente."
+
+#, fuzzy
+#~| msgid "Видача зі складу"
+#~ msgid "Прихід виконано"
+#~ msgstr "Emissione dal magazzino"
+
+#, fuzzy
+#~| msgid "Отримувач"
+#~ msgid "Одержувач"
+#~ msgstr "Destinatario"
+
+#, fuzzy
+#~| msgid "Тип локації"
+#~ msgid "Склад / локація"
+#~ msgstr "Tipo di ubicazione"
+
+#, fuzzy
+#~| msgid "Видача товару"
+#~ msgid "Прийняти товар"
+#~ msgstr "Emissione di azioni"
 
 #, fuzzy
 #~| msgid "Керування складом"

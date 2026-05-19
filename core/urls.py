@@ -193,6 +193,7 @@ urlpatterns = [
     path("stock/inventory/<int:pk>/complete/", views.InventoryCompleteView.as_view(), name="inventory_complete"),
     path("stock/inventory/<int:pk>/count/", views.InventoryCountView.as_view(), name="inventory_count"),
     path("stock/receive/", views.StockReceiveView.as_view(), name="stock_receive"),
+    path("stock/return/", views.StockReturnView.as_view(), name="stock_return"),
     path("stock/receive/<int:pk>/", views.StockReceiveResultView.as_view(), name="stock_receive_result"),
     path("stock/issue/", views.StockIssueView.as_view(), name="stock_issue"),
     path("stock/issue/<int:pk>/", views.StockIssueResultView.as_view(), name="stock_issue_result"),
