@@ -310,7 +310,7 @@ class StockIssueInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Взяти товар")
-        self.assertContains(response, "Повернути товар")
+        self.assertContains(response, "Прийняти товар")
         main_html = response.content.decode().split('<main class="col-12">', 1)[1]
         self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
         self.assertNotIn("Списання товару", main_html)
@@ -439,7 +439,7 @@ class StockIssueInterfaceTests(TestCase):
         self.assertIn("Item", html)
         self.assertIn("Quantity", html)
         self.assertIn("Who takes the item", html)
-        self.assertIn("Department / place of use", html)
+        self.assertIn("Warehouse / location", html)
         self.assertIn("Operation date and time", html)
         self.assertIn("Balance after operation", html)
         self.assertIn("Print control slip", html)
@@ -628,7 +628,7 @@ class StockIssueInterfaceTests(TestCase):
         self.assertIn("Warehouse operation control slip", html)
         self.assertIn("Who takes the item", html)
         self.assertIn(self.recipient.name, html)
-        self.assertIn("Department / place of use", html)
+        self.assertIn("Warehouse / location", html)
         self.assertIn("Assembly", html)
         self.assertIn("Video check time:", html)
         self.assertNotIn("Контрольний талон складської операції", html)
@@ -1653,9 +1653,9 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Warehouse self-service", main_html)
         self.assertIn("Choose an action", main_html)
         self.assertIn("Take item", main_html)
-        self.assertIn("Return item", main_html)
+        self.assertIn("Receive item", main_html)
         self.assertIn("Scan an item and record stock issue.", main_html)
-        self.assertIn("Scan an item and record stock return.", main_html)
+        self.assertIn("Scan an item and record stock receive.", main_html)
         self.assertIn(
             f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse("stock_issue")}"',
             main_html,
@@ -1667,7 +1667,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertEqual(main_html.count('<a class="card self-service-action-card'), 2)
         for phrase in [
             "Взяти товар",
-            "Повернути товар",
+            "Прийняти товар",
             "Журнал операцій",
             "Залишки на складі",
             "Інвентаризація",
@@ -1692,7 +1692,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Found item", html)
         self.assertIn("Available stock", html)
         self.assertIn("Who takes the item", html)
-        self.assertIn("Department / place of use", html)
+        self.assertIn("Warehouse / location", html)
         self.assertIn("Take item", html)
         self.assertIn('data-qty-decrement', html)
         self.assertIn('data-qty-increment', html)
@@ -1890,7 +1890,7 @@ class StockOperationWorkflowTests(TestCase):
             response, "Товар знайдено, але локацію для повернення не налаштовано."
         )
         self.assertFalse(response.context["can_submit_receive"])
-        self.assertNotContains(response, "Повернути товар")
+        self.assertNotContains(response, "Прийняти товар")
 
     def test_receive_result_page_is_simple_for_tablet(self):
         movement = StockMovement.objects.create(
@@ -1957,7 +1957,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Item has been returned to stock", html)
         self.assertIn("✓", html)
         self.assertIn("Who returned the item", html)
-        self.assertIn("Department / place of use", html)
+        self.assertIn("Warehouse / location", html)
         self.assertIn("Print control slip", html)
         self.assertIn("New return", html)
         self.assertIn("Home", html)
@@ -1990,7 +1990,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Internal code", html)
         self.assertIn("Quantity", html)
         self.assertIn("Who returned the item", html)
-        self.assertIn("Department / place of use", html)
+        self.assertIn("Warehouse / location", html)
         self.assertNotIn("Хто повернув товар", html)
         self.assertNotIn("Цех / місце використання", html)
 
@@ -2003,9 +2003,9 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Scan item")
         self.assertContains(response, "Found item")
         self.assertContains(response, "Quantity")
-        self.assertContains(response, "Who returns the item")
-        self.assertContains(response, "Department / place of use")
-        self.assertContains(response, "Return item")
+        self.assertContains(response, "Recipient")
+        self.assertContains(response, "Warehouse / location")
+        self.assertContains(response, "Receive item")
         self.assertContains(response, "Return data was selected automatically.")
         self.assertContains(response, 'data-qty-decrement')
         self.assertContains(response, 'data-qty-increment')
@@ -2041,10 +2041,10 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(issue_response, "Scan item")
         self.assertContains(issue_response, "Find item")
         self.assertNotContains(issue_response, "Сканування товару")
-        self.assertContains(receive_response, "Return item")
+        self.assertContains(receive_response, "Receive item")
         self.assertContains(receive_response, "Scan item")
         self.assertContains(receive_response, "Find item")
-        self.assertNotContains(receive_response, "Повернення товару")
+        self.assertNotContains(receive_response, "Прихід товару")
 
     def test_unauthorized_user_redirects_to_login(self):
         self.client.logout()
