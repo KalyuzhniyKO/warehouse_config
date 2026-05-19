@@ -144,7 +144,7 @@ class I18NReadinessAuditTests(TestCase):
     def test_english_login_home_forms_results_and_print_slip_do_not_leak_ukrainian_ui(self):
         forbidden_phrases = [
             "Взяти товар",
-            "Повернути товар",
+            "Прийняти товар",
             "Склад",
             "Локація",
             "Отримувачі",
@@ -328,14 +328,14 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Warehouse self-service", main_html)
         for phrase in [
             "Take item",
-            "Return item",
+            "Receive item",
             "Choose an action",
         ]:
             self.assertIn(phrase, main_html)
         for phrase in [
             "Робоче місце комірника",
             "Комірник",
-            "Повернення товару",
+            "Прихід товару",
             "Перемістити товар",
             "Списати товар",
             "Провести інвентаризацію",
@@ -346,7 +346,7 @@ class DashboardLocalizationTests(TestCase):
             "Знайти",
             "Допомога",
             "Взяти товар",
-            "Повернути товар",
+            "Прийняти товар",
         ]:
             self.assertNotIn(phrase, main_html)
 
@@ -359,7 +359,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Склад самообслуговування", main_html)
         for phrase in [
             "Взяти товар",
-            "Повернути товар",
+            "Прийняти товар",
             "Оберіть дію",
         ]:
             self.assertIn(phrase, main_html)
@@ -367,7 +367,7 @@ class DashboardLocalizationTests(TestCase):
             "Storekeeper workplace",
             "Storekeeper",
             "Issue item",
-            "Return item",
+            "Receive item",
             "Transfer goods",
             "Write off goods",
             "Run inventory count",
@@ -377,7 +377,7 @@ class DashboardLocalizationTests(TestCase):
             "Search",
             "Help",
             "Видача товару",
-            "Повернення товару",
+            "Прихід товару",
             "Допомога",
         ]:
             self.assertNotIn(phrase, main_html)
@@ -389,7 +389,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Склад самообслуговування", html)
         self.assertIn("Взяти товар", html)
-        self.assertIn("Повернути товар", html)
+        self.assertIn("Прийняти товар", html)
         self.assertNotIn('class="navbar-toggler"', html)
         self.assertNotIn("Навігація", html)
         for phrase in [
@@ -411,12 +411,12 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Warehouse self-service", html)
         self.assertIn("Take item", html)
-        self.assertIn("Return item", html)
+        self.assertIn("Receive item", html)
         for phrase in [
             "Склад самообслуговування",
             "Оберіть дію",
             "Взяти товар",
-            "Повернути товар",
+            "Прийняти товар",
         ]:
             self.assertNotIn(phrase, html)
 
@@ -498,7 +498,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Взять товар", html)
         self.assertIn("Вернуть товар", html)
         self.assertNotIn("Взяти товар", html)
-        self.assertNotIn("Повернути товар", html)
+        self.assertNotIn("Прийняти товар", html)
 
     def test_italian_storekeeper_self_service_smoke(self):
         response = self.dashboard_for(self.storekeeper, "/it/")
@@ -509,7 +509,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Prelevare prodotto", html)
         self.assertIn("Restituire prodotto", html)
         self.assertNotIn("Взяти товар", html)
-        self.assertNotIn("Повернути товар", html)
+        self.assertNotIn("Прийняти товар", html)
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")
@@ -683,7 +683,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Склад самообслуговування", main_html)
         self.assertIn("Взяти товар", main_html)
-        self.assertIn("Повернути товар", main_html)
+        self.assertIn("Прийняти товар", main_html)
         self.assertNotIn("Робоче місце комірника", main_html)
         self.assertNotIn("Комірник", main_html)
         self.assertIn('/uk/stock/issue/', main_html)
