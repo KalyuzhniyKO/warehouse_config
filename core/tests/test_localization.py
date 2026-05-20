@@ -144,7 +144,7 @@ class I18NReadinessAuditTests(TestCase):
     def test_english_login_home_forms_results_and_print_slip_do_not_leak_ukrainian_ui(self):
         forbidden_phrases = [
             "Взяти товар",
-            "Прийняти товар",
+            "Повернути товар",
             "Склад",
             "Локація",
             "Отримувачі",
@@ -328,7 +328,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Warehouse self-service", main_html)
         for phrase in [
             "Take item",
-            "Receive item",
+            "Return item",
             "Choose an action",
         ]:
             self.assertIn(phrase, main_html)
@@ -346,7 +346,7 @@ class DashboardLocalizationTests(TestCase):
             "Знайти",
             "Допомога",
             "Взяти товар",
-            "Прийняти товар",
+            "Повернути товар",
         ]:
             self.assertNotIn(phrase, main_html)
 
@@ -359,7 +359,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Склад самообслуговування", main_html)
         for phrase in [
             "Взяти товар",
-            "Прийняти товар",
+            "Повернути товар",
             "Оберіть дію",
         ]:
             self.assertIn(phrase, main_html)
@@ -367,7 +367,7 @@ class DashboardLocalizationTests(TestCase):
             "Storekeeper workplace",
             "Storekeeper",
             "Issue item",
-            "Receive item",
+            "Return item",
             "Transfer goods",
             "Write off goods",
             "Run inventory count",
@@ -389,7 +389,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Склад самообслуговування", html)
         self.assertIn("Взяти товар", html)
-        self.assertIn("Прийняти товар", html)
+        self.assertIn("Повернути товар", html)
         self.assertNotIn('class="navbar-toggler"', html)
         self.assertNotIn("Навігація", html)
         for phrase in [
@@ -411,12 +411,12 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Warehouse self-service", html)
         self.assertIn("Take item", html)
-        self.assertIn("Receive item", html)
+        self.assertIn("Return item", html)
         for phrase in [
             "Склад самообслуговування",
             "Оберіть дію",
             "Взяти товар",
-            "Прийняти товар",
+            "Повернути товар",
         ]:
             self.assertNotIn(phrase, html)
 
@@ -498,7 +498,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Взять товар", html)
         self.assertIn("Вернуть товар", html)
         self.assertNotIn("Взяти товар", html)
-        self.assertNotIn("Прийняти товар", html)
+        self.assertNotIn("Повернути товар", html)
 
     def test_italian_storekeeper_self_service_smoke(self):
         response = self.dashboard_for(self.storekeeper, "/it/")
@@ -509,7 +509,7 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Prelevare prodotto", html)
         self.assertIn("Restituire prodotto", html)
         self.assertNotIn("Взяти товар", html)
-        self.assertNotIn("Прийняти товар", html)
+        self.assertNotIn("Повернути товар", html)
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")
@@ -683,11 +683,11 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Склад самообслуговування", main_html)
         self.assertIn("Взяти товар", main_html)
-        self.assertIn("Прийняти товар", main_html)
+        self.assertIn("Повернути товар", main_html)
         self.assertNotIn("Робоче місце комірника", main_html)
         self.assertNotIn("Комірник", main_html)
         self.assertIn('/uk/stock/issue/', main_html)
-        self.assertIn('/uk/stock/receive/', main_html)
+        self.assertIn('/uk/stock/return/', main_html)
         self.assertNotIn('id="storekeeper-item-search"', main_html)
         self.assertNotIn("autofocus", main_html)
 
