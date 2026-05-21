@@ -262,8 +262,6 @@ class StockReceiveView(
                 item=form.cleaned_data["item"],
                 location=form.cleaned_data["location"],
                 qty=form.cleaned_data["qty"],
-                recipient=form.cleaned_data["recipient"],
-                department=form.cleaned_data["department"],
                 comment=form.cleaned_data.get("comment", ""),
                 occurred_at=form.cleaned_data.get("occurred_at"),
             )
