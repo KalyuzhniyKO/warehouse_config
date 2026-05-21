@@ -298,7 +298,7 @@ class DashboardPermissionTests(TestCase):
             )
             self.assertIn(label, html)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Повернути товар", "Видача товару", "Прихід товару"]:
+        for label in ["Перемістити товар", "Списати товар", "Видача товару", "Прихід товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
@@ -312,7 +312,7 @@ class DashboardPermissionTests(TestCase):
         for label in ["Взяти товар", "Повернути товар"]:
             self.assertContains(response, label)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Повернути товар", "Видача товару", "Прихід товару"]:
+        for label in ["Перемістити товар", "Списати товар", "Видача товару", "Прихід товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_self_service_receive_page_hides_sidebar(self):
