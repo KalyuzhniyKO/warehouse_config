@@ -1945,13 +1945,15 @@ class StockOperationWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("Return item", html)
-        self.assertIn("Товар повернено", html)
+        self.assertIn("Item returned", html)
         self.assertIn("✓", html)
-        self.assertIn("Хто повертає", html)
-        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
+        self.assertIn("Who returns", html)
+        self.assertIn("Place of use", html)
         self.assertIn("Print control slip", html)
-        self.assertIn("Новий прихід товару", html)
+        self.assertIn("New stock receipt", html)
         self.assertIn("Home", html)
+        for phrase in ["Товар повернено", "Хто повертає", "Місце використання", "Новий прихід товару"]:
+            self.assertNotIn(phrase, html)
         
     def test_english_return_control_slip_has_no_ukrainian_return_labels(self):
         movement = StockMovement.objects.create(

@@ -5,12 +5,12 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-05-19 22:08+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"PO-Revision-Date: 2026-05-21 20:20+0300\n"
+"Last-Translator: Codex\n"
+"Language-Team: English\n"
 "Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -410,29 +410,21 @@ msgstr "Print label after saving"
 
 #: core/forms/stock_operations.py:112
 #: templates/core/stock_receive_result.html:21
-#, fuzzy
-#| msgid "Хто повертає товар"
 msgid "Хто повертає"
-msgstr "Who returns the item"
+msgstr "Who returns"
 
 #: core/forms/stock_operations.py:112
-#, fuzzy
-#| msgid "Локація-відправник"
 msgid "Виберіть працівника"
-msgstr "Source location"
+msgstr "Select employee"
 
 #: core/forms/stock_operations.py:113
 #: templates/core/stock_receive_result.html:22
-#, fuzzy
-#| msgid "Цех / місце використання"
 msgid "Місце використання"
-msgstr "Department / place of use"
+msgstr "Place of use"
 
 #: core/forms/stock_operations.py:113
-#, fuzzy
-#| msgid "Оберіть цех або місце використання"
 msgid "Виберіть місце використання"
-msgstr "Choose department or place of use"
+msgstr "Select place of use"
 
 #: core/forms/stock_operations.py:137 core/models.py:94
 #: core/views/stock_operations.py:510 templates/core/stock_issue_result.html:24
@@ -697,7 +689,7 @@ msgstr "next number"
 
 #: core/models.py:381 core/models.py:621
 msgid "status"
-msgstr ""
+msgstr "status"
 
 #: core/models.py:386
 msgid "started at"
@@ -713,7 +705,7 @@ msgstr "created at"
 
 #: core/models.py:398
 msgid "approved by"
-msgstr ""
+msgstr "approved by"
 
 #: core/models.py:404 core/models.py:444 core/models.py:540
 msgid "comment"
@@ -737,7 +729,7 @@ msgstr "quantity"
 
 #: core/models.py:442
 msgid "difference quantity"
-msgstr ""
+msgstr "difference quantity"
 
 #: core/models.py:445
 msgid "counted at"
@@ -745,7 +737,7 @@ msgstr "created at"
 
 #: core/models.py:448
 msgid "counted by"
-msgstr ""
+msgstr "counted by"
 
 #: core/models.py:456
 msgid "Inventory count line"
@@ -821,11 +813,11 @@ msgstr "Stock movements"
 
 #: core/models.py:553
 msgid "system name"
-msgstr ""
+msgstr "system name"
 
 #: core/models.py:555 core/models.py:586
 msgid "default"
-msgstr ""
+msgstr "default"
 
 #: core/models.py:559 templates/base.html:152 templates/base.html:223
 #: templates/core/dashboard.html:62
@@ -836,19 +828,19 @@ msgstr "Printers"
 
 #: core/models.py:575
 msgid "Code 128"
-msgstr ""
+msgstr "Code 128"
 
 #: core/models.py:578
 msgid "width, mm"
-msgstr ""
+msgstr "width, mm"
 
 #: core/models.py:579
 msgid "height, mm"
-msgstr ""
+msgstr "height, mm"
 
 #: core/models.py:580
 msgid "show item name"
-msgstr ""
+msgstr "show item name"
 
 #: core/models.py:581
 msgid "show internal code"
@@ -856,7 +848,7 @@ msgstr "internal code"
 
 #: core/models.py:582
 msgid "show barcode text"
-msgstr ""
+msgstr "show barcode text"
 
 #: core/models.py:584
 msgid "barcode type"
@@ -879,19 +871,19 @@ msgstr "padding"
 
 #: core/models.py:606
 msgid "printed"
-msgstr ""
+msgstr "printed"
 
 #: core/models.py:607
 msgid "failed"
-msgstr ""
+msgstr "failed"
 
 #: core/models.py:619
 msgid "copies"
-msgstr ""
+msgstr "copies"
 
 #: core/models.py:623
 msgid "error message"
-msgstr ""
+msgstr "error message"
 
 #: core/models.py:625
 msgid "printed at"
@@ -899,7 +891,7 @@ msgstr "created at"
 
 #: core/models.py:627
 msgid "user"
-msgstr ""
+msgstr "user"
 
 #: core/models.py:631 core/models.py:632
 msgid "Завдання друку"
@@ -919,7 +911,7 @@ msgstr "Cannot complete a cancelled inventory count."
 
 #: core/services/inventory.py:120
 msgid "Only inventory counts in progress can be completed."
-msgstr ""
+msgstr "Only inventory counts in progress can be completed."
 
 #: core/services/inventory.py:151
 msgid "Коригування за інвентаризацією"
@@ -2249,28 +2241,20 @@ msgid "На головний екран"
 msgstr "Home"
 
 #: templates/core/stock_receive_form.html:91
-#, fuzzy
-#| msgid "Списати товар"
 msgid "Оприбуткувати товар"
-msgstr "Write off goods"
+msgstr "Receive item"
 
 #: templates/core/stock_receive_result.html:9
-#, fuzzy
-#| msgid "Товар знайдено."
 msgid "Товар повернено"
-msgstr "Item found."
+msgstr "Item returned"
 
 #: templates/core/stock_receive_result.html:9
-#, fuzzy
-#| msgid "Товар повернено на склад"
 msgid "Товар оприбутковано"
-msgstr "Item has been returned to stock"
+msgstr "Item received"
 
 #: templates/core/stock_receive_result.html:32
-#, fuzzy
-#| msgid "Прихід товару"
 msgid "Новий прихід товару"
-msgstr "Stock receipt"
+msgstr "New stock receipt"
 
 #: templates/core/stock_transfer_form.html:11
 #: templates/core/stock_transfer_form.html:24
