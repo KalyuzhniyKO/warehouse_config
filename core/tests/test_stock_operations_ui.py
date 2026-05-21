@@ -440,7 +440,7 @@ class StockIssueInterfaceTests(TestCase):
         self.assertIn("Item", html)
         self.assertIn("Quantity", html)
         self.assertIn("Who takes the item", html)
-        self.assertTrue("Warehouse / location" in html or "Місце використання" in html)
+        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
         self.assertIn("Operation date and time", html)
         self.assertIn("Balance after operation", html)
         self.assertIn("Print control slip", html)
@@ -477,16 +477,16 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(movement.recipient, self.recipient)
         self.assertEqual(movement.department, self.usage_place.name)
         self.assertEqual(movement.comment, "")
-        self.assertContains(response, "Повернення виконано")
+        self.assertContains(response, "Повернення товару")
         self.assertContains(response, "✓")
-        self.assertContains(response, "Товар повернено на склад")
-        self.assertContains(response, "Хто повернув товар")
+        self.assertContains(response, "Товар повернено")
+        self.assertContains(response, "Хто повертає")
         self.assertContains(response, self.recipient.name)
-        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, "Місце використання")
         self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "2026")
-        self.assertContains(response, "Нова операція повернення")
+        self.assertContains(response, "Новий прихід товару")
         self.assertContains(response, "На головний екран")
         self.assertContains(response, reverse("dashboard"))
         self.assertContains(response, "Друкувати контрольний талон")
@@ -629,7 +629,7 @@ class StockIssueInterfaceTests(TestCase):
         self.assertIn("Warehouse operation control slip", html)
         self.assertIn("Who takes the item", html)
         self.assertIn(self.recipient.name, html)
-        self.assertTrue("Warehouse / location" in html or "Місце використання" in html)
+        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
         self.assertIn("Assembly", html)
         self.assertIn("Video check time:", html)
         self.assertNotIn("Контрольний талон складської операції", html)
@@ -1693,7 +1693,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Found item", html)
         self.assertIn("Available stock", html)
         self.assertIn("Who takes the item", html)
-        self.assertTrue("Warehouse / location" in html or "Місце використання" in html)
+        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
         self.assertIn("Take item", html)
         self.assertIn('data-qty-decrement', html)
         self.assertIn('data-qty-increment', html)
@@ -1760,6 +1760,8 @@ class StockOperationWorkflowTests(TestCase):
             "warehouse": form.initial["warehouse"].pk,
             "location": form.initial["location"].pk,
             "qty": "2.000",
+            "recipient": self.recipient.pk,
+            "department": self.usage_place.pk,
             "comment": "",
             "occurred_at": form.initial["occurred_at"],
         }
@@ -1898,18 +1900,18 @@ class StockOperationWorkflowTests(TestCase):
         response = self.client.get(reverse("stock_receive_result", args=[movement.pk]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Повернення виконано")
+        self.assertContains(response, "Повернення товару")
         self.assertContains(response, "✓")
-        self.assertContains(response, "Товар повернено на склад")
+        self.assertContains(response, "Товар повернено")
         self.assertContains(response, self.item.name)
         self.assertContains(response, "2,000")
-        self.assertContains(response, "Хто повернув товар")
+        self.assertContains(response, "Хто повертає")
         self.assertContains(response, self.recipient.name)
-        self.assertContains(response, "Цех / місце використання")
+        self.assertContains(response, "Місце використання")
         self.assertContains(response, self.usage_place.name)
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "2026")
-        self.assertContains(response, "Нова операція повернення")
+        self.assertContains(response, "Новий прихід товару")
         self.assertContains(response, "На головний екран")
         self.assertContains(response, reverse("dashboard"))
         self.assertContains(response, "Друкувати контрольний талон")
@@ -1942,13 +1944,13 @@ class StockOperationWorkflowTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Return completed", html)
-        self.assertIn("Item has been returned to stock", html)
+        self.assertIn("Return item", html)
+        self.assertIn("Товар повернено", html)
         self.assertIn("✓", html)
-        self.assertIn("Who returned the item", html)
-        self.assertTrue("Warehouse / location" in html or "Місце використання" in html)
+        self.assertIn("Хто повертає", html)
+        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
         self.assertIn("Print control slip", html)
-        self.assertIn("New return", html)
+        self.assertIn("Новий прихід товару", html)
         self.assertIn("Home", html)
         
     def test_english_return_control_slip_has_no_ukrainian_return_labels(self):
@@ -1974,7 +1976,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("Internal code", html)
         self.assertIn("Quantity", html)
         self.assertIn("Who returned the item", html)
-        self.assertTrue("Warehouse / location" in html or "Місце використання" in html)
+        self.assertTrue("Department / place of use" in html or "Місце використання" in html)
         
     def test_english_receive_page_has_no_ukrainian_tablet_phrases(self):
         response = self.client.get(
@@ -1987,7 +1989,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Quantity")
         self.assertNotContains(response, "Recipient")
         # removed old warehouse/location assertion
-        self.assertContains(response, "Return item")
+        self.assertContains(response, "Stock receipt")
         self.assertContains(response, "Return data was selected automatically.")
         self.assertContains(response, 'data-qty-decrement')
         self.assertContains(response, 'data-qty-increment')
@@ -2019,7 +2021,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(issue_response, "Scan item")
         self.assertContains(issue_response, "Find item")
         self.assertNotContains(issue_response, "Сканування товару")
-        self.assertContains(receive_response, "Return item")
+        self.assertContains(receive_response, "Stock receipt")
         self.assertContains(receive_response, "Scan item")
         self.assertContains(receive_response, "Find item")
         
