@@ -255,6 +255,7 @@ class SwitchLanguageUrlTests(TestCase):
         self.assert_switch_url("/en/items/", "uk", "/uk/items/")
         self.assert_switch_url("/en/items/", "ru", "/ru/items/")
         self.assert_switch_url("/ru/items/", "it", "/it/items/")
+        self.assert_switch_url("/it/items/", "pl", "/pl/items/")
 
     def test_preserves_query_string(self):
         self.assert_switch_url("/uk/items/?q=test", "en", "/en/items/?q=test")
@@ -264,6 +265,7 @@ class SwitchLanguageUrlTests(TestCase):
         self.assert_switch_url("/", "uk", "/uk/")
         self.assert_switch_url("/", "ru", "/ru/")
         self.assert_switch_url("/", "it", "/it/")
+        self.assert_switch_url("/", "pl", "/pl/")
 
 
 class DashboardLocalizationTests(TestCase):
@@ -295,6 +297,8 @@ class DashboardLocalizationTests(TestCase):
             language = "ru"
         elif path and path.startswith("/it/"):
             language = "it"
+        elif path and path.startswith("/pl/"):
+            language = "pl"
         translation.activate(language)
         self.client.force_login(user)
         return self.client.get(path or reverse("dashboard"))
@@ -479,6 +483,11 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertIn(("it", "Italiano"), settings.LANGUAGES)
 
+    def test_settings_include_polish_language(self):
+        from django.conf import settings
+
+        self.assertIn(("pl", "Polski"), settings.LANGUAGES)
+
     def test_italian_login_page_opens(self):
         self.client.logout()
 
@@ -488,6 +497,16 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Accedi", html)
         self.assertIn("Password", html)
+
+    def test_polish_login_page_opens(self):
+        self.client.logout()
+
+        response = self.client.get("/pl/accounts/login/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Zaloguj", html)
+        self.assertIn("Hasło", html)
 
     def test_russian_storekeeper_self_service_smoke(self):
         response = self.dashboard_for(self.storekeeper, "/ru/")
@@ -510,6 +529,27 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Restituire prodotto", html)
         self.assertNotIn("Взяти товар", html)
         self.assertNotIn("Повернути товар", html)
+
+    def test_polish_storekeeper_self_service_smoke(self):
+        response = self.dashboard_for(self.storekeeper, "/pl/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Magazyn samoobsługowy", html)
+        self.assertIn("Pobierz towar", html)
+        self.assertIn("Zwróć towar", html)
+        self.assertNotIn("Взяти товар", html)
+        self.assertNotIn("Повернути товар", html)
+
+    def test_polish_stock_receive_and_return_pages_show_distinct_labels(self):
+        receive_response = self.dashboard_for(self.admin, "/pl/stock/receive/")
+        return_response = self.dashboard_for(self.admin, "/pl/stock/return/")
+
+        self.assertEqual(receive_response.status_code, 200)
+        self.assertEqual(return_response.status_code, 200)
+        self.assertContains(receive_response, "Przyjęcie towaru")
+        self.assertContains(return_response, "Zwrot towaru")
+        self.assertNotContains(receive_response, "Zwrot towaru")
 
     def test_ukrainian_dashboard_uses_only_ukrainian_navigation_terms(self):
         response = self.dashboard_for(self.admin, "/uk/")
