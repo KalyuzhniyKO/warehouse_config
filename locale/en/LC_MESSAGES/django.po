@@ -2363,8 +2363,6 @@ msgid "Зіскануйте товар і зафіксуйте видачу зі
 msgstr "Scan an item and record stock issue."
 
 #: templates/core/storekeeper_workplace.html:101
-#, fuzzy
-#| msgid "Зіскануйте товар і зафіксуйте повернення на склад."
 msgid "Зіскануйте товар і зафіксуйте повернення на склад."
 msgstr "Scan an item and record stock return."
 
