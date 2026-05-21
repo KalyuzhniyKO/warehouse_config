@@ -269,7 +269,7 @@ class SwitchLanguageUrlTests(TestCase):
 
 
 class TranslationCatalogQualityTests(SimpleTestCase):
-    checked_languages = ("uk", "en", "ru")
+    checked_languages = ("uk", "en", "ru", "it")
 
     def catalog_entries(self, language):
         import ast
@@ -604,8 +604,17 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Magazzino self-service", html)
         self.assertIn("Prelevare prodotto", html)
         self.assertIn("Restituire prodotto", html)
+        self.assertIn(
+            "Scansiona il prodotto e registra l'emissione dal magazzino.",
+            html,
+        )
+        self.assertIn(
+            "Scansiona il prodotto e registra la restituzione al magazzino.",
+            html,
+        )
         self.assertNotIn("Взяти товар", html)
         self.assertNotIn("Повернути товар", html)
+        self.assertNotIn("Зіскануйте товар", html)
 
     def test_polish_storekeeper_self_service_smoke(self):
         response = self.dashboard_for(self.storekeeper, "/pl/")
