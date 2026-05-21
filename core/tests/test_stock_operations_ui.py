@@ -19,6 +19,7 @@ from ..forms import (
     StockBalanceFilterForm,
     StockIssueForm,
     StockReceiveForm,
+    StockReturnForm,
     StockTransferForm,
 )
 from ..services.locations import (
@@ -1762,8 +1763,6 @@ class StockOperationWorkflowTests(TestCase):
             "warehouse": form.initial["warehouse"].pk,
             "location": form.initial["location"].pk,
             "qty": "2.000",
-            "recipient": self.recipient.pk,
-            "department": self.usage_place.pk,
             "comment": "",
             "occurred_at": form.initial["occurred_at"],
         }
@@ -1792,11 +1791,23 @@ class StockOperationWorkflowTests(TestCase):
         self.assertNotContains(response, "Дата операції")
         self.assertNotContains(response, "Надрукувати етикетку")
         self.assertContains(response, "Кількість")
-        self.assertContains(response, "Хто повертає товар")
-        self.assertContains(response, "Цех / місце використання")
+        self.assertNotContains(response, "Хто повертає товар")
+        self.assertNotContains(response, "Цех / місце використання")
 
     def test_receive_form_lists_only_active_usage_places_and_touch_fields(self):
         form = StockReceiveForm()
+
+        self.assertNotIn("recipient", form.fields)
+        self.assertNotIn("department", form.fields)
+        self.assertEqual(
+            form.fields["qty"].widget.attrs["class"],
+            "form-control form-control-lg text-center",
+        )
+        self.assertEqual(form.fields["qty"].widget.attrs["min"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["step"], "1")
+        self.assertEqual(form.fields["qty"].widget.attrs["inputmode"], "numeric")
+    def test_return_form_lists_only_active_usage_places_and_touch_fields(self):
+        form = StockReturnForm()
         choices = list(form.fields["department"].queryset)
 
         self.assertIn("recipient", form.fields)
@@ -1805,25 +1816,6 @@ class StockOperationWorkflowTests(TestCase):
         self.assertTrue(form.fields["department"].required)
         self.assertIn(self.usage_place, choices)
         self.assertNotIn(self.inactive_usage_place, choices)
-        self.assertEqual(
-            form.fields["department"].empty_label,
-            "Оберіть цех або місце використання",
-        )
-        self.assertEqual(
-            form.fields["qty"].widget.attrs["class"],
-            "form-control form-control-lg text-center",
-        )
-        self.assertEqual(form.fields["qty"].widget.attrs["min"], "1")
-        self.assertEqual(form.fields["qty"].widget.attrs["step"], "1")
-        self.assertEqual(form.fields["qty"].widget.attrs["inputmode"], "numeric")
-        self.assertEqual(
-            form.fields["recipient"].widget.attrs["class"],
-            "form-select form-select-lg",
-        )
-        self.assertEqual(
-            form.fields["department"].widget.attrs["class"],
-            "form-select form-select-lg",
-        )
 
     def test_receive_quantity_stepper_controls_and_attrs(self):
         response = self.client.get(
@@ -1843,8 +1835,8 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn('text-center', html)
         self.assertIn('normalizeQuantity', html)
 
-    def test_receive_form_requires_recipient_and_department(self):
-        form = StockReceiveForm(
+    def test_return_form_requires_recipient_and_department(self):
+        form = StockReturnForm(
             data={
                 "item": self.item.pk,
                 "warehouse": self.warehouse.pk,
@@ -1861,8 +1853,8 @@ class StockOperationWorkflowTests(TestCase):
         self.assertIn("recipient", form.errors)
         self.assertIn("department", form.errors)
 
-    def test_receive_form_cleans_department_to_usage_place_name(self):
-        form = StockReceiveForm(
+    def test_return_form_cleans_department_to_usage_place_name(self):
+        form = StockReturnForm(
             data={
                 "item": self.item.pk,
                 "warehouse": self.warehouse.pk,
@@ -1890,7 +1882,7 @@ class StockOperationWorkflowTests(TestCase):
             response, "Товар знайдено, але локацію для повернення не налаштовано."
         )
         self.assertFalse(response.context["can_submit_receive"])
-        self.assertNotContains(response, "Прийняти товар")
+        self.assertNotContains(response, "Повернути товар")
 
     def test_receive_result_page_is_simple_for_tablet(self):
         movement = StockMovement.objects.create(
@@ -2003,7 +1995,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Scan item")
         self.assertContains(response, "Found item")
         self.assertContains(response, "Quantity")
-        self.assertContains(response, "Recipient")
+        self.assertNotContains(response, "Recipient")
         self.assertContains(response, "Warehouse / location")
         self.assertContains(response, "Receive item")
         self.assertContains(response, "Return data was selected automatically.")

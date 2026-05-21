@@ -245,7 +245,7 @@ class DashboardPermissionTests(TestCase):
             "Склад самообслуговування",
             "Оберіть дію",
             "Взяти товар",
-            "Прийняти товар",
+            "Повернути товар",
             "Зіскануйте товар і зафіксуйте видачу зі складу.",
             "Зіскануйте товар і зафіксуйте повернення на склад.",
         ]:
@@ -286,7 +286,7 @@ class DashboardPermissionTests(TestCase):
 
         for label, url_name in [
             ("Взяти товар", "stock_issue"),
-            ("Прийняти товар", "stock_receive"),
+            ("Повернути товар", "stock_return"),
         ]:
             self.assertIn(
                 f'<a class="card self-service-action-card text-decoration-none text-reset" href="{reverse(url_name)}"',
@@ -298,7 +298,7 @@ class DashboardPermissionTests(TestCase):
             )
             self.assertIn(label, html)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Прийняти товар", "Видача товару", "Прихід товару"]:
+        for label in ["Перемістити товар", "Списати товар", "Повернути товар", "Видача товару", "Прихід товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_workplace_hides_sidebar_and_uses_full_width(self):
@@ -309,10 +309,10 @@ class DashboardPermissionTests(TestCase):
         self.assertNotContains(response, "Навігація")
         self.assertIn('<main class="col-12">', html)
         self.assertNotIn('<main class="col-lg-10">', html)
-        for label in ["Взяти товар", "Прийняти товар"]:
+        for label in ["Взяти товар", "Повернути товар"]:
             self.assertContains(response, label)
         main_html = html[html.index('<main class="col-12">'):]
-        for label in ["Перемістити товар", "Списати товар", "Прийняти товар", "Видача товару", "Прихід товару"]:
+        for label in ["Перемістити товар", "Списати товар", "Повернути товар", "Видача товару", "Прихід товару"]:
             self.assertNotIn(label, main_html)
 
     def test_storekeeper_self_service_receive_page_hides_sidebar(self):
