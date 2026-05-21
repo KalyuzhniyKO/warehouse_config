@@ -15,7 +15,7 @@
         <h2 id="management-directories-heading" class="h5 mb-0">{% trans "Довідники" %}</h2>
     </div>
     <div class="row g-3">
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <div class="d-flex align-items-start justify-content-between gap-2">
@@ -27,7 +27,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <div class="d-flex align-items-start justify-content-between gap-2">
@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <div class="d-flex align-items-start justify-content-between gap-2">
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">🗂️ {% trans "Категорії" %}</h3>
@@ -60,7 +60,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">⚖️ {% trans "Одиниці виміру" %}</h3>
@@ -69,7 +69,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">👥 {% trans "Працівники / отримувачі" %}</h3>
@@ -86,7 +86,7 @@
 <section class="mb-4" aria-labelledby="management-users-heading">
     <h2 id="management-users-heading" class="h5 mb-3">{% trans "Користувачі та доступ" %}</h2>
     <div class="row g-3">
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <div class="d-flex align-items-start justify-content-between gap-2">
@@ -106,7 +106,7 @@
 <section class="mb-4" aria-labelledby="management-labels-heading">
     <h2 id="management-labels-heading" class="h5 mb-3">{% trans "Етикетки" %}</h2>
     <div class="row g-3">
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">🖨️ {% trans "Принтери" %}</h3>
@@ -115,7 +115,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">📐 {% trans "Шаблони етикеток" %}</h3>
@@ -131,7 +131,7 @@
 <section class="mb-4" aria-labelledby="management-reports-heading">
     <h2 id="management-reports-heading" class="h5 mb-3">{% trans "Контроль і звіти" %}</h2>
     <div class="row g-3">
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">📊 {% trans "Залишки на складі" %}</h3>
@@ -140,7 +140,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">🔁 {% trans "Журнал операцій" %}</h3>
@@ -150,7 +150,7 @@
             </div>
         </div>
         {% if can_view_analytics %}
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">📈 {% trans "Аналітика" %}</h3>
@@ -167,7 +167,7 @@
     <h2 id="management-system-heading" class="h5 mb-3">{% trans "Система" %}</h2>
     <div class="row g-3">
         {% if can_manage_users or show_technical_admin %}
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">⚙️ {% trans "Налаштування складу" %}</h3>
@@ -177,7 +177,7 @@
             </div>
         </div>
         {% endif %}
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">❓ {% trans "Довідка адміністратора" %}</h3>
@@ -187,7 +187,7 @@
             </div>
         </div>
         {% if show_technical_admin %}
-        <div class="col-sm-6 col-xl-4">
+        <div class="col-sm-6 col-xl-3">
             <div class="card content-card h-100 position-relative border-warning">
                 <div class="card-body d-flex flex-column gap-2">
                     <h3 class="h6 mb-0">🛠️ {% trans "Технічна Django Admin" %}</h3>

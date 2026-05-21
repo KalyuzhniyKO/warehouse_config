@@ -131,8 +131,13 @@ class ManagementInterfaceTests(TestCase):
     def test_warehouse_admin_sees_structured_management_dashboard(self):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("management_dashboard"))
+        html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
+        self.assertNotIn("Навігація", html)
+        self.assertNotIn('class="sidebar-link"', html)
+        self.assertIn('<main class="col-12">', html)
+        self.assertIn("col-sm-6 col-xl-3", html)
         for text in [
             "Керування складом",
             "Довідники",

@@ -101,9 +101,12 @@ class StockReceiveForm(StockOperationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name in ["item", "warehouse", "location", "comment", "occurred_at", "print_label"]:
+        for field_name in ["item", "comment", "occurred_at", "print_label"]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
+        for field_name in ["warehouse", "location"]:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs["class"] = "form-select form-select-lg"
         self.fields["qty"].widget.attrs.update({"class": "form-control form-control-lg text-center", "min": "1", "step": "1", "inputmode": "numeric", "pattern": "[0-9]*"})
         self.order_fields(["item", "warehouse", "location", "qty", "comment", "occurred_at", "print_label"])
 

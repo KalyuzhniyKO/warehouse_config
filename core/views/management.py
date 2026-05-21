@@ -119,6 +119,7 @@ class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                     self.request.user, ANALYTICS_GROUPS
                 ),
                 "show_technical_admin": self.request.user.is_superuser,
+                "hide_sidebar": True,
                 "counts": {
                     "items": Item.objects.count(),
                     "warehouses": Warehouse.objects.count(),

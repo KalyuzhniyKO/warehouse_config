@@ -1315,6 +1315,58 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Дані для видачі визначено автоматично.")
 
 
+    def test_stock_receive_get_barcode_requires_explicit_destination(self):
+        response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+        form = response.context["form"]
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(form.initial["item"], self.item)
+        self.assertNotIn("warehouse", form.initial)
+        self.assertNotIn("location", form.initial)
+        self.assertContains(response, "Склад")
+        self.assertContains(response, "Локація")
+        self.assertIn('name="warehouse"', html)
+        self.assertIn('name="location"', html)
+        self.assertContains(response, self.warehouse.name)
+        self.assertContains(response, self.destination_warehouse.name)
+        self.assertNotContains(response, "Дані для повернення визначено автоматично.")
+
+    def test_stock_receive_posts_to_user_selected_destination(self):
+        get_response = self.client.get(
+            f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
+        )
+        token = get_response.context["operation_token"]
+
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "operation_token": token,
+                "item": self.item.pk,
+                "warehouse": self.destination_warehouse.pk,
+                "location": self.destination_location.pk,
+                "qty": "4.000",
+                "comment": "",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.IN)
+        self.assertEqual(movement.destination_location, self.destination_location)
+        self.assertFalse(
+            StockBalance.objects.filter(item=self.item, location=self.location).exists()
+        )
+        self.assertEqual(
+            StockBalance.objects.get(
+                item=self.item, location=self.destination_location
+            ).qty,
+            Decimal("4.000"),
+        )
+
+
     def test_issue_get_barcode_contains_operation_token_and_disable_submit_attrs(self):
         StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("7.000")
@@ -1990,9 +2042,10 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Found item")
         self.assertContains(response, "Quantity")
         self.assertNotContains(response, "Recipient")
-        # removed old warehouse/location assertion
+        self.assertContains(response, "Warehouse")
+        self.assertContains(response, "Location")
         self.assertContains(response, "Stock receipt")
-        self.assertContains(response, "Return data was selected automatically.")
+        self.assertNotContains(response, "Return data was selected automatically.")
         self.assertContains(response, 'data-qty-decrement')
         self.assertContains(response, 'data-qty-increment')
         self.assertContains(response, 'inputmode="numeric"')

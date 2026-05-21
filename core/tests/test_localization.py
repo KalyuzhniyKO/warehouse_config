@@ -501,12 +501,14 @@ class DashboardLocalizationTests(TestCase):
         ]:
             self.assertNotIn(phrase, html)
 
-    def test_admin_dashboard_keeps_navigation(self):
+    def test_admin_dashboard_uses_full_width_card_navigation(self):
         response = self.dashboard_for(self.admin, "/uk/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Навігація", html)
+        self.assertNotIn("Навігація", html)
+        self.assertNotIn('class="sidebar-link"', html)
+        self.assertIn('<main class="col-12">', html)
         self.assertIn("Інвентаризація", html)
         self.assertIn("Товари / матеріали", html)
         self.assertIn("Керування", html)

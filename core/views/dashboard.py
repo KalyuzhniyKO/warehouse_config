@@ -102,4 +102,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_storekeeper_workplace"] = self.is_storekeeper_workplace()
+        context["hide_sidebar"] = not context["is_storekeeper_workplace"]
         return context
