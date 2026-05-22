@@ -137,7 +137,9 @@ class ManagementInterfaceTests(TestCase):
         self.assertNotIn("Навігація", html)
         self.assertNotIn('class="sidebar-link"', html)
         self.assertIn('<main class="col-12">', html)
-        self.assertIn("col-sm-6 col-xl-3", html)
+        self.assertIn("management-grid", html)
+        self.assertIn("management-action-card", html)
+        self.assertIn("management-open-btn", html)
         for text in [
             "Керування складом",
             "Довідники",

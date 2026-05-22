@@ -7,4 +7,6 @@ __pycache__/
 db.sqlite3
 staticfiles/
 .venv/
+venv/
+runserver.pid
 *.mo
