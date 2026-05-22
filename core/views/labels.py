@@ -72,6 +72,13 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.printers import (
+    PrinterDiscoveryError,
+    get_default_system_printer,
+    list_system_printers,
+    print_test_page,
+    sync_system_printers_to_db,
+)
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -136,6 +143,60 @@ class PrinterListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     model = Printer
     template_name = "core/printer_list.html"
     context_object_name = "printers"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        db_printers = {printer.system_name: printer for printer in Printer.objects.all()}
+        try:
+            default_system_name = get_default_system_printer()
+            system_printers = []
+            for system_printer in list_system_printers():
+                db_printer = db_printers.get(system_printer["system_name"])
+                system_printers.append(
+                    {
+                        **system_printer,
+                        "db_printer": db_printer,
+                        "in_db": db_printer is not None,
+                        "is_cups_default": system_printer["system_name"] == default_system_name,
+                    }
+                )
+            context["system_printers"] = system_printers
+            context["cups_default_system_name"] = default_system_name
+            context["cups_error"] = ""
+        except PrinterDiscoveryError as exc:
+            context["system_printers"] = []
+            context["cups_default_system_name"] = None
+            context["cups_error"] = str(exc)
+        return context
+
+
+class PrinterSyncView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = SETTINGS_GROUPS
+
+    def post(self, request):
+        try:
+            result = sync_system_printers_to_db()
+            messages.success(
+                request,
+                _("Список принтерів оновлено: створено %(created)s, оновлено %(updated)s.")
+                % {"created": result["created"], "updated": result["updated"]},
+            )
+        except PrinterDiscoveryError as exc:
+            messages.error(request, str(exc))
+        return redirect("printer_list")
+
+
+class PrinterTestPrintView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = SETTINGS_GROUPS
+
+    def post(self, request, pk):
+        printer = get_object_or_404(Printer, pk=pk)
+        result = print_test_page(printer)
+        if result["success"]:
+            messages.success(request, result["message"])
+        else:
+            messages.error(request, result["message"])
+        return redirect("printer_list")
 
 
 class PrinterCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
