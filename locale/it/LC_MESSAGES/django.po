@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-23 01:18+0300\n"
+"POT-Creation-Date: 2026-05-23 01:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -790,7 +790,7 @@ msgstr "nome del sistema"
 msgid "default"
 msgstr "predefinito"
 
-#: core/models/labels.py:15 templates/admin/index.html:14
+#: core/models/labels.py:15 templates/admin/index.html:18
 #: templates/base.html:152 templates/base.html:223
 #: templates/core/dashboard.html:62 templates/core/management/dashboard.html:71
 #: templates/core/printer_list.html:3 templates/core/printer_list.html:6
@@ -875,7 +875,7 @@ msgstr "larghezza, mm"
 msgid "Шаблон етикеток"
 msgstr "Modelli di etichette"
 
-#: core/models/labels.py:55 templates/admin/index.html:15
+#: core/models/labels.py:55 templates/admin/index.html:19
 #: templates/base.html:153 templates/base.html:224
 #: templates/core/dashboard.html:63 templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
@@ -1620,6 +1620,14 @@ msgstr ""
 msgid "Початковий залишок збережено."
 msgstr "Il coperchio è impreciso."
 
+#: templates/admin/base_site.html:4
+msgid "Django site admin"
+msgstr ""
+
+#: templates/admin/base_site.html:12
+msgid "Django administration"
+msgstr ""
+
 #: templates/admin/index.html:6
 msgid "YANTOS Warehouse Admin"
 msgstr ""
@@ -1636,42 +1644,46 @@ msgid ""
 "через Django Admin."
 msgstr ""
 
-#: templates/admin/index.html:12
+#: templates/admin/index.html:15
+msgid "Швидкі переходи"
+msgstr ""
+
+#: templates/admin/index.html:16
 #, fuzzy
 #| msgid "Назад до керування"
 msgid "Основна панель керування"
 msgstr "Inizio della cerimonia"
 
-#: templates/admin/index.html:13
+#: templates/admin/index.html:17
 #, fuzzy
 #| msgid "Склад самообслуговування"
 msgid "Самообслуговування / планшет"
 msgstr "Magazzino self-service"
 
-#: templates/admin/index.html:16
+#: templates/admin/index.html:20
 #, fuzzy
 #| msgid "Журнал операцій"
 msgid "Журнал рухів"
 msgstr "Registro operazioni"
 
-#: templates/admin/index.html:21 templates/base.html:137
+#: templates/admin/index.html:25 templates/base.html:137
 #: templates/base.html:208 templates/core/dashboard.html:41
 #: templates/core/management/directories.html:3
 #: templates/core/management/directories.html:5
 msgid "Довідники"
 msgstr "Libri di riferimento"
 
-#: templates/admin/index.html:25
+#: templates/admin/index.html:29
 #, fuzzy
 #| msgid "Сканувати штрихкод"
 msgid "Номенклатура і штрихкоди"
 msgstr "Scansiona il codice a barre"
 
-#: templates/admin/index.html:29
+#: templates/admin/index.html:33
 msgid "Складські операції"
 msgstr "Operazioni di magazzino"
 
-#: templates/admin/index.html:33
+#: templates/admin/index.html:37
 #, fuzzy
 #| msgid "Друк етикетки"
 msgid "Друк і етикетки"

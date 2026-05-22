@@ -1,4 +1,4 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
 {% load i18n %}
 
 {% block content %}
@@ -8,12 +8,16 @@
   <p class="admin-dashboard-warning">{% trans "Робочі складські операції краще виконувати через основний інтерфейс, не через Django Admin." %}</p>
 </div>
 
-<div class="admin-quick-links">
+{% url 'printer_list' as printer_url %}
+{% url 'labeltemplate_list' as labeltemplate_url %}
+{% url 'movement_list' as movement_url %}
+
+<div class="admin-quick-links" aria-label="{% trans 'Швидкі переходи' %}">
   <a class="button" href="/uk/management/">{% trans "Основна панель керування" %}</a>
   <a class="button" href="/uk/">{% trans "Самообслуговування / планшет" %}</a>
-  <a class="button" href="{% url 'printer_list' %}">{% trans "Принтери" %}</a>
-  <a class="button" href="{% url 'labeltemplate_list' %}">{% trans "Шаблони етикеток" %}</a>
-  <a class="button" href="{% url 'movement_list' %}">{% trans "Журнал рухів" %}</a>
+  <a class="button" href="{% firstof printer_url '/uk/printers/' %}">{% trans "Принтери" %}</a>
+  <a class="button" href="{% firstof labeltemplate_url '/uk/labels/templates/' %}">{% trans "Шаблони етикеток" %}</a>
+  <a class="button" href="{% firstof movement_url '/uk/movements/' %}">{% trans "Журнал рухів" %}</a>
 </div>
 
 <div class="admin-map-grid">
@@ -35,5 +39,7 @@
   </section>
 </div>
 
-{{ block.super }}
+<div id="content-main">
+{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+</div>
 {% endblock %}
