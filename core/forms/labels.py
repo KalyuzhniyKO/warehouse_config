@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
 from core.models import LabelTemplate, Printer
-from core.services.printers import PrinterDiscoveryError, list_system_printers
+from core.services.printers import list_system_printers
 
 
 class PrinterForm(BootstrapModelForm):
@@ -32,7 +32,7 @@ class PrinterForm(BootstrapModelForm):
             system_names = {
                 printer["system_name"] for printer in list_system_printers()
             }
-        except PrinterDiscoveryError:
+        except Exception:
             return system_name
 
         if system_name not in system_names:
