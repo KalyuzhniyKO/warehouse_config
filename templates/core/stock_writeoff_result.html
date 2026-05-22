@@ -12,6 +12,6 @@
 <dt class="col-sm-3">{% trans "Дата операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i" }}</dd>
 <dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ movement.comment|linebreaksbr|default:"—" }}</dd>
 </dl>
-<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_writeoff' %}">{% trans "Нове списання" %}</a><a class="btn btn-outline-primary" href="{% url 'movement_list' %}">{% trans "До рухів товарів" %}</a><a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a></div>
+<div class="d-flex flex-wrap gap-2"><a class="btn btn-primary" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друкувати документ" %}</a><a class="btn btn-outline-primary" href="{% url 'stock_writeoff' %}">{% trans "Нова операція" %}</a><a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "На головний екран" %}</a></div>
 </div></div>
 {% endblock %}
