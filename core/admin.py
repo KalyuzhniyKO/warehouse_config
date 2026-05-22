@@ -36,6 +36,21 @@ def superuser_admin_has_permission(request):
 admin.site.has_permission = superuser_admin_has_permission
 
 
+admin.site.site_header = "YANTOS Warehouse Admin"
+admin.site.site_title = "YANTOS Warehouse"
+admin.site.index_title = "Панель керування складом"
+
+
+@admin.action(description="Активувати вибрані записи")
+def make_active(modeladmin, request, queryset):
+    queryset.update(is_active=True)
+
+
+@admin.action(description="Архівувати вибрані записи")
+def make_inactive(modeladmin, request, queryset):
+    queryset.update(is_active=False)
+
+
 class IncludeCurrentRelationsAdminMixin:
     """Pass current archived relations to admin forms so existing records remain editable."""
 
@@ -52,6 +67,7 @@ class IncludeCurrentRelationsAdminMixin:
 
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     list_display = ("name", "symbol", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "symbol")
@@ -59,6 +75,7 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = CategoryForm
     list_display = ("name", "parent", "is_active")
     list_filter = ("is_active",)
@@ -67,6 +84,7 @@ class CategoryAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
 
 @admin.register(Recipient)
 class RecipientAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     list_display = ("name", "contact_name", "phone", "email", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "contact_name", "phone", "email")
@@ -74,6 +92,7 @@ class RecipientAdmin(admin.ModelAdmin):
 
 @admin.register(UsagePlace)
 class UsagePlaceAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     list_display = ("name", "is_active", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("name",)
@@ -82,6 +101,7 @@ class UsagePlaceAdmin(admin.ModelAdmin):
 
 @admin.register(BarcodeRegistry)
 class BarcodeRegistryAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     list_display = ("barcode", "prefix", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("barcode", "description")
@@ -89,6 +109,7 @@ class BarcodeRegistryAdmin(admin.ModelAdmin):
 
 @admin.register(BarcodeSequence)
 class BarcodeSequenceAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     list_display = ("prefix", "next_number", "padding", "is_active")
     list_filter = ("prefix", "is_active")
     search_fields = ("prefix",)
@@ -96,7 +117,10 @@ class BarcodeSequenceAdmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = ItemForm
+    list_per_page = 30
+    list_select_related = ("category", "unit", "barcode")
     list_display = ("name", "internal_code", "category", "unit", "barcode", "is_active")
     list_filter = ("category", "unit", "is_active")
     search_fields = ("name", "internal_code", "barcode__barcode")
@@ -105,6 +129,8 @@ class ItemAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
+    list_select_related = ("barcode",)
     list_display = ("name", "barcode", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name", "barcode__barcode", "address")
@@ -113,7 +139,9 @@ class WarehouseAdmin(admin.ModelAdmin):
 
 @admin.register(Location)
 class LocationAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = LocationForm
+    list_select_related = ("warehouse", "barcode")
     list_display = ("name", "warehouse", "location_type", "barcode", "is_active")
     list_filter = ("warehouse", "location_type", "is_active")
     search_fields = ("name", "warehouse__name", "barcode__barcode")
@@ -122,6 +150,8 @@ class LocationAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
 
 @admin.register(InventoryCount)
 class InventoryCountAdmin(admin.ModelAdmin):
+    list_per_page = 30
+    list_select_related = ("warehouse", "location", "created_by")
     list_display = (
         "number",
         "warehouse",
@@ -137,6 +167,8 @@ class InventoryCountAdmin(admin.ModelAdmin):
 
 @admin.register(InventoryCountLine)
 class InventoryCountLineAdmin(admin.ModelAdmin):
+    list_per_page = 30
+    list_select_related = ("inventory_count", "item", "location")
     list_display = (
         "inventory_count",
         "item",
@@ -157,7 +189,10 @@ class InventoryCountLineAdmin(admin.ModelAdmin):
 
 @admin.register(StockBalance)
 class StockBalanceAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = StockBalanceAdminForm
+    list_per_page = 30
+    list_select_related = ("item", "location")
     list_display = ("item", "location", "qty", "is_active")
     list_filter = ("location__warehouse", "is_active")
     search_fields = ("item__name", "item__internal_code", "location__name")
@@ -165,7 +200,15 @@ class StockBalanceAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
 
 @admin.register(StockMovement)
 class StockMovementAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = StockMovementAdminForm
+    list_per_page = 30
+    list_select_related = (
+        "item",
+        "source_location",
+        "destination_location",
+        "recipient",
+    )
     list_display = (
         "movement_type",
         "item",
@@ -195,6 +238,7 @@ class StockMovementAdmin(IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
 
 @admin.register(Printer)
 class PrinterAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = PrinterForm
     list_display = ("name", "system_name", "is_default", "is_active")
     list_filter = ("is_default", "is_active")
@@ -203,6 +247,7 @@ class PrinterAdmin(admin.ModelAdmin):
 
 @admin.register(LabelTemplate)
 class LabelTemplateAdmin(admin.ModelAdmin):
+    actions = [make_active, make_inactive]
     form = LabelTemplateForm
     list_display = ("name", "width_mm", "height_mm", "barcode_type", "is_default", "is_active")
     list_filter = ("is_default", "is_active", "barcode_type")
@@ -211,6 +256,8 @@ class LabelTemplateAdmin(admin.ModelAdmin):
 
 @admin.register(PrintJob)
 class PrintJobAdmin(admin.ModelAdmin):
+    list_per_page = 30
+    list_select_related = ("item", "printer", "label_template", "user")
     list_display = ("item", "printer", "copies", "status", "created_at", "printed_at")
     list_filter = ("status", "printer", "created_at")
     search_fields = ("item__name", "barcode", "printer__name", "error_message")

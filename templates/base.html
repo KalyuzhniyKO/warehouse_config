@@ -117,7 +117,7 @@
                     {% if is_storekeeper and not user.is_superuser and not is_warehouse_admin %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Склад самообслуговування" %}</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'stock_issue' %}">{% trans "Взяти товар" %}</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_receive' %}">{% trans "Повернути товар" %}</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'stock_return' %}">{% trans "Повернути товар" %}</a></li>
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="{% url 'dashboard' %}">{% trans "Головна" %}</a></li>
                         {% if user.is_superuser or is_warehouse_admin or is_storekeeper %}
@@ -187,7 +187,7 @@
                                 {% if is_storekeeper and not user.is_superuser and not is_warehouse_admin %}
                                     <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Склад самообслуговування" %}</a>
                                     <a class="sidebar-link" href="{% url 'stock_issue' %}">📤 {% trans "Взяти товар" %}</a>
-                                    <a class="sidebar-link" href="{% url 'stock_receive' %}">📥 {% trans "Повернути товар" %}</a>
+                                    <a class="sidebar-link" href="{% url 'stock_return' %}">📥 {% trans "Повернути товар" %}</a>
                                 {% else %}
                                     <a class="sidebar-link" href="{% url 'dashboard' %}">🏠 {% trans "Головна" %}</a>
                                     {% if user.is_superuser or is_warehouse_admin or is_storekeeper %}
