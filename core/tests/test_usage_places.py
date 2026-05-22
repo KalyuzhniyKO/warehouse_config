@@ -95,3 +95,27 @@ class UsagePlaceTests(TestCase):
         self.assertEqual(UsagePlace.objects.filter(name="ТП-506").count(), 1)
         self.assertFalse(UsagePlace.objects.get(name="Стан волочіння").is_active)
         self.assertTrue(wire_drawing_shop.is_active)
+
+    def test_delete_legacy_usage_places_migration_removes_legacy_places_and_enables_active(self):
+        migration = importlib.import_module(
+            "core.migrations.0014_delete_legacy_usage_places"
+        )
+        UsagePlace.objects.filter(name="ТП-506").update(is_active=False)
+        UsagePlace.objects.filter(name="Цех волочіння").update(is_active=False)
+        UsagePlace.objects.update_or_create(
+            name="Протяжка", defaults={"is_active": True}
+        )
+        UsagePlace.objects.update_or_create(
+            name="Стан волочіння", defaults={"is_active": True}
+        )
+
+        migration.delete_legacy_usage_places(apps, None)
+
+        self.assertFalse(UsagePlace.objects.filter(name="Протяжка").exists())
+        self.assertFalse(UsagePlace.objects.filter(name="Стан волочіння").exists())
+        self.assertTrue(
+            UsagePlace.objects.filter(name="ТП-506", is_active=True).exists()
+        )
+        self.assertTrue(
+            UsagePlace.objects.filter(name="Цех волочіння", is_active=True).exists()
+        )

@@ -1558,23 +1558,14 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Sales")
         self.assertNotContains(response, "Archived place")
 
-    def test_issue_form_shows_tp_506_and_wire_drawing_shop_but_not_inactive_legacy_places(self):
-        tp_506 = UsagePlace.objects.get(name="ТП-506")
-        tp_506.is_active = True
-        tp_506.save(update_fields=["is_active"])
-        wire_drawing_shop = UsagePlace.objects.get(name="Цех волочіння")
-        wire_drawing_shop.is_active = True
-        wire_drawing_shop.save(update_fields=["is_active"])
-        protozhka = UsagePlace.objects.create(name="Протяжка", is_active=False)
-        wire_drawing_stand = UsagePlace.objects.create(name="Стан волочіння", is_active=False)
-
+    def test_issue_form_shows_tp_506_and_wire_drawing_shop_but_not_legacy_places(self):
         form = StockIssueForm()
-        choices = list(form.fields["department"].queryset)
+        choice_names = set(form.fields["department"].queryset.values_list("name", flat=True))
 
-        self.assertIn(tp_506, choices)
-        self.assertIn(wire_drawing_shop, choices)
-        self.assertNotIn(protozhka, choices)
-        self.assertNotIn(wire_drawing_stand, choices)
+        self.assertIn("ТП-506", choice_names)
+        self.assertIn("Цех волочіння", choice_names)
+        self.assertNotIn("Протяжка", choice_names)
+        self.assertNotIn("Стан волочіння", choice_names)
 
     def test_issue_department_is_required(self):
         form = StockIssueForm(
