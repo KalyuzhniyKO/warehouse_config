@@ -13,6 +13,7 @@ from core.services.labels import print_item_label
 from core.services.printers import (
     get_default_system_printer,
     list_system_printers,
+    print_test_page,
     sync_system_printers_to_db,
 )
 
@@ -22,6 +23,15 @@ class CommandResult:
         self.returncode = returncode
         self.stdout = stdout
         self.stderr = stderr
+
+
+class TempFile:
+    def __init__(self, name="/tmp/warehouse-test-print.pdf"):
+        self.name = name
+        self.written = b""
+
+    def write(self, data):
+        self.written += data
 
 
 class CupsPrinterDiscoveryTests(TestCase):
@@ -203,6 +213,31 @@ class PrintItemLabelCupsTests(TestCase):
         run.assert_not_called()
 
 
+class PrintTestPageTests(TestCase):
+    def setUp(self):
+        self.printer = Printer.objects.create(name="Zebra", system_name="Zebra_ZD421")
+
+    @mock.patch("core.services.printers.os.path.exists", return_value=False)
+    @mock.patch("core.services.printers.tempfile.NamedTemporaryFile")
+    @mock.patch("core.services.printers.check_printer_exists", return_value=True)
+    @mock.patch("core.services.printers.subprocess.run")
+    def test_print_test_page_creates_pdf_and_invokes_lp_without_shell(
+        self, run, _exists, named_temporary_file, _path_exists
+    ):
+        temp_file = TempFile()
+        named_temporary_file.return_value.__enter__.return_value = temp_file
+        run.return_value = CommandResult(returncode=0, stdout="request id is Zebra-2")
+
+        result = print_test_page(self.printer)
+
+        self.assertTrue(result["success"])
+        named_temporary_file.assert_called_once_with(delete=False, suffix=".pdf")
+        self.assertTrue(temp_file.written.startswith(b"%PDF"))
+        args, kwargs = run.call_args
+        self.assertEqual(args[0], ["lp", "-d", self.printer.system_name, temp_file.name])
+        self.assertNotIn("shell", kwargs)
+
+
 class PrinterViewTests(TestCase):
     def setUp(self):
         call_command("init_roles", stdout=StringIO())
@@ -218,16 +253,49 @@ class PrinterViewTests(TestCase):
         "core.views.labels.list_system_printers",
         return_value=[{"system_name": "Zebra_ZD421", "name": "Zebra_ZD421", "raw": "device for Zebra_ZD421: usb://Zebra"}],
     )
-    def test_printer_list_page_has_sync_button_and_test_print_action(self, _list, _default):
+    def test_printer_list_page_has_sync_edit_and_test_print_actions(self, _list, _default):
         self.client.force_login(self.admin)
 
         response = self.client.get(reverse("printer_list"))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Оновити список принтерів")
-        self.assertContains(response, reverse("printer_sync"))
-        self.assertContains(response, reverse("printer_test_print", args=[self.printer.pk]))
         self.assertContains(response, "Системні принтери сервера")
+        self.assertContains(response, "Принтери в довіднику")
+        self.assertContains(response, "Редагувати")
+        self.assertContains(response, "Тестовий друк")
+        self.assertContains(response, reverse("printer_sync"))
+        self.assertContains(response, reverse("printer_update", args=[self.printer.pk]))
+        self.assertContains(response, reverse("printer_test_print", args=[self.printer.pk]))
+
+    @mock.patch("core.forms.labels.list_system_printers", side_effect=Exception("dev CUPS down"))
+    def test_printer_edit_page_available_only_to_settings_groups(self, _list):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("printer_update", args=[self.printer.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Системна назва")
+
+        response = self.client.post(
+            reverse("printer_update", args=[self.printer.pk]),
+            {
+                "name": "Label printer",
+                "system_name": "ZEBRA_QUEUE",
+                "description": "Main label printer",
+                "is_default": "on",
+                "is_active": "on",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        self.printer.refresh_from_db()
+        self.assertEqual(self.printer.name, "Label printer")
+        self.assertEqual(self.printer.system_name, "ZEBRA_QUEUE")
+        self.assertEqual(self.printer.description, "Main label printer")
+        self.assertTrue(self.printer.is_default)
+        self.assertTrue(self.printer.is_active)
+
+        self.client.force_login(self.storekeeper)
+        response = self.client.get(reverse("printer_update", args=[self.printer.pk]))
+        self.assertEqual(response.status_code, 403)
 
     @mock.patch(
         "core.views.labels.sync_system_printers_to_db",
