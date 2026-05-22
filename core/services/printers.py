@@ -1,7 +1,6 @@
 import os
 import subprocess
 import tempfile
-from dataclasses import dataclass
 
 from django.db import transaction
 from django.utils import timezone
@@ -146,17 +145,19 @@ def sync_system_printers_to_db():
     }
 
 
+def _printer_not_found_message(printer):
+    return _(
+        "Принтер '%(name)s' не знайдено в CUPS. Перевірте системну назву або синхронізуйте принтери."
+    ) % {"name": printer.name}
+
+
 def print_test_page(printer):
     system_name = (printer.system_name or "").strip()
-    if not check_printer_exists(system_name):
-        return {
-            "success": False,
-            "message": _("Принтер '%(name)s' не знайдено в CUPS. Перевірте системну назву або синхронізуйте принтери.")
-            % {"name": printer.name},
-        }
-
     tmp_path = None
     try:
+        if not check_printer_exists(system_name):
+            return {"success": False, "message": _printer_not_found_message(printer)}
+
         with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", encoding="utf-8") as tmp:
             tmp.write("Warehouse label printer test\n")
             tmp.write(f"Printer: {printer.name}\n")
