@@ -2,201 +2,361 @@
 {% load i18n %}
 {% block title %}{% trans "Керування складом" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="h3 mb-1">{% trans "Керування складом" %}</h1>
-        <p class="text-muted mb-0">{% trans "Керуйте товарами, працівниками, залишками, журналом операцій і налаштуваннями складу." %}</p>
-    </div>
+<style>
+    .management-home {
+        max-width: 1240px;
+        margin: 0 auto;
+    }
+    .management-hero {
+        padding: clamp(1.5rem, 3vw, 2.25rem);
+        border: 1px solid rgba(17, 24, 39, .08);
+        border-top: .35rem solid var(--yantos-yellow);
+        border-radius: 1rem;
+        background: #fff;
+        box-shadow: 0 .75rem 1.75rem rgba(15, 23, 42, .07);
+    }
+    .management-title {
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        line-height: 1.05;
+    }
+    .management-subtitle {
+        max-width: 52rem;
+        color: var(--yantos-muted);
+        font-size: clamp(1rem, 2vw, 1.25rem);
+    }
+    .management-stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem;
+    }
+    @media (min-width: 768px) {
+        .management-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    .management-stat {
+        min-height: 5.25rem;
+        padding: .9rem 1rem;
+        border: 1px solid rgba(17, 24, 39, .08);
+        border-radius: .85rem;
+        background: #f8fafc;
+    }
+    .management-stat-value {
+        font-size: 1.45rem;
+        line-height: 1;
+    }
+    .management-section {
+        margin-top: 2rem;
+    }
+    .management-section-title {
+        font-size: 1.15rem;
+    }
+    .management-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    @media (min-width: 768px) {
+        .management-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1200px) {
+        .management-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    .management-action-card {
+        min-height: 13.5rem;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        border: 1px solid rgba(17, 24, 39, .08);
+        border-radius: 1rem;
+        background: #fff;
+        color: var(--yantos-text);
+        text-decoration: none;
+        box-shadow: 0 .55rem 1.35rem rgba(15, 23, 42, .06);
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+    .management-action-card:hover,
+    .management-action-card:focus-visible {
+        color: var(--yantos-text);
+        border-color: rgba(196, 154, 0, .45);
+        box-shadow: 0 .9rem 1.8rem rgba(15, 23, 42, .11);
+        transform: translateY(-.12rem);
+    }
+    .management-action-card:focus {
+        outline: none;
+    }
+    .management-action-card:focus-visible {
+        outline: .22rem solid rgba(255, 210, 0, .55);
+        outline-offset: .2rem;
+    }
+    .management-action-icon {
+        width: 3.25rem;
+        height: 3.25rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: .9rem;
+        background: var(--yantos-yellow-soft);
+        font-size: 1.65rem;
+        flex: 0 0 auto;
+    }
+    .management-action-title {
+        font-size: 1.18rem;
+        line-height: 1.2;
+    }
+    .management-action-description {
+        color: var(--yantos-muted);
+        line-height: 1.45;
+    }
+    .management-open-btn {
+        width: 100%;
+        margin-top: auto;
+        padding: .8rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--yantos-border);
+        border-radius: .85rem;
+        background: var(--yantos-yellow);
+        color: var(--yantos-text);
+        font-weight: 700;
+    }
+    .management-open-btn.warning {
+        border-color: #b45309;
+        background: #fff7ed;
+        color: #92400e;
+    }
+</style>
+
+<div class="management-home">
+    <section class="management-hero mb-4" aria-labelledby="management-title">
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-7">
+                <h1 id="management-title" class="management-title fw-bold mb-3">{% trans "Керування складом" %}</h1>
+                <p class="management-subtitle mb-0">{% trans "Основні адмінські дії зібрані за робочими сценаріями: облік, люди, контроль, друк і системні налаштування." %}</p>
+            </div>
+            <div class="col-lg-5">
+                <div class="management-stats" aria-label="{% trans 'Поточні показники' %}">
+                    <div class="management-stat">
+                        <div class="management-stat-value fw-bold">{{ counts.items|default:0 }}</div>
+                        <div class="small text-muted mt-2">{% trans "Товари" %}</div>
+                    </div>
+                    <div class="management-stat">
+                        <div class="management-stat-value fw-bold">{{ counts.warehouses|default:0 }}</div>
+                        <div class="small text-muted mt-2">{% trans "Склади" %}</div>
+                    </div>
+                    <div class="management-stat">
+                        <div class="management-stat-value fw-bold">{{ counts.locations|default:0 }}</div>
+                        <div class="small text-muted mt-2">{% trans "Локації" %}</div>
+                    </div>
+                    <div class="management-stat">
+                        <div class="management-stat-value fw-bold">{{ counts.users|default:0 }}</div>
+                        <div class="small text-muted mt-2">{% trans "Користувачі" %}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="management-section" aria-labelledby="management-quick-heading">
+        <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+            <h2 id="management-quick-heading" class="management-section-title fw-bold mb-0">{% trans "Швидкий доступ" %}</h2>
+        </div>
+        <div class="management-grid">
+            {% if can_manage_directories %}
+            <a class="management-action-card" href="{% url 'item_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">📦</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Товари / матеріали" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Номенклатура, внутрішні коди, штрихкоди та опис матеріалів." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            {% endif %}
+            <a class="management-action-card" href="{% url 'stockbalance_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">📊</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Залишки на складі" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Фактична кількість товарів по складах і локаціях." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+        </div>
+    </section>
+
+    {% if can_manage_users %}
+    <section class="management-section" aria-labelledby="management-users-heading">
+        <h2 id="management-users-heading" class="management-section-title fw-bold mb-3">{% trans "Користувачі та доступ" %}</h2>
+        <div class="management-grid">
+            <a class="management-action-card" href="{% url 'management_users' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">👤</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Користувачі та ролі" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Створення користувачів і призначення складських ролей." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+        </div>
+    </section>
+    {% endif %}
+
+    {% if can_manage_directories %}
+    <section class="management-section" aria-labelledby="management-directories-heading">
+        <h2 id="management-directories-heading" class="management-section-title fw-bold mb-3">{% trans "Довідники" %}</h2>
+        <div class="management-grid">
+            <a class="management-action-card" href="{% url 'warehouse_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">🏭</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Склади" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Місця зберігання, де ведеться складський облік." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            <a class="management-action-card" href="{% url 'location_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">📍</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Локації" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Комірки, стелажі та зони зберігання на складах." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            <a class="management-action-card" href="{% url 'category_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">🗂️</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Категорії" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Групування товарів і матеріалів для швидкої навігації." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            <a class="management-action-card" href="{% url 'unit_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">⚖️</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Одиниці виміру" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Одиниці обліку для кількості товарів і операцій." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            <a class="management-action-card" href="{% url 'recipient_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">👥</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Працівники / отримувачі" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Люди або підрозділи, які беруть чи повертають товар." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="management-section" aria-labelledby="management-control-heading">
+        <h2 id="management-control-heading" class="management-section-title fw-bold mb-3">{% trans "Контроль і звіти" %}</h2>
+        <div class="management-grid">
+            <a class="management-action-card" href="{% url 'movement_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">🔁</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Журнал операцій" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Взяття, повернення, приходи, переміщення та списання." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            {% if can_view_analytics %}
+            <a class="management-action-card" href="{% url 'management_analytics' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">📈</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Аналітика" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "KPI, графіки та експорт складських рухів." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if can_manage_users or show_technical_admin %}
+    <section class="management-section" aria-labelledby="management-labels-heading">
+        <h2 id="management-labels-heading" class="management-section-title fw-bold mb-3">{% trans "Етикетки" %}</h2>
+        <div class="management-grid">
+            <a class="management-action-card" href="{% url 'printer_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">🖨️</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Принтери" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Налаштування принтерів для друку складських етикеток." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            <a class="management-action-card" href="{% url 'labeltemplate_list' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">📐</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Шаблони етикеток" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Формати етикеток для товарів і штрихкодів." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="management-section" aria-labelledby="management-system-heading">
+        <h2 id="management-system-heading" class="management-section-title fw-bold mb-3">{% trans "Система" %}</h2>
+        <div class="management-grid">
+            {% if can_manage_users or show_technical_admin %}
+            <a class="management-action-card" href="{% url 'management_settings' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">⚙️</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Налаштування складу" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Параметри локацій та щоденної роботи складу." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            {% endif %}
+            <a class="management-action-card" href="{% url 'management_help' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">❓</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Довідка адміністратора" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Інструкції для запуску, обслуговування та щоденної роботи." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn">{% trans "Відкрити" %}</span>
+            </a>
+            {% if show_technical_admin %}
+            <a class="management-action-card" href="{% url 'admin:index' %}">
+                <span class="d-flex align-items-start gap-3">
+                    <span class="management-action-icon" aria-hidden="true">🛠️</span>
+                    <span>
+                        <span class="management-action-title fw-bold d-block">{% trans "Технічна Django Admin" %}</span>
+                        <span class="management-action-description d-block mt-2">{% trans "Тільки для технічного обслуговування." %}</span>
+                    </span>
+                </span>
+                <span class="management-open-btn warning">{% trans "Відкрити" %}</span>
+            </a>
+            {% endif %}
+        </div>
+    </section>
 </div>
-
-{% if can_manage_directories %}
-<section class="mb-4" aria-labelledby="management-directories-heading">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 id="management-directories-heading" class="h5 mb-0">{% trans "Довідники" %}</h2>
-    </div>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                        <h3 class="h6 mb-0">📦 {% trans "Товари / матеріали" %}</h3>
-                        <span class="badge text-bg-light">{{ counts.items|default:0 }}</span>
-                    </div>
-                    <p class="text-muted small mb-2">{% trans "Номенклатура товарів і матеріалів, їхні коди, штрихкоди та облікові дані." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                        <h3 class="h6 mb-0">🏭 {% trans "Склади" %}</h3>
-                        <span class="badge text-bg-light">{{ counts.warehouses|default:0 }}</span>
-                    </div>
-                    <p class="text-muted small mb-2">{% trans "Список складів, де ведеться облік товарів." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'warehouse_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                        <h3 class="h6 mb-0">📍 {% trans "Локації" %}</h3>
-                        <span class="badge text-bg-light">{{ counts.locations|default:0 }}</span>
-                    </div>
-                    <p class="text-muted small mb-2">{% trans "Комірки, зони та місця зберігання на складах." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'location_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">🗂️ {% trans "Категорії" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Групування товарів і матеріалів для швидкої навігації." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'category_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">⚖️ {% trans "Одиниці виміру" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Одиниці обліку для товарів і складських операцій." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'unit_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">👥 {% trans "Працівники / отримувачі" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Люди або підрозділи, які беруть чи повертають товар у self-service процесі." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'recipient_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-{% if can_manage_users %}
-<section class="mb-4" aria-labelledby="management-users-heading">
-    <h2 id="management-users-heading" class="h5 mb-3">{% trans "Користувачі та доступ" %}</h2>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                        <h3 class="h6 mb-0">👤 {% trans "Користувачі та ролі" %}</h3>
-                        <span class="badge text-bg-light">{{ counts.users|default:0 }}</span>
-                    </div>
-                    <p class="text-muted small mb-2">{% trans "Перегляд користувачів і призначених складських ролей." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_users' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-{% if can_manage_users or show_technical_admin %}
-<section class="mb-4" aria-labelledby="management-labels-heading">
-    <h2 id="management-labels-heading" class="h5 mb-3">{% trans "Етикетки" %}</h2>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">🖨️ {% trans "Принтери" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Налаштування принтерів для друку складських етикеток." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'printer_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">📐 {% trans "Шаблони етикеток" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Макети етикеток для товарів і штрихкодів." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'labeltemplate_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-{% endif %}
-
-<section class="mb-4" aria-labelledby="management-reports-heading">
-    <h2 id="management-reports-heading" class="h5 mb-3">{% trans "Контроль і звіти" %}</h2>
-    <div class="row g-3">
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">📊 {% trans "Залишки на складі" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Поточні залишки товарів і матеріалів по складах і локаціях." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">🔁 {% trans "Журнал операцій" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Журнал операцій складу: взяття, повернення, приходи, переміщення та списання." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'movement_list' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        {% if can_view_analytics %}
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">📈 {% trans "Аналітика" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "KPI, графіки та експорт рухів складу." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_analytics' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</section>
-
-<section class="mb-4" aria-labelledby="management-system-heading">
-    <h2 id="management-system-heading" class="h5 mb-3">{% trans "Система" %}</h2>
-    <div class="row g-3">
-        {% if can_manage_users or show_technical_admin %}
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">⚙️ {% trans "Налаштування складу" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Параметри складу для режиму локацій та щоденної роботи." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_settings' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">❓ {% trans "Довідка адміністратора" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Інструкції для запуску, обслуговування та щоденної роботи." %}</p>
-                    <a class="btn btn-sm btn-outline-primary mt-auto stretched-link" href="{% url 'management_help' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        {% if show_technical_admin %}
-        <div class="col-sm-6 col-xl-3">
-            <div class="card content-card h-100 position-relative border-warning">
-                <div class="card-body d-flex flex-column gap-2">
-                    <h3 class="h6 mb-0">🛠️ {% trans "Технічна Django Admin" %}</h3>
-                    <p class="text-muted small mb-2">{% trans "Тільки для технічного обслуговування." %}</p>
-                    <a class="btn btn-sm btn-outline-warning mt-auto stretched-link" href="{% url 'admin:index' %}">{% trans "Відкрити" %}</a>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</section>
 {% endblock %}
