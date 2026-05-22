@@ -1,78 +1,85 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
-{% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}{% endblock %}
-{% block content %}
-<div class="card content-card mb-4">
-    <div class="card-body p-4 p-xl-5">
-        <h1 class="mb-2">{% trans "Головна" %}</h1>
-        <p class="lead text-muted mb-0">{% trans "Оберіть потрібну дію для щоденної складської роботи." %}</p>
+{% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}
+<section class="mb-4" aria-labelledby="directories-heading">
+    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
+    <div class="dashboard-grid">
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
     </div>
-</div>
+</section>
+{% endblock %}
+{% block extra_css %}
+<style>
+    .dashboard-hero { background: linear-gradient(130deg, #fff9db, #ffffff 48%, #f7f9fc); border: 1px solid rgba(196,154,0,.25); border-radius: 1rem; box-shadow: 0 .7rem 1.8rem rgba(15,23,42,.06); }
+    .dashboard-hero p { color: var(--yantos-muted); max-width: 48rem; }
+    .quick-actions { display:grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap:.65rem; }
+    .quick-action-card { border:1px solid rgba(17,24,39,.12); background:#fff; color:var(--yantos-text); border-radius:.8rem; text-decoration:none; padding:.75rem .85rem; display:flex; flex-direction:column; gap:.2rem; transition:.15s ease; }
+    .quick-action-card:hover,.quick-action-card:focus { transform: translateY(-2px); border-color: rgba(196,154,0,.7); box-shadow: 0 .55rem 1rem rgba(15,23,42,.09); }
+    .dashboard-grid { display:grid; grid-template-columns:repeat(1,minmax(0,1fr)); gap:1rem; }
+    .operation-card { border:1px solid rgba(17,24,39,.11); border-left: .35rem solid var(--accent); border-radius:1rem; background:var(--yantos-card-bg, #fff); box-shadow:0 .45rem 1.2rem rgba(15,23,42,.06); }
+    .operation-card .btn { border-radius:.65rem; font-weight:600; }
+    .operation-card .status-note { font-size:.82rem; color:var(--yantos-muted); }
+    .operation-card .icon-wrap { width:2.35rem; height:2.35rem; border-radius:.65rem; background:color-mix(in srgb, var(--accent) 14%, white); display:inline-flex; align-items:center; justify-content:center; }
+    @media (min-width: 768px) { .dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (min-width: 1200px) { .dashboard-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+</style>
+
+<section class="mb-4" aria-labelledby="directories-heading">
+    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
+    <div class="dashboard-grid">
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
+    </div>
+</section>
+{% endblock %}
+{% block content %}
+<section class="dashboard-hero p-4 p-xl-5 mb-4">
+    <div class="d-flex flex-column flex-xl-row gap-4 align-items-xl-end justify-content-between">
+        <div>
+            <h1 class="mb-2">{% trans "Головна" %}</h1>
+            <p class="mb-0">{% trans "Центральна панель складських операцій, контролю залишків і швидкого доступу до ключових дій." %}</p>
+        </div>
+        <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
+            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+                <a class="quick-action-card" href="{% url 'stock_issue' %}"><strong>📤 {% trans "Видача товару" %}</strong><span>{% trans "Оформити видачу" %}</span></a>
+                <a class="quick-action-card" href="{% url 'stock_return' %}"><strong>📥 {% trans "Повернення товару" %}</strong><span>{% trans "Прийняти повернення" %}</span></a>
+                <a class="quick-action-card" href="{% url 'stock_receive' %}"><strong>📦 {% trans "Прихід товару" %}</strong><span>{% trans "Зареєструвати надходження" %}</span></a>
+            {% endif %}
+            <a class="quick-action-card" href="{% url 'item_list' %}"><strong>🔎 {% trans "Пошук товару" %}</strong><span>{% trans "Знайти позицію в довіднику" %}</span></a>
+        </div>
+    </div>
+</section>
 
 {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
 <section class="mb-4" aria-labelledby="warehouse-operations-heading">
     <h2 id="warehouse-operations-heading" class="h4 mb-3">{% trans "Операції складу" %}</h2>
-    <div class="row g-3">
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📥</div><h3 class="h5 mt-2">{% trans "Прихід товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Прийміть товар на склад або локацію." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_receive' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📤</div><h3 class="h5 mt-2">{% trans "Видача товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Оформіть видачу товарів зі складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_issue' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🔀</div><h3 class="h5 mt-2">{% trans "Переміщення товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Перемістіть товар між складами або локаціями." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_transfer' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🗑️</div><h3 class="h5 mt-2">{% trans "Списання товару" %}</h3><p class="text-muted flex-grow-1">{% trans "Списуйте товар, який використано, зіпсовано або втрачено." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_writeoff' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧾</div><h3 class="h5 mt-2">{% trans "Початкові залишки" %}</h3><p class="text-muted flex-grow-1">{% trans "Внесіть стартову кількість товарів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_initial' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧮</div><h3 class="h5 mt-2">{% trans "Інвентаризація" %}</h3><p class="text-muted flex-grow-1">{% trans "Проведіть або перегляньте перерахунок складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити" %}</a></div></div></div>
+    <div class="dashboard-grid">
+        <article class="operation-card" style="--accent:#0d9488"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📥</span><h3 class="h5 mb-0">{% trans "Прихід товару" %}</h3></div><p class="text-muted mb-0">{% trans "Приймання поставок і занесення партій на склад." %}</p><p class="status-note mb-2">{% trans "Порада: перевірте локацію перед збереженням." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_receive' %}">{% trans "Відкрити операцію" %}</a></div></article>
+        <article class="operation-card" style="--accent:#d97706"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📤</span><h3 class="h5 mb-0">{% trans "Видача товару" %}</h3></div><p class="text-muted mb-0">{% trans "Відпуск матеріалів працівникам і підрозділам." %}</p><p class="status-note mb-2">{% trans "Порада: додайте отримувача для повного аудиту." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_issue' %}">{% trans "Відкрити операцію" %}</a></div></article>
+        <article class="operation-card" style="--accent:#2563eb"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🔀</span><h3 class="h5 mb-0">{% trans "Переміщення товару" %}</h3></div><p class="text-muted mb-0">{% trans "Переміщення залишків між складами та локаціями." %}</p><p class="status-note mb-2">{% trans "Порада: вказуйте джерело і призначення без дублювання." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_transfer' %}">{% trans "Відкрити операцію" %}</a></div></article>
+        <article class="operation-card" style="--accent:#6b7280"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🗑️</span><h3 class="h5 mb-0">{% trans "Списання товару" %}</h3></div><p class="text-muted mb-0">{% trans "Фіксація втрат, браку або непридатних запасів." %}</p><p class="status-note mb-2">{% trans "Порада: додавайте причину для подальшого аналізу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_writeoff' %}">{% trans "Відкрити операцію" %}</a></div></article>
+        <article class="operation-card" style="--accent:#0f766e"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧾</span><h3 class="h5 mb-0">{% trans "Початкові залишки" %}</h3></div><p class="text-muted mb-0">{% trans "Стартове внесення запасів для нового складу." %}</p><p class="status-note mb-2">{% trans "Порада: використовуйте один раз на запуску обліку." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_initial' %}">{% trans "Відкрити операцію" %}</a></div></article>
+        <article class="operation-card" style="--accent:#7c3aed"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧮</span><h3 class="h5 mb-0">{% trans "Інвентаризація" %}</h3></div><p class="text-muted mb-0">{% trans "Звірка фактичних залишків із системними даними." %}</p><p class="status-note mb-2">{% trans "Порада: закривайте підрахунок одразу після перевірки." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити операцію" %}</a></div></article>
     </div>
 </section>
 {% endif %}
 
 <section class="mb-4" aria-labelledby="control-reports-heading">
     <h2 id="control-reports-heading" class="h4 mb-3">{% trans "Контроль і звіти" %}</h2>
-    <div class="row g-3">
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📊</div><h3 class="h5 mt-2">{% trans "Залишки на складі" %}</h3><p class="text-muted flex-grow-1">{% trans "Перевірте фактичну кількість на локаціях." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🔁</div><h3 class="h5 mt-2">{% trans "Журнал операцій" %}</h3><p class="text-muted flex-grow-1">{% trans "Перегляньте журнал операцій складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'movement_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% if user|in_group:"Перегляд / аудитор" and not user.is_superuser %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧮</div><h3 class="h5 mt-2">{% trans "Інвентаризація" %}</h3><p class="text-muted flex-grow-1">{% trans "Перегляньте інвентаризації складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📈</div><h3 class="h5 mt-2">{% trans "Аналітика" %}</h3><p class="text-muted flex-grow-1">{% trans "Зведені показники та експорт звітів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'management_analytics' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
+    <div class="dashboard-grid">
+        <article class="operation-card" style="--accent:#0ea5e9"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📊</span><h3 class="h5 mb-0">{% trans "Залишки на складі" %}</h3></div><p class="text-muted">{% trans "Оперативний перегляд фактичних залишків по локаціях." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Перейти" %}</a></div></article>
+        <article class="operation-card" style="--accent:#0891b2"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🔁</span><h3 class="h5 mb-0">{% trans "Журнал операцій" %}</h3></div><p class="text-muted">{% trans "Повний хронологічний журнал усіх складських рухів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'movement_list' %}">{% trans "Перейти" %}</a></div></article>
+        {% if user|in_group:"Перегляд / аудитор" and not user.is_superuser %}<article class="operation-card" style="--accent:#7c3aed"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧮</span><h3 class="h5 mb-0">{% trans "Інвентаризація" %}</h3></div><p class="text-muted">{% trans "Доступ до перевірок без прав на зміну операцій." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Перейти" %}</a></div></article>{% endif %}
+        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}<article class="operation-card" style="--accent:#475569"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📈</span><h3 class="h5 mb-0">{% trans "Аналітика" %}</h3></div><p class="text-muted">{% trans "Зведені метрики та експорт управлінських звітів." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'management_analytics' %}">{% trans "Перейти" %}</a></div></article>{% endif %}
     </div>
 </section>
 
 <section class="mb-4" aria-labelledby="directories-heading">
     <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
-    <div class="row g-3">
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📦</div><h3 class="h5 mt-2">{% trans "Товари / матеріали" %}</h3><p class="text-muted flex-grow-1">{% trans "Товари, матеріали та їхні коди." %}</p><a class="btn btn-primary mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🗂️</div><h3 class="h5 mt-2">{% trans "Категорії" %}</h3><p class="text-muted flex-grow-1">{% trans "Групування номенклатури." %}</p><a class="btn btn-primary mt-auto" href="{% url 'category_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">⚖️</div><h3 class="h5 mt-2">{% trans "Одиниці виміру" %}</h3><p class="text-muted flex-grow-1">{% trans "Одиниці для обліку кількості." %}</p><a class="btn btn-primary mt-auto" href="{% url 'unit_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🏭</div><h3 class="h5 mt-2">{% trans "Склади" %}</h3><p class="text-muted flex-grow-1">{% trans "Місця зберігання товарів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'warehouse_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📍</div><h3 class="h5 mt-2">{% trans "Локації" %}</h3><p class="text-muted flex-grow-1">{% trans "Комірки, стелажі та зони складу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'location_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">👥</div><h3 class="h5 mt-2">{% trans "Працівники / отримувачі" %}</h3><p class="text-muted flex-grow-1">{% trans "Люди або підрозділи, які беруть чи повертають товар." %}</p><a class="btn btn-primary mt-auto" href="{% url 'recipient_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
-    </div>
-</section>
-
-{% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-<section class="mb-4" aria-labelledby="labels-heading">
-    <h2 id="labels-heading" class="h4 mb-3">{% trans "Етикетки" %}</h2>
-    <div class="row g-3">
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🏷️</div><h3 class="h5 mt-2">{% trans "Друк етикеток" %}</h3><p class="text-muted flex-grow-1">{% trans "Виберіть номенклатуру для друку етикетки." %}</p><a class="btn btn-primary mt-auto" href="{% url 'item_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🖨️</div><h3 class="h5 mt-2">{% trans "Принтери" %}</h3><p class="text-muted flex-grow-1">{% trans "Налаштування принтерів етикеток." %}</p><a class="btn btn-primary mt-auto" href="{% url 'printer_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">📐</div><h3 class="h5 mt-2">{% trans "Шаблони етикеток" %}</h3><p class="text-muted flex-grow-1">{% trans "Формати та шаблони для друку." %}</p><a class="btn btn-primary mt-auto" href="{% url 'labeltemplate_list' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
-    </div>
-</section>
-{% endif %}
-
-<section class="mb-4" aria-labelledby="administration-heading">
-    <h2 id="administration-heading" class="h4 mb-3">{% trans "Адміністрування" %}</h2>
-    <div class="row g-3">
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">🧭</div><h3 class="h5 mt-2">{% trans "Керування складом" %}</h3><p class="text-muted flex-grow-1">{% trans "Панель керування складом." %}</p><a class="btn btn-primary mt-auto" href="{% url 'management_dashboard' %}">{% trans "Відкрити" %}</a></div></div></div>
-        {% endif %}
-        <div class="col-md-6 col-xl-3"><div class="card content-card h-100"><div class="card-body d-flex flex-column"><div class="fs-2">❓</div><h3 class="h5 mt-2">{% trans "Допомога" %}</h3><p class="text-muted flex-grow-1">{% trans "Інструкції для роботи із системою." %}</p><a class="btn btn-primary mt-auto" href="{% url 'help' %}">{% trans "Відкрити" %}</a></div></div></div>
+    <div class="dashboard-grid">
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
+        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
     </div>
 </section>
 {% endblock %}

@@ -235,6 +235,26 @@ class DashboardPermissionTests(TestCase):
         ]:
             self.assertContains(response, label)
 
+
+    def test_admin_dashboard_has_polished_layout_sections_and_links(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        self.assertContains(response, "quick-actions")
+        self.assertContains(response, "dashboard-grid")
+        self.assertContains(response, "operation-card")
+        for url_name in [
+            "stock_receive",
+            "stock_issue",
+            "stock_return",
+            "stock_transfer",
+            "stock_writeoff",
+            "inventory_list",
+            "stockbalance_list",
+            "movement_list",
+        ]:
+            self.assertIn(f'href="{reverse(url_name)}"', html)
+
     def test_storekeeper_dashboard_contains_workplace_actions_without_admin_items(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
 
