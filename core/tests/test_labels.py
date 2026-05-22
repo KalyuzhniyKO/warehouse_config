@@ -203,3 +203,47 @@ class LabelAndBarcodeTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+
+    def test_label_template_form_has_layout_fields(self):
+        from core.forms.labels import LabelTemplateForm
+
+        form = LabelTemplateForm()
+        for field in [
+            "margin_top_mm", "margin_right_mm", "margin_bottom_mm", "margin_left_mm",
+            "item_name_font_size", "internal_code_font_size", "barcode_text_font_size",
+            "barcode_height_mm", "barcode_bar_width_mm",
+        ]:
+            self.assertIn(field, form.fields)
+
+    def test_label_template_preview_route_returns_pdf(self):
+        template = LabelTemplate.objects.create(name="Preview", is_default=True)
+        response = self.client.get(reverse("labeltemplate_preview", args=[template.pk]), {"item": self.item.pk})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
+
+    def test_label_template_list_has_edit_and_preview_links(self):
+        template = LabelTemplate.objects.create(name="Preview", is_default=True)
+        response = self.client.get(reverse("labeltemplate_list"))
+        self.assertContains(response, reverse("labeltemplate_update", args=[template.pk]))
+        self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
+
+    def test_label_template_edit_available_only_for_settings_groups(self):
+        template = LabelTemplate.objects.create(name="Edit me", is_default=True)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+        self.assertEqual(response.status_code, 200)
+
+        User = get_user_model()
+        user = User.objects.create_user("print-only", password="pass")
+        user.groups.add(Group.objects.get(name="Комірник"))
+        self.client.force_login(user)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+        self.assertEqual(response.status_code, 403)
+
+    def test_item_label_print_page_has_preview_link(self):
+        printer = Printer.objects.create(name="P", system_name="P1", is_default=True)
+        template = LabelTemplate.objects.create(name="T", is_default=True)
+        response = self.client.get(reverse("item_label_print", args=[self.item.pk]))
+        self.assertContains(response, reverse("item_label_download", args=[self.item.pk]))
+        self.assertContains(response, "Переглянути етикетку PDF")

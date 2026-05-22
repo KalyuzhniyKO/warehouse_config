@@ -39,6 +39,15 @@ class LabelTemplate(ActiveModel):
     barcode_type = models.CharField(
         _("barcode type"), max_length=32, choices=BarcodeType.choices, default=BarcodeType.CODE128
     )
+    margin_top_mm = models.PositiveSmallIntegerField(_("margin top, mm"), default=3)
+    margin_right_mm = models.PositiveSmallIntegerField(_("margin right, mm"), default=3)
+    margin_bottom_mm = models.PositiveSmallIntegerField(_("margin bottom, mm"), default=3)
+    margin_left_mm = models.PositiveSmallIntegerField(_("margin left, mm"), default=3)
+    item_name_font_size = models.PositiveSmallIntegerField(_("item name font size"), default=8)
+    internal_code_font_size = models.PositiveSmallIntegerField(_("internal code font size"), default=6)
+    barcode_text_font_size = models.PositiveSmallIntegerField(_("barcode text font size"), default=7)
+    barcode_height_mm = models.PositiveSmallIntegerField(_("barcode height, mm"), default=16)
+    barcode_bar_width_mm = models.DecimalField(_("barcode bar width, mm"), max_digits=4, decimal_places=2, default=0.33)
     is_default = models.BooleanField(_("default"), default=False)
 
     class Meta:

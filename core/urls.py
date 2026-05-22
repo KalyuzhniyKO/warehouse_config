@@ -217,6 +217,8 @@ urlpatterns = [
     path("settings/printers/<int:pk>/test-print/", views.PrinterTestPrintView.as_view(), name="printer_test_print"),
     path("settings/label-templates/", views.LabelTemplateListView.as_view(), name="labeltemplate_list"),
     path("settings/label-templates/create/", views.LabelTemplateCreateView.as_view(), name="labeltemplate_create"),
+    path("settings/label-templates/<int:pk>/edit/", views.LabelTemplateUpdateView.as_view(), name="labeltemplate_update"),
+    path("settings/label-templates/<int:pk>/preview/", views.LabelTemplatePreviewView.as_view(), name="labeltemplate_preview"),
     path(
         "management/",
         views.ManagementDashboardView.as_view(),
