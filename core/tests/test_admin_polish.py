@@ -4,8 +4,16 @@ from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 
-from core.admin import PrintJobAdmin, UsagePlaceAdmin, make_active, make_inactive
-from core.models import PrintJob, UsagePlace
+from core.admin import (
+    LabelTemplateAdmin,
+    PrintJobAdmin,
+    PrinterAdmin,
+    StockMovementAdmin,
+    UsagePlaceAdmin,
+    make_active,
+    make_inactive,
+)
+from core.models import LabelTemplate, PrintJob, Printer, StockMovement, UsagePlace
 
 
 class BaseTemplateReturnLinksTests(TestCase):
@@ -71,16 +79,43 @@ class AdminIndexPolishTests(TestCase):
     def test_admin_index_contains_quick_link_and_sections(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin:index"))
-        self.assertContains(response, "Основна панель керування")
+        self.assertContains(response, "Панель керування")
         self.assertContains(response, "Довідники")
-        self.assertContains(response, "Номенклатура і штрихкоди")
-        self.assertContains(response, "Складські операції")
-        self.assertContains(response, "Друк і етикетки")
+        self.assertContains(response, "Довідники")
+        self.assertContains(response, "Друк")
+        self.assertContains(response, "Система")
 
     def test_custom_admin_css_is_loaded(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin:index"))
         self.assertContains(response, "admin/css/custom_admin.css")
+
+    def test_admin_index_anonymous_redirected(self):
+        response = self.client.get(reverse("admin:index"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_superuser_can_open_key_changelists(self):
+        self.client.force_login(self.superuser)
+        for name in [
+            "admin:core_item_changelist",
+            "admin:core_stockmovement_changelist",
+            "admin:core_usageplace_changelist",
+            "admin:core_printer_changelist",
+            "admin:core_labeltemplate_changelist",
+        ]:
+            with self.subTest(name=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200)
+
+    def test_admin_index_has_new_group_labels_and_quick_links(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(reverse("admin:index"))
+        self.assertContains(response, "Відкрити систему складу")
+        self.assertContains(response, "Панель керування")
+        self.assertContains(response, "Журнал операцій")
+        self.assertContains(response, "Склад")
+        self.assertContains(response, "Довідники")
+        self.assertContains(response, "Друк")
+        self.assertContains(response, "Система")
 
 
 class AdminBadgeHelpersTests(TestCase):
@@ -105,3 +140,22 @@ class AdminBadgeHelpersTests(TestCase):
 
         self.assertIn("Активний", active_html)
         self.assertIn("Архів", archive_html)
+
+
+class AdminModelConfigurationTests(TestCase):
+    def test_usage_place_and_printer_actions_configured(self):
+        self.assertIn(make_active, UsagePlaceAdmin.actions)
+        self.assertIn(make_inactive, UsagePlaceAdmin.actions)
+        self.assertIn(make_active, PrinterAdmin.actions)
+        self.assertIn(make_inactive, PrinterAdmin.actions)
+
+    def test_stockmovement_search_and_filters_configured(self):
+        self.assertIn("movement_type", StockMovementAdmin.list_filter)
+        self.assertIn("occurred_at", StockMovementAdmin.list_filter)
+        self.assertIn("item__name", StockMovementAdmin.search_fields)
+        self.assertIn("item__barcode__barcode", StockMovementAdmin.search_fields)
+
+    def test_label_template_fieldsets_include_layout(self):
+        fieldset_titles = [name for name, _ in LabelTemplateAdmin.fieldsets]
+        self.assertIn("Макет", fieldset_titles)
+

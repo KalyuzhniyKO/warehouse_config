@@ -4,8 +4,8 @@
 {% block content %}
 <div class="admin-dashboard-intro">
   <h1>{% trans "YANTOS Warehouse Admin" %}</h1>
-  <p>{% trans "Службова адмін-панель для технічного налаштування довідників, принтерів, шаблонів етикеток і аудиту операцій." %}</p>
-  <p class="admin-dashboard-warning">{% trans "Робочі складські операції краще виконувати через основний інтерфейс, не через Django Admin." %}</p>
+  <p>{% trans "Службова адмін-панель для керування довідниками, аудитом рухів, друком етикеток і системними налаштуваннями." %}</p>
+  <p class="admin-dashboard-warning">{% trans "Робочі операції складу (приймання, видача, повернення) виконуйте через management/self-service UI." %}</p>
 </div>
 
 {% url 'printer_list' as printer_url %}
@@ -13,29 +13,29 @@
 {% url 'movement_list' as movement_url %}
 
 <div class="admin-quick-links" aria-label="{% trans 'Швидкі переходи' %}">
-  <a class="button" href="/uk/management/">{% trans "Основна панель керування" %}</a>
-  <a class="button" href="/uk/">{% trans "Самообслуговування / планшет" %}</a>
+  <a class="button" href="/uk/">{% trans "Відкрити систему складу" %}</a>
+  <a class="button" href="/uk/management/">{% trans "Панель керування" %}</a>
   <a class="button" href="{% firstof printer_url '/uk/printers/' %}">{% trans "Принтери" %}</a>
   <a class="button" href="{% firstof labeltemplate_url '/uk/labels/templates/' %}">{% trans "Шаблони етикеток" %}</a>
-  <a class="button" href="{% firstof movement_url '/uk/movements/' %}">{% trans "Журнал рухів" %}</a>
+  <a class="button" href="{% firstof movement_url '/uk/movements/' %}">{% trans "Журнал операцій" %}</a>
 </div>
 
 <div class="admin-map-grid">
   <section class="admin-map-card">
+    <h2>{% trans "Склад" %}</h2>
+    <p>{% trans "Товари / матеріали, залишки, рухи складу, склади / локації" %}</p>
+  </section>
+  <section class="admin-map-card">
     <h2>{% trans "Довідники" %}</h2>
-    <p>Unit, Category, Recipient, UsagePlace, Warehouse, Location</p>
+    <p>{% trans "Одиниці виміру, категорії, цехи / місця використання, працівники / отримувачі" %}</p>
   </section>
   <section class="admin-map-card">
-    <h2>{% trans "Номенклатура і штрихкоди" %}</h2>
-    <p>Item, BarcodeRegistry, BarcodeSequence</p>
+    <h2>{% trans "Друк" %}</h2>
+    <p>{% trans "Принтери, шаблони етикеток, завдання друку" %}</p>
   </section>
   <section class="admin-map-card">
-    <h2>{% trans "Складські операції" %}</h2>
-    <p>StockBalance, StockMovement, InventoryCount, InventoryCountLine</p>
-  </section>
-  <section class="admin-map-card">
-    <h2>{% trans "Друк і етикетки" %}</h2>
-    <p>Printer, LabelTemplate, PrintJob</p>
+    <h2>{% trans "Система" %}</h2>
+    <p>{% trans "Користувачі, групи, налаштування системи" %}</p>
   </section>
 </div>
 

@@ -11,6 +11,7 @@ from .forms import (
     StockMovementAdminForm,
 )
 from .models import (
+    SystemSettings,
     BarcodeRegistry,
     BarcodeSequence,
     Category,
@@ -101,7 +102,7 @@ class RecipientAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
 @admin.register(UsagePlace)
 class UsagePlaceAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
     actions = [make_active, make_inactive]
-    list_display = ("name", "active_badge", "updated_at")
+    list_display = ("name", "note", "active_badge", "updated_at")
     list_filter = ("is_active",)
     search_fields = ("name",)
     ordering = ("name",)
@@ -133,11 +134,11 @@ class ItemAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin, admin.
     form = ItemForm
     list_per_page = 30
     list_select_related = ("category", "unit", "barcode")
-    list_display = ("name", "internal_code", "barcode", "category", "unit", "active_badge")
-    list_filter = ("category", "unit", "is_active")
+    list_display = ("internal_code", "barcode", "name", "category", "unit", "active_badge")
+    list_filter = ("category", "is_active")
     search_fields = ("name", "internal_code", "barcode__barcode")
-    autocomplete_fields = ("barcode",)
     ordering = ("name",)
+    autocomplete_fields = ("barcode",)
     readonly_fields = ("created_at", "updated_at")
     fieldsets = (
         ("Основне", {"fields": ("name", "internal_code", "description")}),
@@ -199,8 +200,8 @@ class StockBalanceAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin
     list_per_page = 30
     list_select_related = ("item", "location")
     list_display = ("item", "location", "qty", "active_badge")
-    list_filter = ("location__warehouse", "is_active")
-    search_fields = ("item__name", "item__internal_code", "location__name")
+    list_filter = ("location", "location__warehouse", "is_active")
+    search_fields = ("item__name", "item__internal_code", "item__barcode__barcode")
     ordering = ("item__name",)
 
 
@@ -211,6 +212,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
     list_per_page = 30
     list_select_related = ("item", "source_location", "destination_location", "recipient")
     list_display = (
+        "id",
         "movement_type_badge",
         "item",
         "qty",
@@ -219,14 +221,16 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         "recipient",
         "department",
         "occurred_at",
+        "created_at",
         "active_badge",
     )
-    list_filter = ("movement_type", "issue_reason", "is_active", "occurred_at")
+    list_filter = ("movement_type", "source_location", "destination_location", "occurred_at", "is_active")
     search_fields = (
         "item__name",
         "item__internal_code",
         "source_location__name",
         "destination_location__name",
+        "item__barcode__barcode",
         "recipient__name",
         "department",
         "document_number",
@@ -266,9 +270,9 @@ class PrinterAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_per_page = 30
     fieldsets = (
-        ("Основне", {"fields": ("name", "description")}),
-        ("CUPS / системна назва", {"fields": ("system_name",)}),
-        ("Статус", {"fields": ("is_default", "is_active", "created_at", "updated_at")}),
+        ("Основне", {"fields": ("name", "system_name", "is_default", "is_active")}),
+        ("Опис", {"fields": ("description",)}),
+        ("Службове", {"fields": ("created_at", "updated_at")}),
     )
 
     @admin.display(description="Default", ordering="is_default")
@@ -282,19 +286,16 @@ class PrinterAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
 class LabelTemplateAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
     actions = [make_active, make_inactive]
     form = LabelTemplateForm
-    list_display = ("name", "width_mm", "height_mm", "barcode_type", "is_default", "active_badge")
+    list_display = ("name", "width_mm", "height_mm", "barcode_type", "barcode_height_mm", "barcode_bar_width_mm", "is_default", "active_badge")
     list_filter = ("is_default", "is_active", "barcode_type")
     search_fields = ("name",)
     readonly_fields = ("created_at", "updated_at")
     list_per_page = 30
     fieldsets = (
-        ("Основне", {"fields": ("name", "is_default", "is_active")}),
-        ("Розмір етикетки", {"fields": ("width_mm", "height_mm", "margin_top_mm", "margin_right_mm", "margin_bottom_mm", "margin_left_mm")}),
-        ("Вміст", {"fields": ("show_item_name", "show_internal_code", "show_barcode_text")}),
-        (
-            "Макет / шрифти / штрихкод",
-            {"fields": ("item_name_font_size", "internal_code_font_size", "barcode_text_font_size", "barcode_type", "barcode_height_mm", "barcode_bar_width_mm")},
-        ),
+        ("Основне", {"fields": ("name", "width_mm", "height_mm", "is_default", "is_active")}),
+        ("Макет", {"fields": (("margin_top_mm", "margin_right_mm"), ("margin_bottom_mm", "margin_left_mm"), ("item_name_font_size", "internal_code_font_size", "barcode_text_font_size"), ("barcode_height_mm", "barcode_bar_width_mm"))}),
+        ("Вміст", {"fields": ("show_item_name", "show_internal_code", "show_barcode_text", "barcode_type")}),
+        ("Службове", {"fields": ("created_at", "updated_at")}),
     )
 
 
@@ -302,10 +303,10 @@ class LabelTemplateAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
 class PrintJobAdmin(admin.ModelAdmin):
     list_per_page = 30
     list_select_related = ("item", "printer", "label_template", "user")
-    list_display = ("status_badge", "printer", "item", "copies", "created_at", "printed_at")
+    list_display = ("item", "printer", "copies", "status_badge", "created_at", "error_message")
     list_filter = ("status", "printer", "created_at")
     search_fields = ("item__name", "barcode", "printer__name", "error_message")
-    readonly_fields = ("created_at", "printed_at")
+    readonly_fields = ("barcode", "label_template", "user", "created_at", "printed_at", "error_message")
     date_hierarchy = "created_at"
     ordering = ("-created_at",)
 
@@ -318,3 +319,16 @@ class PrintJobAdmin(admin.ModelAdmin):
         }
         css, label = styles.get(obj.status, ("pending", obj.status))
         return format_html('<span class="status-badge status-badge--{}">{}</span>', css, label)
+
+
+@admin.register(SystemSettings)
+class SystemSettingsAdmin(admin.ModelAdmin):
+    list_display = ("id", "use_locations", "created_at", "updated_at")
+    readonly_fields = ("created_at", "updated_at")
+    fieldsets = (
+        ("Операційний режим", {"fields": ("use_locations",)}),
+        ("Службове", {"fields": ("created_at", "updated_at")}),
+    )
+
+    def has_add_permission(self, request):
+        return not SystemSettings.objects.exists()
