@@ -3,149 +3,74 @@
 <html lang="{{ LANGUAGE_CODE|default:'uk' }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ labels.title }}</title>
+    <title>{% if LANGUAGE_CODE == "en" %}Warehouse operation control slip{% else %}{% trans "Контрольний талон складської операції" %}{% endif %} #{{ movement.pk }}</title>
     <style>
-        @page { size: A4; margin: 16mm; }
-        body {
-            background: #fff;
-            color: #000;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
-            margin: 0;
-        }
-        .no-print {
-            margin: 0 0 16px;
-        }
-        .no-print button,
-        .no-print a {
-            background: #fff;
-            border: 1px solid #000;
-            color: #000;
-            display: inline-block;
-            font: inherit;
-            margin-right: 8px;
-            padding: 6px 12px;
-            text-decoration: none;
-        }
-        .slip {
-            border: 1px solid #000;
-            max-width: 150mm;
-            padding: 12mm;
-        }
-        h1 {
-            font-size: 20px;
-            margin: 0 0 14px;
-        }
-        dl {
-            display: grid;
-            grid-template-columns: 52mm 1fr;
-            margin: 0;
-            row-gap: 6px;
-        }
-        dt {
-            font-weight: 700;
-        }
-        dd {
-            margin: 0;
-        }
-        .video-time {
-            border: 1px solid #000;
-            font-size: 16px;
-            font-weight: 700;
-            margin-top: 16px;
-            padding: 10px;
-        }
-        .video-time div {
-            font-size: 18px;
-            margin-top: 4px;
-        }
-        @media print {
-            .no-print {
-                display: none;
-            }
-            .slip {
-                max-width: none;
-            }
-        }
+        @page { size: A4; margin: 14mm; }
+        body { font-family: Arial, sans-serif; color:#000; background:#fff; margin:0; font-size:14px; }
+        .toolbar { margin: 0 0 14px; }
+        .toolbar button { border:1px solid #000; background:#fff; color:#000; padding:6px 12px; margin-right:8px; }
+        .doc { border:1px solid #000; padding:10mm; max-width:190mm; }
+        table { width:100%; border-collapse:collapse; }
+        th, td { border:1px solid #000; padding:6px 8px; text-align:left; vertical-align:top; }
+        th { width:36%; }
+        @media print { .toolbar { display:none; } .doc { border:0; padding:0; max-width:none; } }
     </style>
 </head>
 <body>
-    <div class="no-print">
-        <button type="button" onclick="window.print()">{{ labels.print }}</button>
-        <button type="button" onclick="window.history.back()">{{ labels.back }}</button>
-    </div>
+<div class="toolbar">
+    <button type="button" onclick="window.print()">{% if LANGUAGE_CODE == "en" %}Print{% else %}{% trans "Друкувати" %}{% endif %}</button>
+    <button type="button" onclick="window.history.back()">{% if LANGUAGE_CODE == "en" %}Back{% else %}{% trans "Назад" %}{% endif %}</button>
+</div>
+<main class="doc">
+    <h1>
+        {% if movement.movement_type == movement.MovementType.IN %}{% trans "Прихід товару" %}
+        {% elif movement.movement_type == movement.MovementType.OUT %}{% trans "Видача товару" %}
+        {% elif movement.movement_type == movement.MovementType.RETURN %}{% trans "Повернення товару" %}
+        {% elif movement.movement_type == movement.MovementType.TRANSFER %}{% trans "Переміщення товару" %}
+        {% elif movement.movement_type == movement.MovementType.WRITEOFF %}{% trans "Списання товару" %}
+        {% else %}{{ movement.get_movement_type_display }}{% endif %}
+    </h1>
+    <table>
+        <tr><th>{% if LANGUAGE_CODE == "en" %}Operation ID{% else %}ID операції{% endif %}</th><td>{{ movement.pk }}</td></tr>
+        <tr><th>{% trans "Дата і час операції" %}</th><td>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</td></tr>
+        <tr><th>{% trans "Тип операції" %}</th><td>{{ movement.get_movement_type_display }}</td></tr>
+        <tr><th>{% if LANGUAGE_CODE == "en" %}Item{% else %}{% trans "Товар / матеріал" %}{% endif %}</th><td>{{ movement.item }}</td></tr>
+        <tr><th>{% trans "Внутрішній код" %}</th><td>{{ movement.item.internal_code|default:"—" }}</td></tr>
+        <tr><th>{% trans "Штрихкод" %}</th><td>{% if movement.item.barcode %}{{ movement.item.barcode.barcode }}{% else %}—{% endif %}</td></tr>
+        <tr><th>{% trans "Кількість" %}</th><td>{{ movement.qty }}</td></tr>
+        <tr><th>{% trans "Одиниця виміру" %}</th><td>{{ movement.item.unit|default:"—" }}</td></tr>
+        <tr><th>{% if LANGUAGE_CODE == "en" %}Warehouse / location{% else %}{% trans "Склад / локація" %}{% endif %}</th><td>{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% elif movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</td></tr>
 
-    <main class="slip">
-        <h1>{{ labels.title }}</h1>
-        <dl>
-            <dt>{{ labels.operation_id }}</dt>
-            <dd>{{ movement.pk }}</dd>
+        {% if movement.movement_type == movement.MovementType.OUT %}
+            <tr><th>{% if LANGUAGE_CODE == "en" %}Who takes the item{% else %}Хто взяв товар{% endif %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
+            <tr><th>{% if LANGUAGE_CODE == "en" %}Department / place of use{% else %}Цех / місце використання{% endif %}</th><td>{{ movement.department|default:"—" }}</td></tr>
+        {% elif movement.movement_type == movement.MovementType.RETURN %}
+            <tr><th>{% if LANGUAGE_CODE == "en" %}Who returned the item{% else %}Хто повернув товар{% endif %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
+            <tr><th>{% if LANGUAGE_CODE == "en" %}Department / place of use{% else %}Цех / місце використання{% endif %}</th><td>{{ movement.department|default:"—" }}</td></tr>
+        {% endif %}
 
-            <dt>{{ labels.operation_type }}</dt>
-            <dd>{{ operation_type }}</dd>
+        {% if movement.movement_type != movement.MovementType.OUT and movement.movement_type != movement.MovementType.RETURN %}
+        <tr><th>{% trans "Коментар" %}</th><td>{{ movement.comment|linebreaksbr|default:"—" }}</td></tr>
+        {% endif %}
+    </table>
 
-            <dt>{{ labels.occurred_at }}</dt>
-            <dd>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
+    <section style="margin-top:12px;border:1px solid #000;padding:8px;">
+        {% if LANGUAGE_CODE == "en" %}Video check time:{% else %}Час для перевірки по відео:{% endif %}
+        <div>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</div>
+    </section>
 
-            <dt>{{ labels.item }}</dt>
-            <dd>{{ movement.item }}</dd>
-
-            <dt>{{ labels.internal_code }}</dt>
-            <dd>{{ movement.item.internal_code|default:"—" }}</dd>
-
-            {% if movement.item.barcode %}
-            <dt>{{ labels.barcode }}</dt>
-            <dd>{{ movement.item.barcode.barcode }}</dd>
-            {% endif %}
-
-            <dt>{{ labels.qty }}</dt>
-            <dd>{{ movement.qty }}</dd>
-
-            {% if not is_self_service_movement %}
-            <dt>{{ labels.warehouse }}</dt>
-            <dd>{{ warehouse|default:"—" }}</dd>
-
-            {% if location %}
-            <dt>{{ labels.location }}</dt>
-            <dd>{{ location }}</dd>
-            {% endif %}
-            {% endif %}
-
-            {% if movement.recipient %}
-            <dt>{{ labels.responsible }}</dt>
-            <dd>{{ movement.recipient }}</dd>
-            {% endif %}
-
-            {% if movement.department %}
-            <dt>{{ labels.department }}</dt>
-            <dd>{{ movement.department }}</dd>
-            {% endif %}
-
-            {% if not is_self_service_movement %}
-            {% if movement.document_number or movement.comment %}
-            <dt>{{ labels.comment_document }}</dt>
-            <dd>
-                {% if movement.document_number %}{{ movement.document_number }}{% endif %}
-                {% if movement.document_number and movement.comment %}<br>{% endif %}
-                {% if movement.comment %}{{ movement.comment|linebreaksbr }}{% endif %}
-            </dd>
-            {% endif %}
-            {% endif %}
-        </dl>
-
-        <section class="video-time">
-            {{ labels.video_time }}
-            <div>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</div>
-        </section>
-    </main>
-
-    {% if request.GET.autoprint == "1" %}
-    <script>
-        window.addEventListener("load", function () {
-            window.print();
-        });
-    </script>
+    {% if movement.movement_type == movement.MovementType.RETURN or movement.movement_type == movement.MovementType.IN or movement.movement_type == movement.MovementType.WRITEOFF %}
+    <section style="margin-top:12px;">
+        {% if movement.movement_type == movement.MovementType.RETURN %}
+            <div>Прийняв: ____________________</div><div>Повернув: ____________________</div>
+        {% elif movement.movement_type == movement.MovementType.IN %}
+            <div>Прийняв на склад: ____________________</div><div>Відповідальний: ____________________</div>
+        {% elif movement.movement_type == movement.MovementType.WRITEOFF %}
+            <div>Списав: ____________________</div><div>Погодив: ____________________</div>
+        {% endif %}
+    </section>
     {% endif %}
+</main>
+{% if request.GET.autoprint == "1" %}<script>window.addEventListener("load",function(){window.print();});</script>{% endif %}
 </body>
 </html>
