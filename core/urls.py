@@ -213,6 +213,7 @@ urlpatterns = [
     path("settings/printers/", views.PrinterListView.as_view(), name="printer_list"),
     path("settings/printers/create/", views.PrinterCreateView.as_view(), name="printer_create"),
     path("settings/printers/sync/", views.PrinterSyncView.as_view(), name="printer_sync"),
+    path("settings/printers/<int:pk>/edit/", views.PrinterUpdateView.as_view(), name="printer_update"),
     path("settings/printers/<int:pk>/test-print/", views.PrinterTestPrintView.as_view(), name="printer_test_print"),
     path("settings/label-templates/", views.LabelTemplateListView.as_view(), name="labeltemplate_list"),
     path("settings/label-templates/create/", views.LabelTemplateCreateView.as_view(), name="labeltemplate_create"),
