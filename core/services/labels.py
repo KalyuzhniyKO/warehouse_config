@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import LabelTemplate, PrintJob
 from core.services.barcodes import ensure_item_barcode
+from core.services.printers import PrinterDiscoveryError, check_printer_exists
 
 MM_TO_PT = 72 / 25.4
 UNICODE_FONT_ERROR = (
@@ -244,6 +245,12 @@ def download_item_label_pdf(item):
     return response
 
 
+def _printer_not_found_message(printer):
+    return _(
+        "Принтер '%(name)s' не знайдено в CUPS. Перевірте системну назву або синхронізуйте принтери."
+    ) % {"name": printer.name}
+
+
 def print_item_label(*, item, printer, label_template, copies=1, user=None):
     barcode_registry = ensure_item_barcode(item)
     job = PrintJob.objects.create(
@@ -254,9 +261,14 @@ def print_item_label(*, item, printer, label_template, copies=1, user=None):
         copies=copies,
         user=user if getattr(user, "is_authenticated", False) else None,
     )
-    pdf_bytes = generate_item_label_pdf(item, label_template)
     tmp_path = None
     try:
+        if not check_printer_exists(printer.system_name):
+            job.status = PrintJob.Status.FAILED
+            job.error_message = _printer_not_found_message(printer)
+            return job
+
+        pdf_bytes = generate_item_label_pdf(item, label_template)
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(pdf_bytes)
             tmp_path = tmp.name
@@ -273,11 +285,17 @@ def print_item_label(*, item, printer, label_template, copies=1, user=None):
         else:
             job.status = PrintJob.Status.FAILED
             job.error_message = (result.stderr or result.stdout or _("Невідома помилка друку.")).strip()
+    except PrinterDiscoveryError as exc:
+        job.status = PrintJob.Status.FAILED
+        job.error_message = str(exc)
+    except FileNotFoundError:
+        job.status = PrintJob.Status.FAILED
+        job.error_message = str(_("Команда lp недоступна. Встановіть cups-client."))
     except Exception as exc:
         job.status = PrintJob.Status.FAILED
         job.error_message = str(exc)
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.unlink(tmp_path)
-    job.save(update_fields=["status", "error_message", "printed_at"])
+        job.save(update_fields=["status", "error_message", "printed_at"])
     return job
