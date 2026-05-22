@@ -118,6 +118,12 @@ class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "can_view_analytics": user_in_groups(
                     self.request.user, ANALYTICS_GROUPS
                 ),
+                "can_manage_print": user_in_groups(
+                    self.request.user, PRINT_GROUPS
+                ),
+                "can_manage_settings": user_in_groups(
+                    self.request.user, SETTINGS_GROUPS
+                ),
                 "show_technical_admin": self.request.user.is_superuser,
                 "hide_sidebar": True,
                 "counts": {
