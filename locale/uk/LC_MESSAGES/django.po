@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-23 00:10+0300\n"
+"POT-Creation-Date: 2026-05-23 01:18+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Ukrainian\n"
@@ -789,7 +789,8 @@ msgstr "системна назва"
 msgid "default"
 msgstr "за замовчуванням"
 
-#: core/models/labels.py:15 templates/base.html:152 templates/base.html:223
+#: core/models/labels.py:15 templates/admin/index.html:14
+#: templates/base.html:152 templates/base.html:223
 #: templates/core/dashboard.html:62 templates/core/management/dashboard.html:71
 #: templates/core/printer_list.html:3 templates/core/printer_list.html:6
 msgid "Принтери"
@@ -873,7 +874,8 @@ msgstr "ширина, мм"
 msgid "Шаблон етикеток"
 msgstr "Шаблон етикеток"
 
-#: core/models/labels.py:55 templates/base.html:153 templates/base.html:224
+#: core/models/labels.py:55 templates/admin/index.html:15
+#: templates/base.html:153 templates/base.html:224
 #: templates/core/dashboard.html:63 templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
 #: templates/core/management/dashboard.html:72
@@ -1606,6 +1608,63 @@ msgstr ""
 msgid "Початковий залишок збережено."
 msgstr "Початковий залишок збережено."
 
+#: templates/admin/index.html:6
+msgid "YANTOS Warehouse Admin"
+msgstr ""
+
+#: templates/admin/index.html:7
+msgid ""
+"Службова адмін-панель для технічного налаштування довідників, принтерів, "
+"шаблонів етикеток і аудиту операцій."
+msgstr ""
+
+#: templates/admin/index.html:8
+msgid ""
+"Робочі складські операції краще виконувати через основний інтерфейс, не "
+"через Django Admin."
+msgstr ""
+
+#: templates/admin/index.html:12
+#, fuzzy
+#| msgid "Назад до керування"
+msgid "Основна панель керування"
+msgstr "Назад до керування"
+
+#: templates/admin/index.html:13
+#, fuzzy
+#| msgid "Склад самообслуговування"
+msgid "Самообслуговування / планшет"
+msgstr "Склад самообслуговування"
+
+#: templates/admin/index.html:16
+#, fuzzy
+#| msgid "Журнал операцій"
+msgid "Журнал рухів"
+msgstr "Журнал операцій"
+
+#: templates/admin/index.html:21 templates/base.html:137
+#: templates/base.html:208 templates/core/dashboard.html:41
+#: templates/core/management/directories.html:3
+#: templates/core/management/directories.html:5
+msgid "Довідники"
+msgstr "Довідники"
+
+#: templates/admin/index.html:25
+#, fuzzy
+#| msgid "Сканувати штрихкод"
+msgid "Номенклатура і штрихкоди"
+msgstr "Сканувати штрихкод"
+
+#: templates/admin/index.html:29
+msgid "Складські операції"
+msgstr "Складські операції"
+
+#: templates/admin/index.html:33
+#, fuzzy
+#| msgid "Друк етикетки"
+msgid "Друк і етикетки"
+msgstr "Друк етикетки"
+
 #: templates/base.html:2 templates/registration/login.html:2
 msgid "YANTOS · Складський облік"
 msgstr "YANTOS · Складський облік"
@@ -1718,13 +1777,6 @@ msgstr "Контроль і звіти"
 #: templates/core/stockbalance_list.html:7
 msgid "Залишки на складі"
 msgstr "Залишки на складі"
-
-#: templates/base.html:137 templates/base.html:208
-#: templates/core/dashboard.html:41
-#: templates/core/management/directories.html:3
-#: templates/core/management/directories.html:5
-msgid "Довідники"
-msgstr "Довідники"
 
 #: templates/base.html:149 templates/base.html:220
 #: templates/core/dashboard.html:58
@@ -2764,9 +2816,6 @@ msgstr "Увійти"
 
 #~ msgid "Архівувати номенклатуру"
 #~ msgstr "Архівувати номенклатуру"
-
-#~ msgid "Складські операції"
-#~ msgstr "Складські операції"
 
 #~ msgid "Керування"
 #~ msgstr "Керування"

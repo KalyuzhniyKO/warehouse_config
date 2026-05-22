@@ -1,24 +1,122 @@
-
 :root {
-  --primary: #ffd200;
-  --secondary: #e6bd00;
-  --accent: #ffd200;
+  --yantos-yellow: #ffd200;
+  --yantos-yellow-dark: #d9b300;
+  --yantos-header: #111827;
+  --yantos-bg: #f5f7fb;
+  --yantos-card: #ffffff;
+  --yantos-text: #1f2937;
+  --yantos-muted: #6b7280;
+  --yantos-border: #d7deea;
+  --yantos-success: #1f8f4e;
+  --yantos-danger: #c0392b;
+  --yantos-pending: #8a6d00;
+}
+
+body,
+#container {
+  background: var(--yantos-bg);
+  color: var(--yantos-text);
 }
 
 #header {
-  background: #111827;
-  color: #ffd200;
+  background: var(--yantos-header);
+  color: var(--yantos-yellow);
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.25);
 }
 
 #header a:link,
-#header a:visited {
-  color: #ffd200;
+#header a:visited,
+#branding h1,
+#branding h1 a:link,
+#branding h1 a:visited {
+  color: var(--yantos-yellow);
 }
 
-.button, input[type=submit], input[type=button], .submit-row input, a.button {
+div.breadcrumbs {
+  background: #1f2937;
+  color: #e5e7eb;
+  border-bottom: 1px solid #374151;
+}
+
+div.breadcrumbs a { color: #f9e57a; }
+
+.module,
+.dashboard .module,
+.admin-map-card,
+.admin-dashboard-intro,
+#changelist-filter,
+.submit-row {
+  background: var(--yantos-card);
+  border: 1px solid var(--yantos-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.06);
+}
+
+.admin-dashboard-intro {
+  margin-bottom: 16px;
+  padding: 16px 20px;
+}
+
+.admin-dashboard-warning {
+  color: #8a4600;
+  font-weight: 600;
+}
+
+.admin-quick-links { margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+.admin-map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-map-card { padding: 12px 14px; }
+.admin-map-card h2 { margin: 0 0 8px; font-size: 16px; }
+.admin-map-card p { margin: 0; color: var(--yantos-muted); font-size: 13px; }
+
+.button,
+input[type=submit],
+input[type=button],
+.submit-row input,
+a.button,
+.object-tools a {
   border-radius: 8px;
 }
 
-#changelist table tbody tr:hover {
-  background-color: rgba(255, 210, 0, 0.12);
+.button.default,
+input[type=submit].default,
+.submit-row input.default {
+  background: var(--yantos-yellow);
+  color: #1f2937;
+}
+
+.deletelink,
+.submit-row a.deletelink { background: #be2e2e; }
+
+#changelist table thead th { background: #eef2f8; }
+#changelist table tbody tr:hover { background-color: rgba(255, 210, 0, 0.10); }
+
+#changelist-filter h2 { background: #eef2f8; color: var(--yantos-text); }
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.status-badge--active { background: #e6f5ec; color: #17663a; }
+.status-badge--archived { background: #f3f4f6; color: #4b5563; }
+.status-badge--default { background: #fff3bf; color: #6b5200; }
+.status-badge--printed { background: #e7f7ee; color: var(--yantos-success); }
+.status-badge--failed { background: #fdecec; color: var(--yantos-danger); }
+.status-badge--pending { background: #fff7df; color: var(--yantos-pending); }
+.status-badge--movement { background: #eaf2ff; color: #1e40af; }
+
+@media (max-width: 1024px) {
+  #content { padding: 12px; }
+  .admin-dashboard-intro,
+  .admin-map-card { padding: 12px; }
 }

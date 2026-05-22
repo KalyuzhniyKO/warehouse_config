@@ -1,0 +1,39 @@
+{% extends "admin/index.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="admin-dashboard-intro">
+  <h1>{% trans "YANTOS Warehouse Admin" %}</h1>
+  <p>{% trans "Службова адмін-панель для технічного налаштування довідників, принтерів, шаблонів етикеток і аудиту операцій." %}</p>
+  <p class="admin-dashboard-warning">{% trans "Робочі складські операції краще виконувати через основний інтерфейс, не через Django Admin." %}</p>
+</div>
+
+<div class="admin-quick-links">
+  <a class="button" href="/uk/management/">{% trans "Основна панель керування" %}</a>
+  <a class="button" href="/uk/">{% trans "Самообслуговування / планшет" %}</a>
+  <a class="button" href="{% url 'printer_list' %}">{% trans "Принтери" %}</a>
+  <a class="button" href="{% url 'labeltemplate_list' %}">{% trans "Шаблони етикеток" %}</a>
+  <a class="button" href="{% url 'movement_list' %}">{% trans "Журнал рухів" %}</a>
+</div>
+
+<div class="admin-map-grid">
+  <section class="admin-map-card">
+    <h2>{% trans "Довідники" %}</h2>
+    <p>Unit, Category, Recipient, UsagePlace, Warehouse, Location</p>
+  </section>
+  <section class="admin-map-card">
+    <h2>{% trans "Номенклатура і штрихкоди" %}</h2>
+    <p>Item, BarcodeRegistry, BarcodeSequence</p>
+  </section>
+  <section class="admin-map-card">
+    <h2>{% trans "Складські операції" %}</h2>
+    <p>StockBalance, StockMovement, InventoryCount, InventoryCountLine</p>
+  </section>
+  <section class="admin-map-card">
+    <h2>{% trans "Друк і етикетки" %}</h2>
+    <p>Printer, LabelTemplate, PrintJob</p>
+  </section>
+</div>
+
+{{ block.super }}
+{% endblock %}
