@@ -71,7 +71,7 @@ from ..services.inventory import (
     create_inventory_count,
     update_inventory_line_actual_qty,
 )
-from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.labels import download_item_label_pdf, generate_item_label_pdf, get_default_label_template, print_item_label
 from ..services.printers import (
     PrinterDiscoveryError,
     get_default_system_printer,
@@ -223,6 +223,25 @@ class PrinterUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
+
+
+class LabelTemplatePreviewView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = tuple(SETTINGS_GROUPS | PRINT_GROUPS)
+
+    def get(self, request, pk):
+        template = get_object_or_404(LabelTemplate, pk=pk)
+        item_id = request.GET.get("item")
+        item_qs = Item.objects.filter(is_active=True).select_related("barcode")
+        item = item_qs.filter(pk=item_id).first() if item_id else None
+        item = item or item_qs.order_by("id").first()
+        if not item:
+            return HttpResponse(_("Немає активних товарів для перегляду етикетки. Створіть товар."), content_type="text/html; charset=utf-8")
+        pdf = generate_item_label_pdf(item, template)
+        response = HttpResponse(pdf, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="label-preview-{template.pk}.pdf"'
+        return response
+
+
 class LabelTemplateListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     group_names = SETTINGS_GROUPS
     model = LabelTemplate
@@ -231,6 +250,18 @@ class LabelTemplateListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
 
 class LabelTemplateCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
+    group_names = SETTINGS_GROUPS
+    model = LabelTemplate
+    form_class = LabelTemplateForm
+    template_name = "core/simple_form.html"
+    success_url = reverse_lazy("labeltemplate_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Шаблон етикетки збережено."))
+        return super().form_valid(form)
+
+
+class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
     group_names = SETTINGS_GROUPS
     model = LabelTemplate
     form_class = LabelTemplateForm

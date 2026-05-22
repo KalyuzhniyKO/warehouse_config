@@ -200,37 +200,44 @@ def generate_item_label_pdf(item, template=None):
     width = float(template.width_mm) * mm
     height = float(template.height_mm) * mm
     pdf = canvas.Canvas(buffer, pagesize=(width, height))
-    margin_x = 3 * mm
-    content_width = width - 2 * margin_x
-    y = height - 5 * mm
+    margin_left = float(template.margin_left_mm) * mm
+    margin_right = float(template.margin_right_mm) * mm
+    margin_top = float(template.margin_top_mm) * mm
+    margin_bottom = float(template.margin_bottom_mm) * mm
+    content_width = max(10 * mm, width - margin_left - margin_right)
+    y = height - margin_top
 
     if template.show_item_name:
-        name_font_size = 8
+        name_font_size = int(template.item_name_font_size)
         pdf.setFont(bold_font, name_font_size)
         for line in _wrap_text_to_lines(
             pdf, item.name, bold_font, name_font_size, content_width, max_lines=2
         ):
-            pdf.drawString(margin_x, y, line)
+            pdf.drawString(margin_left, y, line)
             y -= 4 * mm
         y -= 1 * mm
 
     if template.show_internal_code and item.internal_code:
-        code_font_size = 6
+        code_font_size = int(template.internal_code_font_size)
         pdf.setFont(regular_font, code_font_size)
         code = str(item.internal_code)
         while pdf.stringWidth(code, regular_font, code_font_size) > content_width and code:
             code = code[:-1]
-        pdf.drawString(margin_x, y, code)
+        pdf.drawString(margin_left, y, code)
         y -= 4 * mm
 
-    barcode = code128.Code128(barcode_value, barHeight=16 * mm, barWidth=0.33 * mm)
-    barcode_x = max(margin_x, (width - barcode.width) / 2)
-    barcode_y = max(8 * mm, min(y - 17 * mm, height - 26 * mm))
+    barcode = code128.Code128(
+        barcode_value,
+        barHeight=float(template.barcode_height_mm) * mm,
+        barWidth=float(template.barcode_bar_width_mm) * mm,
+    )
+    barcode_x = max(margin_left, (width - barcode.width) / 2)
+    barcode_y = max(margin_bottom + (6 * mm), min(y - (float(template.barcode_height_mm) * mm + 1 * mm), height - margin_top - 26 * mm))
     barcode.drawOn(pdf, barcode_x, barcode_y)
 
     if template.show_barcode_text:
-        pdf.setFont(regular_font, 7)
-        pdf.drawCentredString(width / 2, 3 * mm, barcode_value)
+        pdf.setFont(regular_font, int(template.barcode_text_font_size))
+        pdf.drawCentredString(width / 2, margin_bottom, barcode_value)
 
     pdf.showPage()
     pdf.save()
