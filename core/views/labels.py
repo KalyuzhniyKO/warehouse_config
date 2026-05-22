@@ -211,6 +211,18 @@ class PrinterCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+class PrinterUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
+    group_names = SETTINGS_GROUPS
+    model = Printer
+    form_class = PrinterForm
+    template_name = "core/simple_form.html"
+    success_url = reverse_lazy("printer_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, _("Принтер збережено."))
+        return super().form_valid(form)
+
+
 class LabelTemplateListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     group_names = SETTINGS_GROUPS
     model = LabelTemplate
