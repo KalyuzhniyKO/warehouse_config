@@ -80,6 +80,7 @@
                             <td>{{ printer.is_default|yesno }}</td>
                             <td>{{ printer.is_active|yesno }}</td>
                             <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="{% url 'printer_update' printer.pk %}">{% trans "Редагувати" %}</a>
                                 <form method="post" action="{% url 'printer_test_print' printer.pk %}" class="d-inline">
                                     {% csrf_token %}
                                     <button class="btn btn-sm btn-outline-secondary" type="submit">{% trans "Тестовий друк" %}</button>
