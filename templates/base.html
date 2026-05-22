@@ -84,7 +84,17 @@
             --bs-btn-active-border-color: var(--yantos-text);
             --bs-btn-active-color: var(--yantos-yellow);
         }
+    
+        .app-header-meta { font-size: .85rem; color: rgba(17,24,39,.8); }
+        .app-header-user { font-weight: 600; }
+        .navbar-toggler { border-color: rgba(17,24,39,.25); }
+        .navbar-toggler:focus { box-shadow: 0 0 0 .2rem rgba(255,210,0,.35); }
+        @media (max-width: 991.98px) {
+            .brand-subtitle { font-size: .88rem; }
+            .app-header-meta { width: 100%; justify-content: flex-end; padding-top: .35rem; }
+        }
     </style>
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light yantos-navbar shadow-sm sticky-top">
@@ -161,10 +171,10 @@
                     {% endif %}
                 {% endwith %}
             </ul>
-            <div class="ms-auto d-flex align-items-center gap-3 navbar-text">
+            <div class="ms-auto d-flex align-items-center gap-2 gap-sm-3 navbar-text app-header-meta">
                 {% include "includes/language_switcher.html" %}
                 {% if user.is_authenticated %}
-                    <span class="small d-none d-sm-inline">{{ user.get_username }}</span>
+                    <span class="small d-none d-sm-inline"><span class="app-header-user">{{ user.get_username }}</span></span>
                     <form method="post" action="{% url 'logout' %}" class="m-0">
                         {% csrf_token %}
                         <button class="btn btn-outline-light btn-sm" type="submit">{% trans "Вийти" %}</button>

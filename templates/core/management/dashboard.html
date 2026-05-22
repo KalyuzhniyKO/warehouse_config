@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block title %}{% trans "Керування складом" %} · {% trans "Складський облік" %}{% endblock %}
-{% block content %}
+{% block extra_css %}
 <style>
     .mgmt-wrap { max-width: 1220px; margin: 0 auto; }
     .mgmt-header { display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; margin-bottom:1rem; }
@@ -10,19 +10,21 @@
     .mgmt-grid { display:grid; grid-template-columns:1fr; gap:.75rem; }
     @media (min-width: 992px) { .mgmt-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
     @media (min-width: 1350px) { .mgmt-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
-    .mgmt-card { background:#fff; border:1px solid rgba(17,24,39,.09); border-radius:.75rem; padding:.85rem; }
+    .mgmt-card { background:#fff; border:1px solid rgba(17,24,39,.09); border-radius:1rem; padding:1rem; box-shadow: 0 .45rem 1.1rem rgba(15,23,42,.06); }
     .mgmt-card h2 { font-size:1.01rem; margin:0; }
     .mgmt-card p { margin:.2rem 0 .55rem; font-size:.82rem; color: var(--yantos-muted); }
     .mgmt-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.45rem; }
-    .mgmt-link { display:block; padding:.45rem .55rem; border:1px solid rgba(17,24,39,.12); border-radius:.5rem; text-decoration:none; color:var(--yantos-text); background:#f8fafc; font-size:.88rem; }
+    .mgmt-link { display:block; padding:.5rem .6rem; border:1px solid rgba(17,24,39,.12); border-radius:.6rem; text-decoration:none; color:var(--yantos-text); background:#f8fafc; font-size:.88rem; transition:.15s ease; }
     .mgmt-link:hover, .mgmt-link:focus { background:var(--yantos-yellow-soft); border-color:rgba(196,154,0,.65); color:var(--yantos-text); }
     .mgmt-link.primary { background:#fff7d6; border-color:rgba(196,154,0,.75); font-weight:600; }
 </style>
+{% endblock %}
+{% block content %}
 <div class="mgmt-wrap">
     <div class="mgmt-header">
         <div>
             <h1 class="mgmt-title">{% trans "Керування складом" %}</h1>
-            <p class="mgmt-subtitle">{% trans "Компактна панель керування з ключовими розділами без дублювання дій." %}</p>
+            <p class="mgmt-subtitle">{% trans "Центр керування щоденними процесами складу, контролем залишків і доступами." %}</p>
         </div>
     </div>
 
