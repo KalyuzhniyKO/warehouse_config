@@ -1,12 +1,17 @@
 import os
 import subprocess
 import tempfile
+from io import BytesIO
 
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Printer
+
+MM_TO_PT = 72 / 25.4
+TEST_PAGE_WIDTH_MM = 58
+TEST_PAGE_HEIGHT_MM = 40
 
 
 class PrinterDiscoveryError(Exception):
@@ -151,6 +156,85 @@ def _printer_not_found_message(printer):
     ) % {"name": printer.name}
 
 
+def _pdf_escape(value):
+    return str(value).replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def _fallback_test_pdf(lines):
+    width = TEST_PAGE_WIDTH_MM * MM_TO_PT
+    height = TEST_PAGE_HEIGHT_MM * MM_TO_PT
+    commands = []
+    y = height - 16
+    for idx, line in enumerate(lines):
+        font_size = 10 if idx == 0 else 6
+        commands.append(
+            "BT /F1 %(size)s Tf 8 %(y).2f Td (%(text)s) Tj ET"
+            % {"size": font_size, "y": y, "text": _pdf_escape(line[:48])}
+        )
+        y -= 12 if idx == 0 else 9
+    stream = "\n".join(commands).encode("utf-8", errors="replace")
+    objects = [
+        b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n",
+        b"2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj\n",
+        (
+            f"3 0 obj << /Type /Page /Parent 2 0 R "
+            f"/MediaBox [0 0 {width:.2f} {height:.2f}] "
+            "/Resources << /Font << /F1 4 0 R >> >> "
+            "/Contents 5 0 R >> endobj\n"
+        ).encode(),
+        b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n",
+        (f"5 0 obj << /Length {len(stream)} >> stream\n").encode()
+        + stream
+        + b"\nendstream endobj\n",
+    ]
+    pdf = BytesIO()
+    pdf.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(pdf.tell())
+        pdf.write(obj)
+    xref = pdf.tell()
+    pdf.write(f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode())
+    for offset in offsets[1:]:
+        pdf.write(f"{offset:010d} 00000 n \n".encode())
+    pdf.write(
+        f"trailer << /Size {len(objects) + 1} /Root 1 0 R >>\n"
+        f"startxref\n{xref}\n%%EOF".encode()
+    )
+    return pdf.getvalue()
+
+
+def _generate_test_pdf(printer, system_name):
+    timestamp = timezone.localtime(timezone.now()).strftime("%Y-%m-%d %H:%M:%S")
+    lines = [
+        "TEST PRINT",
+        f"Printer: {printer.name}",
+        f"CUPS queue: {system_name}",
+        f"Time: {timestamp}",
+    ]
+    try:
+        from reportlab.lib.units import mm
+        from reportlab.pdfgen import canvas
+
+        buffer = BytesIO()
+        pdf = canvas.Canvas(
+            buffer,
+            pagesize=(TEST_PAGE_WIDTH_MM * mm, TEST_PAGE_HEIGHT_MM * mm),
+        )
+        pdf.setFont("Helvetica-Bold", 10)
+        pdf.drawString(4 * mm, 32 * mm, lines[0])
+        pdf.setFont("Helvetica", 6)
+        y = 25 * mm
+        for line in lines[1:]:
+            pdf.drawString(4 * mm, y, line[:56])
+            y -= 6 * mm
+        pdf.showPage()
+        pdf.save()
+        return buffer.getvalue()
+    except Exception:
+        return _fallback_test_pdf(lines)
+
+
 def print_test_page(printer):
     system_name = (printer.system_name or "").strip()
     tmp_path = None
@@ -158,11 +242,9 @@ def print_test_page(printer):
         if not check_printer_exists(system_name):
             return {"success": False, "message": _printer_not_found_message(printer)}
 
-        with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt", encoding="utf-8") as tmp:
-            tmp.write("Warehouse label printer test\n")
-            tmp.write(f"Printer: {printer.name}\n")
-            tmp.write(f"CUPS queue: {system_name}\n")
-            tmp.write(f"Time: {timezone.now().isoformat()}\n")
+        pdf_bytes = _generate_test_pdf(printer, system_name)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(pdf_bytes)
             tmp_path = tmp.name
 
         result = _run_command(["lp", "-d", system_name, tmp_path])
