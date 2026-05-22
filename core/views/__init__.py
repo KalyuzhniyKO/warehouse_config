@@ -46,6 +46,7 @@ from .labels import (
     PrinterListView,
     PrinterSyncView,
     PrinterTestPrintView,
+    PrinterUpdateView,
 )
 from .management import (
     HELP_SECTIONS,
@@ -112,6 +113,7 @@ __all__ = [
     "PrinterListView",
     "PrinterSyncView",
     "PrinterTestPrintView",
+    "PrinterUpdateView",
     "StockBalanceListView",
     "StockIssueResultView",
     "StockIssueView",
