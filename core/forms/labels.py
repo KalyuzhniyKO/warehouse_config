@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
 from core.models import LabelTemplate, Printer
+from core.services.printers import PrinterDiscoveryError, list_system_printers
 
 
 class PrinterForm(BootstrapModelForm):
@@ -16,6 +17,32 @@ class PrinterForm(BootstrapModelForm):
             "is_default": _("За замовчуванням"),
             "is_active": _("Активний"),
         }
+        help_texts = {
+            "system_name": _(
+                "Системна назва CUPS queue. Її можна подивитися командою lpstat -v або синхронізувати автоматично."
+            ),
+        }
+
+    def clean_system_name(self):
+        system_name = (self.cleaned_data.get("system_name") or "").strip()
+        if not system_name:
+            return system_name
+
+        try:
+            system_names = {
+                printer["system_name"] for printer in list_system_printers()
+            }
+        except PrinterDiscoveryError:
+            return system_name
+
+        if system_name not in system_names:
+            raise forms.ValidationError(
+                _(
+                    "Принтер із системною назвою '%(system_name)s' не знайдено в CUPS. Перевірте назву або синхронізуйте принтери."
+                )
+                % {"system_name": system_name}
+            )
+        return system_name
 
 
 class LabelTemplateForm(BootstrapModelForm):
