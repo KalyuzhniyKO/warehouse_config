@@ -3,17 +3,7 @@
 {% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="dashboard-main">
-    <section class="dashboard-action-strip mb-3" aria-label="{% trans 'Панель швидких дій' %}">
-        <h1 class="dashboard-strip-title">{% trans "Головна панель складу" %}</h1>
-        <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
-            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-            <a class="quick-action-btn quick-action-btn--issue" href="{% url 'stock_issue' %}">{% trans "Видача товару" %}</a>
-            <a class="quick-action-btn quick-action-btn--return" href="{% url 'stock_return' %}">{% trans "Повернення товару" %}</a>
-            <a class="quick-action-btn quick-action-btn--receive" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a>
-            {% endif %}
-            <a class="quick-action-btn quick-action-btn--search" href="{% url 'item_list' %}">{% trans "Пошук товару" %}</a>
-        </div>
-    </section>
+    <h1 class="dashboard-strip-title mb-3">{% trans "Головна панель складу" %}</h1>
 
     {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
     <section class="section-shell" aria-labelledby="main-ops-heading">
@@ -43,12 +33,12 @@
 
     <section class="section-shell" aria-labelledby="directories-heading">
         <div class="section-header"><h2 id="directories-heading" class="section-title">{% trans "Довідники і друк" %}</h2></div>
-        <div class="dashboard-grid dashboard-grid--compact">
-            <a class="operation-card clickable-card admin-card" href="{% url 'item_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Товари / матеріали" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
-            <a class="operation-card clickable-card admin-card" href="{% url 'warehouse_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Склади" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+        <div class="dashboard-grid dashboard-grid--compact compact-card-grid">
+            <a class="operation-card clickable-card admin-card admin-card--items" href="{% url 'item_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📁</span><div><h3 class="h6 mb-1">{% trans "Товари / матеріали" %}</h3><p class="card-tip mb-0">{% trans "Пошук, перегляд і редагування номенклатури." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card admin-card admin-card--warehouses" href="{% url 'warehouse_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🏬</span><div><h3 class="h6 mb-1">{% trans "Склади" %}</h3><p class="card-tip mb-0">{% trans "Локації та структура складських зон." %}</p></div></div></div></a>
             {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <a class="operation-card clickable-card admin-card" href="{% url 'printer_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Принтери" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
-            <a class="operation-card clickable-card admin-card" href="{% url 'labeltemplate_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Шаблони етикеток" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+            <a class="operation-card clickable-card admin-card admin-card--printers" href="{% url 'printer_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🖨️</span><div><h3 class="h6 mb-1">{% trans "Принтери" %}</h3><p class="card-tip mb-0">{% trans "Налаштування друку та доступних пристроїв." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card admin-card admin-card--labels" href="{% url 'labeltemplate_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🏷️</span><div><h3 class="h6 mb-1">{% trans "Шаблони етикеток" %}</h3><p class="card-tip mb-0">{% trans "Керування форматами етикеток для друку." %}</p></div></div></div></a>
             {% endif %}
         </div>
     </section>
@@ -56,8 +46,8 @@
     {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
     <section class="section-shell" aria-labelledby="admin-heading">
         <div class="section-header"><h2 id="admin-heading" class="section-title">{% trans "Адміністрування" %}</h2></div>
-        <div class="dashboard-grid dashboard-grid--compact">
-            <a class="operation-card clickable-card admin-card" href="{% url 'management_dashboard' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Керування складом" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+        <div class="dashboard-grid dashboard-grid--compact compact-card-grid">
+            <a class="operation-card clickable-card admin-card admin-card--management" href="{% url 'management_dashboard' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">⚙️</span><div><h3 class="h6 mb-1">{% trans "Керування складом" %}</h3><p class="card-tip mb-0">{% trans "Користувачі, ролі та системні налаштування." %}</p></div></div></div></a>
         </div>
     </section>
     {% endif %}

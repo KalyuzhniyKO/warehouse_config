@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 14:51+0300\n"
+"POT-Creation-Date: 2026-05-24 15:22+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: English\n"
@@ -789,7 +789,7 @@ msgstr "default"
 
 #: core/models/labels.py:15 templates/admin/index.html:18
 #: templates/base.html:164 templates/base.html:235
-#: templates/core/dashboard.html:50 templates/core/management/dashboard.html:73
+#: templates/core/dashboard.html:40 templates/core/management/dashboard.html:73
 #: templates/core/printer_list.html:3 templates/core/printer_list.html:6
 msgid "Принтери"
 msgstr "Printers"
@@ -874,7 +874,7 @@ msgstr "Label templates"
 
 #: core/models/labels.py:55 templates/admin/index.html:19
 #: templates/base.html:165 templates/base.html:236
-#: templates/core/dashboard.html:51 templates/core/labeltemplate_list.html:3
+#: templates/core/dashboard.html:41 templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
 #: templates/core/management/dashboard.html:74
 msgid "Шаблони етикеток"
@@ -1002,7 +1002,7 @@ msgstr "address"
 
 #: core/models/warehouse.py:82 core/views/directories.py:328
 #: core/views/management.py:166 templates/base.html:155 templates/base.html:226
-#: templates/core/dashboard.html:48 templates/core/management/dashboard.html:63
+#: templates/core/dashboard.html:38 templates/core/management/dashboard.html:63
 msgid "Склади"
 msgstr "Warehouses"
 
@@ -1214,7 +1214,7 @@ msgstr "Contact"
 
 #: core/views/directories.py:307 core/views/management.py:148
 #: templates/base.html:150 templates/base.html:221
-#: templates/core/dashboard.html:47 templates/core/management/dashboard.html:55
+#: templates/core/dashboard.html:37 templates/core/management/dashboard.html:55
 #: templates/core/stockbalance_list.html:36
 #: templates/core/stockmovement_list.html:13
 msgid "Товари / матеріали"
@@ -1447,8 +1447,7 @@ msgstr "Barcodes"
 
 #: core/views/management.py:308 core/views/stock_operations.py:465
 #: templates/base.html:137 templates/base.html:207
-#: templates/core/dashboard.html:12 templates/core/dashboard.html:26
-#: templates/core/management/dashboard.html:36
+#: templates/core/dashboard.html:16 templates/core/management/dashboard.html:36
 #: templates/core/stock_movement_print.html:26
 #: templates/core/stock_receive_form.html:3
 #: templates/core/stock_receive_form.html:5
@@ -1464,7 +1463,7 @@ msgstr "Initial balance"
 
 #: core/views/management.py:310 templates/admin/index.html:20
 #: templates/base.html:148 templates/base.html:219
-#: templates/core/dashboard.html:36 templates/core/management/dashboard.html:39
+#: templates/core/dashboard.html:26 templates/core/management/dashboard.html:39
 #: templates/core/stockmovement_list.html:3
 #: templates/core/stockmovement_list.html:6
 msgid "Журнал операцій"
@@ -1505,16 +1504,16 @@ msgid "Недостатньо залишку для видачі. Перевір
 msgstr "Not enough stock to issue. Check stock before issuing."
 
 #: core/views/stock_operations.py:459 templates/base.html:138
-#: templates/base.html:208 templates/core/dashboard.html:10
-#: templates/core/dashboard.html:24 templates/core/management/dashboard.html:34
+#: templates/base.html:208 templates/core/dashboard.html:14
+#: templates/core/management/dashboard.html:34
 #: templates/core/stock_issue_form.html:3
 #: templates/core/stock_issue_form.html:5
 #: templates/core/stock_movement_print.html:27
 msgid "Видача товару"
 msgstr "Stock issue"
 
-#: core/views/stock_operations.py:462 templates/core/dashboard.html:11
-#: templates/core/dashboard.html:25 templates/core/management/dashboard.html:35
+#: core/views/stock_operations.py:462 templates/core/dashboard.html:15
+#: templates/core/management/dashboard.html:35
 #: templates/core/stock_movement_print.html:28
 #: templates/core/stock_receive_result.html:3
 #: templates/core/stock_receive_result.html:8
@@ -1752,14 +1751,14 @@ msgid "Операції складу"
 msgstr "Warehouse operations"
 
 #: templates/base.html:139 templates/base.html:209
-#: templates/core/dashboard.html:27 templates/core/stock_movement_print.html:29
+#: templates/core/dashboard.html:17 templates/core/stock_movement_print.html:29
 #: templates/core/stock_transfer_form.html:3
 #: templates/core/stock_transfer_form.html:8
 msgid "Переміщення товару"
 msgstr "Stock transfer"
 
 #: templates/base.html:140 templates/base.html:210
-#: templates/core/dashboard.html:39 templates/core/stock_movement_print.html:30
+#: templates/core/dashboard.html:29 templates/core/stock_movement_print.html:30
 #: templates/core/stock_writeoff_form.html:3
 #: templates/core/stock_writeoff_form.html:8
 msgid "Списання товару"
@@ -1770,7 +1769,7 @@ msgid "Початкові залишки"
 msgstr "Initial balances"
 
 #: templates/base.html:142 templates/base.html:144 templates/base.html:212
-#: templates/base.html:215 templates/core/dashboard.html:37
+#: templates/base.html:215 templates/core/dashboard.html:27
 #: templates/core/inventory_count.html:3 templates/core/inventory_detail.html:3
 #: templates/core/inventory_detail.html:6 templates/core/inventory_list.html:3
 #: templates/core/inventory_list.html:7
@@ -1780,12 +1779,12 @@ msgid "Інвентаризація"
 msgstr "Inventory count"
 
 #: templates/base.html:146 templates/base.html:217
-#: templates/core/dashboard.html:33
+#: templates/core/dashboard.html:23
 msgid "Контроль і звіти"
 msgstr "Control and reports"
 
 #: templates/base.html:147 templates/base.html:218
-#: templates/core/dashboard.html:35 templates/core/management/dashboard.html:45
+#: templates/core/dashboard.html:25 templates/core/management/dashboard.html:45
 #: templates/core/stockbalance_list.html:3
 #: templates/core/stockbalance_list.html:7
 msgid "Залишки на складі"
@@ -1801,12 +1800,12 @@ msgid "Друк етикеток"
 msgstr "Print labels"
 
 #: templates/base.html:169 templates/base.html:240
-#: templates/core/dashboard.html:58 templates/core/management/dashboard.html:79
+#: templates/core/dashboard.html:48 templates/core/management/dashboard.html:79
 msgid "Адміністрування"
 msgstr "Administration"
 
 #: templates/base.html:170 templates/base.html:241
-#: templates/core/dashboard.html:60 templates/core/management/dashboard.html:3
+#: templates/core/dashboard.html:50 templates/core/management/dashboard.html:3
 #: templates/core/management/dashboard.html:26
 msgid "Керування складом"
 msgstr "Warehouse management"
@@ -1825,77 +1824,93 @@ msgstr "Close"
 
 #: templates/core/dashboard.html:6
 #, fuzzy
-#| msgid "Панель керування складом."
-msgid "Панель швидких дій"
-msgstr "Warehouse management panel."
-
-#: templates/core/dashboard.html:7
-#, fuzzy
 #| msgid "Назад до керування"
 msgid "Головна панель складу"
 msgstr "Back to management"
 
-#: templates/core/dashboard.html:8
-msgid "Швидкі дії"
-msgstr ""
-
-#: templates/core/dashboard.html:14
-msgid "Пошук товару"
-msgstr "Item search"
-
-#: templates/core/dashboard.html:21
+#: templates/core/dashboard.html:11
 #, fuzzy
 #| msgid "Усі операції"
 msgid "Основні операції"
 msgstr "All operations"
 
-#: templates/core/dashboard.html:24
+#: templates/core/dashboard.html:14
 #, fuzzy
 #| msgid "Список інвентаризацій складу."
 msgid "Швидке оформлення видачі зі складу."
 msgstr "Warehouse inventory count list."
 
-#: templates/core/dashboard.html:25
+#: templates/core/dashboard.html:15
 msgid "Повернення на склад без зайвих кроків."
 msgstr ""
 
-#: templates/core/dashboard.html:26
+#: templates/core/dashboard.html:16
 msgid "Реєстрація поставок та партій."
 msgstr ""
 
-#: templates/core/dashboard.html:27
+#: templates/core/dashboard.html:17
 #, fuzzy
 #| msgid "Перемістіть товар між складами або локаціями."
 msgid "Переміщення між складами та локаціями."
 msgstr "Move items between warehouses or locations."
 
-#: templates/core/dashboard.html:35
+#: templates/core/dashboard.html:25
 #, fuzzy
 #| msgid "Перевірити залишки"
 msgid "Перевірка актуальних залишків."
 msgstr "Check stock"
 
-#: templates/core/dashboard.html:36
+#: templates/core/dashboard.html:26
 #, fuzzy
 #| msgid "До рухів товарів"
 msgid "Хронологія руху товарів."
 msgstr "To stock movements"
 
-#: templates/core/dashboard.html:37
+#: templates/core/dashboard.html:27
 #, fuzzy
 #| msgid "Інструкції для роботи із системою."
 msgid "Порівняння факту із системою."
 msgstr "Instructions for using the system."
 
-#: templates/core/dashboard.html:39
+#: templates/core/dashboard.html:29
 msgid "Облік втрат або браку."
 msgstr ""
 
-#: templates/core/dashboard.html:45
+#: templates/core/dashboard.html:35
 #, fuzzy
 #| msgid "Довідники"
 msgid "Довідники і друк"
 msgstr "Directories"
+
+#: templates/core/dashboard.html:37
+#, fuzzy
+#| msgid "Групування номенклатури."
+msgid "Пошук, перегляд і редагування номенклатури."
+msgstr "Item grouping."
+
+#: templates/core/dashboard.html:38
+#, fuzzy
+#| msgid "Перегляньте історію складських операцій."
+msgid "Локації та структура складських зон."
+msgstr "Review the history of warehouse operations."
+
+#: templates/core/dashboard.html:40
+#, fuzzy
+#| msgid "Налаштування принтерів етикеток."
+msgid "Налаштування друку та доступних пристроїв."
+msgstr "Label printer settings."
+
+#: templates/core/dashboard.html:41
+#, fuzzy
+#| msgid "Формати та шаблони для друку."
+msgid "Керування форматами етикеток для друку."
+msgstr "Print formats and templates."
+
+#: templates/core/dashboard.html:50
+#, fuzzy
+#| msgid "Користувачі та доступ"
+msgid "Користувачі, ролі та системні налаштування."
+msgstr "Users and access"
 
 #: templates/core/directory_form.html:8
 msgid "Заповніть поля українською мовою та збережіть зміни."
@@ -2665,6 +2680,14 @@ msgid "Увійти"
 msgstr "Sign in"
 
 #, fuzzy
+#~| msgid "Панель керування складом."
+#~ msgid "Панель швидких дій"
+#~ msgstr "Warehouse management panel."
+
+#~ msgid "Пошук товару"
+#~ msgstr "Item search"
+
+#, fuzzy
 #~| msgid "Контрольний талон складської операції"
 #~ msgid "Компактна робоча панель для щоденних складських операцій."
 #~ msgstr "Warehouse operation control slip"
@@ -2812,9 +2835,6 @@ msgstr "Sign in"
 #~ msgid "Товари, матеріали та їхні коди."
 #~ msgstr "Items, materials, and their codes."
 
-#~ msgid "Групування номенклатури."
-#~ msgstr "Item grouping."
-
 #~ msgid "Одиниці для обліку кількості."
 #~ msgstr "Units used for quantity accounting."
 
@@ -2826,9 +2846,6 @@ msgstr "Sign in"
 
 #~ msgid "Виберіть номенклатуру для друку етикетки."
 #~ msgstr "Select an item to print a label."
-
-#~ msgid "Налаштування принтерів етикеток."
-#~ msgstr "Label printer settings."
 
 #, fuzzy
 #~| msgid "Типові помилки"
@@ -2963,9 +2980,6 @@ msgstr "Sign in"
 
 #~ msgid "Керування"
 #~ msgstr "Management"
-
-#~ msgid "Перегляньте історію складських операцій."
-#~ msgstr "Review the history of warehouse operations."
 
 #~ msgid "Підрозділи та контакти для видач."
 #~ msgstr "Departments and contacts for stock issues."
