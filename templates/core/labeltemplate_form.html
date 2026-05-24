@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "Шаблони етикеток" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<h1 class="mb-3">{% if object %}{% trans "Редагування шаблону етикетки" %}{% else %}{% trans "Новий шаблон етикетки" %}{% endif %}</h1>
+<div class="label-template-editor">
+    <form method="post" class="card content-card label-template-form-panel">
+        <div class="card-body">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <div class="row g-3">
+                {% for field in form %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        <div class="text-danger small">{{ field.errors }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
+                <a class="btn btn-outline-secondary" href="{% url 'labeltemplate_list' %}">{% trans "Скасувати" %}</a>
+            </div>
+        </div>
+    </form>
+
+    <section class="card content-card label-preview-panel" data-label-preview-root>
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2>
+                <span class="badge text-bg-light border label-preview-ruler" data-label-size>58 × 40 мм</span>
+            </div>
+            <div class="label-preview-canvas">
+                <div class="label-preview-sheet" data-preview-sheet>
+                    <div class="label-preview-content" data-preview-content>
+                        <div class="label-preview-item-name" data-preview-item-name>{% trans "Назва товару: Приклад товару" %}</div>
+                        <div class="label-preview-internal-code" data-preview-internal-code>{% trans "Код: YT-000001" %}</div>
+                        <div class="label-preview-barcode" data-preview-barcode aria-hidden="true"></div>
+                        <div class="label-preview-barcode-text" data-preview-barcode-text>4820000000012</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2 small text-muted" data-preview-mm-size></div>
+            <div class="label-preview-warning mt-2" data-preview-warning-margins hidden>{% trans "Відступи можуть залишити мало місця для вмісту." %}</div>
+            <div class="label-preview-warning mt-2" data-preview-warning-barcode hidden>{% trans "Штрихкод може не поміститися." %}</div>
+            {% if object %}
+                <div class="mt-3">
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'labeltemplate_preview' object.pk %}" target="_blank" rel="noopener">{% trans "Відкрити PDF preview" %}</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+<script src="{% static 'core/js/label_template_preview.js' %}"></script>
+{% endblock %}

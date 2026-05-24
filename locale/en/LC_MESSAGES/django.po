@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 15:50+0300\n"
+"POT-Creation-Date: 2026-05-24 16:07+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: English\n"
@@ -875,7 +875,8 @@ msgstr "Label templates"
 
 #: core/models/labels.py:55 templates/admin/index.html:19
 #: templates/base.html:165 templates/base.html:236
-#: templates/core/dashboard.html:41 templates/core/labeltemplate_list.html:3
+#: templates/core/dashboard.html:41 templates/core/labeltemplate_form.html:3
+#: templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:5
 #: templates/core/management/dashboard.html:74
 msgid "Шаблони етикеток"
@@ -1402,6 +1403,7 @@ msgstr "Edit user"
 
 #: core/views/management.py:243 templates/core/directory_form.html:35
 #: templates/core/inventory_count.html:62
+#: templates/core/labeltemplate_form.html:21
 #: templates/core/management/settings.html:25 templates/core/simple_form.html:6
 msgid "Зберегти"
 msgstr "Save"
@@ -1689,6 +1691,7 @@ msgstr "YANTOS · Warehouse accounting"
 #: templates/core/initial_balance_form.html:3
 #: templates/core/inventory_create.html:3 templates/core/inventory_list.html:3
 #: templates/core/item_label_print.html:3
+#: templates/core/labeltemplate_form.html:3
 #: templates/core/labeltemplate_list.html:3
 #: templates/core/management/analytics.html:3
 #: templates/core/management/dashboard.html:3
@@ -1918,6 +1921,7 @@ msgid "Заповніть поля українською мовою та збе
 msgstr "Fill in the fields and save the changes."
 
 #: templates/core/directory_form.html:34
+#: templates/core/labeltemplate_form.html:22
 msgid "Скасувати"
 msgstr "Cancel"
 
@@ -2176,6 +2180,50 @@ msgstr "Download PDF"
 #| msgid "Надрукувати етикетку"
 msgid "Переглянути етикетку PDF"
 msgstr "Print label"
+
+#: templates/core/labeltemplate_form.html:5
+#, fuzzy
+#| msgid "Шаблон етикеток"
+msgid "Редагування шаблону етикетки"
+msgstr "Label templates"
+
+#: templates/core/labeltemplate_form.html:5
+#, fuzzy
+#| msgid "Шаблон етикеток"
+msgid "Новий шаблон етикетки"
+msgstr "Label templates"
+
+#: templates/core/labeltemplate_form.html:30
+#, fuzzy
+#| msgid "Принтери і друк етикеток"
+msgid "Попередній перегляд етикетки"
+msgstr "Printers and label printing"
+
+#: templates/core/labeltemplate_form.html:36
+#, fuzzy
+#| msgid "Новий прихід товару"
+msgid "Назва товару: Приклад товару"
+msgstr "New stock receipt"
+
+#: templates/core/labeltemplate_form.html:37
+msgid "Код: YT-000001"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:44
+msgid "Відступи можуть залишити мало місця для вмісту."
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:45
+#, fuzzy
+#| msgid "Штрихкод не знайдено."
+msgid "Штрихкод може не поміститися."
+msgstr "Barcode not found."
+
+#: templates/core/labeltemplate_form.html:48
+#, fuzzy
+#| msgid "Відкрити"
+msgid "Відкрити PDF preview"
+msgstr "Open"
 
 #: templates/core/labeltemplate_list.html:6
 msgid "Розмір"
@@ -2739,9 +2787,6 @@ msgstr "Sign in"
 #~| msgid "Довідники"
 #~ msgid "Довідник"
 #~ msgstr "Directories"
-
-#~ msgid "Відкрити"
-#~ msgstr "Open"
 
 #, fuzzy
 #~| msgid "Перегляд"
