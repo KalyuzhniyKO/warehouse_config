@@ -1,69 +1,81 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
 {% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}{% endblock %}
-{% block extra_css %}
-<style>
-    .dashboard-hero { background: linear-gradient(130deg, #fff9db, #ffffff 48%, #f7f9fc); border: 1px solid rgba(196,154,0,.25); border-radius: 1rem; box-shadow: 0 .7rem 1.8rem rgba(15,23,42,.06); }
-    .dashboard-hero p { color: var(--yantos-muted); max-width: 48rem; }
-    .quick-actions { display:grid; grid-template-columns: repeat(auto-fit,minmax(170px,1fr)); gap:.65rem; }
-    .quick-action-card { border:1px solid rgba(17,24,39,.12); background:#fff; color:var(--yantos-text); border-radius:.8rem; text-decoration:none; padding:.75rem .85rem; display:flex; flex-direction:column; gap:.2rem; transition:.15s ease; }
-    .quick-action-card:hover,.quick-action-card:focus { transform: translateY(-2px); border-color: rgba(196,154,0,.7); box-shadow: 0 .55rem 1rem rgba(15,23,42,.09); }
-    .dashboard-grid { display:grid; grid-template-columns:repeat(1,minmax(0,1fr)); gap:1rem; }
-    .operation-card { border:1px solid rgba(17,24,39,.11); border-left: .35rem solid var(--accent); border-radius:1rem; background:var(--yantos-card-bg, #fff); box-shadow:0 .45rem 1.2rem rgba(15,23,42,.06); }
-    .operation-card .btn { border-radius:.65rem; font-weight:600; }
-    .operation-card .status-note { font-size:.82rem; color:var(--yantos-muted); }
-    .operation-card .icon-wrap { width:2.35rem; height:2.35rem; border-radius:.65rem; background:color-mix(in srgb, var(--accent) 14%, white); display:inline-flex; align-items:center; justify-content:center; }
-    @media (min-width: 768px) { .dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-    @media (min-width: 1200px) { .dashboard-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
-</style>
-{% endblock %}
 {% block content %}
-<section class="dashboard-hero p-4 p-xl-5 mb-4">
-    <div class="d-flex flex-column flex-xl-row gap-4 align-items-xl-end justify-content-between">
-        <div>
-            <h1 class="mb-2">{% trans "Головна" %}</h1>
-            <p class="mb-0">{% trans "Центральна панель складських операцій, контролю залишків і швидкого доступу до ключових дій." %}</p>
+<div class="dashboard-main">
+    <section class="command-panel mb-3">
+        <div class="d-xl-flex justify-content-between align-items-end gap-3">
+            <div class="mb-2 mb-xl-0">
+                <h1 class="h4 mb-1">{% trans "Головна" %}</h1>
+                <p class="small text-muted mb-0">{% trans "Компактна робоча панель для щоденних складських операцій." %}</p>
+            </div>
+            <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
+                {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+                <a class="btn btn-action-primary quick-action-btn" href="{% url 'stock_issue' %}">{% trans "Видача товару" %}</a>
+                <a class="btn btn-outline-secondary quick-action-btn" href="{% url 'stock_return' %}">{% trans "Повернення товару" %}</a>
+                <a class="btn btn-outline-secondary quick-action-btn" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a>
+                {% endif %}
+                <a class="btn btn-outline-dark quick-action-btn" href="{% url 'item_list' %}">{% trans "Пошук товару" %}</a>
+            </div>
         </div>
-        <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
-            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-                <a class="quick-action-card" href="{% url 'stock_issue' %}"><strong>📤 {% trans "Видача товару" %}</strong><span>{% trans "Оформити видачу" %}</span></a>
-                <a class="quick-action-card" href="{% url 'stock_return' %}"><strong>📥 {% trans "Повернення товару" %}</strong><span>{% trans "Прийняти повернення" %}</span></a>
-                <a class="quick-action-card" href="{% url 'stock_receive' %}"><strong>📦 {% trans "Прихід товару" %}</strong><span>{% trans "Зареєструвати надходження" %}</span></a>
+    </section>
+
+    {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+    <section class="section-shell" aria-labelledby="main-ops-heading">
+        <div class="section-header d-flex align-items-center justify-content-between">
+            <h2 id="main-ops-heading" class="section-title">{% trans "Основні операції" %}</h2>
+            <span class="badge rounded-pill dashboard-badge">{% trans "Пріоритет" %}</span>
+        </div>
+        <div class="dashboard-grid">
+            <article class="operation-card" style="--accent:#c2410c"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📤</span><h3 class="h6 mb-0">{% trans "Видача товару" %}</h3></div><p class="card-tip mb-1">{% trans "Швидке оформлення видачі зі складу." %}</p><a class="btn btn-action-primary mt-auto" href="{% url 'stock_issue' %}">{% trans "Відкрити" %}</a></div></article>
+            <article class="operation-card" style="--accent:#0284c7"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📥</span><h3 class="h6 mb-0">{% trans "Повернення товару" %}</h3></div><p class="card-tip mb-1">{% trans "Повернення на склад без зайвих кроків." %}</p><a class="btn btn-action-primary mt-auto" href="{% url 'stock_return' %}">{% trans "Відкрити" %}</a></div></article>
+            <article class="operation-card" style="--accent:#0f766e"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📦</span><h3 class="h6 mb-0">{% trans "Прихід товару" %}</h3></div><p class="card-tip mb-1">{% trans "Реєстрація поставок та партій." %}</p><a class="btn btn-action-primary mt-auto" href="{% url 'stock_receive' %}">{% trans "Відкрити" %}</a></div></article>
+            <article class="operation-card" style="--accent:#4f46e5"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🔀</span><h3 class="h6 mb-0">{% trans "Переміщення товару" %}</h3></div><p class="card-tip mb-1">{% trans "Переміщення між складами та локаціями." %}</p><a class="btn btn-outline-secondary btn-action-secondary mt-auto" href="{% url 'stock_transfer' %}">{% trans "Відкрити" %}</a></div></article>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="section-shell" aria-labelledby="control-heading">
+        <div class="section-header"><h2 id="control-heading" class="section-title">{% trans "Контроль і звіти" %}</h2></div>
+        <div class="dashboard-grid">
+            <article class="operation-card" style="--accent:#0369a1"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📊</span><h3 class="h6 mb-0">{% trans "Залишки на складі" %}</h3></div><p class="card-tip mb-1">{% trans "Перевірка актуальних залишків." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Перейти" %}</a></div></article>
+            <article class="operation-card" style="--accent:#0e7490"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🧾</span><h3 class="h6 mb-0">{% trans "Журнал операцій" %}</h3></div><p class="card-tip mb-1">{% trans "Хронологія руху товарів." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'movement_list' %}">{% trans "Перейти" %}</a></div></article>
+            <article class="operation-card" style="--accent:#7c3aed"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🧮</span><h3 class="h6 mb-0">{% trans "Інвентаризація" %}</h3></div><p class="card-tip mb-1">{% trans "Порівняння факту із системою." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'inventory_list' %}">{% trans "Перейти" %}</a></div></article>
+            {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <article class="operation-card" style="--accent:#64748b"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🗑️</span><h3 class="h6 mb-0">{% trans "Списання товару" %}</h3></div><p class="card-tip mb-1">{% trans "Облік втрат або браку." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'stock_writeoff' %}">{% trans "Перейти" %}</a></div></article>
             {% endif %}
-            <a class="quick-action-card" href="{% url 'item_list' %}"><strong>🔎 {% trans "Пошук товару" %}</strong><span>{% trans "Знайти позицію в довіднику" %}</span></a>
         </div>
-    </div>
-</section>
+    </section>
 
-{% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-<section class="mb-4" aria-labelledby="warehouse-operations-heading">
-    <h2 id="warehouse-operations-heading" class="h4 mb-3">{% trans "Операції складу" %}</h2>
-    <div class="dashboard-grid">
-        <article class="operation-card" style="--accent:#0d9488"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📥</span><h3 class="h5 mb-0">{% trans "Прихід товару" %}</h3></div><p class="text-muted mb-0">{% trans "Приймання поставок і занесення партій на склад." %}</p><p class="status-note mb-2">{% trans "Порада: перевірте локацію перед збереженням." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_receive' %}">{% trans "Відкрити операцію" %}</a></div></article>
-        <article class="operation-card" style="--accent:#d97706"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📤</span><h3 class="h5 mb-0">{% trans "Видача товару" %}</h3></div><p class="text-muted mb-0">{% trans "Відпуск матеріалів працівникам і підрозділам." %}</p><p class="status-note mb-2">{% trans "Порада: додайте отримувача для повного аудиту." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_issue' %}">{% trans "Відкрити операцію" %}</a></div></article>
-        <article class="operation-card" style="--accent:#2563eb"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🔀</span><h3 class="h5 mb-0">{% trans "Переміщення товару" %}</h3></div><p class="text-muted mb-0">{% trans "Переміщення залишків між складами та локаціями." %}</p><p class="status-note mb-2">{% trans "Порада: вказуйте джерело і призначення без дублювання." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_transfer' %}">{% trans "Відкрити операцію" %}</a></div></article>
-        <article class="operation-card" style="--accent:#6b7280"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🗑️</span><h3 class="h5 mb-0">{% trans "Списання товару" %}</h3></div><p class="text-muted mb-0">{% trans "Фіксація втрат, браку або непридатних запасів." %}</p><p class="status-note mb-2">{% trans "Порада: додавайте причину для подальшого аналізу." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_writeoff' %}">{% trans "Відкрити операцію" %}</a></div></article>
-        <article class="operation-card" style="--accent:#0f766e"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧾</span><h3 class="h5 mb-0">{% trans "Початкові залишки" %}</h3></div><p class="text-muted mb-0">{% trans "Стартове внесення запасів для нового складу." %}</p><p class="status-note mb-2">{% trans "Порада: використовуйте один раз на запуску обліку." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stock_initial' %}">{% trans "Відкрити операцію" %}</a></div></article>
-        <article class="operation-card" style="--accent:#7c3aed"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧮</span><h3 class="h5 mb-0">{% trans "Інвентаризація" %}</h3></div><p class="text-muted mb-0">{% trans "Звірка фактичних залишків із системними даними." %}</p><p class="status-note mb-2">{% trans "Порада: закривайте підрахунок одразу після перевірки." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Відкрити операцію" %}</a></div></article>
-    </div>
-</section>
-{% endif %}
+    <section class="section-shell" aria-labelledby="directories-heading">
+        <div class="section-header d-flex align-items-center justify-content-between">
+            <h2 id="directories-heading" class="section-title">{% trans "Довідники і друк" %}</h2>
+            <button class="btn btn-sm btn-link compact-toggle" data-bs-toggle="collapse" data-bs-target="#directoriesCollapse" aria-expanded="false" aria-controls="directoriesCollapse">{% trans "Показати" %}</button>
+        </div>
+        <div class="collapse" id="directoriesCollapse">
+            <div class="dashboard-grid">
+                <article class="operation-card" style="--accent:#334155"><div class="card-body d-flex flex-column gap-2"><h3 class="h6 mb-0">{% trans "Товари / матеріали" %}</h3><a class="btn btn-outline-secondary mt-auto" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
+                <article class="operation-card" style="--accent:#334155"><div class="card-body d-flex flex-column gap-2"><h3 class="h6 mb-0">{% trans "Склади" %}</h3><a class="btn btn-outline-secondary mt-auto" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
+                {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+                <article class="operation-card" style="--accent:#334155"><div class="card-body d-flex flex-column gap-2"><h3 class="h6 mb-0">{% trans "Принтери" %}</h3><a class="btn btn-outline-secondary mt-auto" href="{% url 'printer_list' %}">{% trans "Перейти" %}</a></div></article>
+                <article class="operation-card" style="--accent:#334155"><div class="card-body d-flex flex-column gap-2"><h3 class="h6 mb-0">{% trans "Шаблони етикеток" %}</h3><a class="btn btn-outline-secondary mt-auto" href="{% url 'labeltemplate_list' %}">{% trans "Перейти" %}</a></div></article>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 
-<section class="mb-4" aria-labelledby="control-reports-heading">
-    <h2 id="control-reports-heading" class="h4 mb-3">{% trans "Контроль і звіти" %}</h2>
-    <div class="dashboard-grid">
-        <article class="operation-card" style="--accent:#0ea5e9"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📊</span><h3 class="h5 mb-0">{% trans "Залишки на складі" %}</h3></div><p class="text-muted">{% trans "Оперативний перегляд фактичних залишків по локаціях." %}</p><a class="btn btn-primary mt-auto" href="{% url 'stockbalance_list' %}">{% trans "Перейти" %}</a></div></article>
-        <article class="operation-card" style="--accent:#0891b2"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🔁</span><h3 class="h5 mb-0">{% trans "Журнал операцій" %}</h3></div><p class="text-muted">{% trans "Повний хронологічний журнал усіх складських рухів." %}</p><a class="btn btn-primary mt-auto" href="{% url 'movement_list' %}">{% trans "Перейти" %}</a></div></article>
-        {% if user|in_group:"Перегляд / аудитор" and not user.is_superuser %}<article class="operation-card" style="--accent:#7c3aed"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">🧮</span><h3 class="h5 mb-0">{% trans "Інвентаризація" %}</h3></div><p class="text-muted">{% trans "Доступ до перевірок без прав на зміну операцій." %}</p><a class="btn btn-primary mt-auto" href="{% url 'inventory_list' %}">{% trans "Перейти" %}</a></div></article>{% endif %}
-        {% if user.is_superuser or user|in_group:"Адміністратор складу" %}<article class="operation-card" style="--accent:#475569"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center gap-2"><span class="icon-wrap">📈</span><h3 class="h5 mb-0">{% trans "Аналітика" %}</h3></div><p class="text-muted">{% trans "Зведені метрики та експорт управлінських звітів." %}</p><a class="btn btn-outline-secondary mt-auto" href="{% url 'management_analytics' %}">{% trans "Перейти" %}</a></div></article>{% endif %}
-    </div>
-</section>
-
-<section class="mb-4" aria-labelledby="directories-heading">
-    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
-    <div class="dashboard-grid">
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
-    </div>
-</section>
+    {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+    <section class="section-shell" aria-labelledby="admin-heading">
+        <div class="section-header d-flex align-items-center justify-content-between">
+            <h2 id="admin-heading" class="section-title">{% trans "Адміністрування" %}</h2>
+            <button class="btn btn-sm btn-link compact-toggle" data-bs-toggle="collapse" data-bs-target="#adminCollapse" aria-expanded="false" aria-controls="adminCollapse">{% trans "Показати" %}</button>
+        </div>
+        <div class="collapse" id="adminCollapse">
+            <div class="dashboard-grid">
+                <article class="operation-card" style="--accent:#1f2937"><div class="card-body d-flex flex-column gap-2"><h3 class="h6 mb-0">{% trans "Керування складом" %}</h3><a class="btn btn-outline-secondary mt-auto" href="{% url 'management_dashboard' %}">{% trans "Перейти" %}</a></div></article>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</div>
 {% endblock %}
