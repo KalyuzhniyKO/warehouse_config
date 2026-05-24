@@ -19,8 +19,9 @@
   let selectedType = null;
   let drag = null;
   let zoom = 1;
-  const ZOOM_MIN = 0.85;
-  const ZOOM_MAX = 4;
+  let fitPxPerMmBase = 1;
+  const ZOOM_MIN = 0.7;
+  const ZOOM_MAX = 3;
   const ZOOM_STEP = 0.1;
 
   const toNumber = (value, fallback = 0) => {
@@ -51,16 +52,7 @@
     return { x: Math.min(Math.max(0, x), Math.max(0, labelWidth - w)), y: Math.min(Math.max(0, y), Math.max(0, labelHeight - h)) };
   };
   const applyGridClass = () => sheet.classList.toggle('show-grid', !!gridToggle?.checked);
-  const fitZoom = () => {
-    if (!stage) return 1;
-    const { width, height } = labelSizeMm();
-    const availableW = Math.max(stage.clientWidth - 24, 180);
-    const availableH = Math.max(stage.clientHeight - 24, 120);
-    const fitPxPerMm = Math.min(availableW / width, availableH / height);
-    const basePxPerMm = 4.8;
-    const target = fitPxPerMm / Math.max(basePxPerMm, 0.001);
-    return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, target));
-  };
+  const fitZoom = () => 1;
   const updateZoomUi = () => { if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 100)}%`; };
   const setZoom = (next, keepCenter = false) => {
     const prevRect = sheet.getBoundingClientRect();
@@ -68,11 +60,12 @@
     const prevCenterY = stage ? stage.scrollTop + stage.clientHeight / 2 : 0;
     zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, round2(next)));
     const { width, height } = labelSizeMm();
-    const { width: sw, height: sh } = stage?.getBoundingClientRect() || { width: 820, height: 520 };
-    const fitPxPerMm = Math.min(Math.max(sw - 24, 180) / width, Math.max(sh - 24, 120) / height);
-    const visualPxPerMm = fitPxPerMm * zoom;
-    sheet.style.width = `${Math.max(120, width * visualPxPerMm)}px`;
-    sheet.style.height = `${Math.max(80, height * visualPxPerMm)}px`;
+    const availableW = Math.max((stage?.clientWidth || 820) - 28, 220);
+    const availableH = Math.max((stage?.clientHeight || 520) - 28, 160);
+    fitPxPerMmBase = Math.min(availableW / width, availableH / height);
+    const visualPxPerMm = fitPxPerMmBase * zoom;
+    sheet.style.width = `${Math.round(width * visualPxPerMm)}px`;
+    sheet.style.height = `${Math.round(height * visualPxPerMm)}px`;
     updateZoomUi();
     syncFromInputs();
     if (keepCenter && stage) {
@@ -159,7 +152,9 @@
   root.addEventListener('pointermove', (event) => {
     if (!drag) return;
     if (event.pointerId !== drag.pointerId) return;
-    const scale = pxPerMm(); let x = drag.baseX + (event.clientX - drag.startX) / scale; let y = drag.baseY + (event.clientY - drag.startY) / scale;
+    const scale = pxPerMm(); if (!scale) return;
+    let x = drag.baseX + (event.clientX - drag.startX) / scale;
+    let y = drag.baseY + (event.clientY - drag.startY) / scale;
     const step = gridStep(); if (step > 0) { x = Math.round(x / step) * step; y = Math.round(y / step) * step; }
     const c = clamp(drag.row, x, y);
     drag.row.querySelector('[name$="-x_mm"]').value = c.x.toFixed(2); drag.row.querySelector('[name$="-y_mm"]').value = c.y.toFixed(2);
@@ -198,7 +193,7 @@
   form.addEventListener('input', syncFromInputs);
   form.addEventListener('blur', (e)=>{ if(e.target.matches('[name$="-x_mm"],[name$="-y_mm"],[name$="-width_mm"],[name$="-height_mm"]')) syncFromInputs();}, true);
   gridToggle?.addEventListener('change', applyGridClass);
-  window.addEventListener('resize', () => setZoom(zoomFitBtn ? zoom : 1));
+  window.addEventListener('resize', () => setZoom(zoom));
   zoomInBtn?.addEventListener('click', () => setZoom(zoom + ZOOM_STEP, true));
   zoomOutBtn?.addEventListener('click', () => setZoom(zoom - ZOOM_STEP, true));
   zoomFitBtn?.addEventListener('click', () => setZoom(fitZoom()));
