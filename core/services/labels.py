@@ -231,10 +231,11 @@ def generate_item_label_pdf(item, template=None):
         if text_el:
             pdf.setFont(regular_font, int(text_el.font_size or template.barcode_text_font_size))
             pdf.drawString(float(text_el.x_mm) * mm, height - float(text_el.y_mm + text_el.height_mm) * mm, barcode_value)
-        for custom in [e for e in elements if e.element_type == "custom_text" and e.is_visible and e.text]:
-            pdf.setFont(regular_font, int(custom.font_size or 8))
-            pdf.drawString(float(custom.x_mm) * mm, height - float(custom.y_mm + custom.height_mm) * mm, custom.text)
-    elif template.show_item_name:
+        pdf.showPage()
+        pdf.save()
+        return buffer.getvalue()
+
+    if template.show_item_name:
         name_font_size = int(template.item_name_font_size)
         pdf.setFont(bold_font, name_font_size)
         for line in _wrap_text_to_lines(
