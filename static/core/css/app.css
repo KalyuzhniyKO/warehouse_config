@@ -85,3 +85,15 @@ header .navbar { min-height: 56px; }
     from { opacity: 0; transform: translateY(3px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+
+.operation-form-page { max-width: 980px; margin: 0 auto; }
+.operation-form-header { padding: .25rem 0; }
+.operation-form-card { border: 1px solid var(--dash-border); border-radius: .9rem; box-shadow: 0 .2rem .8rem rgba(15,23,42,.06); }
+.form-section { margin-bottom: 1.1rem; }
+.form-section-title { font-size: 1rem; font-weight: 700; margin-bottom: .65rem; color: var(--dash-title); }
+.touch-input, .touch-select, .operation-form-card .form-control, .operation-form-card .form-select { min-height: 3rem; font-size: 1rem; }
+.field-help { font-size: .84rem; color: var(--dash-muted); margin-top: .25rem; }
+.field-error { font-size: .84rem; color: #b42318; margin-top: .25rem; }
+.form-actions .btn { min-height: 3rem; }
+.operation-form-card .form-control:focus-visible, .operation-form-card .form-select:focus-visible { outline: 2px solid color-mix(in srgb, var(--dash-primary) 65%, #fff); outline-offset: 1px; }

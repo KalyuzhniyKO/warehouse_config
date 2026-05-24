@@ -2,9 +2,9 @@
 {% load i18n %}
 {% block title %}{% trans "Повернення товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% trans "Повернення товару" %}</h1>
+<div class="operation-form-page"><header class="operation-form-header mb-3"><h1 class="h3 mb-1">{% trans "Повернення товару" %}</h1><p class="text-muted mb-0">{% trans "Операція адаптована для планшетного сценарію роботи." %}</p></header>
 
-<div class="card content-card shadow-sm rounded-4 mb-4">
+<div class="card content-card shadow-sm rounded-4 mb-4 operation-form-card">
     <div class="card-body p-4 p-lg-5">
         <div class="mb-4">
             <h2 class="h4 fw-bold mb-2">{% trans "Сканування товару" %}</h2>
@@ -13,7 +13,7 @@
         <form class="row g-3 align-items-stretch" method="get" action="{% url 'stock_return' %}">
             <div class="col-12 col-lg">
                 <label class="visually-hidden" for="receive-barcode-input">{% trans "Штрихкод товару" %}</label>
-                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Штрихкод товару' %}">
+                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Штрихкод товару' %}">
             </div>
             <div class="col-12 col-lg-auto d-grid">
                 <button class="btn btn-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти товар" %}</button>
@@ -53,7 +53,7 @@
 </div>
 
 {% if can_submit_receive %}
-<form method="post" class="card content-card" data-disable-on-submit><div class="card-body">
+<form method="post" class="card content-card operation-form-card" data-disable-on-submit><div class="card-body">
 {% csrf_token %}
 {% if operation_token %}
     <input type="hidden" name="{{ operation_token_field }}" value="{{ operation_token }}">
@@ -82,7 +82,7 @@
                 {% else %}
                     {{ field }}
                 {% endif %}
-                <div class="text-danger small">{{ field.errors }}</div>
+                <div class="field-error">{{ field.errors }}</div>
             </div>
         {% endif %}
     {% endfor %}
@@ -92,5 +92,6 @@
 </div>
 </div></form>
 {% endif %}
+</div>
 {% include "core/includes/self_service_form_scripts.html" %}
 {% endblock %}

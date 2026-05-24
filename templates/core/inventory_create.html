@@ -2,15 +2,15 @@
 {% load i18n %}
 {% block title %}{% trans "Створити інвентаризацію" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% trans "Створити інвентаризацію" %}</h1>
-<form method="post" class="card content-card"><div class="card-body">
+<div class="operation-form-page"><header class="operation-form-header mb-3"><h1 class="h3 mb-1">{% trans "Створити інвентаризацію" %}</h1><p class="text-muted mb-0">{% trans "Операція адаптована для планшетного сценарію роботи." %}</p></header>
+<form method="post" class="card content-card operation-form-card"><div class="card-body">
 {% csrf_token %}{{ form.non_field_errors }}
 <div class="row g-3">
     {% for field in form %}
         <div class="col-md-6">
             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
-            <div class="text-danger small">{{ field.errors }}</div>
+            <div class="field-error">{{ field.errors }}</div>
         </div>
     {% endfor %}
 </div>
@@ -19,4 +19,5 @@
     <a class="btn btn-outline-secondary" href="{% url 'inventory_list' %}">{% trans "До списку інвентаризацій" %}</a>
 </div>
 </div></form>
+</div>
 {% endblock %}
