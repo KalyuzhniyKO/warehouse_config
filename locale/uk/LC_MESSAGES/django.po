@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 15:22+0300\n"
+"POT-Creation-Date: 2026-05-24 15:50+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Ukrainian\n"
@@ -272,6 +272,7 @@ msgstr "Номер документа"
 #: templates/core/inventory_detail.html:31
 #: templates/core/inventory_line_table.html:13
 #: templates/core/stock_movement_print.html:53
+#: templates/core/stock_transfer_form.html:24
 #: templates/core/stock_transfer_result.html:15
 #: templates/core/stock_writeoff_result.html:13
 #: templates/core/stockmovement_list.html:13
@@ -2028,6 +2029,16 @@ msgstr "Попередня"
 msgid "Наступна"
 msgstr "Наступна"
 
+#: templates/core/initial_balance_form.html:6
+#: templates/core/inventory_create.html:5
+#: templates/core/stock_issue_form.html:5
+#: templates/core/stock_receive_form.html:5
+#: templates/core/stock_return_form.html:5
+#, fuzzy
+#| msgid "Оберіть потрібну дію для щоденної складської роботи."
+msgid "Операція адаптована для планшетного сценарію роботи."
+msgstr "Оберіть потрібну дію для щоденної складської роботи."
+
 #: templates/core/initial_balance_form.html:18
 msgid "Зберегти початковий залишок"
 msgstr "Зберегти початковий залишок"
@@ -2563,20 +2574,33 @@ msgid "Новий прихід товару"
 msgstr "Новий прихід товару"
 
 #: templates/core/stock_transfer_form.html:9
-msgid "Перемістіть товар між складами або локаціями."
+#, fuzzy
+#| msgid "Перемістіть товар між складами або локаціями."
+msgid "Перемістіть товар між складами та локаціями у кілька дотиків."
 msgstr "Перемістіть товар між складами або локаціями."
 
-#: templates/core/stock_transfer_form.html:11
-#: templates/core/stock_transfer_form.html:24
-#: templates/core/stock_writeoff_form.html:11
-#: templates/core/stock_writeoff_form.html:24
-#: templates/core/stockbalance_list.html:11
-msgid "До рухів товарів"
-msgstr "До рухів товарів"
+#: templates/core/stock_transfer_form.html:16
+#, fuzzy
+#| msgid "Нове переміщення"
+msgid "Що переміщуємо"
+msgstr "Нове переміщення"
 
-#: templates/core/stock_transfer_form.html:24
+#: templates/core/stock_transfer_form.html:20
+#, fuzzy
+#| msgid "Звідки"
+msgid "Звідки / куди"
+msgstr "Звідки"
+
+#: templates/core/stock_transfer_form.html:27
 msgid "Перемістити"
 msgstr "Перемістити"
+
+#: templates/core/stock_transfer_form.html:27
+#: templates/core/stock_writeoff_form.html:16
+#, fuzzy
+#| msgid "На головний екран"
+msgid "До головної панелі"
+msgstr "На головний екран"
 
 #: templates/core/stock_transfer_result.html:3
 #: templates/core/stock_transfer_result.html:5
@@ -2603,7 +2627,7 @@ msgid ""
 msgstr ""
 "Списуйте товар, який використано, зіпсовано, втрачено або визнано браком."
 
-#: templates/core/stock_writeoff_form.html:24
+#: templates/core/stock_writeoff_form.html:16
 msgid "Списати"
 msgstr "Списати"
 
@@ -2615,6 +2639,10 @@ msgstr "Списання виконано"
 #: templates/core/stockbalance_list.html:8
 msgid "Перегляд фактичної кількості номенклатури на локаціях."
 msgstr "Перегляд фактичної кількості номенклатури на локаціях."
+
+#: templates/core/stockbalance_list.html:11
+msgid "До рухів товарів"
+msgstr "До рухів товарів"
 
 #: templates/core/stockbalance_list.html:27
 #: templates/core/stockmovement_list.html:12
@@ -2806,9 +2834,6 @@ msgstr "Увійти"
 #~| msgid "Друк етикетки"
 #~ msgid "Друк і етикетки"
 #~ msgstr "Друк етикетки"
-
-#~ msgid "Оберіть потрібну дію для щоденної складської роботи."
-#~ msgstr "Оберіть потрібну дію для щоденної складської роботи."
 
 #~ msgid "Прийміть товар на склад або локацію."
 #~ msgstr "Прийміть товар на склад або локацію."

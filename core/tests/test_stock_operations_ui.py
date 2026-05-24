@@ -2094,3 +2094,36 @@ class StockOperationWorkflowTests(TestCase):
         response = self.client.get(reverse("stock_return"))
         self.assertEqual(response.status_code, 302)
         self.assertIn(reverse("login"), response["Location"])
+
+class StockOperationFormsSmokeTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        self.user = get_user_model().objects.create_user(username="ops", password="pw")
+        self.user.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.client.force_login(self.user)
+
+    def test_operation_forms_have_unified_card(self):
+        pages = [
+            reverse("stock_issue"),
+            reverse("stock_return"),
+            reverse("stock_receive"),
+            reverse("stock_transfer"),
+            reverse("stock_writeoff"),
+        ]
+        for page in pages:
+            with self.subTest(page=page):
+                response = self.client.get(page)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'operation-form-card')
+
+    def test_primary_actions_exist(self):
+        checks = [
+            ("stock_issue", "Видати товар"),
+            ("stock_return", "Повернути товар"),
+            ("stock_receive", "Оприбуткувати товар"),
+            ("stock_transfer", "Перемістити"),
+            ("stock_writeoff", "Списати"),
+        ]
+        for name, label in checks:
+            with self.subTest(name=name):
+                self.assertContains(self.client.get(reverse(name)), label)
