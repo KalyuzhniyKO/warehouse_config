@@ -62,7 +62,7 @@
                     {{ element_formset.management_form }}
                     {% for element_form in element_formset %}
                         <div class="border rounded p-2 mb-2" data-element-form data-element-type="{{ element_form.instance.element_type }}">
-                            {{ element_form.id }}{{ element_form.element_type }}{{ element_form.label }}{{ element_form.sort_order }}
+                            {{ element_form.id }}{{ element_form.element_type }}{{ element_form.sort_order }}
                             <div class="fw-semibold mb-1">{{ element_form.instance.get_element_type_display|default:element_form.instance.element_type }}</div>
                             <div class="label-editor-checkbox-row mb-2">{{ element_form.is_visible }}<span>{{ element_form.is_visible.label }}</span></div>
                             <div class="row g-2">
@@ -71,7 +71,6 @@
                                 <div class="col-6"><label class="form-label">{{ element_form.width_mm.label }}</label>{{ element_form.width_mm }}</div>
                                 <div class="col-6"><label class="form-label">{{ element_form.height_mm.label }}</label>{{ element_form.height_mm }}</div>
                                 <div class="col-6"><label class="form-label">{{ element_form.font_size.label }}</label>{{ element_form.font_size }}</div>
-                                {% if element_form.instance.element_type == "custom_text" %}<div class="col-12"><label class="form-label">{{ element_form.text.label }}</label>{{ element_form.text }}</div>{% endif %}
                             </div>
                         </div>
                     {% empty %}

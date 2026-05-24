@@ -108,10 +108,9 @@ class PrintLabelForm(forms.Form):
 class LabelTemplateElementForm(BootstrapModelForm):
     class Meta:
         model = LabelTemplateElement
-        fields = ["id", "element_type", "label", "text", "x_mm", "y_mm", "width_mm", "height_mm", "font_size", "is_visible", "sort_order"]
+        fields = ["id", "element_type", "x_mm", "y_mm", "width_mm", "height_mm", "font_size", "is_visible", "sort_order"]
         widgets = {
             "element_type": forms.HiddenInput(),
-            "label": forms.HiddenInput(),
             "sort_order": forms.HiddenInput(),
         }
 

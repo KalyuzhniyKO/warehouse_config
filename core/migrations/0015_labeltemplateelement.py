@@ -46,21 +46,10 @@ class Migration(migrations.Migration):
                             ("internal_code", "Внутрішній код"),
                             ("barcode", "Штрихкод"),
                             ("barcode_text", "Текст штрихкоду"),
-                            ("custom_text", "Довільний текст"),
                         ],
                         max_length=32,
                         verbose_name="Тип елемента",
                     ),
-                ),
-                (
-                    "label",
-                    models.CharField(
-                        blank=True, max_length=120, verbose_name="Назва елемента"
-                    ),
-                ),
-                (
-                    "text",
-                    models.CharField(blank=True, max_length=255, verbose_name="Текст"),
                 ),
                 (
                     "x_mm",
@@ -95,7 +84,7 @@ class Migration(migrations.Migration):
                 (
                     "font_size",
                     models.PositiveSmallIntegerField(
-                        default=8, verbose_name="Розмір шрифту"
+                        blank=True, null=True, verbose_name="Розмір шрифту"
                     ),
                 ),
                 (

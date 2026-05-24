@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 19:09+0300\n"
+"POT-Creation-Date: 2026-05-24 19:54+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Ukrainian\n"
@@ -66,7 +66,7 @@ msgstr "Категорія"
 #: core/forms/analytics.py:36 core/forms/filters.py:21 core/forms/filters.py:48
 #: core/forms/stock_operations.py:44 core/forms/stock_operations.py:258
 #: core/models/barcodes.py:10 core/models/inventory.py:75
-#: core/models/labels.py:107 core/models/stock.py:11 core/models/stock.py:59
+#: core/models/labels.py:104 core/models/stock.py:11 core/models/stock.py:59
 #: core/models/warehouse.py:40 core/models/warehouse.py:41
 #: core/views/analytics.py:213 core/views/inventory.py:115
 #: templates/core/inventory_count.html:28
@@ -310,11 +310,11 @@ msgid ""
 "назву або синхронізуйте принтери."
 msgstr ""
 
-#: core/forms/labels.py:72 core/models/labels.py:84
+#: core/forms/labels.py:72 core/models/labels.py:81
 msgid "Ширина, мм"
 msgstr "Ширина, мм"
 
-#: core/forms/labels.py:73 core/models/labels.py:85
+#: core/forms/labels.py:73 core/models/labels.py:82
 msgid "Висота, мм"
 msgstr "Висота, мм"
 
@@ -378,7 +378,7 @@ msgstr "Тип штрихкоду"
 msgid "Товщина лінії штрихкоду, мм"
 msgstr "Послідовність штрихкодів"
 
-#: core/forms/labels.py:93 core/models/labels.py:14 core/models/labels.py:104
+#: core/forms/labels.py:93 core/models/labels.py:14 core/models/labels.py:101
 msgid "Принтер"
 msgstr "Принтер"
 
@@ -580,7 +580,7 @@ msgid "Стелаж"
 msgstr "Стелаж"
 
 #: core/models/barcodes.py:15 core/models/inventory.py:85
-#: core/models/labels.py:109 core/models/warehouse.py:30
+#: core/models/labels.py:106 core/models/warehouse.py:30
 #: core/models/warehouse.py:71 core/models/warehouse.py:126
 msgid "barcode"
 msgstr "штрихкод"
@@ -622,7 +622,7 @@ msgstr "Послідовності штрихкодів"
 msgid "Використовувати локації"
 msgstr "Використовувати локації"
 
-#: core/models/base.py:10 core/models/base.py:37 core/models/labels.py:118
+#: core/models/base.py:10 core/models/base.py:37 core/models/labels.py:115
 msgid "created at"
 msgstr "створено"
 
@@ -713,7 +713,7 @@ msgstr "Скасована"
 msgid "number"
 msgstr "next number"
 
-#: core/models/inventory.py:32 core/models/labels.py:115
+#: core/models/inventory.py:32 core/models/labels.py:112
 msgid "status"
 msgstr "статус"
 
@@ -864,7 +864,7 @@ msgstr "висота, мм"
 msgid "barcode bar width, mm"
 msgstr "ширина, мм"
 
-#: core/models/labels.py:54 core/models/labels.py:111
+#: core/models/labels.py:54 core/models/labels.py:108
 msgid "Шаблон етикеток"
 msgstr "Шаблон етикеток"
 
@@ -904,97 +904,81 @@ msgstr "Штрихкод"
 msgid "Текст штрихкоду"
 msgstr "Тип штрихкоду"
 
-#: core/models/labels.py:74
-#, fuzzy
-#| msgid "Довідники"
-msgid "Довільний текст"
-msgstr "Довідники"
-
-#: core/models/labels.py:77
+#: core/models/labels.py:76
 #, fuzzy
 #| msgid "Шаблон етикеток"
 msgid "Шаблон етикетки"
 msgstr "Шаблон етикеток"
 
-#: core/models/labels.py:79
+#: core/models/labels.py:78
 #, fuzzy
 #| msgid "Номер документа"
 msgid "Тип елемента"
 msgstr "Номер документа"
 
-#: core/models/labels.py:80
-#, fuzzy
-#| msgid "Номер документа"
-msgid "Назва елемента"
-msgstr "Номер документа"
-
-#: core/models/labels.py:81
-msgid "Текст"
-msgstr ""
-
-#: core/models/labels.py:82
+#: core/models/labels.py:79
 msgid "X, мм"
 msgstr ""
 
-#: core/models/labels.py:83
+#: core/models/labels.py:80
 msgid "Y, мм"
 msgstr ""
 
-#: core/models/labels.py:86
+#: core/models/labels.py:83
 #, fuzzy
 #| msgid "Розмір"
 msgid "Розмір шрифту"
 msgstr "Розмір"
 
-#: core/models/labels.py:87
+#: core/models/labels.py:84
 msgid "Видимий"
 msgstr ""
 
-#: core/models/labels.py:88
+#: core/models/labels.py:85
 msgid "Порядок"
 msgstr ""
 
-#: core/models/labels.py:91
+#: core/models/labels.py:88
 #, fuzzy
 #| msgid "Шаблон етикеток"
 msgid "Елемент шаблону етикетки"
 msgstr "Шаблон етикеток"
 
-#: core/models/labels.py:92
+#: core/models/labels.py:89
 #, fuzzy
 #| msgid "Шаблон етикеток"
 msgid "Елементи шаблону етикетки"
 msgstr "Шаблон етикеток"
 
-#: core/models/labels.py:99
+#: core/models/labels.py:96
 msgid "pending"
 msgstr "padding"
 
-#: core/models/labels.py:100
+#: core/models/labels.py:97
 msgid "printed"
 msgstr "надруковано"
 
-#: core/models/labels.py:101
+#: core/models/labels.py:98
 msgid "failed"
 msgstr "помилка"
 
-#: core/models/labels.py:113
+#: core/models/labels.py:110
 msgid "copies"
 msgstr "копії"
 
-#: core/models/labels.py:117
+#: core/models/labels.py:114
 msgid "error message"
 msgstr "повідомлення про помилку"
 
-#: core/models/labels.py:119
+#: core/models/labels.py:116
 msgid "printed at"
 msgstr "created at"
 
-#: core/models/labels.py:121
+#: core/models/labels.py:118
 msgid "user"
 msgstr "користувач"
 
-#: core/models/labels.py:125 core/models/labels.py:126
+#: core/models/labels.py:122 core/models/labels.py:123
 msgid "Завдання друку"
 msgstr "Завдання друку"
 
@@ -1134,18 +1118,18 @@ msgstr "Коригування за інвентаризацією"
 msgid "Стандартна 58×40 мм"
 msgstr "Стандартна 58×40 мм"
 
-#: core/services/labels.py:284 core/services/printers.py:155
+#: core/services/labels.py:285 core/services/printers.py:155
 #, python-format
 msgid ""
 "Принтер '%(name)s' не знайдено в CUPS. Перевірте системну назву або "
 "синхронізуйте принтери."
 msgstr ""
 
-#: core/services/labels.py:321
+#: core/services/labels.py:322
 msgid "Невідома помилка друку."
 msgstr "Невідома помилка друку."
 
-#: core/services/labels.py:327 core/services/printers.py:34
+#: core/services/labels.py:328 core/services/printers.py:34
 msgid "Команда lp недоступна. Встановіть cups-client."
 msgstr ""
 
@@ -1473,7 +1457,7 @@ msgstr "Редагувати користувача"
 
 #: core/views/management.py:243 templates/core/directory_form.html:35
 #: templates/core/inventory_count.html:62
-#: templates/core/labeltemplate_form.html:84
+#: templates/core/labeltemplate_form.html:83
 #: templates/core/management/settings.html:25 templates/core/simple_form.html:6
 msgid "Зберегти"
 msgstr "Зберегти"
@@ -1993,7 +1977,7 @@ msgid "Заповніть поля українською мовою та збе
 msgstr "Заповніть поля українською мовою та збережіть зміни."
 
 #: templates/core/directory_form.html:34
-#: templates/core/labeltemplate_form.html:85
+#: templates/core/labeltemplate_form.html:84
 msgid "Скасувати"
 msgstr "Скасувати"
 
@@ -2298,59 +2282,59 @@ msgstr ""
 msgid "Елементи макета"
 msgstr "Коментар / документ"
 
-#: templates/core/labeltemplate_form.html:78
+#: templates/core/labeltemplate_form.html:77
 msgid "Після збереження будуть доступні стандартні елементи макета."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:93
+#: templates/core/labeltemplate_form.html:92
 #, fuzzy
 #| msgid "Принтери і друк етикеток"
 msgid "Попередній перегляд етикетки"
 msgstr "Принтери і друк етикеток"
 
-#: templates/core/labeltemplate_form.html:99
+#: templates/core/labeltemplate_form.html:98
 msgid "Дріт оцинкований Ø3 мм"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:100
+#: templates/core/labeltemplate_form.html:99
 msgid "Код: YT-000001"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:106
+#: templates/core/labeltemplate_form.html:105
 msgid ""
 "Зміни в налаштуваннях одразу відображаються у попередньому перегляді. PDF-"
 "перегляд доступний після збереження."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:108
+#: templates/core/labeltemplate_form.html:107
 msgid "Відступи залишають мало місця для вмісту."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:109
+#: templates/core/labeltemplate_form.html:108
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Штрихкод може не поміститися."
 msgstr "Штрихкод не знайдено."
 
-#: templates/core/labeltemplate_form.html:110
+#: templates/core/labeltemplate_form.html:109
 #, fuzzy
 #| msgid "Виберіть номенклатуру для друку етикетки."
 msgid "Вміст може виходити за межі етикетки."
 msgstr "Виберіть номенклатуру для друку етикетки."
 
-#: templates/core/labeltemplate_form.html:111
+#: templates/core/labeltemplate_form.html:110
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Текст може не поміститися на етикетці."
 msgstr "Штрихкод не знайдено."
 
-#: templates/core/labeltemplate_form.html:114
+#: templates/core/labeltemplate_form.html:113
 #, fuzzy
 #| msgid "Створити локацію"
 msgid "Відкрити PDF-перегляд"
 msgstr "Створити локацію"
 
-#: templates/core/labeltemplate_form.html:117
+#: templates/core/labeltemplate_form.html:116
 #, fuzzy
 #| msgid "Надрукувати етикетку після збереження"
 msgid "PDF-перегляд буде доступний після збереження шаблону."
@@ -2882,6 +2866,16 @@ msgstr "Ім’я користувача"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Увійти"
+
+#, fuzzy
+#~| msgid "Довідники"
+#~ msgid "Довільний текст"
+#~ msgstr "Довідники"
+
+#, fuzzy
+#~| msgid "Номер документа"
+#~ msgid "Назва елемента"
+#~ msgstr "Номер документа"
 
 #, fuzzy
 #~| msgid "Новий прихід товару"
