@@ -50,7 +50,7 @@
     border-radius: .8rem;
     background: var(--dash-card);
     box-shadow: 0 .2rem .7rem rgba(15, 23, 42, .05);
-    min-height: 172px;
+    min-height: 184px;
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
 .operation-card:hover,
@@ -70,6 +70,39 @@
     font-size: 1.05rem;
 }
 .card-tip { color: var(--dash-muted); font-size: .79rem; }
+.clickable-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.clickable-card .card-body {
+    min-height: 100%;
+    padding: 1rem;
+}
+.card-priority {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--dash-border));
+}
+.card-label {
+    align-self: flex-start;
+    font-size: .74rem;
+    color: color-mix(in srgb, var(--accent) 74%, #253041);
+    background: color-mix(in srgb, var(--accent) 12%, white);
+    border-radius: 999px;
+    padding: .18rem .5rem;
+    font-weight: 600;
+}
+.card-chevron {
+    color: color-mix(in srgb, var(--accent) 70%, #253041);
+    font-weight: 700;
+    transition: transform .16s ease;
+}
+.operation-card:hover .card-chevron,
+.operation-card:focus-within .card-chevron { transform: translateX(2px); }
+.clickable-card:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent) 50%, #1d4ed8);
+    outline-offset: 2px;
+    border-radius: .8rem;
+}
 .btn-action-primary {
     --bs-btn-bg: var(--dash-primary);
     --bs-btn-border-color: var(--dash-primary-dark);
@@ -82,7 +115,24 @@
 
 .section-shell { margin-bottom: .9rem; }
 
-.compact-toggle { font-size: .82rem; }
+.section-collapse-header {
+    border: 1px solid var(--dash-border);
+    border-radius: .75rem;
+    background: #fff;
+    padding: .65rem .8rem;
+    transition: border-color .16s ease, box-shadow .16s ease;
+}
+.section-collapse-header:hover,
+.section-collapse-header:focus-visible {
+    border-color: rgba(180, 143, 0, .5);
+    box-shadow: 0 .2rem .65rem rgba(15, 23, 42, .08);
+}
+.section-collapse-header .section-chevron {
+    transition: transform .2s ease;
+    color: var(--dash-muted);
+    font-size: 1rem;
+}
+.section-collapse-header[aria-expanded="true"] .section-chevron { transform: rotate(180deg); }
 
 .dashboard-badge {
     font-size: .7rem;
@@ -96,6 +146,10 @@ header .navbar { min-height: 56px; }
     .dashboard-main,
     .operation-card,
     .quick-action-btn { animation: none; transition: none; }
+}
+@media (max-width: 1024px) {
+    .operation-card { min-height: 196px; }
+    .card-tip { font-size: .83rem; }
 }
 
 @keyframes dash-fade-in {

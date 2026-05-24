@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 13:58+0300\n"
+"POT-Creation-Date: 2026-05-24 14:16+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1875,8 +1875,10 @@ msgstr "Elenco degli inventari di magazzino."
 
 #: templates/core/dashboard.html:30 templates/core/dashboard.html:31
 #: templates/core/dashboard.html:32 templates/core/dashboard.html:33
-msgid "Відкрити"
-msgstr "Apri"
+#, fuzzy
+#| msgid "Усі операції"
+msgid "Основна дія"
+msgstr "Tutte le operazioni"
 
 #: templates/core/dashboard.html:31
 msgid "Повернення на склад без зайвих кроків."
@@ -1900,13 +1902,11 @@ msgstr "Nessuna giacenza per i filtri selezionati."
 
 #: templates/core/dashboard.html:41 templates/core/dashboard.html:42
 #: templates/core/dashboard.html:43 templates/core/dashboard.html:45
-#: templates/core/dashboard.html:57 templates/core/dashboard.html:58
-#: templates/core/dashboard.html:60 templates/core/dashboard.html:61
 #: templates/core/dashboard.html:75
 #, fuzzy
-#| msgid "Перегляд"
-msgid "Перейти"
-msgstr "Visualizza"
+#| msgid "Контакт"
+msgid "Контроль"
+msgstr "Contatto"
 
 #: templates/core/dashboard.html:42
 #, fuzzy
@@ -1930,9 +1930,12 @@ msgstr ""
 msgid "Довідники і друк"
 msgstr "Libri di riferimento"
 
-#: templates/core/dashboard.html:53 templates/core/dashboard.html:71
-msgid "Показати"
-msgstr ""
+#: templates/core/dashboard.html:57 templates/core/dashboard.html:58
+#: templates/core/dashboard.html:60 templates/core/dashboard.html:61
+#, fuzzy
+#| msgid "Довідники"
+msgid "Довідник"
+msgstr "Libri di riferimento"
 
 #: templates/core/directory_form.html:8
 msgid "Заповніть поля українською мовою та збережіть зміни."
@@ -2702,6 +2705,14 @@ msgstr "Utente"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Accedi"
+
+#~ msgid "Відкрити"
+#~ msgstr "Apri"
+
+#, fuzzy
+#~| msgid "Перегляд"
+#~ msgid "Перейти"
+#~ msgstr "Visualizza"
 
 #, fuzzy
 #~| msgid "Усі типи видачі"

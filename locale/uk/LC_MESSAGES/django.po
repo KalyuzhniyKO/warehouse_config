@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 13:58+0300\n"
+"POT-Creation-Date: 2026-05-24 14:16+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Ukrainian\n"
@@ -1861,8 +1861,10 @@ msgstr "Список інвентаризацій складу."
 
 #: templates/core/dashboard.html:30 templates/core/dashboard.html:31
 #: templates/core/dashboard.html:32 templates/core/dashboard.html:33
-msgid "Відкрити"
-msgstr "Відкрити"
+#, fuzzy
+#| msgid "Усі операції"
+msgid "Основна дія"
+msgstr "Усі операції"
 
 #: templates/core/dashboard.html:31
 msgid "Повернення на склад без зайвих кроків."
@@ -1886,13 +1888,11 @@ msgstr "Перевірити залишки"
 
 #: templates/core/dashboard.html:41 templates/core/dashboard.html:42
 #: templates/core/dashboard.html:43 templates/core/dashboard.html:45
-#: templates/core/dashboard.html:57 templates/core/dashboard.html:58
-#: templates/core/dashboard.html:60 templates/core/dashboard.html:61
 #: templates/core/dashboard.html:75
 #, fuzzy
-#| msgid "Перегляд"
-msgid "Перейти"
-msgstr "Перегляд"
+#| msgid "Контакт"
+msgid "Контроль"
+msgstr "Контакт"
 
 #: templates/core/dashboard.html:42
 #, fuzzy
@@ -1916,9 +1916,12 @@ msgstr ""
 msgid "Довідники і друк"
 msgstr "Довідники"
 
-#: templates/core/dashboard.html:53 templates/core/dashboard.html:71
-msgid "Показати"
-msgstr ""
+#: templates/core/dashboard.html:57 templates/core/dashboard.html:58
+#: templates/core/dashboard.html:60 templates/core/dashboard.html:61
+#, fuzzy
+#| msgid "Довідники"
+msgid "Довідник"
+msgstr "Довідники"
 
 #: templates/core/directory_form.html:8
 msgid "Заповніть поля українською мовою та збережіть зміни."
@@ -2681,6 +2684,14 @@ msgstr "Ім’я користувача"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Увійти"
+
+#~ msgid "Відкрити"
+#~ msgstr "Відкрити"
+
+#, fuzzy
+#~| msgid "Перегляд"
+#~ msgid "Перейти"
+#~ msgstr "Перегляд"
 
 #, fuzzy
 #~| msgid "Усі типи видачі"
