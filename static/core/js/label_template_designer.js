@@ -6,6 +6,8 @@
   const gridToggle = root.querySelector('[data-grid-toggle]');
   const snapToggle = root.querySelector('[data-snap-toggle]');
   const resetBtn = root.querySelector('[data-reset-layout]');
+  const selectedSummary = root.querySelector('[data-selected-element-summary]');
+  const warningsBox = root.querySelector('[data-element-warnings]');
 
   const map = Object.fromEntries(Array.from(root.querySelectorAll('[data-label-element]')).map((el) => [el.dataset.labelElement, el]));
   const defaultCoords = {};
@@ -20,11 +22,18 @@
   const pxPerMm = () => sheet.clientWidth / Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1);
   const labelSizeMm = () => ({ width: Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1), height: Math.max(toNumber(form.querySelector('[name="height_mm"]')?.value, 40), 1) });
   const gridStep = () => (snapToggle?.checked ? 1 : 0);
+  const getRowValues = (row) => ({
+    type: row.dataset.elementType, x: toNumber(row.querySelector('[name$="-x_mm"]')?.value, 0), y: toNumber(row.querySelector('[name$="-y_mm"]')?.value, 0), w: toNumber(row.querySelector('[name$="-width_mm"]')?.value, 10), h: toNumber(row.querySelector('[name$="-height_mm"]')?.value, 4), font: toNumber(row.querySelector('[name$="-font_size"]')?.value, 8),
+  });
 
   const selectElement = (type) => {
     selectedType = type;
     form.querySelectorAll('[data-element-form]').forEach((row) => { const active = row.dataset.elementType === type; row.classList.toggle('is-selected', active); row.classList.toggle('label-element-list-item--selected', active); });
     Object.entries(map).forEach(([t, el]) => el.classList.toggle('is-selected', t === type));
+    if (selectedSummary && type) {
+      const row = form.querySelector(`[data-element-type="${type}"]`);
+      if (row) { const v = getRowValues(row); selectedSummary.textContent = `X: ${v.x.toFixed(2)} мм · Y: ${v.y.toFixed(2)} мм · W: ${v.w.toFixed(2)} мм · H: ${v.h.toFixed(2)} мм`; }
+    }
   };
   const clamp = (row, x, y) => {
     const { width: labelWidth, height: labelHeight } = labelSizeMm();
@@ -59,6 +68,25 @@
         const warn = document.createElement('div'); warn.className='label-preview-warning mt-2'; warn.dataset.barcodeSizeWarning='1'; warn.textContent=root.dataset.barcodeSizeWarningText || 'Barcode warning'; row.appendChild(warn);
       }
     });
+    if (warningsBox) {
+      warningsBox.innerHTML = '';
+      const { width: lw, height: lh } = labelSizeMm();
+      form.querySelectorAll('[data-element-form]').forEach((row) => {
+        const { type, x, y, w, h, font } = getRowValues(row);
+        if (!row.querySelector('[name$="-is_visible"]')?.checked) return;
+        const issues = [];
+        if (x + w > lw || y + h > lh) issues.push(root.dataset.warningOverflow || 'Елемент виходить за межі етикетки.');
+        if (w < 2 || h < 2) issues.push(root.dataset.warningSmall || 'Елемент занадто малий.');
+        if (type === 'barcode' && (w < 24 || h < 10)) issues.push(root.dataset.barcodeSizeWarningText || 'Barcode warning');
+        if ((type === 'item_name' || type === 'internal_code' || type === 'barcode_text') && font > h * 2.6) issues.push(root.dataset.warningTextClip || 'Текст може обрізатися у PDF.');
+        if (type === 'barcode_text' && font * 0.55 * 13 > w) issues.push(root.dataset.warningBarcodeText || 'Підпис штрихкоду може не вміститися.');
+        if (!issues.length) return;
+        const warning = document.createElement('div');
+        warning.className = 'label-preview-warning';
+        warning.textContent = `${type}: ${issues.join(' ')}`;
+        warningsBox.appendChild(warning);
+      });
+    }
   };
 
   form.querySelectorAll('[data-element-form]').forEach((row) => {

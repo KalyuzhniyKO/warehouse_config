@@ -209,6 +209,9 @@ def generate_item_label_pdf(item, template=None):
 
     elements = list(getattr(template, "elements", []).all()) if getattr(template, "pk", None) else []
     if elements:
+        # Coordinate parity contract with canvas editor:
+        # JS stores x/y/width/height in millimeters from top-left label corner.
+        # PDF uses bottom-left origin, so we convert Y via (label_height - y - element_height).
         element_map = {e.element_type: e for e in elements if e.is_visible}
         name_el = element_map.get("item_name")
         if name_el:
@@ -222,8 +225,12 @@ def generate_item_label_pdf(item, template=None):
             pdf.drawString(float(code_el.x_mm) * mm, height - float(code_el.y_mm + code_el.height_mm) * mm, str(item.internal_code))
         barcode_el = element_map.get("barcode")
         bar_h = float((barcode_el.height_mm if barcode_el else template.barcode_height_mm)) * mm
-        barcode = code128.Code128(barcode_value, barHeight=bar_h, barWidth=float(template.barcode_bar_width_mm) * mm)
+        base_bar_width = float(template.barcode_bar_width_mm) * mm
+        barcode = code128.Code128(barcode_value, barHeight=bar_h, barWidth=base_bar_width)
         if barcode_el:
+            target_width = max(float(barcode_el.width_mm) * mm, 1.0)
+            if barcode.width > 0:
+                barcode = code128.Code128(barcode_value, barHeight=bar_h, barWidth=max(base_bar_width * (target_width / barcode.width), 0.05 * mm))
             barcode.drawOn(pdf, float(barcode_el.x_mm) * mm, height - float(barcode_el.y_mm) * mm - bar_h)
         else:
             barcode.drawOn(pdf, margin_left, margin_bottom + (6 * mm))

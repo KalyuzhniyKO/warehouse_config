@@ -317,6 +317,9 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-snap-toggle")
         self.assertContains(response, "data-reset-layout")
         self.assertContains(response, "data-element-form-row")
+        self.assertContains(response, "data-selected-element-summary")
+        self.assertContains(response, "data-element-warnings")
+        self.assertContains(response, "data-warning-overflow")
 
     def test_label_template_defaults_elements_created(self):
         template = LabelTemplate.objects.create(name="T1", show_item_name=False, show_internal_code=True, show_barcode_text=False)
@@ -356,6 +359,20 @@ class LabelAndBarcodeTests(TestCase):
         self.assertEqual(response.status_code, 302)
         template.refresh_from_db()
         self.assertEqual(str(template.elements.get(element_type="item_name").x_mm), "11.50")
+
+    def test_generate_item_label_pdf_with_template_elements_coordinates(self):
+        from core.services.labels import generate_item_label_pdf
+        from core.views.labels import LabelTemplateUpdateView
+
+        template = LabelTemplate.objects.create(name="58x40 coords", width_mm=58, height_mm=40)
+        LabelTemplateUpdateView._create_default_elements(template)
+        template.elements.filter(element_type="item_name").update(x_mm=3, y_mm=3, width_mm=52, height_mm=8, font_size=9)
+        template.elements.filter(element_type="internal_code").update(x_mm=3, y_mm=13, width_mm=25, height_mm=5, font_size=7)
+        template.elements.filter(element_type="barcode").update(x_mm=3, y_mm=20, width_mm=52, height_mm=12)
+        template.elements.filter(element_type="barcode_text").update(x_mm=3, y_mm=33, width_mm=52, height_mm=5, font_size=7)
+        pdf = generate_item_label_pdf(self.item, template)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        self.assertGreater(len(pdf), 900)
 
 
     def test_label_template_update_ru_localization_without_ukrainian_fragments(self):
