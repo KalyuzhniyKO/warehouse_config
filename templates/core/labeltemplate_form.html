@@ -12,48 +12,48 @@
             <section class="label-editor-section">
                 <h2 class="label-editor-section-title">{% trans "Основні параметри" %}</h2>
                 <div class="label-editor-section-body label-editor-field-grid">
-                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}<div class="text-danger small">{{ form.name.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.width_mm.id_for_label }}">{{ form.width_mm.label }}</label>{{ form.width_mm }}<div class="text-danger small">{{ form.width_mm.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.height_mm.id_for_label }}">{{ form.height_mm.label }}</label>{{ form.height_mm }}<div class="text-danger small">{{ form.height_mm.errors }}</div></div>
-                    <div class="label-editor-field"><label class="label-checkbox-row" for="{{ form.is_default.id_for_label }}">{{ form.is_default }}<span>{{ form.is_default.label }}</span></label></div>
-                    <div class="label-editor-field"><label class="label-checkbox-row" for="{{ form.is_active.id_for_label }}">{{ form.is_active }}<span>{{ form.is_active.label }}</span></label></div>
+                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}{% if form.name.help_text %}<div class="form-text">{{ form.name.help_text }}</div>{% endif %}{% if form.name.errors %}<div class="field-error">{{ form.name.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.width_mm.id_for_label }}">{{ form.width_mm.label }}</label>{{ form.width_mm }}{% if form.width_mm.help_text %}<div class="form-text">{{ form.width_mm.help_text }}</div>{% endif %}{% if form.width_mm.errors %}<div class="field-error">{{ form.width_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.height_mm.id_for_label }}">{{ form.height_mm.label }}</label>{{ form.height_mm }}{% if form.height_mm.help_text %}<div class="form-text">{{ form.height_mm.help_text }}</div>{% endif %}{% if form.height_mm.errors %}<div class="field-error">{{ form.height_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="label-editor-checkbox-row" for="{{ form.is_default.id_for_label }}">{{ form.is_default }}<span>{{ form.is_default.label }}</span></label>{% if form.is_default.errors %}<div class="field-error">{{ form.is_default.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="label-editor-checkbox-row" for="{{ form.is_active.id_for_label }}">{{ form.is_active }}<span>{{ form.is_active.label }}</span></label>{% if form.is_active.errors %}<div class="field-error">{{ form.is_active.errors }}</div>{% endif %}</div>
                 </div>
             </section>
 
             <section class="label-editor-section">
                 <h2 class="label-editor-section-title">{% trans "Вміст етикетки" %}</h2>
                 <div class="label-editor-section-body label-editor-checkbox-grid">
-                    <label class="label-editor-checkbox-row" for="{{ form.show_item_name.id_for_label }}">{{ form.show_item_name }}<span>{{ form.show_item_name.label }}</span></label>
-                    <label class="label-editor-checkbox-row" for="{{ form.show_internal_code.id_for_label }}">{{ form.show_internal_code }}<span>{{ form.show_internal_code.label }}</span></label>
-                    <label class="label-editor-checkbox-row" for="{{ form.show_barcode_text.id_for_label }}">{{ form.show_barcode_text }}<span>{{ form.show_barcode_text.label }}</span></label>
+                    <div><label class="label-editor-checkbox-row" for="{{ form.show_item_name.id_for_label }}">{{ form.show_item_name }}<span>{{ form.show_item_name.label }}</span></label>{% if form.show_item_name.errors %}<div class="field-error">{{ form.show_item_name.errors }}</div>{% endif %}</div>
+                    <div><label class="label-editor-checkbox-row" for="{{ form.show_internal_code.id_for_label }}">{{ form.show_internal_code }}<span>{{ form.show_internal_code.label }}</span></label>{% if form.show_internal_code.errors %}<div class="field-error">{{ form.show_internal_code.errors }}</div>{% endif %}</div>
+                    <div><label class="label-editor-checkbox-row" for="{{ form.show_barcode_text.id_for_label }}">{{ form.show_barcode_text }}<span>{{ form.show_barcode_text.label }}</span></label>{% if form.show_barcode_text.errors %}<div class="field-error">{{ form.show_barcode_text.errors }}</div>{% endif %}</div>
                 </div>
             </section>
 
             <section class="label-editor-section">
                 <h2 class="label-editor-section-title">{% trans "Відступи" %}</h2>
                 <div class="label-editor-section-body label-editor-field-grid label-editor-field-grid-compact">
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_top_mm.id_for_label }}">{{ form.margin_top_mm.label }}</label>{{ form.margin_top_mm }}<div class="text-danger small">{{ form.margin_top_mm.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_right_mm.id_for_label }}">{{ form.margin_right_mm.label }}</label>{{ form.margin_right_mm }}<div class="text-danger small">{{ form.margin_right_mm.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_bottom_mm.id_for_label }}">{{ form.margin_bottom_mm.label }}</label>{{ form.margin_bottom_mm }}<div class="text-danger small">{{ form.margin_bottom_mm.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_left_mm.id_for_label }}">{{ form.margin_left_mm.label }}</label>{{ form.margin_left_mm }}<div class="text-danger small">{{ form.margin_left_mm.errors }}</div></div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_top_mm.id_for_label }}">{{ form.margin_top_mm.label }}</label>{{ form.margin_top_mm }}{% if form.margin_top_mm.help_text %}<div class="form-text">{{ form.margin_top_mm.help_text }}</div>{% endif %}{% if form.margin_top_mm.errors %}<div class="field-error">{{ form.margin_top_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_right_mm.id_for_label }}">{{ form.margin_right_mm.label }}</label>{{ form.margin_right_mm }}{% if form.margin_right_mm.help_text %}<div class="form-text">{{ form.margin_right_mm.help_text }}</div>{% endif %}{% if form.margin_right_mm.errors %}<div class="field-error">{{ form.margin_right_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_bottom_mm.id_for_label }}">{{ form.margin_bottom_mm.label }}</label>{{ form.margin_bottom_mm }}{% if form.margin_bottom_mm.help_text %}<div class="form-text">{{ form.margin_bottom_mm.help_text }}</div>{% endif %}{% if form.margin_bottom_mm.errors %}<div class="field-error">{{ form.margin_bottom_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.margin_left_mm.id_for_label }}">{{ form.margin_left_mm.label }}</label>{{ form.margin_left_mm }}{% if form.margin_left_mm.help_text %}<div class="form-text">{{ form.margin_left_mm.help_text }}</div>{% endif %}{% if form.margin_left_mm.errors %}<div class="field-error">{{ form.margin_left_mm.errors }}</div>{% endif %}</div>
                 </div>
             </section>
 
             <section class="label-editor-section">
                 <h2 class="label-editor-section-title">{% trans "Шрифти" %}</h2>
                 <div class="label-editor-section-body label-editor-field-grid">
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.item_name_font_size.id_for_label }}">{{ form.item_name_font_size.label }}</label>{{ form.item_name_font_size }}<div class="text-danger small">{{ form.item_name_font_size.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.internal_code_font_size.id_for_label }}">{{ form.internal_code_font_size.label }}</label>{{ form.internal_code_font_size }}<div class="text-danger small">{{ form.internal_code_font_size.errors }}</div></div>
-                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.barcode_text_font_size.id_for_label }}">{{ form.barcode_text_font_size.label }}</label>{{ form.barcode_text_font_size }}<div class="text-danger small">{{ form.barcode_text_font_size.errors }}</div></div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.item_name_font_size.id_for_label }}">{{ form.item_name_font_size.label }}</label>{{ form.item_name_font_size }}{% if form.item_name_font_size.help_text %}<div class="form-text">{{ form.item_name_font_size.help_text }}</div>{% endif %}{% if form.item_name_font_size.errors %}<div class="field-error">{{ form.item_name_font_size.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.internal_code_font_size.id_for_label }}">{{ form.internal_code_font_size.label }}</label>{{ form.internal_code_font_size }}{% if form.internal_code_font_size.help_text %}<div class="form-text">{{ form.internal_code_font_size.help_text }}</div>{% endif %}{% if form.internal_code_font_size.errors %}<div class="field-error">{{ form.internal_code_font_size.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.barcode_text_font_size.id_for_label }}">{{ form.barcode_text_font_size.label }}</label>{{ form.barcode_text_font_size }}{% if form.barcode_text_font_size.help_text %}<div class="form-text">{{ form.barcode_text_font_size.help_text }}</div>{% endif %}{% if form.barcode_text_font_size.errors %}<div class="field-error">{{ form.barcode_text_font_size.errors }}</div>{% endif %}</div>
                 </div>
             </section>
 
             <section class="label-editor-section mb-0">
                 <h2 class="label-editor-section-title">{% trans "Штрихкод" %}</h2>
                 <div class="label-editor-section-body label-editor-field-grid">
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.barcode_type.id_for_label }}">{{ form.barcode_type.label }}</label>{{ form.barcode_type }}<div class="text-danger small">{{ form.barcode_type.errors }}</div></div>
-                    <div class="label-editor-field"><label class="form-label" for="{{ form.barcode_height_mm.id_for_label }}">{{ form.barcode_height_mm.label }}</label>{{ form.barcode_height_mm }}<div class="text-danger small">{{ form.barcode_height_mm.errors }}</div></div>
-                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.barcode_bar_width_mm.id_for_label }}">{{ form.barcode_bar_width_mm.label }}</label>{{ form.barcode_bar_width_mm }}<div class="text-danger small">{{ form.barcode_bar_width_mm.errors }}</div></div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.barcode_type.id_for_label }}">{{ form.barcode_type.label }}</label>{{ form.barcode_type }}{% if form.barcode_type.help_text %}<div class="form-text">{{ form.barcode_type.help_text }}</div>{% endif %}{% if form.barcode_type.errors %}<div class="field-error">{{ form.barcode_type.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field"><label class="form-label" for="{{ form.barcode_height_mm.id_for_label }}">{{ form.barcode_height_mm.label }}</label>{{ form.barcode_height_mm }}{% if form.barcode_height_mm.help_text %}<div class="form-text">{{ form.barcode_height_mm.help_text }}</div>{% endif %}{% if form.barcode_height_mm.errors %}<div class="field-error">{{ form.barcode_height_mm.errors }}</div>{% endif %}</div>
+                    <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.barcode_bar_width_mm.id_for_label }}">{{ form.barcode_bar_width_mm.label }}</label>{{ form.barcode_bar_width_mm }}{% if form.barcode_bar_width_mm.help_text %}<div class="form-text">{{ form.barcode_bar_width_mm.help_text }}</div>{% endif %}{% if form.barcode_bar_width_mm.errors %}<div class="field-error">{{ form.barcode_bar_width_mm.errors }}</div>{% endif %}</div>
                 </div>
             </section>
 
