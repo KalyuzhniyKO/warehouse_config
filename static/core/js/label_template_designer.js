@@ -19,7 +19,7 @@
   let selectedType = null;
   let drag = null;
   let zoom = 1;
-  const ZOOM_MIN = 0.6;
+  const ZOOM_MIN = 0.85;
   const ZOOM_MAX = 4;
   const ZOOM_STEP = 0.1;
 
@@ -28,7 +28,7 @@
     return Number.isFinite(parsed) ? parsed : fallback;
   };
   const round2 = (n) => Math.round(n * 100) / 100;
-  const pxPerMm = () => sheet.getBoundingClientRect().width / Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1);
+  const pxPerMm = () => sheet.clientWidth / Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1);
   const labelSizeMm = () => ({ width: Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1), height: Math.max(toNumber(form.querySelector('[name="height_mm"]')?.value, 40), 1) });
   const gridStep = () => (snapToggle?.checked ? 1 : 0);
   const getRowValues = (row) => ({
@@ -56,9 +56,9 @@
     const { width, height } = labelSizeMm();
     const availableW = Math.max(stage.clientWidth - 24, 180);
     const availableH = Math.max(stage.clientHeight - 24, 120);
-    const basePxPerMm = Math.max(availableW / width, availableH / height) * 0.7;
     const fitPxPerMm = Math.min(availableW / width, availableH / height);
-    const target = Math.max(1, fitPxPerMm / Math.max(basePxPerMm, 0.001));
+    const basePxPerMm = 4.8;
+    const target = fitPxPerMm / Math.max(basePxPerMm, 0.001);
     return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, target));
   };
   const updateZoomUi = () => { if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 100)}%`; };
@@ -141,16 +141,18 @@
 
   Object.entries(map).forEach(([type, el]) => {
     el.style.touchAction = 'none';
-    el.addEventListener('pointerdown', (event) => {
+      el.addEventListener('pointerdown', (event) => {
       const row = form.querySelector(`[data-element-type="${type}"]`); if (!row) return;
       selectElement(type);
       drag = { type, row, startX: event.clientX, startY: event.clientY, baseX: toNumber(row.querySelector('[name$="-x_mm"]').value, 0), baseY: toNumber(row.querySelector('[name$="-y_mm"]').value, 0), pointerId: event.pointerId };
       document.body.style.userSelect = 'none';
+      document.body.style.overflow = 'hidden';
       el.style.cursor = 'grabbing';
       el.setPointerCapture(event.pointerId); event.preventDefault();
     });
-    el.addEventListener('pointerup', () => { drag = null; document.body.style.userSelect = ''; el.style.cursor = 'grab'; });
-    el.addEventListener('pointercancel', () => { drag = null; document.body.style.userSelect = ''; el.style.cursor = 'grab'; });
+    const finishDrag = () => { drag = null; document.body.style.userSelect = ''; document.body.style.overflow = ''; el.style.cursor = 'grab'; };
+    el.addEventListener('pointerup', finishDrag);
+    el.addEventListener('pointercancel', finishDrag);
     el.addEventListener('focus', () => selectElement(type));
   });
 
@@ -164,6 +166,8 @@
     syncFromInputs();
     event.preventDefault();
   });
+  root.addEventListener('pointerup', () => { drag = null; document.body.style.userSelect = ''; document.body.style.overflow = ''; });
+  root.addEventListener('pointercancel', () => { drag = null; document.body.style.userSelect = ''; document.body.style.overflow = ''; });
 
   form.addEventListener('keydown', (event) => {
     if (!selectedType || !event.key.startsWith('Arrow')) return;
