@@ -17,11 +17,8 @@ class PrinterForm(BootstrapModelForm):
             "is_default": _("За замовчуванням"),
             "is_active": _("Активний"),
         }
-        help_texts = {
-            "system_name": _(
-                "Системна назва CUPS queue. Її можна подивитися командою lpstat -v або синхронізувати автоматично."
-            ),
-        }
+        help_texts = {}
+
 
     def clean_system_name(self):
         system_name = (self.cleaned_data.get("system_name") or "").strip()
@@ -87,17 +84,6 @@ class LabelTemplateForm(BootstrapModelForm):
             "barcode_bar_width_mm": _("Товщина лінії штрихкоду, мм"),
             "is_default": _("За замовчуванням"),
             "is_active": _("Активний"),
-        }
-        help_texts = {
-            "margin_top_mm": _("Параметри макета впливають на PDF етикетки."),
-            "margin_right_mm": _("Параметри макета впливають на PDF етикетки."),
-            "margin_bottom_mm": _("Параметри макета впливають на PDF етикетки."),
-            "margin_left_mm": _("Параметри макета впливають на PDF етикетки."),
-            "item_name_font_size": _("Параметри макета впливають на PDF етикетки."),
-            "internal_code_font_size": _("Параметри макета впливають на PDF етикетки."),
-            "barcode_text_font_size": _("Параметри макета впливають на PDF етикетки."),
-            "barcode_height_mm": _("Параметри макета впливають на PDF етикетки."),
-            "barcode_bar_width_mm": _("Параметри макета впливають на PDF етикетки."),
         }
 
 
