@@ -3,6 +3,9 @@
   if (!root) return;
   const form = document.querySelector('form.label-template-form-panel');
   if (!form) return;
+  // The graphical designer owns canvas scaling/zoom. Keep legacy preview logic
+  // from rewriting sheet dimensions on every field input in that mode.
+  if (form.querySelector('[data-element-form]')) return;
 
   const sheet = root.querySelector('[data-preview-sheet]');
   const content = root.querySelector('[data-preview-content]');

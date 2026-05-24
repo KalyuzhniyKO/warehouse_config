@@ -319,6 +319,7 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-label-zoom-out")
         self.assertContains(response, "data-label-zoom-fit")
         self.assertContains(response, "data-label-zoom-value")
+        self.assertContains(response, "data-label-font-size-input")
         self.assertContains(response, "data-reset-layout")
         self.assertContains(response, "data-optimize-layout")
         self.assertContains(response, "data-element-form-row")

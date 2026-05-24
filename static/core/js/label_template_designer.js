@@ -255,6 +255,7 @@
     syncFromInputs();
   });
 
+  // Element field updates must not recompute fit zoom.
   form.addEventListener('input', syncFromInputs);
   form.addEventListener('blur', (e)=>{ if(e.target.matches('[name$="-x_mm"],[name$="-y_mm"],[name$="-width_mm"],[name$="-height_mm"]')) syncFromInputs();}, true);
   gridToggle?.addEventListener('change', applyGridClass);
