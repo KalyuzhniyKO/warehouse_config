@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 16:30+0300\n"
+"POT-Creation-Date: 2026-05-24 16:47+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Russian\n"
@@ -2235,35 +2235,41 @@ msgstr ""
 msgid "Код: YT-000001"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:84
-msgid "Відступи залишають мало місця для вмісту."
+#: templates/core/labeltemplate_form.html:83
+msgid ""
+"Зміни в налаштуваннях одразу відображаються у попередньому перегляді. PDF-"
+"перегляд доступний після збереження."
 msgstr ""
 
 #: templates/core/labeltemplate_form.html:85
+msgid "Відступи залишають мало місця для вмісту."
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:86
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Штрихкод може не поміститися."
 msgstr "Штрихкод не найден."
 
-#: templates/core/labeltemplate_form.html:86
+#: templates/core/labeltemplate_form.html:87
 #, fuzzy
 #| msgid "Виберіть номенклатуру для друку етикетки."
 msgid "Вміст може виходити за межі етикетки."
 msgstr "Выберите номенклатуру для печати этикетки."
 
-#: templates/core/labeltemplate_form.html:87
+#: templates/core/labeltemplate_form.html:88
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Текст може не поміститися на етикетці."
 msgstr "Штрихкод не найден."
 
-#: templates/core/labeltemplate_form.html:90
+#: templates/core/labeltemplate_form.html:91
 #, fuzzy
 #| msgid "Створити локацію"
 msgid "Відкрити PDF-перегляд"
 msgstr "Создать локацию"
 
-#: templates/core/labeltemplate_form.html:93
+#: templates/core/labeltemplate_form.html:94
 #, fuzzy
 #| msgid "Надрукувати етикетку після збереження"
 msgid "PDF-перегляд буде доступний після збереження шаблону."
