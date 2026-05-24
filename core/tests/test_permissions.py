@@ -346,6 +346,7 @@ class DashboardPermissionTests(TestCase):
 
     def test_warehouse_admin_keeps_full_dashboard(self):
         response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
 
         self.assertTemplateUsed(response, "core/dashboard.html")
         self.assertTemplateNotUsed(response, "core/storekeeper_workplace.html")
@@ -355,8 +356,11 @@ class DashboardPermissionTests(TestCase):
         self.assertContains(response, '<main class="col-12">')
         self.assertContains(response, "Головна")
         self.assertContains(response, "Довідники")
+        self.assertIn(f'href="{reverse("stock_receive")}"', html)
+        self.assertIn(f'href="{reverse("stock_issue")}"', html)
+        self.assertIn(f'href="{reverse("stock_return")}"', html)
         self.assertNotContains(response, "Склад самообслуговування")
-        self.assertNotContains(response, "Пошук товару")
+        self.assertContains(response, "Пошук товару")
         self.assertNotContains(response, "autofocus")
 
     def test_auditor_dashboard_is_view_only(self):
@@ -384,7 +388,8 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.storekeeper)
         html = response.content.decode()
 
-        self.assertNotIn('navbar-nav me-auto mb-2 mb-lg-0 d-lg-none', html)
-        self.assertNotIn('navbar-toggler', html)
+        self.assertNotIn('data-bs-target="#mainNav"', html)
+        self.assertNotIn('id="mainNav"', html)
+        self.assertNotIn('<a class="nav-link"', html)
         self.assertNotIn("Керування", html)
         self.assertNotIn("management/", html)
