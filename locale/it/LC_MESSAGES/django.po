@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 16:47+0300\n"
+"POT-Creation-Date: 2026-05-24 18:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,9 +33,9 @@ msgstr "Periodo fa"
 #: core/views/directories.py:352 core/views/inventory.py:113
 #: core/views/stock_operations.py:481 templates/admin/index.html:25
 #: templates/core/inventory_detail.html:25
-#: templates/core/inventory_list.html:20
+#: templates/core/inventory_list.html:22
 #: templates/core/stock_writeoff_result.html:10
-#: templates/core/stockbalance_list.html:36
+#: templates/core/stockbalance_list.html:38
 msgid "Склад"
 msgstr "Magazzino"
 
@@ -48,9 +48,9 @@ msgstr "Magazzino"
 #: core/views/stock_operations.py:482 templates/core/inventory_count.html:30
 #: templates/core/inventory_detail.html:26
 #: templates/core/inventory_line_table.html:9
-#: templates/core/inventory_list.html:21
+#: templates/core/inventory_list.html:23
 #: templates/core/stock_writeoff_result.html:11
-#: templates/core/stockbalance_list.html:36
+#: templates/core/stockbalance_list.html:38
 msgid "Локація"
 msgstr "Ubicazione"
 
@@ -76,7 +76,7 @@ msgstr "Articoli"
 #: core/forms/analytics.py:41 core/forms/filters.py:44
 #: core/views/analytics.py:212 core/views/stock_operations.py:475
 #: templates/core/stock_movement_print.html:36
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Тип операції"
 msgstr "Tipo di operazione"
 
@@ -86,7 +86,7 @@ msgstr "Tutte le operazioni"
 
 #: core/forms/analytics.py:46 core/models/directories.py:70
 #: core/models/stock.py:82 core/views/analytics.py:217
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Отримувач"
 msgstr "Destinatario"
 
@@ -139,7 +139,8 @@ msgstr "Esiste già una nomenclatura con tale codice interno."
 #: core/views/directories.py:268 core/views/directories.py:283
 #: core/views/directories.py:298 core/views/directories.py:317
 #: core/views/directories.py:337 core/views/directories.py:353
-#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:68
+#: templates/core/labeltemplate_list.html:13
+#: templates/core/printer_list.html:71
 msgid "Назва"
 msgstr "Nome"
 
@@ -151,8 +152,9 @@ msgstr "Simbolo"
 #: core/forms/directories.py:120 core/forms/directories.py:150
 #: core/forms/directories.py:214 core/forms/directories.py:237
 #: core/forms/labels.py:18 core/forms/labels.py:89 core/forms/management.py:108
-#: core/forms/management.py:151 templates/core/directory_list.html:47
-#: templates/core/management/users.html:35 templates/core/printer_list.html:71
+#: core/forms/management.py:151 templates/core/directory_list.html:51
+#: templates/core/labeltemplate_list.html:18
+#: templates/core/management/users.html:35 templates/core/printer_list.html:74
 msgid "Активний"
 msgstr "Attivo"
 
@@ -198,13 +200,13 @@ msgstr "Ulteriori informazioni sul destinatario."
 #: templates/core/stock_movement_print.html:38
 #: templates/core/stock_receive_form.html:34
 #: templates/core/stock_return_form.html:34
-#: templates/core/stockbalance_list.html:36
+#: templates/core/stockbalance_list.html:38
 msgid "Внутрішній код"
 msgstr "Codice interno"
 
 #: core/forms/directories.py:148 core/models/directories.py:12
 #: core/models/warehouse.py:24 templates/core/stock_movement_print.html:41
-#: templates/core/stockbalance_list.html:36
+#: templates/core/stockbalance_list.html:38
 msgid "Одиниця виміру"
 msgstr "Unità di misura"
 
@@ -245,7 +247,7 @@ msgid "Дата до"
 msgstr "Sì, sì"
 
 #: core/forms/filters.py:58 core/forms/stock_operations.py:137
-#: core/models/stock.py:97 templates/core/stockmovement_list.html:13
+#: core/models/stock.py:97 templates/core/stockmovement_list.html:14
 msgid "Тип видачі"
 msgstr "Tipo di problema"
 
@@ -254,7 +256,7 @@ msgid "Усі типи видачі"
 msgstr "Tutti i tipi di problemi"
 
 #: core/forms/filters.py:62 core/models/stock.py:102
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Цех / підрозділ"
 msgstr "Officina/reparto"
 
@@ -272,7 +274,7 @@ msgstr "Numero del documento"
 #: templates/core/stock_transfer_form.html:24
 #: templates/core/stock_transfer_result.html:15
 #: templates/core/stock_writeoff_result.html:13
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Коментар"
 msgstr "Commento"
 
@@ -287,12 +289,13 @@ msgstr "L’ubicazione deve appartenere al magazzino selezionato."
 msgid "Фактична кількість"
 msgstr "Quantità effettiva"
 
-#: core/forms/labels.py:15 templates/core/printer_list.html:69
+#: core/forms/labels.py:15 templates/core/printer_list.html:72
 msgid "Системна назва"
 msgstr "Nome del sistema"
 
 #: core/forms/labels.py:17 core/forms/labels.py:88
-#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:70
+#: templates/core/labeltemplate_list.html:18
+#: templates/core/printer_list.html:73
 msgid "За замовчуванням"
 msgstr "Per impostazione predefinita"
 
@@ -329,7 +332,7 @@ msgstr "Cerca il codice virtuale"
 msgid "Показувати текст штрихкоду"
 msgstr "Visualizza il testo a strisce"
 
-#: core/forms/labels.py:78 templates/core/labeltemplate_list.html:6
+#: core/forms/labels.py:78 templates/core/labeltemplate_list.html:13
 msgid "Тип штрихкоду"
 msgstr "Tipo di triturazione"
 
@@ -473,8 +476,8 @@ msgstr ""
 #: templates/core/stock_receive_result.html:18
 #: templates/core/stock_transfer_result.html:9
 #: templates/core/stock_writeoff_result.html:9
-#: templates/core/stockbalance_list.html:36
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockbalance_list.html:38
+#: templates/core/stockmovement_list.html:14
 msgid "Кількість"
 msgstr "Quantità"
 
@@ -795,7 +798,7 @@ msgstr "predefinito"
 #: core/models/labels.py:15 templates/admin/index.html:18
 #: templates/base.html:164 templates/base.html:235
 #: templates/core/dashboard.html:40 templates/core/management/dashboard.html:73
-#: templates/core/printer_list.html:3 templates/core/printer_list.html:6
+#: templates/core/printer_list.html:3 templates/core/printer_list.html:9
 msgid "Принтери"
 msgstr "Stampanti"
 
@@ -881,7 +884,7 @@ msgstr "Modelli di etichette"
 #: templates/base.html:165 templates/base.html:236
 #: templates/core/dashboard.html:41 templates/core/labeltemplate_form.html:3
 #: templates/core/labeltemplate_list.html:3
-#: templates/core/labeltemplate_list.html:5
+#: templates/core/labeltemplate_list.html:7
 #: templates/core/management/dashboard.html:74
 msgid "Шаблони етикеток"
 msgstr "Modelli di etichette"
@@ -1103,7 +1106,7 @@ msgstr "Non è stata inserita l'etichetta: %(error)s"
 msgid "Для видачі товару потрібно вказати отримувача."
 msgstr "Per emettere il prodotto è necessario indicare il destinatario."
 
-#: core/views/analytics.py:211 templates/core/stockmovement_list.html:13
+#: core/views/analytics.py:211 templates/core/stockmovement_list.html:14
 msgid "Дата"
 msgstr "Ecco"
 
@@ -1226,8 +1229,8 @@ msgstr "Contatto"
 #: core/views/directories.py:307 core/views/management.py:148
 #: templates/base.html:150 templates/base.html:221
 #: templates/core/dashboard.html:37 templates/core/management/dashboard.html:55
-#: templates/core/stockbalance_list.html:36
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockbalance_list.html:38
+#: templates/core/stockmovement_list.html:14
 msgid "Товари / матеріали"
 msgstr "Prodotti / materiali"
 
@@ -1253,8 +1256,8 @@ msgstr "Archivia prodotto / materiale"
 #: templates/core/stock_movement_print.html:39
 #: templates/core/stock_receive_form.html:38
 #: templates/core/stock_return_form.html:38
-#: templates/core/stockbalance_list.html:36
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockbalance_list.html:38
+#: templates/core/stockmovement_list.html:14
 msgid "Штрихкод"
 msgstr "Codice a barre"
 
@@ -1294,10 +1297,11 @@ msgstr "Tipo"
 msgid "Номер інвентаризації"
 msgstr "Numero di inventario"
 
-#: core/views/inventory.py:112 templates/core/directory_list.html:20
-#: templates/core/directory_list.html:39
+#: core/views/inventory.py:112 templates/core/directory_list.html:23
+#: templates/core/directory_list.html:43
 #: templates/core/inventory_detail.html:27
-#: templates/core/inventory_list.html:22
+#: templates/core/inventory_list.html:24
+#: templates/core/labeltemplate_list.html:13
 #: templates/core/management/users.html:18
 msgid "Статус"
 msgstr "Stato"
@@ -1398,8 +1402,8 @@ msgstr "Persone o reparti che prelevano o restituiscono prodotti."
 msgid "Створити користувача"
 msgstr "Crea utente"
 
-#: core/views/management.py:216 templates/core/directory_list.html:10
-#: templates/core/labeltemplate_list.html:5 templates/core/printer_list.html:12
+#: core/views/management.py:216 templates/core/directory_list.html:12
+#: templates/core/labeltemplate_list.html:8 templates/core/printer_list.html:15
 msgid "Створити"
 msgstr "Crea"
 
@@ -1478,7 +1482,7 @@ msgstr "Saldo iniziale"
 #: templates/base.html:148 templates/base.html:219
 #: templates/core/dashboard.html:26 templates/core/management/dashboard.html:39
 #: templates/core/stockmovement_list.html:3
-#: templates/core/stockmovement_list.html:6
+#: templates/core/stockmovement_list.html:7
 msgid "Журнал операцій"
 msgstr "Registro operazioni"
 
@@ -1793,9 +1797,9 @@ msgstr "Giacenze iniziali"
 #: templates/base.html:215 templates/core/dashboard.html:27
 #: templates/core/inventory_count.html:3 templates/core/inventory_detail.html:3
 #: templates/core/inventory_detail.html:6 templates/core/inventory_list.html:3
-#: templates/core/inventory_list.html:7
+#: templates/core/inventory_list.html:9
 #: templates/core/management/dashboard.html:46
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Інвентаризація"
 msgstr "Conteggio dell'inventario"
 
@@ -1807,7 +1811,7 @@ msgstr "Controllo e report"
 #: templates/base.html:147 templates/base.html:218
 #: templates/core/dashboard.html:25 templates/core/management/dashboard.html:45
 #: templates/core/stockbalance_list.html:3
-#: templates/core/stockbalance_list.html:7
+#: templates/core/stockbalance_list.html:9
 msgid "Залишки на складі"
 msgstr "Giacenze di magazzino"
 
@@ -1942,72 +1946,78 @@ msgstr "Compila i campi in ucraino e salva le modifiche."
 msgid "Скасувати"
 msgstr "Annulla"
 
-#: templates/core/directory_list.html:8
+#: templates/core/directory_list.html:9
 msgid "Керуйте активними та архівними записами довідника."
 msgstr "Gestire le voci della directory attive e archiviate."
 
-#: templates/core/directory_list.html:16
+#: templates/core/directory_list.html:19
 msgid "Пошук по назві"
 msgstr "Cerca per nome"
 
-#: templates/core/directory_list.html:17
+#: templates/core/directory_list.html:20
 msgid "Введіть назву або код"
 msgstr "Inserisci un nome o un codice"
 
-#: templates/core/directory_list.html:22
+#: templates/core/directory_list.html:25
 msgid "Активні"
 msgstr "Attivi"
 
-#: templates/core/directory_list.html:23
+#: templates/core/directory_list.html:26
 msgid "Архівні"
 msgstr "Archiviati"
 
-#: templates/core/directory_list.html:24
+#: templates/core/directory_list.html:27
 msgid "Усі"
 msgstr "Tutti"
 
-#: templates/core/directory_list.html:28
+#: templates/core/directory_list.html:31
+#: templates/core/management/analytics.html:9
+#: templates/core/stockmovement_list.html:13
+msgid "Скинути"
+msgstr "Pelle"
+
+#: templates/core/directory_list.html:32
+#: templates/core/stockmovement_list.html:13
 msgid "Застосувати"
 msgstr "Applica"
 
-#: templates/core/directory_list.html:40 templates/core/inventory_list.html:26
-#: templates/core/labeltemplate_list.html:6
-#: templates/core/management/users.html:19 templates/core/printer_list.html:72
-#: templates/core/stockbalance_list.html:36
+#: templates/core/directory_list.html:44 templates/core/inventory_list.html:28
+#: templates/core/labeltemplate_list.html:13
+#: templates/core/management/users.html:19 templates/core/printer_list.html:75
+#: templates/core/stockbalance_list.html:38
 msgid "Дії"
 msgstr "Azioni"
 
-#: templates/core/directory_list.html:47
+#: templates/core/directory_list.html:51
 msgid "Архівний"
 msgstr "Archiviato"
 
-#: templates/core/directory_list.html:50 templates/core/item_label_print.html:3
+#: templates/core/directory_list.html:54 templates/core/item_label_print.html:3
 #: templates/core/item_label_print.html:5
-#: templates/core/stockbalance_list.html:41
+#: templates/core/stockbalance_list.html:43
 msgid "Друк етикетки"
 msgstr "Stampa di etichette"
 
-#: templates/core/directory_list.html:50
-#: templates/core/labeltemplate_list.html:6
-#: templates/core/management/users.html:41 templates/core/printer_list.html:83
+#: templates/core/directory_list.html:54
+#: templates/core/labeltemplate_list.html:19
+#: templates/core/management/users.html:41 templates/core/printer_list.html:86
 msgid "Редагувати"
 msgstr "Modifica"
 
-#: templates/core/directory_list.html:52
+#: templates/core/directory_list.html:56
 msgid "Архівувати цей запис?"
 msgstr "Archiviare questo record?"
 
-#: templates/core/directory_list.html:54
+#: templates/core/directory_list.html:58
 msgid "Архівувати"
 msgstr "Archivia"
 
-#: templates/core/directory_list.html:59
+#: templates/core/directory_list.html:63
 msgid "Відновити"
 msgstr "Ripristina"
 
-#: templates/core/directory_list.html:66
+#: templates/core/directory_list.html:70
 #: templates/core/inventory_line_table.html:32
-#: templates/core/labeltemplate_list.html:6 templates/core/printer_list.html:91
 msgid "Записів поки немає"
 msgstr "Nessun record"
 
@@ -2062,7 +2072,7 @@ msgstr "Salva il saldo iniziale"
 
 #: templates/core/inventory_count.html:3 templates/core/inventory_count.html:6
 #: templates/core/inventory_detail.html:12
-#: templates/core/inventory_list.html:49
+#: templates/core/inventory_list.html:51
 msgid "Підрахунок"
 msgstr "Contare"
 
@@ -2083,8 +2093,7 @@ msgstr "Nome, internal_code, codice a barre o ubicazione"
 #: templates/core/stock_issue_form.html:23
 #: templates/core/stock_receive_form.html:23
 #: templates/core/stock_return_form.html:23
-#: templates/core/stockbalance_list.html:26
-#: templates/core/stockmovement_list.html:12
+#: templates/core/stockbalance_list.html:28
 msgid "Очистити"
 msgstr "Cancella"
 
@@ -2128,22 +2137,22 @@ msgid "Завершити інвентаризацію"
 msgstr "Conteggio completo dell'inventario"
 
 #: templates/core/inventory_detail.html:24
-#: templates/core/inventory_list.html:19
+#: templates/core/inventory_list.html:21
 msgid "Номер"
 msgstr "Numero"
 
 #: templates/core/inventory_detail.html:28
-#: templates/core/inventory_list.html:23
+#: templates/core/inventory_list.html:25
 msgid "Дата початку"
 msgstr "Data inizio"
 
 #: templates/core/inventory_detail.html:29
-#: templates/core/inventory_list.html:24
+#: templates/core/inventory_list.html:26
 msgid "Дата завершення"
 msgstr "Data completamento"
 
 #: templates/core/inventory_detail.html:30
-#: templates/core/inventory_list.html:25
+#: templates/core/inventory_list.html:27
 msgid "Створив"
 msgstr "Creato da"
 
@@ -2163,23 +2172,23 @@ msgstr "Eccedenza totale"
 msgid "Сума нестач"
 msgstr "Carenza totale"
 
-#: templates/core/inventory_list.html:8
+#: templates/core/inventory_list.html:10
 msgid "Список інвентаризацій складу."
 msgstr "Elenco degli inventari di magazzino."
 
-#: templates/core/inventory_list.html:11
+#: templates/core/inventory_list.html:13
 msgid "Нова інвентаризація"
 msgstr "Nuovo conteggio dell'inventario"
 
-#: templates/core/inventory_list.html:47
+#: templates/core/inventory_list.html:49
 msgid "Перегляд"
 msgstr "Visualizza"
 
-#: templates/core/inventory_list.html:55
+#: templates/core/inventory_list.html:57
 msgid "Немає інвентаризацій."
 msgstr "Nessun inventario."
 
-#: templates/core/inventory_list.html:55
+#: templates/core/inventory_list.html:57
 msgid "Створіть перший запис."
 msgstr "Crea il primo record."
 
@@ -2286,15 +2295,26 @@ msgstr "Crea una posizione"
 msgid "PDF-перегляд буде доступний після збереження шаблону."
 msgstr "Modificare l'etichetta dell'etichetta in modo imprevedibile"
 
-#: templates/core/labeltemplate_list.html:6
+#: templates/core/labeltemplate_list.html:13
 msgid "Розмір"
 msgstr "Misurare"
 
-#: templates/core/labeltemplate_list.html:6
+#: templates/core/labeltemplate_list.html:18
+#: templates/core/management/users.html:37
+msgid "Неактивний"
+msgstr "Non attivo"
+
+#: templates/core/labeltemplate_list.html:19
 #, fuzzy
 #| msgid "Перегляд"
 msgid "Перегляд PDF"
 msgstr "Visualizza"
+
+#: templates/core/labeltemplate_list.html:22
+#, fuzzy
+#| msgid "Шаблон етикеток"
+msgid "Поки немає шаблонів етикеток"
+msgstr "Modelli di etichette"
 
 #: templates/core/management/analytics.html:3
 #: templates/core/management/analytics.html:6
@@ -2308,10 +2328,6 @@ msgstr "Arrivi, emissioni, cancellazioni, trasferimenti, resi e saldi."
 #: templates/core/management/analytics.html:9
 msgid "Застосувати фільтр"
 msgstr "Installare il filtro"
-
-#: templates/core/management/analytics.html:9
-msgid "Скинути"
-msgstr "Pelle"
 
 #: templates/core/management/analytics.html:11
 msgid "Прихід"
@@ -2494,10 +2510,6 @@ msgstr ""
 msgid "Змінити пароль"
 msgstr "Cambia password"
 
-#: templates/core/management/users.html:37
-msgid "Неактивний"
-msgstr "Non attivo"
-
 #: templates/core/management/users.html:46
 msgid "Користувачів ще немає."
 msgstr "Non ci sono ancora utenti."
@@ -2506,67 +2518,73 @@ msgstr "Non ci sono ancora utenti."
 msgid "Доступні ролі"
 msgstr "Ruolo disponibile"
 
-#: templates/core/printer_list.html:10
+#: templates/core/printer_list.html:13
 #, fuzzy
 #| msgid "Створити товар / матеріал"
 msgid "Оновити список принтерів"
 msgstr "Crea prodotto / materiale"
 
-#: templates/core/printer_list.html:19
+#: templates/core/printer_list.html:22
 #, fuzzy
 #| msgid "Налаштування принтерів етикеток."
 msgid "Системні принтери сервера"
 msgstr "Label printer settings."
 
-#: templates/core/printer_list.html:20 templates/core/printer_list.html:33
+#: templates/core/printer_list.html:23 templates/core/printer_list.html:36
 #, fuzzy
 #| msgid "default"
 msgid "CUPS default"
 msgstr "predefinito"
 
-#: templates/core/printer_list.html:31
+#: templates/core/printer_list.html:34
 #, fuzzy
 #| msgid "system name"
 msgid "CUPS system_name"
 msgstr "nome del sistema"
 
-#: templates/core/printer_list.html:32
+#: templates/core/printer_list.html:35
 msgid "У базі"
 msgstr ""
 
-#: templates/core/printer_list.html:34
+#: templates/core/printer_list.html:37
 #, fuzzy
 #| msgid "status"
 msgid "Status"
 msgstr "stato"
 
-#: templates/core/printer_list.html:43
+#: templates/core/printer_list.html:46
 msgid "Додано"
 msgstr ""
 
-#: templates/core/printer_list.html:45
+#: templates/core/printer_list.html:48
 #, fuzzy
 #| msgid "Немає даних"
 msgid "Немає"
 msgstr "No, Daniel"
 
-#: templates/core/printer_list.html:52
+#: templates/core/printer_list.html:55
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "CUPS-принтерів не знайдено"
 msgstr "Codice a barre non trovato."
 
-#: templates/core/printer_list.html:62
+#: templates/core/printer_list.html:65
 #, fuzzy
 #| msgid "Принтери і друк етикеток"
 msgid "Принтери в довіднику"
 msgstr "Stampanti e etichette per documenti"
 
-#: templates/core/printer_list.html:86
+#: templates/core/printer_list.html:89
 #, fuzzy
 #| msgid "Початковий залишок"
 msgid "Тестовий друк"
 msgstr "Saldo iniziale"
+
+#: templates/core/printer_list.html:94
+#, fuzzy
+#| msgid "Створити товар / матеріал"
+msgid "Немає активних принтерів"
+msgstr "Crea prodotto / materiale"
 
 #: templates/core/simple_form.html:3 templates/core/simple_form.html:5
 msgid "Налаштування"
@@ -2728,8 +2746,8 @@ msgstr "Stampa tagliando di controllo"
 
 #: templates/core/stock_transfer_result.html:17
 #: templates/core/stock_writeoff_result.html:15
-#: templates/core/stockbalance_list.html:12
-#: templates/core/stockmovement_list.html:9
+#: templates/core/stockbalance_list.html:14
+#: templates/core/stockmovement_list.html:10
 msgid "Нова операція"
 msgstr "Nuova operazione"
 
@@ -2748,40 +2766,39 @@ msgstr "Scarica"
 msgid "Списання виконано"
 msgstr "Scarico completato"
 
-#: templates/core/stockbalance_list.html:8
+#: templates/core/stockbalance_list.html:10
 msgid "Перегляд фактичної кількості номенклатури на локаціях."
 msgstr "Visualizzazione del numero effettivo di articoli nelle posizioni."
 
-#: templates/core/stockbalance_list.html:11
+#: templates/core/stockbalance_list.html:13
 msgid "До рухів товарів"
 msgstr "Ai movimenti"
 
-#: templates/core/stockbalance_list.html:27
-#: templates/core/stockmovement_list.html:12
+#: templates/core/stockbalance_list.html:29
 msgid "Фільтрувати"
 msgstr "Filtra"
 
-#: templates/core/stockbalance_list.html:43
+#: templates/core/stockbalance_list.html:45
 msgid "Немає залишків за вибраними фільтрами."
 msgstr "Nessuna giacenza per i filtri selezionati."
 
-#: templates/core/stockmovement_list.html:8
+#: templates/core/stockmovement_list.html:9
 msgid "До залишків"
 msgstr "Alle giacenze"
 
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Звідки"
 msgstr "Dove"
 
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Куди"
 msgstr "Ciao"
 
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Документ"
 msgstr "Documento"
 
-#: templates/core/stockmovement_list.html:13
+#: templates/core/stockmovement_list.html:14
 msgid "Немає рухів за вибраними фільтрами."
 msgstr "Nessun movimento per i filtri selezionati."
 

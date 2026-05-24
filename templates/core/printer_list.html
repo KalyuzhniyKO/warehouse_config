@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Принтери" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Принтери" %} · {% trans "Складський облік" %}
+{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+<div class="list-page">
+<div class="list-page-header">
     <h1 class="mb-0">{% trans "Принтери" %}</h1>
     <div class="d-flex flex-wrap gap-2">
         <form method="post" action="{% url 'printer_sync' %}">
@@ -14,7 +16,7 @@
 </div>
 
 <section class="mb-4" aria-labelledby="system-printers-heading">
-    <div class="card content-card">
+    <div class="card content-card data-table-card">
         <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2">
             <h2 id="system-printers-heading" class="h5 mb-0">{% trans "Системні принтери сервера" %}</h2>
             {% if cups_default_system_name %}<span class="badge text-bg-light">{% trans "CUPS default" %}: {{ cups_default_system_name }}</span>{% endif %}
@@ -25,7 +27,7 @@
             </div>
         {% else %}
             <div class="table-responsive">
-                <table class="table mb-0 align-middle">
+                <table class="table mb-0 data-table align-middle">
                     <thead>
                         <tr>
                             <th>{% trans "CUPS system_name" %}</th>
@@ -40,16 +42,16 @@
                                 <td><code>{{ system_printer.system_name }}</code></td>
                                 <td>
                                     {% if system_printer.in_db %}
-                                        <span class="badge text-bg-success">{% trans "Додано" %}</span>
+                                        <span class="badge text-bg-success status-badge">{% trans "Додано" %}</span>
                                     {% else %}
-                                        <span class="badge text-bg-secondary">{% trans "Немає" %}</span>
+                                        <span class="badge text-bg-secondary status-badge">{% trans "Немає" %}</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ system_printer.is_cups_default|yesno }}</td>
                                 <td class="text-muted small">{{ system_printer.raw }}</td>
                             </tr>
                         {% empty %}
-                            <tr><td colspan="4" class="text-center text-muted py-4">{% trans "CUPS-принтерів не знайдено" %}</td></tr>
+                            <tr><td colspan="4" class="text-center py-4"><div class="empty-state">{% trans "CUPS-принтерів не знайдено" %}</div></td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -60,9 +62,9 @@
 
 <section aria-labelledby="db-printers-heading">
     <h2 id="db-printers-heading" class="h5 mb-3">{% trans "Принтери в довіднику" %}</h2>
-    <div class="card content-card">
+    <div class="card content-card data-table-card">
         <div class="table-responsive">
-            <table class="table mb-0 align-middle">
+            <table class="table mb-0 data-table align-middle">
                 <thead>
                     <tr>
                         <th>{% trans "Назва" %}</th>
@@ -80,19 +82,20 @@
                             <td>{{ printer.is_default|yesno }}</td>
                             <td>{{ printer.is_active|yesno }}</td>
                             <td class="text-end">
-                                <a class="btn btn-sm btn-outline-primary" href="{% url 'printer_update' printer.pk %}">{% trans "Редагувати" %}</a>
+                                <a class="btn btn-sm btn-outline-primary table-action" href="{% url 'printer_update' printer.pk %}">{% trans "Редагувати" %}</a>
                                 <form method="post" action="{% url 'printer_test_print' printer.pk %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button class="btn btn-sm btn-outline-secondary" type="submit">{% trans "Тестовий друк" %}</button>
+                                    <button class="btn btn-sm btn-outline-secondary table-action" type="submit">{% trans "Тестовий друк" %}</button>
                                 </form>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="5" class="text-center text-muted py-4">{% trans "Записів поки немає" %}</td></tr>
+                        <tr><td colspan="5" class="text-center py-4"><div class="empty-state">{% trans "Немає активних принтерів" %}</div></td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </section>
+</div>
 {% endblock %}
