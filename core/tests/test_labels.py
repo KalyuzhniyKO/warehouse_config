@@ -275,6 +275,44 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "Відкрити PDF-перегляд")
         self.assertNotContains(response, "PDF preview")
 
+
+    def test_label_template_update_has_all_visible_fields_and_preview_hooks(self):
+        template = LabelTemplate.objects.create(name="Usable", is_default=True)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+
+        for label in [
+            "Назва",
+            "Ширина, мм",
+            "Висота, мм",
+            "Показувати назву товару",
+            "Показувати внутрішній код",
+            "Показувати текст штрихкоду",
+            "Верхній відступ, мм",
+            "Правий відступ, мм",
+            "Нижній відступ, мм",
+            "Лівий відступ, мм",
+            "Розмір шрифту назви",
+            "Розмір шрифту внутрішнього коду",
+            "Розмір шрифту тексту штрихкоду",
+            "Тип штрихкоду",
+            "Висота штрихкоду, мм",
+            "Товщина лінії штрихкоду, мм",
+        ]:
+            self.assertContains(response, label)
+
+        for field_name in [
+            "name", "width_mm", "height_mm", "show_item_name", "show_internal_code", "show_barcode_text",
+            "margin_top_mm", "margin_right_mm", "margin_bottom_mm", "margin_left_mm",
+            "item_name_font_size", "internal_code_font_size", "barcode_text_font_size",
+            "barcode_type", "barcode_height_mm", "barcode_bar_width_mm",
+        ]:
+            self.assertContains(response, f'name="{field_name}"')
+
+        self.assertContains(response, "data-label-preview-root")
+        self.assertContains(response, "data-preview-sheet")
+        self.assertContains(response, "data-preview-content")
+        self.assertContains(response, "data-preview-barcode")
+
     def test_item_label_print_page_has_preview_link(self):
         printer = Printer.objects.create(name="P", system_name="P1", is_default=True)
         template = LabelTemplate.objects.create(name="T", is_default=True)
