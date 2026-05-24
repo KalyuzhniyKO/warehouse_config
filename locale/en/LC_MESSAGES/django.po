@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 21:21+0300\n"
+"POT-Creation-Date: 2026-05-24 21:32+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: English\n"
@@ -926,7 +926,7 @@ msgstr ""
 msgid "Розмір шрифту"
 msgstr "Size"
 
-#: core/models/labels.py:84 templates/core/labeltemplate_form.html:56
+#: core/models/labels.py:84 templates/core/labeltemplate_form.html:62
 msgid "Видимий"
 msgstr ""
 
@@ -2315,29 +2315,51 @@ msgstr "Notes"
 
 #: templates/core/labeltemplate_form.html:37
 #, fuzzy
+#| msgid "Керування складом"
+msgid "Керування масштабом полотна"
+msgstr "Warehouse management"
+
+#: templates/core/labeltemplate_form.html:38
+#, fuzzy
+#| msgid "Коментар / документ"
+msgid "Зменшити масштаб"
+msgstr "Comment / document"
+
+#: templates/core/labeltemplate_form.html:40
+#, fuzzy
+#| msgid "Змінити пароль"
+msgid "Збільшити масштаб"
+msgstr "Change password"
+
+#: templates/core/labeltemplate_form.html:41
+msgid "Fit"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:43
+#, fuzzy
 #| msgid "Коментар / документ"
 msgid "Скинути макет"
 msgstr "Comment / document"
 
-#: templates/core/labeltemplate_form.html:39
+#: templates/core/labeltemplate_form.html:45
 msgid "Виберіть елемент, щоб побачити координати."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:42
+#: templates/core/labeltemplate_form.html:48
 msgid "Дріт оцинкований Ø3 мм"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:43
+#: templates/core/labeltemplate_form.html:49
 msgid "Код: YT-000001"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:50
+#: templates/core/labeltemplate_form.html:56
 #, fuzzy
 #| msgid "Коментар / документ"
 msgid "Елементи макета"
 msgstr "Comment / document"
 
-#: templates/core/labeltemplate_form.html:71
+#: templates/core/labeltemplate_form.html:77
 #, fuzzy
 #| msgid "Усі операції"
 msgid "Додаткові параметри / Legacy"
