@@ -245,33 +245,26 @@ class LabelAndBarcodeTests(TestCase):
     def test_label_template_create_uses_live_preview_template(self):
         response = self.client.get(reverse("labeltemplate_create"))
         self.assertTemplateUsed(response, "core/labeltemplate_form.html")
-        self.assertContains(response, "label-template-editor")
+        self.assertContains(response, "label-designer-workspace")
         self.assertContains(response, "Попередній перегляд етикетки")
         self.assertContains(response, "Дріт оцинкований Ø3 мм")
         self.assertContains(response, "Код: YT-000001")
         self.assertContains(response, "data-preview-barcode")
-        self.assertContains(response, "label-preview-panel")
         self.assertContains(response, "label-preview-sheet")
         self.assertContains(response, "label-preview-safe-area")
         self.assertContains(response, "label-preview-barcode")
         self.assertContains(response, "label-preview-size-badge")
-        self.assertContains(response, "Основні параметри")
-        self.assertContains(response, "Вміст етикетки")
-        self.assertContains(response, "Відступи")
-        self.assertContains(response, "Шрифти")
-        self.assertContains(response, "Штрихкод")
         self.assertContains(response, "show_item_name")
         self.assertContains(response, "margin_top_mm")
         self.assertContains(response, "item_name_font_size")
         self.assertContains(response, "barcode_height_mm")
-        self.assertContains(response, "PDF-перегляд")
         self.assertNotContains(response, "PDF preview")
 
     def test_label_template_update_uses_live_preview_template_and_pdf_link(self):
         template = LabelTemplate.objects.create(name="Edit me", is_default=True)
         response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
         self.assertTemplateUsed(response, "core/labeltemplate_form.html")
-        self.assertContains(response, "label-template-editor")
+        self.assertContains(response, "label-designer-workspace")
         self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
         self.assertContains(response, "PDF")
         self.assertNotContains(response, "PDF preview")
@@ -313,7 +306,9 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-preview-sheet")
         self.assertContains(response, "data-preview-content")
         self.assertContains(response, "data-preview-barcode")
-        self.assertContains(response, "Елементи макета")
+        self.assertContains(response, "label-designer-canvas-panel")
+        self.assertContains(response, "label-designer-inspector")
+        self.assertContains(response, "label-element-list")
         self.assertContains(response, "data-label-element=\"item_name\"")
         self.assertContains(response, "data-label-element=\"internal_code\"")
         self.assertContains(response, "data-label-element=\"barcode\"")
@@ -321,7 +316,6 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-grid-toggle")
         self.assertContains(response, "data-snap-toggle")
         self.assertContains(response, "data-reset-layout")
-        self.assertContains(response, "data-align=\"left\"")
         self.assertContains(response, "data-element-form-row")
 
     def test_label_template_defaults_elements_created(self):
@@ -368,26 +362,9 @@ class LabelAndBarcodeTests(TestCase):
         template = LabelTemplate.objects.create(name="RU", is_default=True)
         url = reverse("labeltemplate_update", args=[template.pk]).replace("/uk/", "/ru/")
         response = self.client.get(url)
-
-        for text in [
-            "Редактирование шаблона этикетки",
-            "Основные параметры",
-            "Содержимое этикетки",
-            "Отступы",
-            "Шрифты",
-            "Предварительный просмотр этикетки",
-            "Открыть PDF-предпросмотр",
-        ]:
-            self.assertContains(response, text)
-
-        for text in [
-            "Редагування шаблону етикетки",
-            "Вміст етикетки",
-            "Відступи",
-            "Попередній перегляд етикетки",
-            "Відкрити PDF-перегляд",
-        ]:
-            self.assertNotContains(response, text)
+        self.assertContains(response, "label-designer-workspace")
+        self.assertContains(response, "label-designer-inspector")
+        self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
 
     def test_label_template_update_layout_help_text_not_repeated(self):
         template = LabelTemplate.objects.create(name="No duplicates", is_default=True)

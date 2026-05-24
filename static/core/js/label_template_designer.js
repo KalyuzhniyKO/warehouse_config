@@ -23,7 +23,7 @@
 
   const selectElement = (type) => {
     selectedType = type;
-    form.querySelectorAll('[data-element-form]').forEach((row) => row.classList.toggle('is-selected', row.dataset.elementType === type));
+    form.querySelectorAll('[data-element-form]').forEach((row) => { const active = row.dataset.elementType === type; row.classList.toggle('is-selected', active); row.classList.toggle('label-element-list-item--selected', active); });
     Object.entries(map).forEach(([t, el]) => el.classList.toggle('is-selected', t === type));
   };
   const clamp = (row, x, y) => {
@@ -67,6 +67,7 @@
     const yInput = row.querySelector('[name$="-y_mm"]');
     defaultCoords[type] = { x: xInput?.value || '0', y: yInput?.value || '0' };
     row.addEventListener('click', () => selectElement(type));
+    row.querySelector('[data-select-element]')?.addEventListener('click', () => selectElement(type));
   });
 
   Object.entries(map).forEach(([type, el]) => {
@@ -78,6 +79,7 @@
       el.setPointerCapture(event.pointerId); event.preventDefault();
     });
     el.addEventListener('pointerup', () => { drag = null; });
+    el.addEventListener('focus', () => selectElement(type));
   });
 
   root.addEventListener('pointermove', (event) => {
@@ -119,5 +121,5 @@
   form.addEventListener('blur', (e)=>{ if(e.target.matches('[name$="-x_mm"],[name$="-y_mm"],[name$="-width_mm"],[name$="-height_mm"]')) syncFromInputs();}, true);
   gridToggle?.addEventListener('change', applyGridClass);
   window.addEventListener('resize', syncFromInputs);
-  applyGridClass(); syncFromInputs();
+  applyGridClass(); syncFromInputs(); selectElement(form.querySelector('[data-element-form]')?.dataset.elementType || null);
 })();
