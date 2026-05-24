@@ -27,7 +27,7 @@
                 </div>
             </section>
             <div class="label-designer-workspace">
-                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Розмір штрихкоду занадто малий для надійного друку.' %}" data-warning-overflow="{% trans 'Елемент виходить за межі етикетки.' %}" data-warning-small="{% trans 'Елемент занадто малий.' %}" data-warning-text-clip="{% trans 'Текст може обрізатися у PDF.' %}" data-warning-barcode-text="{% trans 'Підпис штрихкоду може не вміститися.' %}">
+                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Штрихкод може бути замалий для надійного друку. Збільшіть ширину або висоту блоку.' %}" data-warning-overflow="{% trans 'Елемент виходить за межі етикетки.' %}" data-warning-small="{% trans 'Елемент занадто малий.' %}" data-warning-text-clip="{% trans 'Текст може обрізатися у PDF.' %}" data-warning-barcode-text="{% trans 'Текст штрихкоду може не вміститися. Збільшіть висоту блоку або зменшіть шрифт.' %}" data-label-item-name="{% trans 'Назва товару' %}" data-label-internal-code="{% trans 'Внутрішній код' %}" data-label-barcode="{% trans 'Штрихкод' %}" data-label-barcode-text="{% trans 'Текст штрихкоду' %}">
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2><span class="label-preview-size-badge" data-label-size>58 × 40 мм</span>
                     </div>
@@ -41,6 +41,7 @@
                             <button type="button" class="btn btn-outline-secondary btn-sm" data-label-zoom-fit>{% trans "Fit" %}</button>
                         </div>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-reset-layout>{% trans "Скинути макет" %}</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-optimize-layout>{% trans "Авто-розташування" %}</button>
                     </div>
                     <div class="label-designer-coordinates" data-selected-element-summary>{% trans "Виберіть елемент, щоб побачити координати." %}</div>
                     <div class="label-designer-warnings" data-element-warnings></div>
