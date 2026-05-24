@@ -56,6 +56,29 @@
                     <div class="label-editor-field label-editor-field-full"><label class="form-label" for="{{ form.barcode_bar_width_mm.id_for_label }}">{{ form.barcode_bar_width_mm.label }}</label>{{ form.barcode_bar_width_mm }}{% if form.barcode_bar_width_mm.help_text %}<div class="form-text">{{ form.barcode_bar_width_mm.help_text }}</div>{% endif %}{% if form.barcode_bar_width_mm.errors %}<div class="field-error">{{ form.barcode_bar_width_mm.errors }}</div>{% endif %}</div>
                 </div>
             </section>
+            <section class="label-editor-section">
+                <h2 class="label-editor-section-title">{% trans "Елементи макета" %}</h2>
+                <div class="label-editor-section-body">
+                    {{ element_formset.management_form }}
+                    {% for element_form in element_formset %}
+                        <div class="border rounded p-2 mb-2" data-element-form data-element-type="{{ element_form.instance.element_type }}">
+                            {{ element_form.id }}{{ element_form.element_type }}{{ element_form.label }}{{ element_form.sort_order }}
+                            <div class="fw-semibold mb-1">{{ element_form.instance.get_element_type_display|default:element_form.instance.element_type }}</div>
+                            <div class="label-editor-checkbox-row mb-2">{{ element_form.is_visible }}<span>{{ element_form.is_visible.label }}</span></div>
+                            <div class="row g-2">
+                                <div class="col-6"><label class="form-label">{{ element_form.x_mm.label }}</label>{{ element_form.x_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.y_mm.label }}</label>{{ element_form.y_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.width_mm.label }}</label>{{ element_form.width_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.height_mm.label }}</label>{{ element_form.height_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.font_size.label }}</label>{{ element_form.font_size }}</div>
+                                {% if element_form.instance.element_type == "custom_text" %}<div class="col-12"><label class="form-label">{{ element_form.text.label }}</label>{{ element_form.text }}</div>{% endif %}
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="small text-muted mb-0">{% trans "Після збереження будуть доступні стандартні елементи макета." %}</p>
+                    {% endfor %}
+                </div>
+            </section>
 
             <div class="label-editor-actions">
                 <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
@@ -73,10 +96,10 @@
             <div class="label-preview-stage">
                 <div class="label-preview-sheet" data-preview-sheet>
                     <div class="label-preview-safe-area" data-preview-content>
-                        <div class="label-preview-field label-preview-item-name" data-preview-item-name>{% trans "Дріт оцинкований Ø3 мм" %}</div>
-                        <div class="label-preview-field label-preview-internal-code" data-preview-internal-code>{% trans "Код: YT-000001" %}</div>
-                        <div class="label-preview-barcode" data-preview-barcode aria-hidden="true"></div>
-                        <div class="label-preview-field label-preview-barcode-text" data-preview-barcode-text>4820000000012</div>
+                        <div class="label-preview-field label-preview-item-name" data-preview-item-name data-label-element="item_name">{% trans "Дріт оцинкований Ø3 мм" %}</div>
+                        <div class="label-preview-field label-preview-internal-code" data-preview-internal-code data-label-element="internal_code">{% trans "Код: YT-000001" %}</div>
+                        <div class="label-preview-barcode" data-preview-barcode data-label-element="barcode" aria-hidden="true"></div>
+                        <div class="label-preview-field label-preview-barcode-text" data-preview-barcode-text data-label-element="barcode_text">4820000000012</div>
                     </div>
                 </div>
             </div>
@@ -97,4 +120,5 @@
     </section>
 </div>
 <script src="{% static 'core/js/label_template_preview.js' %}"></script>
+<script src="{% static 'core/js/label_template_designer.js' %}"></script>
 {% endblock %}

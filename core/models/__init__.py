@@ -10,7 +10,7 @@ from .base import ActiveModel, SystemSettings
 from .barcodes import BarcodeRegistry, BarcodeSequence
 from .directories import Category, Recipient, Unit, UsagePlace
 from .inventory import InventoryCount, InventoryCountLine
-from .labels import LabelTemplate, PrintJob, Printer
+from .labels import LabelTemplate, LabelTemplateElement, PrintJob, Printer
 from .stock import StockBalance, StockMovement
 from .warehouse import Item, Location, Warehouse
 
@@ -31,6 +31,7 @@ __all__ = [
     "InventoryCountLine",
     # labels
     "LabelTemplate",
+    "LabelTemplateElement",
     "PrintJob",
     "Printer",
     # stock

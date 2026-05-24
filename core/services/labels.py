@@ -207,7 +207,34 @@ def generate_item_label_pdf(item, template=None):
     content_width = max(10 * mm, width - margin_left - margin_right)
     y = height - margin_top
 
-    if template.show_item_name:
+    elements = list(getattr(template, "elements", []).all()) if getattr(template, "pk", None) else []
+    if elements:
+        element_map = {e.element_type: e for e in elements if e.is_visible}
+        name_el = element_map.get("item_name")
+        if name_el:
+            font_size = int(name_el.font_size or template.item_name_font_size)
+            pdf.setFont(bold_font, font_size)
+            pdf.drawString(float(name_el.x_mm) * mm, height - float(name_el.y_mm + name_el.height_mm) * mm, item.name[:60])
+        code_el = element_map.get("internal_code")
+        if code_el and item.internal_code:
+            font_size = int(code_el.font_size or template.internal_code_font_size)
+            pdf.setFont(regular_font, font_size)
+            pdf.drawString(float(code_el.x_mm) * mm, height - float(code_el.y_mm + code_el.height_mm) * mm, str(item.internal_code))
+        barcode_el = element_map.get("barcode")
+        bar_h = float((barcode_el.height_mm if barcode_el else template.barcode_height_mm)) * mm
+        barcode = code128.Code128(barcode_value, barHeight=bar_h, barWidth=float(template.barcode_bar_width_mm) * mm)
+        if barcode_el:
+            barcode.drawOn(pdf, float(barcode_el.x_mm) * mm, height - float(barcode_el.y_mm) * mm - bar_h)
+        else:
+            barcode.drawOn(pdf, margin_left, margin_bottom + (6 * mm))
+        text_el = element_map.get("barcode_text")
+        if text_el:
+            pdf.setFont(regular_font, int(text_el.font_size or template.barcode_text_font_size))
+            pdf.drawString(float(text_el.x_mm) * mm, height - float(text_el.y_mm + text_el.height_mm) * mm, barcode_value)
+        for custom in [e for e in elements if e.element_type == "custom_text" and e.is_visible and e.text]:
+            pdf.setFont(regular_font, int(custom.font_size or 8))
+            pdf.drawString(float(custom.x_mm) * mm, height - float(custom.y_mm + custom.height_mm) * mm, custom.text)
+    elif template.show_item_name:
         name_font_size = int(template.item_name_font_size)
         pdf.setFont(bold_font, name_font_size)
         for line in _wrap_text_to_lines(
