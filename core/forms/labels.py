@@ -2,7 +2,9 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
-from core.models import LabelTemplate, Printer
+from django.forms import inlineformset_factory
+
+from core.models import LabelTemplate, LabelTemplateElement, Printer
 from core.services.printers import list_system_printers
 
 
@@ -101,3 +103,23 @@ class PrintLabelForm(forms.Form):
                 field.widget.attrs.setdefault("class", "form-select")
             else:
                 field.widget.attrs.setdefault("class", "form-control")
+
+
+class LabelTemplateElementForm(BootstrapModelForm):
+    class Meta:
+        model = LabelTemplateElement
+        fields = ["id", "element_type", "label", "text", "x_mm", "y_mm", "width_mm", "height_mm", "font_size", "is_visible", "sort_order"]
+        widgets = {
+            "element_type": forms.HiddenInput(),
+            "label": forms.HiddenInput(),
+            "sort_order": forms.HiddenInput(),
+        }
+
+
+LabelTemplateElementFormSet = inlineformset_factory(
+    LabelTemplate,
+    LabelTemplateElement,
+    form=LabelTemplateElementForm,
+    extra=0,
+    can_delete=False,
+)

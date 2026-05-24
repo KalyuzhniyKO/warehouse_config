@@ -20,6 +20,7 @@ from ..models import (
     InventoryCountLine,
     Item,
     LabelTemplate,
+    LabelTemplateElement,
     Location,
     PrintJob,
     Printer,
@@ -312,6 +313,50 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-preview-sheet")
         self.assertContains(response, "data-preview-content")
         self.assertContains(response, "data-preview-barcode")
+        self.assertContains(response, "Елементи макета")
+        self.assertContains(response, "data-label-element=\"item_name\"")
+        self.assertContains(response, "data-label-element=\"internal_code\"")
+        self.assertContains(response, "data-label-element=\"barcode\"")
+        self.assertContains(response, "data-label-element=\"barcode_text\"")
+
+    def test_label_template_defaults_elements_created(self):
+        template = LabelTemplate.objects.create(name="T1", show_item_name=False, show_internal_code=True, show_barcode_text=False)
+        # emulate migration behavior for runtime-created template
+        from core.views.labels import LabelTemplateUpdateView
+        LabelTemplateUpdateView._create_default_elements(template)
+        self.assertEqual(template.elements.count(), 4)
+        self.assertFalse(template.elements.get(element_type="item_name").is_visible)
+        self.assertFalse(template.elements.get(element_type="barcode_text").is_visible)
+
+    def test_label_template_element_coordinates_saved(self):
+        template = LabelTemplate.objects.create(name="Coords")
+        from core.views.labels import LabelTemplateUpdateView
+        LabelTemplateUpdateView._create_default_elements(template)
+        url = reverse("labeltemplate_update", args=[template.pk])
+        payload = {
+            "name": "Coords", "width_mm": 58, "height_mm": 40, "show_item_name": "on", "show_internal_code": "on", "show_barcode_text": "on",
+            "barcode_type": "code128", "margin_top_mm": 3, "margin_right_mm": 3, "margin_bottom_mm": 3, "margin_left_mm": 3,
+            "item_name_font_size": 8, "internal_code_font_size": 6, "barcode_text_font_size": 7, "barcode_height_mm": 16,
+            "barcode_bar_width_mm": "0.33", "is_default": "", "is_active": "on",
+            "elements-TOTAL_FORMS": "4", "elements-INITIAL_FORMS": "4", "elements-MIN_NUM_FORMS": "0", "elements-MAX_NUM_FORMS": "1000",
+        }
+        for idx, element in enumerate(template.elements.order_by("sort_order", "id")):
+            payload[f"elements-{idx}-id"] = str(element.id)
+            payload[f"elements-{idx}-element_type"] = element.element_type
+            payload[f"elements-{idx}-label"] = ""
+            payload[f"elements-{idx}-text"] = ""
+            payload[f"elements-{idx}-x_mm"] = "11.50" if element.element_type == "item_name" else str(element.x_mm)
+            payload[f"elements-{idx}-y_mm"] = str(element.y_mm)
+            payload[f"elements-{idx}-width_mm"] = str(element.width_mm)
+            payload[f"elements-{idx}-height_mm"] = str(element.height_mm)
+            payload[f"elements-{idx}-font_size"] = str(element.font_size)
+            payload[f"elements-{idx}-sort_order"] = str(element.sort_order)
+            if element.is_visible:
+                payload[f"elements-{idx}-is_visible"] = "on"
+        response = self.client.post(url, payload)
+        self.assertEqual(response.status_code, 302)
+        template.refresh_from_db()
+        self.assertEqual(str(template.elements.get(element_type="item_name").x_mm), "11.50")
 
 
     def test_label_template_update_ru_localization_without_ukrainian_fragments(self):

@@ -25,6 +25,7 @@ from ..forms import (
     InitialBalanceForm,
     InventoryCountCreateForm,
     InventoryCountLineForm,
+    LabelTemplateElementFormSet,
     LabelTemplateForm,
     LocationForm,
     PrintLabelForm,
@@ -43,6 +44,7 @@ from ..models import (
     InventoryCount,
     Item,
     LabelTemplate,
+    LabelTemplateElement,
     Location,
     PrintJob,
     Printer,
@@ -256,9 +258,25 @@ class LabelTemplateCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView
     template_name = "core/labeltemplate_form.html"
     success_url = reverse_lazy("labeltemplate_list")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["element_formset"] = kwargs.get("element_formset") or LabelTemplateElementFormSet(
+            prefix="elements"
+        )
+        return context
+
     def form_valid(self, form):
+        formset = LabelTemplateElementFormSet(self.request.POST, instance=form.instance, prefix="elements")
+        if not formset.is_valid():
+            return self.form_invalid(form, formset=formset)
         messages.success(self.request, _("Шаблон етикетки збережено."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        formset.instance = self.object
+        formset.save()
+        return response
+
+    def form_invalid(self, form, formset=None):
+        return self.render_to_response(self.get_context_data(form=form, element_formset=formset))
 
 
 class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
@@ -268,6 +286,45 @@ class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView
     template_name = "core/labeltemplate_form.html"
     success_url = reverse_lazy("labeltemplate_list")
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not self.object.elements.exists():
+            self._create_default_elements(self.object)
+        context["element_formset"] = kwargs.get("element_formset") or LabelTemplateElementFormSet(
+            instance=self.object, prefix="elements"
+        )
+        return context
+
     def form_valid(self, form):
+        formset = LabelTemplateElementFormSet(self.request.POST, instance=form.instance, prefix="elements")
+        if not formset.is_valid():
+            return self.form_invalid(form, formset=formset)
         messages.success(self.request, _("Шаблон етикетки збережено."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        formset.instance = self.object
+        formset.save()
+        return response
+
+    def form_invalid(self, form, formset=None):
+        return self.render_to_response(self.get_context_data(form=form, element_formset=formset))
+
+    @staticmethod
+    def _create_default_elements(template):
+        defaults = [
+            ("item_name", 3, 3, 52, 8, template.item_name_font_size, template.show_item_name, 10),
+            ("internal_code", 3, 12, 52, 5, template.internal_code_font_size, template.show_internal_code, 20),
+            ("barcode", 6, 18, 46, template.barcode_height_mm, 8, True, 30),
+            ("barcode_text", 6, 35, 46, 4, template.barcode_text_font_size, template.show_barcode_text, 40),
+        ]
+        for element_type, x, y, width, height, font_size, is_visible, sort_order in defaults:
+            LabelTemplateElement.objects.create(
+                template=template,
+                element_type=element_type,
+                x_mm=x,
+                y_mm=y,
+                width_mm=width,
+                height_mm=height,
+                font_size=font_size,
+                is_visible=is_visible,
+                sort_order=sort_order,
+            )
