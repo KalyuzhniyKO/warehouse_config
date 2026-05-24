@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 21:33+0300\n"
+"POT-Creation-Date: 2026-05-24 22:05+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -197,6 +197,7 @@ msgstr "Ulteriori informazioni sul destinatario."
 
 #: core/forms/directories.py:146 core/models/labels.py:71
 #: core/views/directories.py:318 core/views/stock_operations.py:478
+#: templates/core/labeltemplate_form.html:30
 #: templates/core/stock_issue_form.html:34
 #: templates/core/stock_movement_print.html:38
 #: templates/core/stock_receive_form.html:34
@@ -878,7 +879,8 @@ msgstr "Modelli di etichette"
 msgid "Шаблони етикеток"
 msgstr "Modelli di etichette"
 
-#: core/models/labels.py:70 templates/core/stock_issue_form.html:31
+#: core/models/labels.py:70 templates/core/labeltemplate_form.html:30
+#: templates/core/stock_issue_form.html:31
 #: templates/core/stock_receive_form.html:31
 #: templates/core/stock_return_form.html:31
 msgid "Назва товару"
@@ -889,6 +891,7 @@ msgstr "Nome prodotto"
 #: core/views/stock_operations.py:479 templates/core/inventory_count.html:29
 #: templates/core/inventory_line_table.html:8
 #: templates/core/item_label_print.html:7
+#: templates/core/labeltemplate_form.html:30
 #: templates/core/stock_issue_form.html:38
 #: templates/core/stock_movement_print.html:39
 #: templates/core/stock_receive_form.html:38
@@ -898,7 +901,7 @@ msgstr "Nome prodotto"
 msgid "Штрихкод"
 msgstr "Codice a barre"
 
-#: core/models/labels.py:73
+#: core/models/labels.py:73 templates/core/labeltemplate_form.html:30
 #, fuzzy
 #| msgid "Тип штрихкоду"
 msgid "Текст штрихкоду"
@@ -930,7 +933,7 @@ msgstr ""
 msgid "Розмір шрифту"
 msgstr "Misurare"
 
-#: core/models/labels.py:84 templates/core/labeltemplate_form.html:62
+#: core/models/labels.py:84 templates/core/labeltemplate_form.html:63
 msgid "Видимий"
 msgstr ""
 
@@ -2282,10 +2285,10 @@ msgid "Повернути стандартне розташування елем
 msgstr ""
 
 #: templates/core/labeltemplate_form.html:30
-#, fuzzy
-#| msgid "Відскануйте штрихкод товару або введіть його вручну"
-msgid "Розмір штрихкоду занадто малий для надійного друку."
-msgstr "Scansiona il codice a barre del prodotto o inseriscilo manualmente"
+msgid ""
+"Штрихкод може бути замалий для надійного друку. Збільшіть ширину або висоту "
+"блоку."
+msgstr ""
 
 #: templates/core/labeltemplate_form.html:30
 #, fuzzy
@@ -2306,10 +2309,10 @@ msgid "Текст може обрізатися у PDF."
 msgstr "Codice a barre non trovato."
 
 #: templates/core/labeltemplate_form.html:30
-#, fuzzy
-#| msgid "Штрихкод не знайдено."
-msgid "Підпис штрихкоду може не вміститися."
-msgstr "Codice a barre non trovato."
+msgid ""
+"Текст штрихкоду може не вміститися. Збільшіть висоту блоку або зменшіть "
+"шрифт."
+msgstr ""
 
 #: templates/core/labeltemplate_form.html:32
 #, fuzzy
@@ -2357,25 +2360,31 @@ msgstr ""
 msgid "Скинути макет"
 msgstr "Commento / documento"
 
-#: templates/core/labeltemplate_form.html:45
+#: templates/core/labeltemplate_form.html:44
+#, fuzzy
+#| msgid "Адміністрування"
+msgid "Авто-розташування"
+msgstr "Administration"
+
+#: templates/core/labeltemplate_form.html:46
 msgid "Виберіть елемент, щоб побачити координати."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:48
+#: templates/core/labeltemplate_form.html:49
 msgid "Дріт оцинкований Ø3 мм"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:49
+#: templates/core/labeltemplate_form.html:50
 msgid "Код: YT-000001"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:56
+#: templates/core/labeltemplate_form.html:57
 #, fuzzy
 #| msgid "Коментар / документ"
 msgid "Елементи макета"
 msgstr "Commento / documento"
 
-#: templates/core/labeltemplate_form.html:77
+#: templates/core/labeltemplate_form.html:78
 #, fuzzy
 #| msgid "Усі операції"
 msgid "Додаткові параметри / Legacy"
@@ -2914,6 +2923,16 @@ msgstr "Utente"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Accedi"
+
+#, fuzzy
+#~| msgid "Відскануйте штрихкод товару або введіть його вручну"
+#~ msgid "Розмір штрихкоду занадто малий для надійного друку."
+#~ msgstr "Scansiona il codice a barre del prodotto o inseriscilo manualmente"
+
+#, fuzzy
+#~| msgid "Штрихкод не знайдено."
+#~ msgid "Підпис штрихкоду може не вміститися."
+#~ msgstr "Codice a barre non trovato."
 
 #, fuzzy
 #~| msgid "Друк етикетки"

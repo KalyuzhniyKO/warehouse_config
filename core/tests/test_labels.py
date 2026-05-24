@@ -320,11 +320,13 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-label-zoom-fit")
         self.assertContains(response, "data-label-zoom-value")
         self.assertContains(response, "data-reset-layout")
+        self.assertContains(response, "data-optimize-layout")
         self.assertContains(response, "data-element-form-row")
         self.assertContains(response, "data-label-designer-stage")
         self.assertContains(response, "data-selected-element-summary")
         self.assertContains(response, "data-element-warnings")
         self.assertContains(response, "data-warning-overflow")
+        self.assertContains(response, "data-warning-barcode-text")
 
     def test_label_template_defaults_elements_created(self):
         template = LabelTemplate.objects.create(name="T1", show_item_name=False, show_internal_code=True, show_barcode_text=False)
@@ -334,6 +336,10 @@ class LabelAndBarcodeTests(TestCase):
         self.assertEqual(template.elements.count(), 4)
         self.assertFalse(template.elements.get(element_type="item_name").is_visible)
         self.assertFalse(template.elements.get(element_type="barcode_text").is_visible)
+        barcode = template.elements.get(element_type="barcode")
+        barcode_text = template.elements.get(element_type="barcode_text")
+        self.assertLessEqual(float(barcode.y_mm + barcode.height_mm), float(template.height_mm))
+        self.assertLessEqual(float(barcode_text.y_mm + barcode_text.height_mm), float(template.height_mm))
 
     def test_label_template_element_coordinates_saved(self):
         template = LabelTemplate.objects.create(name="Coords")
@@ -387,6 +393,9 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "label-designer-workspace")
         self.assertContains(response, "label-designer-inspector")
         self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
+        self.assertContains(response, "data-optimize-layout")
+        self.assertContains(response, "data-warning-barcode-text")
+        self.assertContains(response, "label-designer-workspace")
 
     def test_label_template_update_layout_help_text_not_repeated(self):
         template = LabelTemplate.objects.create(name="No duplicates", is_default=True)
