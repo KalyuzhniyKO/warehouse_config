@@ -246,9 +246,12 @@ class LabelAndBarcodeTests(TestCase):
         self.assertTemplateUsed(response, "core/labeltemplate_form.html")
         self.assertContains(response, "label-template-editor")
         self.assertContains(response, "Попередній перегляд етикетки")
-        self.assertContains(response, "Назва товару: Приклад товару")
+        self.assertContains(response, "Дріт оцинкований Ø3 мм")
         self.assertContains(response, "Код: YT-000001")
         self.assertContains(response, "data-preview-barcode")
+        self.assertContains(response, "label-preview-panel")
+        self.assertContains(response, "label-preview-sheet")
+        self.assertContains(response, "label-preview-safe-area")
 
     def test_label_template_update_uses_live_preview_template_and_pdf_link(self):
         template = LabelTemplate.objects.create(name="Edit me", is_default=True)
@@ -256,6 +259,8 @@ class LabelAndBarcodeTests(TestCase):
         self.assertTemplateUsed(response, "core/labeltemplate_form.html")
         self.assertContains(response, "label-template-editor")
         self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
+        self.assertContains(response, "Відкрити PDF-перегляд")
+        self.assertNotContains(response, "PDF preview")
 
     def test_item_label_print_page_has_preview_link(self):
         printer = Printer.objects.create(name="P", system_name="P1", is_default=True)
