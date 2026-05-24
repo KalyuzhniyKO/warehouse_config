@@ -356,7 +356,7 @@ class DashboardPermissionTests(TestCase):
         self.assertContains(response, "Головна")
         self.assertContains(response, "Довідники")
         self.assertNotContains(response, "Склад самообслуговування")
-        self.assertNotContains(response, "Пошук товару")
+        self.assertContains(response, "Пошук товару")
         self.assertNotContains(response, "autofocus")
 
     def test_auditor_dashboard_is_view_only(self):
@@ -366,6 +366,49 @@ class DashboardPermissionTests(TestCase):
             self.assertNotContains(response, label)
         for label in ["Залишки на складі", "Журнал операцій", "Інвентаризація"]:
             self.assertContains(response, label)
+
+
+    def test_dashboard_template_blocks_do_not_render_html_before_navbar(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        nav_index = html.index('<nav class="navbar')
+        before_nav = html[:nav_index]
+        self.assertNotIn('<section', before_nav)
+        self.assertNotIn('Товари / матеріали', before_nav)
+        self.assertNotIn('Склади', before_nav)
+
+    def test_dashboard_directories_section_not_duplicated(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        self.assertEqual(html.count('id="directories-heading"'), 1)
+        self.assertEqual(html.count('aria-labelledby="directories-heading"'), 1)
+
+    def test_dashboard_title_has_no_embedded_html(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        title_start = html.index('<title>')
+        title_end = html.index('</title>', title_start)
+        title_content = html[title_start:title_end]
+        self.assertNotIn('<section', title_content)
+        self.assertNotIn('Товари / матеріали', title_content)
+
+    def test_dashboard_extra_css_contains_only_style_not_sections(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        style_start = html.index('.dashboard-hero')
+        style_start = html.rfind('<style>', 0, style_start)
+        style_end = html.index('</style>', style_start)
+        style_content = html[style_start:style_end]
+        self.assertNotIn('<section', style_content)
+        self.assertNotIn('Довідники', style_content)
+
+    def test_return_quick_action_points_to_stock_return(self):
+        response = self.dashboard_for(self.admin)
+        self.assertContains(response, f'href="{reverse("stock_return")}"')
 
     def test_storekeeper_sidebar_hides_recipients(self):
         response = self.dashboard_for(self.storekeeper)
@@ -385,6 +428,6 @@ class DashboardPermissionTests(TestCase):
         html = response.content.decode()
 
         self.assertNotIn('navbar-nav me-auto mb-2 mb-lg-0 d-lg-none', html)
-        self.assertNotIn('navbar-toggler', html)
+        self.assertNotIn('<button class="navbar-toggler"', html)
         self.assertNotIn("Керування", html)
         self.assertNotIn("management/", html)
