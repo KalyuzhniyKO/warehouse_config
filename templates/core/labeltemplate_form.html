@@ -34,11 +34,17 @@
                     <div class="label-designer-toolbar mb-2">
                         <label class="label-editor-checkbox-row"><input type="checkbox" data-grid-toggle><span>{% trans "Показати сітку" %}</span></label>
                         <label class="label-editor-checkbox-row"><input type="checkbox" data-snap-toggle checked><span>{% trans "Привʼязка до сітки" %}</span></label>
+                        <div class="label-designer-zoom-controls" role="group" aria-label="{% trans 'Керування масштабом полотна' %}">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-label-zoom-out aria-label="{% trans 'Зменшити масштаб' %}">−</button>
+                            <span class="label-designer-zoom-value" data-label-zoom-value>100%</span>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-label-zoom-in aria-label="{% trans 'Збільшити масштаб' %}">+</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" data-label-zoom-fit>{% trans "Fit" %}</button>
+                        </div>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-reset-layout>{% trans "Скинути макет" %}</button>
                     </div>
                     <div class="label-designer-coordinates" data-selected-element-summary>{% trans "Виберіть елемент, щоб побачити координати." %}</div>
                     <div class="label-designer-warnings" data-element-warnings></div>
-                    <div class="label-designer-stage label-preview-stage"><div class="label-preview-sheet" data-preview-sheet><div class="label-preview-safe-area" data-preview-content>
+                    <div class="label-designer-stage label-preview-stage" data-label-designer-stage><div class="label-preview-sheet" data-preview-sheet><div class="label-preview-safe-area" data-preview-content>
                         <div class="label-preview-field label-preview-item-name" data-preview-item-name data-label-element="item_name" tabindex="0">{% trans "Дріт оцинкований Ø3 мм" %}</div>
                         <div class="label-preview-field label-preview-internal-code" data-preview-internal-code data-label-element="internal_code" tabindex="0">{% trans "Код: YT-000001" %}</div>
                         <div class="label-preview-barcode" data-preview-barcode data-label-element="barcode" aria-hidden="true" tabindex="0"><span class="label-element-hitbox" aria-hidden="true"></span></div>

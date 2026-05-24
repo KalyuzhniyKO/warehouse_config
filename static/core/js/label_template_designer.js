@@ -6,6 +6,11 @@
   const gridToggle = root.querySelector('[data-grid-toggle]');
   const snapToggle = root.querySelector('[data-snap-toggle]');
   const resetBtn = root.querySelector('[data-reset-layout]');
+  const stage = root.querySelector('[data-label-designer-stage]');
+  const zoomInBtn = root.querySelector('[data-label-zoom-in]');
+  const zoomOutBtn = root.querySelector('[data-label-zoom-out]');
+  const zoomFitBtn = root.querySelector('[data-label-zoom-fit]');
+  const zoomValue = root.querySelector('[data-label-zoom-value]');
   const selectedSummary = root.querySelector('[data-selected-element-summary]');
   const warningsBox = root.querySelector('[data-element-warnings]');
 
@@ -13,13 +18,17 @@
   const defaultCoords = {};
   let selectedType = null;
   let drag = null;
+  let zoom = 1;
+  const ZOOM_MIN = 0.6;
+  const ZOOM_MAX = 4;
+  const ZOOM_STEP = 0.1;
 
   const toNumber = (value, fallback = 0) => {
     const parsed = parseFloat(String(value ?? '').trim().replace(',', '.'));
     return Number.isFinite(parsed) ? parsed : fallback;
   };
   const round2 = (n) => Math.round(n * 100) / 100;
-  const pxPerMm = () => sheet.clientWidth / Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1);
+  const pxPerMm = () => sheet.getBoundingClientRect().width / Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1);
   const labelSizeMm = () => ({ width: Math.max(toNumber(form.querySelector('[name="width_mm"]')?.value, 58), 1), height: Math.max(toNumber(form.querySelector('[name="height_mm"]')?.value, 40), 1) });
   const gridStep = () => (snapToggle?.checked ? 1 : 0);
   const getRowValues = (row) => ({
@@ -42,6 +51,38 @@
     return { x: Math.min(Math.max(0, x), Math.max(0, labelWidth - w)), y: Math.min(Math.max(0, y), Math.max(0, labelHeight - h)) };
   };
   const applyGridClass = () => sheet.classList.toggle('show-grid', !!gridToggle?.checked);
+  const fitZoom = () => {
+    if (!stage) return 1;
+    const { width, height } = labelSizeMm();
+    const availableW = Math.max(stage.clientWidth - 24, 180);
+    const availableH = Math.max(stage.clientHeight - 24, 120);
+    const basePxPerMm = Math.max(availableW / width, availableH / height) * 0.7;
+    const fitPxPerMm = Math.min(availableW / width, availableH / height);
+    const target = Math.max(1, fitPxPerMm / Math.max(basePxPerMm, 0.001));
+    return Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, target));
+  };
+  const updateZoomUi = () => { if (zoomValue) zoomValue.textContent = `${Math.round(zoom * 100)}%`; };
+  const setZoom = (next, keepCenter = false) => {
+    const prevRect = sheet.getBoundingClientRect();
+    const prevCenterX = stage ? stage.scrollLeft + stage.clientWidth / 2 : 0;
+    const prevCenterY = stage ? stage.scrollTop + stage.clientHeight / 2 : 0;
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, round2(next)));
+    const { width, height } = labelSizeMm();
+    const { width: sw, height: sh } = stage?.getBoundingClientRect() || { width: 820, height: 520 };
+    const fitPxPerMm = Math.min(Math.max(sw - 24, 180) / width, Math.max(sh - 24, 120) / height);
+    const visualPxPerMm = fitPxPerMm * zoom;
+    sheet.style.width = `${Math.max(120, width * visualPxPerMm)}px`;
+    sheet.style.height = `${Math.max(80, height * visualPxPerMm)}px`;
+    updateZoomUi();
+    syncFromInputs();
+    if (keepCenter && stage) {
+      const nextRect = sheet.getBoundingClientRect();
+      const ratioX = prevRect.width ? prevCenterX / prevRect.width : 0.5;
+      const ratioY = prevRect.height ? prevCenterY / prevRect.height : 0.5;
+      stage.scrollLeft = Math.max(0, ratioX * nextRect.width - stage.clientWidth / 2);
+      stage.scrollTop = Math.max(0, ratioY * nextRect.height - stage.clientHeight / 2);
+    }
+  };
 
   const syncFromInputs = () => {
     const scale = pxPerMm();
@@ -103,20 +144,25 @@
     el.addEventListener('pointerdown', (event) => {
       const row = form.querySelector(`[data-element-type="${type}"]`); if (!row) return;
       selectElement(type);
-      drag = { type, row, startX: event.clientX, startY: event.clientY, baseX: toNumber(row.querySelector('[name$="-x_mm"]').value, 0), baseY: toNumber(row.querySelector('[name$="-y_mm"]').value, 0) };
+      drag = { type, row, startX: event.clientX, startY: event.clientY, baseX: toNumber(row.querySelector('[name$="-x_mm"]').value, 0), baseY: toNumber(row.querySelector('[name$="-y_mm"]').value, 0), pointerId: event.pointerId };
+      document.body.style.userSelect = 'none';
+      el.style.cursor = 'grabbing';
       el.setPointerCapture(event.pointerId); event.preventDefault();
     });
-    el.addEventListener('pointerup', () => { drag = null; });
+    el.addEventListener('pointerup', () => { drag = null; document.body.style.userSelect = ''; el.style.cursor = 'grab'; });
+    el.addEventListener('pointercancel', () => { drag = null; document.body.style.userSelect = ''; el.style.cursor = 'grab'; });
     el.addEventListener('focus', () => selectElement(type));
   });
 
   root.addEventListener('pointermove', (event) => {
     if (!drag) return;
+    if (event.pointerId !== drag.pointerId) return;
     const scale = pxPerMm(); let x = drag.baseX + (event.clientX - drag.startX) / scale; let y = drag.baseY + (event.clientY - drag.startY) / scale;
     const step = gridStep(); if (step > 0) { x = Math.round(x / step) * step; y = Math.round(y / step) * step; }
     const c = clamp(drag.row, x, y);
     drag.row.querySelector('[name$="-x_mm"]').value = c.x.toFixed(2); drag.row.querySelector('[name$="-y_mm"]').value = c.y.toFixed(2);
     syncFromInputs();
+    event.preventDefault();
   });
 
   form.addEventListener('keydown', (event) => {
@@ -148,6 +194,9 @@
   form.addEventListener('input', syncFromInputs);
   form.addEventListener('blur', (e)=>{ if(e.target.matches('[name$="-x_mm"],[name$="-y_mm"],[name$="-width_mm"],[name$="-height_mm"]')) syncFromInputs();}, true);
   gridToggle?.addEventListener('change', applyGridClass);
-  window.addEventListener('resize', syncFromInputs);
-  applyGridClass(); syncFromInputs(); selectElement(form.querySelector('[data-element-form]')?.dataset.elementType || null);
+  window.addEventListener('resize', () => setZoom(zoomFitBtn ? zoom : 1));
+  zoomInBtn?.addEventListener('click', () => setZoom(zoom + ZOOM_STEP, true));
+  zoomOutBtn?.addEventListener('click', () => setZoom(zoom - ZOOM_STEP, true));
+  zoomFitBtn?.addEventListener('click', () => setZoom(fitZoom()));
+  applyGridClass(); setZoom(fitZoom()); selectElement(form.querySelector('[data-element-form]')?.dataset.elementType || null);
 })();
