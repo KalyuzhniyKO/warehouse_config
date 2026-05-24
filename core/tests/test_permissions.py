@@ -261,6 +261,28 @@ class DashboardPermissionTests(TestCase):
             "movement_list",
         ]:
             self.assertIn(f'href="{reverse(url_name)}"', html)
+        self.assertIn('class="operation-card clickable-card card-priority"', html)
+        self.assertIn('data-bs-target="#directoriesCollapse"', html)
+        self.assertIn('data-bs-target="#adminCollapse"', html)
+
+    def test_admin_dashboard_cards_are_fully_clickable_without_cta_buttons(self):
+        response = self.dashboard_for(self.admin)
+        html = response.content.decode()
+
+        self.assertNotIn("Відкрити", html)
+        self.assertNotIn("Відкрити операцію", html)
+        self.assertNotIn("Перейти", html)
+        for label, url_name in [
+            ("Видача товару", "stock_issue"),
+            ("Повернення товару", "stock_return"),
+            ("Прихід товару", "stock_receive"),
+            ("Переміщення товару", "stock_transfer"),
+            ("Залишки на складі", "stockbalance_list"),
+            ("Журнал операцій", "movement_list"),
+        ]:
+            self.assertIn(label, html)
+            self.assertIn(f'href="{reverse(url_name)}"', html)
+        self.assertIn(f'href="{reverse("stock_return")}"', html)
 
     def test_storekeeper_dashboard_contains_workplace_actions_without_admin_items(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
