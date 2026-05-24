@@ -3,20 +3,15 @@
 {% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="dashboard-main">
-    <section class="command-panel mb-3">
-        <div class="d-xl-flex justify-content-between align-items-end gap-3">
-            <div class="mb-2 mb-xl-0">
-                <h1 class="h4 mb-1">{% trans "Головна" %}</h1>
-                <p class="small text-muted mb-0">{% trans "Компактна робоча панель для щоденних складських операцій." %}</p>
-            </div>
-            <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
-                {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-                <a class="btn btn-action-primary quick-action-btn" href="{% url 'stock_issue' %}">{% trans "Видача товару" %}</a>
-                <a class="btn btn-outline-secondary quick-action-btn" href="{% url 'stock_return' %}">{% trans "Повернення товару" %}</a>
-                <a class="btn btn-outline-secondary quick-action-btn" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a>
-                {% endif %}
-                <a class="btn btn-outline-dark quick-action-btn" href="{% url 'item_list' %}">{% trans "Пошук товару" %}</a>
-            </div>
+    <section class="dashboard-action-strip mb-3" aria-label="{% trans 'Панель швидких дій' %}">
+        <h1 class="dashboard-strip-title">{% trans "Головна панель складу" %}</h1>
+        <div class="quick-actions" aria-label="{% trans 'Швидкі дії' %}">
+            {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
+            <a class="quick-action-btn quick-action-btn--issue" href="{% url 'stock_issue' %}">{% trans "Видача товару" %}</a>
+            <a class="quick-action-btn quick-action-btn--return" href="{% url 'stock_return' %}">{% trans "Повернення товару" %}</a>
+            <a class="quick-action-btn quick-action-btn--receive" href="{% url 'stock_receive' %}">{% trans "Прихід товару" %}</a>
+            {% endif %}
+            <a class="quick-action-btn quick-action-btn--search" href="{% url 'item_list' %}">{% trans "Пошук товару" %}</a>
         </div>
     </section>
 
@@ -24,56 +19,45 @@
     <section class="section-shell" aria-labelledby="main-ops-heading">
         <div class="section-header d-flex align-items-center justify-content-between">
             <h2 id="main-ops-heading" class="section-title">{% trans "Основні операції" %}</h2>
-            <span class="badge rounded-pill dashboard-badge">{% trans "Пріоритет" %}</span>
         </div>
-        <div class="dashboard-grid">
-            <a class="operation-card clickable-card card-priority" style="--accent:#ea580c" href="{% url 'stock_issue' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📤</span><h3 class="h6 mb-0">{% trans "Видача товару" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Швидке оформлення видачі зі складу." %}</p><span class="card-label mt-auto">{% trans "Основна дія" %}</span></div></a>
-            <a class="operation-card clickable-card card-priority" style="--accent:#0284c7" href="{% url 'stock_return' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📥</span><h3 class="h6 mb-0">{% trans "Повернення товару" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Повернення на склад без зайвих кроків." %}</p><span class="card-label mt-auto">{% trans "Основна дія" %}</span></div></a>
-            <a class="operation-card clickable-card card-priority" style="--accent:#15803d" href="{% url 'stock_receive' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📦</span><h3 class="h6 mb-0">{% trans "Прихід товару" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Реєстрація поставок та партій." %}</p><span class="card-label mt-auto">{% trans "Основна дія" %}</span></div></a>
-            <a class="operation-card clickable-card" style="--accent:#4f46e5" href="{% url 'stock_transfer' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🔀</span><h3 class="h6 mb-0">{% trans "Переміщення товару" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Переміщення між складами та локаціями." %}</p><span class="card-label mt-auto">{% trans "Основна дія" %}</span></div></a>
+        <div class="dashboard-grid compact-card-grid">
+            <a class="operation-card clickable-card operation-card--issue" href="{% url 'stock_issue' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📤</span><div><h3 class="h6 mb-1">{% trans "Видача товару" %}</h3><p class="card-tip mb-0">{% trans "Швидке оформлення видачі зі складу." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card operation-card--return" href="{% url 'stock_return' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📥</span><div><h3 class="h6 mb-1">{% trans "Повернення товару" %}</h3><p class="card-tip mb-0">{% trans "Повернення на склад без зайвих кроків." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card operation-card--receive" href="{% url 'stock_receive' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📦</span><div><h3 class="h6 mb-1">{% trans "Прихід товару" %}</h3><p class="card-tip mb-0">{% trans "Реєстрація поставок та партій." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card operation-card--transfer" href="{% url 'stock_transfer' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🔀</span><div><h3 class="h6 mb-1">{% trans "Переміщення товару" %}</h3><p class="card-tip mb-0">{% trans "Переміщення між складами та локаціями." %}</p></div></div></div></a>
         </div>
     </section>
     {% endif %}
 
     <section class="section-shell" aria-labelledby="control-heading">
         <div class="section-header"><h2 id="control-heading" class="section-title">{% trans "Контроль і звіти" %}</h2></div>
-        <div class="dashboard-grid">
-            <a class="operation-card clickable-card" style="--accent:#0369a1" href="{% url 'stockbalance_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">📊</span><h3 class="h6 mb-0">{% trans "Залишки на складі" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Перевірка актуальних залишків." %}</p><span class="card-label mt-auto">{% trans "Контроль" %}</span></div></a>
-            <a class="operation-card clickable-card" style="--accent:#0e7490" href="{% url 'movement_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🧾</span><h3 class="h6 mb-0">{% trans "Журнал операцій" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Хронологія руху товарів." %}</p><span class="card-label mt-auto">{% trans "Контроль" %}</span></div></a>
-            <a class="operation-card clickable-card" style="--accent:#7c3aed" href="{% url 'inventory_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🧮</span><h3 class="h6 mb-0">{% trans "Інвентаризація" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Порівняння факту із системою." %}</p><span class="card-label mt-auto">{% trans "Контроль" %}</span></div></a>
+        <div class="dashboard-grid compact-card-grid">
+            <a class="operation-card clickable-card report-card report-card--balance" href="{% url 'stockbalance_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📊</span><div><h3 class="h6 mb-1">{% trans "Залишки на складі" %}</h3><p class="card-tip mb-0">{% trans "Перевірка актуальних залишків." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card report-card report-card--journal" href="{% url 'movement_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🧾</span><div><h3 class="h6 mb-1">{% trans "Журнал операцій" %}</h3><p class="card-tip mb-0">{% trans "Хронологія руху товарів." %}</p></div></div></div></a>
+            <a class="operation-card clickable-card report-card report-card--inventory" href="{% url 'inventory_list' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🧮</span><div><h3 class="h6 mb-1">{% trans "Інвентаризація" %}</h3><p class="card-tip mb-0">{% trans "Порівняння факту із системою." %}</p></div></div></div></a>
             {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-            <a class="operation-card clickable-card" style="--accent:#6b7280" href="{% url 'stock_writeoff' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><div class="d-flex align-items-center gap-2"><span class="card-icon">🗑️</span><h3 class="h6 mb-0">{% trans "Списання товару" %}</h3></div><span class="card-chevron" aria-hidden="true">→</span></div><p class="card-tip mb-1">{% trans "Облік втрат або браку." %}</p><span class="card-label mt-auto">{% trans "Контроль" %}</span></div></a>
+            <a class="operation-card clickable-card report-card report-card--writeoff" href="{% url 'stock_writeoff' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🗑️</span><div><h3 class="h6 mb-1">{% trans "Списання товару" %}</h3><p class="card-tip mb-0">{% trans "Облік втрат або браку." %}</p></div></div></div></a>
             {% endif %}
         </div>
     </section>
 
     <section class="section-shell" aria-labelledby="directories-heading">
-        <button class="section-header section-collapse-header w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#directoriesCollapse" aria-expanded="false" aria-controls="directoriesCollapse">
-            <h2 id="directories-heading" class="section-title">{% trans "Довідники і друк" %}</h2>
-            <span class="section-chevron" aria-hidden="true">⌄</span>
-        </button>
-        <div class="collapse" id="directoriesCollapse">
-            <div class="dashboard-grid">
-                <a class="operation-card clickable-card" style="--accent:#334155" href="{% url 'item_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><h3 class="h6 mb-0">{% trans "Товари / матеріали" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div><span class="card-label mt-auto">{% trans "Довідник" %}</span></div></a>
-                <a class="operation-card clickable-card" style="--accent:#334155" href="{% url 'warehouse_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><h3 class="h6 mb-0">{% trans "Склади" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div><span class="card-label mt-auto">{% trans "Довідник" %}</span></div></a>
-                {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
-                <a class="operation-card clickable-card" style="--accent:#334155" href="{% url 'printer_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><h3 class="h6 mb-0">{% trans "Принтери" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div><span class="card-label mt-auto">{% trans "Довідник" %}</span></div></a>
-                <a class="operation-card clickable-card" style="--accent:#334155" href="{% url 'labeltemplate_list' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><h3 class="h6 mb-0">{% trans "Шаблони етикеток" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div><span class="card-label mt-auto">{% trans "Довідник" %}</span></div></a>
-                {% endif %}
-            </div>
+        <div class="section-header"><h2 id="directories-heading" class="section-title">{% trans "Довідники і друк" %}</h2></div>
+        <div class="dashboard-grid dashboard-grid--compact">
+            <a class="operation-card clickable-card admin-card" href="{% url 'item_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Товари / матеріали" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+            <a class="operation-card clickable-card admin-card" href="{% url 'warehouse_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Склади" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+            {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
+            <a class="operation-card clickable-card admin-card" href="{% url 'printer_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Принтери" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+            <a class="operation-card clickable-card admin-card" href="{% url 'labeltemplate_list' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Шаблони етикеток" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
+            {% endif %}
         </div>
     </section>
 
     {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
     <section class="section-shell" aria-labelledby="admin-heading">
-        <button class="section-header section-collapse-header w-100 text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#adminCollapse" aria-expanded="false" aria-controls="adminCollapse">
-            <h2 id="admin-heading" class="section-title">{% trans "Адміністрування" %}</h2>
-            <span class="section-chevron" aria-hidden="true">⌄</span>
-        </button>
-        <div class="collapse" id="adminCollapse">
-            <div class="dashboard-grid">
-                <a class="operation-card clickable-card" style="--accent:#1f2937" href="{% url 'management_dashboard' %}"><div class="card-body d-flex flex-column gap-2"><div class="d-flex align-items-center justify-content-between gap-2"><h3 class="h6 mb-0">{% trans "Керування складом" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div><span class="card-label mt-auto">{% trans "Контроль" %}</span></div></a>
-            </div>
+        <div class="section-header"><h2 id="admin-heading" class="section-title">{% trans "Адміністрування" %}</h2></div>
+        <div class="dashboard-grid dashboard-grid--compact">
+            <a class="operation-card clickable-card admin-card" href="{% url 'management_dashboard' %}"><div class="card-body"><h3 class="h6 mb-0">{% trans "Керування складом" %}</h3><span class="card-chevron" aria-hidden="true">→</span></div></a>
         </div>
     </section>
     {% endif %}

@@ -224,7 +224,7 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.admin)
 
         self.assertContains(response, "Основні операції")
-        self.assertContains(response, "Контроль")
+        self.assertContains(response, "Контроль і звіти")
         self.assertContains(response, "Довідники і друк")
         html = response.content.decode()
         self.assertNotIn('class="sidebar-link"', html)
@@ -241,9 +241,10 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.admin)
         html = response.content.decode()
 
-        self.assertContains(response, "command-panel")
+        self.assertContains(response, "dashboard-action-strip")
         self.assertContains(response, "quick-actions")
-        self.assertContains(response, "dashboard-grid")
+        self.assertContains(response, "compact-card-grid")
+        self.assertContains(response, "dashboard-grid--compact")
         self.assertContains(response, "operation-card")
         self.assertContains(response, "Основні операції")
         self.assertContains(response, "Контроль і звіти")
@@ -261,9 +262,9 @@ class DashboardPermissionTests(TestCase):
             "movement_list",
         ]:
             self.assertIn(f'href="{reverse(url_name)}"', html)
-        self.assertIn('class="operation-card clickable-card card-priority"', html)
-        self.assertIn('data-bs-target="#directoriesCollapse"', html)
-        self.assertIn('data-bs-target="#adminCollapse"', html)
+        self.assertIn('class="operation-card clickable-card operation-card--issue"', html)
+        self.assertNotIn('data-bs-target="#directoriesCollapse"', html)
+        self.assertNotIn('data-bs-target="#adminCollapse"', html)
 
     def test_admin_dashboard_cards_are_fully_clickable_without_cta_buttons(self):
         response = self.dashboard_for(self.admin)
@@ -272,6 +273,8 @@ class DashboardPermissionTests(TestCase):
         self.assertNotIn("Відкрити", html)
         self.assertNotIn("Відкрити операцію", html)
         self.assertNotIn("Перейти", html)
+        self.assertNotIn("Основна дія", html)
+        self.assertNotIn(">Контроль<", html)
         for label, url_name in [
             ("Видача товару", "stock_issue"),
             ("Повернення товару", "stock_return"),
