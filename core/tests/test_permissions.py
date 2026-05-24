@@ -241,8 +241,8 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.admin)
         html = response.content.decode()
 
-        self.assertContains(response, "dashboard-action-strip")
-        self.assertContains(response, "quick-actions")
+        self.assertNotContains(response, "dashboard-action-strip")
+        self.assertNotContains(response, "quick-actions")
         self.assertContains(response, "compact-card-grid")
         self.assertContains(response, "dashboard-grid--compact")
         self.assertContains(response, "operation-card")
@@ -265,6 +265,9 @@ class DashboardPermissionTests(TestCase):
         self.assertIn('class="operation-card clickable-card operation-card--issue"', html)
         self.assertNotIn('data-bs-target="#directoriesCollapse"', html)
         self.assertNotIn('data-bs-target="#adminCollapse"', html)
+        self.assertNotIn("quick-action-btn--issue", html)
+        self.assertNotIn("quick-action-btn--return", html)
+        self.assertNotIn("quick-action-btn--receive", html)
 
     def test_admin_dashboard_cards_are_fully_clickable_without_cta_buttons(self):
         response = self.dashboard_for(self.admin)
@@ -286,6 +289,7 @@ class DashboardPermissionTests(TestCase):
             self.assertIn(label, html)
             self.assertIn(f'href="{reverse(url_name)}"', html)
         self.assertIn(f'href="{reverse("stock_return")}"', html)
+        self.assertNotIn("Пошук товару", html)
 
     def test_storekeeper_dashboard_contains_workplace_actions_without_admin_items(self):
         response = self.dashboard_for(self.storekeeper, "/uk/")
@@ -394,7 +398,7 @@ class DashboardPermissionTests(TestCase):
         self.assertIn(f'href="{reverse("stock_issue")}"', html)
         self.assertIn(f'href="{reverse("stock_return")}"', html)
         self.assertNotContains(response, "Склад самообслуговування")
-        self.assertContains(response, "Пошук товару")
+        self.assertNotContains(response, "Пошук товару")
         self.assertNotContains(response, "autofocus")
 
     def test_auditor_dashboard_is_view_only(self):
