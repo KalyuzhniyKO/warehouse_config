@@ -1,14 +1,6 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
-{% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}
-<section class="mb-4" aria-labelledby="directories-heading">
-    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
-    <div class="dashboard-grid">
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
-    </div>
-</section>
-{% endblock %}
+{% block title %}{% trans "Головна" %} · {% trans "Складський облік" %}{% endblock %}
 {% block extra_css %}
 <style>
     .dashboard-hero { background: linear-gradient(130deg, #fff9db, #ffffff 48%, #f7f9fc); border: 1px solid rgba(196,154,0,.25); border-radius: 1rem; box-shadow: 0 .7rem 1.8rem rgba(15,23,42,.06); }
@@ -24,14 +16,6 @@
     @media (min-width: 768px) { .dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media (min-width: 1200px) { .dashboard-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
 </style>
-
-<section class="mb-4" aria-labelledby="directories-heading">
-    <h2 id="directories-heading" class="h4 mb-3">{% trans "Довідники" %}</h2>
-    <div class="dashboard-grid">
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Товари / матеріали" %}</h3><a class="btn btn-primary" href="{% url 'item_list' %}">{% trans "Перейти" %}</a></div></article>
-        <article class="operation-card" style="--accent:#334155"><div class="card-body"><h3 class="h5">{% trans "Склади" %}</h3><a class="btn btn-primary" href="{% url 'warehouse_list' %}">{% trans "Перейти" %}</a></div></article>
-    </div>
-</section>
 {% endblock %}
 {% block content %}
 <section class="dashboard-hero p-4 p-xl-5 mb-4">
