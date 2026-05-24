@@ -205,7 +205,7 @@ class PrinterCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
     group_names = SETTINGS_GROUPS
     model = Printer
     form_class = PrinterForm
-    template_name = "core/labeltemplate_form.html"
+    template_name = "core/printer_form.html"
     success_url = reverse_lazy("printer_list")
 
     def form_valid(self, form):
@@ -217,7 +217,7 @@ class PrinterUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
     group_names = SETTINGS_GROUPS
     model = Printer
     form_class = PrinterForm
-    template_name = "core/labeltemplate_form.html"
+    template_name = "core/printer_form.html"
     success_url = reverse_lazy("printer_list")
 
     def form_valid(self, form):

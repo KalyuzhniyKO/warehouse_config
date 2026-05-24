@@ -267,6 +267,7 @@ class PrinterViewTests(TestCase):
         self.assertContains(response, reverse("printer_sync"))
         self.assertContains(response, reverse("printer_update", args=[self.printer.pk]))
         self.assertContains(response, reverse("printer_test_print", args=[self.printer.pk]))
+        self.assertNotContains(response, reverse("labeltemplate_update", args=[self.printer.pk]))
 
     @mock.patch("core.forms.labels.list_system_printers", side_effect=Exception("dev CUPS down"))
     def test_printer_edit_page_available_only_to_settings_groups(self, _list):
