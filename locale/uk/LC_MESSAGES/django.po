@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 19:54+0300\n"
+"POT-Creation-Date: 2026-05-24 20:29+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Ukrainian\n"
@@ -2286,55 +2286,107 @@ msgstr "Коментар / документ"
 msgid "Після збереження будуть доступні стандартні елементи макета."
 msgstr ""
 
+#: templates/core/labeltemplate_form.html:89
+msgid "Повернути стандартне розташування елементів?"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:89
+#, fuzzy
+#| msgid "Відскануйте штрихкод товару або введіть його вручну"
+msgid "Розмір штрихкоду занадто малий для надійного друку."
+msgstr "Відскануйте штрихкод товару або введіть його вручну"
+
 #: templates/core/labeltemplate_form.html:92
 #, fuzzy
 #| msgid "Принтери і друк етикеток"
 msgid "Попередній перегляд етикетки"
 msgstr "Принтери і друк етикеток"
 
+#: templates/core/labeltemplate_form.html:96
+#, fuzzy
+#| msgid "Показувати текст штрихкоду"
+msgid "Показати сітку"
+msgstr "Показувати текст штрихкоду"
+
+#: templates/core/labeltemplate_form.html:97
+#, fuzzy
+#| msgid "Примітки"
+msgid "Привʼязка до сітки"
+msgstr "Примітки"
+
 #: templates/core/labeltemplate_form.html:98
-msgid "Дріт оцинкований Ø3 мм"
+#, fuzzy
+#| msgid "Коментар / документ"
+msgid "Скинути макет"
+msgstr "Коментар / документ"
+
+#: templates/core/labeltemplate_form.html:101
+msgid "Ліворуч"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:99
-msgid "Код: YT-000001"
+#: templates/core/labeltemplate_form.html:102
+msgid "По центру"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:103
+msgid "Праворуч"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:104
+msgid "Зверху"
 msgstr ""
 
 #: templates/core/labeltemplate_form.html:105
+msgid "По вертикальному центру"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:106
+msgid "Знизу"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:111
+msgid "Дріт оцинкований Ø3 мм"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:112
+msgid "Код: YT-000001"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:118
 msgid ""
 "Зміни в налаштуваннях одразу відображаються у попередньому перегляді. PDF-"
 "перегляд доступний після збереження."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:107
+#: templates/core/labeltemplate_form.html:120
 msgid "Відступи залишають мало місця для вмісту."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:108
+#: templates/core/labeltemplate_form.html:121
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Штрихкод може не поміститися."
 msgstr "Штрихкод не знайдено."
 
-#: templates/core/labeltemplate_form.html:109
+#: templates/core/labeltemplate_form.html:122
 #, fuzzy
 #| msgid "Виберіть номенклатуру для друку етикетки."
 msgid "Вміст може виходити за межі етикетки."
 msgstr "Виберіть номенклатуру для друку етикетки."
 
-#: templates/core/labeltemplate_form.html:110
+#: templates/core/labeltemplate_form.html:123
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Текст може не поміститися на етикетці."
 msgstr "Штрихкод не знайдено."
 
-#: templates/core/labeltemplate_form.html:113
+#: templates/core/labeltemplate_form.html:126
 #, fuzzy
 #| msgid "Створити локацію"
 msgid "Відкрити PDF-перегляд"
 msgstr "Створити локацію"
 
-#: templates/core/labeltemplate_form.html:116
+#: templates/core/labeltemplate_form.html:129
 #, fuzzy
 #| msgid "Надрукувати етикетку після збереження"
 msgid "PDF-перегляд буде доступний після збереження шаблону."
