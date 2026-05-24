@@ -2128,3 +2128,34 @@ class StockOperationFormsSmokeTests(TestCase):
         for name, label in checks:
             with self.subTest(name=name):
                 self.assertContains(self.client.get(reverse(name)), label)
+
+class ListLayoutSmokeTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        user = get_user_model().objects.create_user("layout", password="pw")
+        user.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.client.force_login(user)
+
+    def test_item_list_has_unified_layout_classes(self):
+        response = self.client.get(reverse("item_list"))
+        self.assertContains(response, "list-page")
+        self.assertContains(response, "data-table-card")
+
+    def test_stock_lists_have_filter_and_table_cards(self):
+        for name in ["stockbalance_list", "movement_list"]:
+            response = self.client.get(reverse(name))
+            self.assertContains(response, "filter-panel")
+            self.assertContains(response, "data-table-card")
+
+    @mock.patch("core.views.labels.list_system_printers", return_value=[])
+    @mock.patch("core.views.labels.get_default_system_printer", return_value=None)
+    def test_printer_list_preserves_error_or_empty_states(self, *_):
+        response = self.client.get(reverse("printer_list"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-table-card")
+
+    def test_labeltemplate_list_has_edit_and_preview_actions(self):
+        template = LabelTemplate.objects.create(name="Layout", is_default=True)
+        response = self.client.get(reverse("labeltemplate_list"))
+        self.assertContains(response, reverse("labeltemplate_update", args=[template.pk]))
+        self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))

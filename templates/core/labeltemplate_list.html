@@ -2,6 +2,28 @@
 {% load i18n %}
 {% block title %}{% trans "Шаблони етикеток" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between mb-3"><h1>{% trans "Шаблони етикеток" %}</h1><a class="btn btn-primary" href="{% url 'labeltemplate_create' %}">+ {% trans "Створити" %}</a></div>
-<div class="card content-card"><table class="table mb-0"><thead><tr><th>{% trans "Назва" %}</th><th>{% trans "Розмір" %}</th><th>{% trans "Тип штрихкоду" %}</th><th>{% trans "За замовчуванням" %}</th><th class="text-end">{% trans "Дії" %}</th></tr></thead><tbody>{% for template in label_templates %}<tr><td>{{ template.name }}</td><td>{{ template.width_mm }}×{{ template.height_mm }} мм</td><td>{{ template.get_barcode_type_display }}</td><td>{{ template.is_default|yesno }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'labeltemplate_update' template.pk %}">{% trans "Редагувати" %}</a> <a class="btn btn-sm btn-outline-secondary" href="{% url 'labeltemplate_preview' template.pk %}" target="_blank">{% trans "Перегляд PDF" %}</a></td></tr>{% empty %}<tr><td colspan="5" class="text-center text-muted py-4">{% trans "Записів поки немає" %}</td></tr>{% endfor %}</tbody></table></div>
+<div class="list-page">
+    <div class="list-page-header">
+        <div class="list-page-title"><h1 class="mb-0">{% trans "Шаблони етикеток" %}</h1></div>
+        <div class="list-page-actions"><a class="btn btn-primary" href="{% url 'labeltemplate_create' %}">+ {% trans "Створити" %}</a></div>
+    </div>
+    <div class="card content-card data-table-card">
+        <div class="table-responsive">
+            <table class="table mb-0 data-table align-middle">
+                <thead><tr><th>{% trans "Назва" %}</th><th>{% trans "Розмір" %}</th><th>{% trans "Тип штрихкоду" %}</th><th>{% trans "Статус" %}</th><th class="text-end">{% trans "Дії" %}</th></tr></thead>
+                <tbody>
+                {% for template in label_templates %}
+                    <tr>
+                        <td>{{ template.name }}</td><td>{{ template.width_mm }}×{{ template.height_mm }} мм</td><td>{{ template.get_barcode_type_display }}</td>
+                        <td>{% if template.is_default %}<span class="badge text-bg-primary status-badge">{% trans "За замовчуванням" %}</span>{% endif %} {% if template.is_active %}<span class="badge text-bg-success status-badge">{% trans "Активний" %}</span>{% else %}<span class="badge text-bg-secondary status-badge">{% trans "Неактивний" %}</span>{% endif %}</td>
+                        <td class="text-end"><a class="btn btn-sm btn-outline-primary table-action" href="{% url 'labeltemplate_update' template.pk %}">{% trans "Редагувати" %}</a> <a class="btn btn-sm btn-outline-secondary table-action" href="{% url 'labeltemplate_preview' template.pk %}" target="_blank">{% trans "Перегляд PDF" %}</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center py-4"><div class="empty-state">{% trans "Поки немає шаблонів етикеток" %}</div></td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
