@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 18:01+0300\n"
+"POT-Creation-Date: 2026-05-24 18:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -135,12 +135,12 @@ msgstr "Esiste già una nomenclatura con tale codice interno."
 #: core/forms/directories.py:32 core/forms/directories.py:58
 #: core/forms/directories.py:115 core/forms/directories.py:145
 #: core/forms/directories.py:212 core/forms/directories.py:235
-#: core/forms/labels.py:14 core/forms/labels.py:72
+#: core/forms/labels.py:14 core/forms/labels.py:69
 #: core/views/directories.py:268 core/views/directories.py:283
 #: core/views/directories.py:298 core/views/directories.py:317
 #: core/views/directories.py:337 core/views/directories.py:353
 #: templates/core/labeltemplate_list.html:13
-#: templates/core/printer_list.html:71
+#: templates/core/printer_list.html:70
 msgid "Назва"
 msgstr "Nome"
 
@@ -151,10 +151,10 @@ msgstr "Simbolo"
 #: core/forms/directories.py:34 core/forms/directories.py:60
 #: core/forms/directories.py:120 core/forms/directories.py:150
 #: core/forms/directories.py:214 core/forms/directories.py:237
-#: core/forms/labels.py:18 core/forms/labels.py:89 core/forms/management.py:108
+#: core/forms/labels.py:18 core/forms/labels.py:86 core/forms/management.py:108
 #: core/forms/management.py:151 templates/core/directory_list.html:51
 #: templates/core/labeltemplate_list.html:18
-#: templates/core/management/users.html:35 templates/core/printer_list.html:74
+#: templates/core/management/users.html:35 templates/core/printer_list.html:73
 msgid "Активний"
 msgstr "Attivo"
 
@@ -289,112 +289,106 @@ msgstr "L’ubicazione deve appartenere al magazzino selezionato."
 msgid "Фактична кількість"
 msgstr "Quantità effettiva"
 
-#: core/forms/labels.py:15 templates/core/printer_list.html:72
+#: core/forms/labels.py:15 templates/core/printer_list.html:71
 msgid "Системна назва"
 msgstr "Nome del sistema"
 
-#: core/forms/labels.py:17 core/forms/labels.py:88
+#: core/forms/labels.py:17 core/forms/labels.py:85
 #: templates/core/labeltemplate_list.html:18
-#: templates/core/printer_list.html:73
+#: templates/core/printer_list.html:72
 msgid "За замовчуванням"
 msgstr "Per impostazione predefinita"
 
-#: core/forms/labels.py:22
-msgid ""
-"Системна назва CUPS queue. Її можна подивитися командою lpstat -v або "
-"синхронізувати автоматично."
-msgstr ""
-
-#: core/forms/labels.py:41
+#: core/forms/labels.py:38
 #, python-format
 msgid ""
 "Принтер із системною назвою '%(system_name)s' не знайдено в CUPS. Перевірте "
 "назву або синхронізуйте принтери."
 msgstr ""
 
-#: core/forms/labels.py:73
+#: core/forms/labels.py:70
 msgid "Ширина, мм"
 msgstr "Larghezza, mm"
 
-#: core/forms/labels.py:74
+#: core/forms/labels.py:71
 msgid "Висота, мм"
 msgstr "Altezza, mm"
 
-#: core/forms/labels.py:75
+#: core/forms/labels.py:72
 msgid "Показувати назву товару"
 msgstr "Trova il tuo posto"
 
-#: core/forms/labels.py:76
+#: core/forms/labels.py:73
 msgid "Показувати внутрішній код"
 msgstr "Cerca il codice virtuale"
 
-#: core/forms/labels.py:77
+#: core/forms/labels.py:74
 msgid "Показувати текст штрихкоду"
 msgstr "Visualizza il testo a strisce"
 
-#: core/forms/labels.py:78 templates/core/labeltemplate_list.html:13
+#: core/forms/labels.py:75 templates/core/labeltemplate_list.html:13
 msgid "Тип штрихкоду"
 msgstr "Tipo di triturazione"
 
-#: core/forms/labels.py:79
+#: core/forms/labels.py:76
 msgid "Верхній відступ, мм"
 msgstr ""
 
-#: core/forms/labels.py:80
+#: core/forms/labels.py:77
 msgid "Правий відступ, мм"
 msgstr ""
 
-#: core/forms/labels.py:81
+#: core/forms/labels.py:78
 msgid "Нижній відступ, мм"
 msgstr ""
 
-#: core/forms/labels.py:82
+#: core/forms/labels.py:79
 msgid "Лівий відступ, мм"
 msgstr ""
 
-#: core/forms/labels.py:83
+#: core/forms/labels.py:80
 msgid "Розмір шрифту назви"
 msgstr ""
 
-#: core/forms/labels.py:84
+#: core/forms/labels.py:81
 #, fuzzy
 #| msgid "Показувати внутрішній код"
 msgid "Розмір шрифту внутрішнього коду"
 msgstr "Cerca il codice virtuale"
 
-#: core/forms/labels.py:85
+#: core/forms/labels.py:82
 #, fuzzy
 #| msgid "Показувати текст штрихкоду"
 msgid "Розмір шрифту тексту штрихкоду"
 msgstr "Visualizza il testo a strisce"
 
-#: core/forms/labels.py:86
+#: core/forms/labels.py:83
 #, fuzzy
 #| msgid "Тип штрихкоду"
 msgid "Висота штрихкоду, мм"
 msgstr "Tipo di triturazione"
 
-#: core/forms/labels.py:87
+#: core/forms/labels.py:84
 #, fuzzy
 #| msgid "Послідовність штрихкодів"
 msgid "Товщина лінії штрихкоду, мм"
 msgstr "Una sequenza di codici a barre"
 
+#: core/forms/labels.py:89 core/forms/labels.py:90 core/forms/labels.py:91
 #: core/forms/labels.py:92 core/forms/labels.py:93 core/forms/labels.py:94
 #: core/forms/labels.py:95 core/forms/labels.py:96 core/forms/labels.py:97
-#: core/forms/labels.py:98 core/forms/labels.py:99 core/forms/labels.py:100
 msgid "Параметри макета впливають на PDF етикетки."
 msgstr ""
 
-#: core/forms/labels.py:105 core/models/labels.py:14 core/models/labels.py:75
+#: core/forms/labels.py:102 core/models/labels.py:14 core/models/labels.py:75
 msgid "Принтер"
 msgstr "Stampante"
 
-#: core/forms/labels.py:106
+#: core/forms/labels.py:103
 msgid "Шаблон"
 msgstr "Modello"
 
-#: core/forms/labels.py:107
+#: core/forms/labels.py:104
 msgid "Кількість копій"
 msgstr "Copia di qualità"
 
@@ -798,7 +792,7 @@ msgstr "predefinito"
 #: core/models/labels.py:15 templates/admin/index.html:18
 #: templates/base.html:164 templates/base.html:235
 #: templates/core/dashboard.html:40 templates/core/management/dashboard.html:73
-#: templates/core/printer_list.html:3 templates/core/printer_list.html:9
+#: templates/core/printer_list.html:3 templates/core/printer_list.html:8
 msgid "Принтери"
 msgstr "Stampanti"
 
@@ -1403,7 +1397,7 @@ msgid "Створити користувача"
 msgstr "Crea utente"
 
 #: core/views/management.py:216 templates/core/directory_list.html:12
-#: templates/core/labeltemplate_list.html:8 templates/core/printer_list.html:15
+#: templates/core/labeltemplate_list.html:8 templates/core/printer_list.html:14
 msgid "Створити"
 msgstr "Crea"
 
@@ -1983,7 +1977,7 @@ msgstr "Applica"
 
 #: templates/core/directory_list.html:44 templates/core/inventory_list.html:28
 #: templates/core/labeltemplate_list.html:13
-#: templates/core/management/users.html:19 templates/core/printer_list.html:75
+#: templates/core/management/users.html:19 templates/core/printer_list.html:74
 #: templates/core/stockbalance_list.html:38
 msgid "Дії"
 msgstr "Azioni"
@@ -2000,7 +1994,7 @@ msgstr "Stampa di etichette"
 
 #: templates/core/directory_list.html:54
 #: templates/core/labeltemplate_list.html:19
-#: templates/core/management/users.html:41 templates/core/printer_list.html:86
+#: templates/core/management/users.html:41 templates/core/printer_list.html:85
 msgid "Редагувати"
 msgstr "Modifica"
 
@@ -2518,69 +2512,69 @@ msgstr "Non ci sono ancora utenti."
 msgid "Доступні ролі"
 msgstr "Ruolo disponibile"
 
-#: templates/core/printer_list.html:13
+#: templates/core/printer_list.html:12
 #, fuzzy
 #| msgid "Створити товар / матеріал"
 msgid "Оновити список принтерів"
 msgstr "Crea prodotto / materiale"
 
-#: templates/core/printer_list.html:22
+#: templates/core/printer_list.html:21
 #, fuzzy
 #| msgid "Налаштування принтерів етикеток."
 msgid "Системні принтери сервера"
 msgstr "Label printer settings."
 
-#: templates/core/printer_list.html:23 templates/core/printer_list.html:36
+#: templates/core/printer_list.html:22 templates/core/printer_list.html:35
 #, fuzzy
 #| msgid "default"
 msgid "CUPS default"
 msgstr "predefinito"
 
-#: templates/core/printer_list.html:34
+#: templates/core/printer_list.html:33
 #, fuzzy
 #| msgid "system name"
 msgid "CUPS system_name"
 msgstr "nome del sistema"
 
-#: templates/core/printer_list.html:35
+#: templates/core/printer_list.html:34
 msgid "У базі"
 msgstr ""
 
-#: templates/core/printer_list.html:37
+#: templates/core/printer_list.html:36
 #, fuzzy
 #| msgid "status"
 msgid "Status"
 msgstr "stato"
 
-#: templates/core/printer_list.html:46
+#: templates/core/printer_list.html:45
 msgid "Додано"
 msgstr ""
 
-#: templates/core/printer_list.html:48
+#: templates/core/printer_list.html:47
 #, fuzzy
 #| msgid "Немає даних"
 msgid "Немає"
 msgstr "No, Daniel"
 
-#: templates/core/printer_list.html:55
+#: templates/core/printer_list.html:54
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "CUPS-принтерів не знайдено"
 msgstr "Codice a barre non trovato."
 
-#: templates/core/printer_list.html:65
+#: templates/core/printer_list.html:64
 #, fuzzy
 #| msgid "Принтери і друк етикеток"
 msgid "Принтери в довіднику"
 msgstr "Stampanti e etichette per documenti"
 
-#: templates/core/printer_list.html:89
+#: templates/core/printer_list.html:88
 #, fuzzy
 #| msgid "Початковий залишок"
 msgid "Тестовий друк"
 msgstr "Saldo iniziale"
 
-#: templates/core/printer_list.html:94
+#: templates/core/printer_list.html:93
 #, fuzzy
 #| msgid "Створити товар / матеріал"
 msgid "Немає активних принтерів"

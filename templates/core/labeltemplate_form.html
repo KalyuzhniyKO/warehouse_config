@@ -2,7 +2,7 @@
 {% load i18n static %}
 {% block title %}{% trans "Шаблони етикеток" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<h1 class="mb-3">{% if object %}{% trans "Редагування шаблону етикетки" %}{% else %}{% trans "Новий шаблон етикетки" %}{% endif %}</h1>
+<h1 class="label-editor-page-title">{% if object %}{% trans "Редагування шаблону етикетки" %}{% else %}{% trans "Новий шаблон етикетки" %}{% endif %}</h1>
 <div class="label-template-editor">
     <form method="post" class="card content-card label-template-form-panel">
         <div class="card-body">

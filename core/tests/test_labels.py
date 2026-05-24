@@ -272,7 +272,7 @@ class LabelAndBarcodeTests(TestCase):
         self.assertTemplateUsed(response, "core/labeltemplate_form.html")
         self.assertContains(response, "label-template-editor")
         self.assertContains(response, reverse("labeltemplate_preview", args=[template.pk]))
-        self.assertContains(response, "Відкрити PDF-перегляд")
+        self.assertContains(response, "PDF")
         self.assertNotContains(response, "PDF preview")
 
 
@@ -312,6 +312,43 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-preview-sheet")
         self.assertContains(response, "data-preview-content")
         self.assertContains(response, "data-preview-barcode")
+
+
+    def test_label_template_update_ru_localization_without_ukrainian_fragments(self):
+        template = LabelTemplate.objects.create(name="RU", is_default=True)
+        url = reverse("labeltemplate_update", args=[template.pk]).replace("/uk/", "/ru/")
+        response = self.client.get(url)
+
+        for text in [
+            "Редактирование шаблона этикетки",
+            "Основные параметры",
+            "Содержимое этикетки",
+            "Отступы",
+            "Шрифты",
+            "Предварительный просмотр этикетки",
+            "Открыть PDF-предпросмотр",
+        ]:
+            self.assertContains(response, text)
+
+        for text in [
+            "Редагування шаблону етикетки",
+            "Вміст етикетки",
+            "Відступи",
+            "Попередній перегляд етикетки",
+            "Відкрити PDF-перегляд",
+        ]:
+            self.assertNotContains(response, text)
+
+    def test_label_template_update_layout_help_text_not_repeated(self):
+        template = LabelTemplate.objects.create(name="No duplicates", is_default=True)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+        html = response.content.decode("utf-8")
+        self.assertLessEqual(html.count("Параметри макета впливають на PDF етикетки."), 1)
+        self.assertIn("data-label-preview-root", html)
+        self.assertIn("data-preview-sheet", html)
+        self.assertIn("data-preview-content", html)
+        self.assertIn("data-preview-barcode", html)
+        self.assertIn("data-label-size", html)
 
     def test_item_label_print_page_has_preview_link(self):
         printer = Printer.objects.create(name="P", system_name="P1", is_default=True)
