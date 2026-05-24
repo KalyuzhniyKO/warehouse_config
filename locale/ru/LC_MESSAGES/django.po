@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-24 16:07+0300\n"
+"POT-Creation-Date: 2026-05-24 16:30+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Russian\n"
@@ -1243,6 +1243,7 @@ msgstr "Архивировать товар / материал"
 #: templates/core/inventory_count.html:29
 #: templates/core/inventory_line_table.html:8
 #: templates/core/item_label_print.html:7
+#: templates/core/labeltemplate_form.html:52
 #: templates/core/stock_issue_form.html:38
 #: templates/core/stock_movement_print.html:39
 #: templates/core/stock_receive_form.html:38
@@ -1407,7 +1408,7 @@ msgstr "Редактировать пользователя"
 
 #: core/views/management.py:243 templates/core/directory_form.html:35
 #: templates/core/inventory_count.html:62
-#: templates/core/labeltemplate_form.html:21
+#: templates/core/labeltemplate_form.html:61
 #: templates/core/management/settings.html:25 templates/core/simple_form.html:6
 msgid "Зберегти"
 msgstr "Сохранить"
@@ -1926,7 +1927,7 @@ msgid "Заповніть поля українською мовою та збе
 msgstr "Заполните поля на русском языке и сохраните изменения."
 
 #: templates/core/directory_form.html:34
-#: templates/core/labeltemplate_form.html:22
+#: templates/core/labeltemplate_form.html:62
 msgid "Скасувати"
 msgstr "Отменить"
 
@@ -2198,37 +2199,75 @@ msgstr "Шаблон этикеток"
 msgid "Новий шаблон етикетки"
 msgstr "Шаблон этикеток"
 
-#: templates/core/labeltemplate_form.html:30
+#: templates/core/labeltemplate_form.html:13
+#, fuzzy
+#| msgid "Усі операції"
+msgid "Основні параметри"
+msgstr "Все операции"
+
+#: templates/core/labeltemplate_form.html:24
+#, fuzzy
+#| msgid "Друк етикетки"
+msgid "Вміст етикетки"
+msgstr "Печать этикетки"
+
+#: templates/core/labeltemplate_form.html:33
+#, fuzzy
+#| msgid "Наступна"
+msgid "Відступи"
+msgstr "Следующая"
+
+#: templates/core/labeltemplate_form.html:43
+msgid "Шрифти"
+msgstr ""
+
+#: templates/core/labeltemplate_form.html:70
 #, fuzzy
 #| msgid "Принтери і друк етикеток"
 msgid "Попередній перегляд етикетки"
 msgstr "Принтеры и печать этикеток"
 
-#: templates/core/labeltemplate_form.html:36
-#, fuzzy
-#| msgid "Новий прихід товару"
-msgid "Назва товару: Приклад товару"
-msgstr "Новый приход товара"
+#: templates/core/labeltemplate_form.html:76
+msgid "Дріт оцинкований Ø3 мм"
+msgstr ""
 
-#: templates/core/labeltemplate_form.html:37
+#: templates/core/labeltemplate_form.html:77
 msgid "Код: YT-000001"
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:44
-msgid "Відступи можуть залишити мало місця для вмісту."
+#: templates/core/labeltemplate_form.html:84
+msgid "Відступи залишають мало місця для вмісту."
 msgstr ""
 
-#: templates/core/labeltemplate_form.html:45
+#: templates/core/labeltemplate_form.html:85
 #, fuzzy
 #| msgid "Штрихкод не знайдено."
 msgid "Штрихкод може не поміститися."
 msgstr "Штрихкод не найден."
 
-#: templates/core/labeltemplate_form.html:48
+#: templates/core/labeltemplate_form.html:86
 #, fuzzy
-#| msgid "Відкрити"
-msgid "Відкрити PDF preview"
-msgstr "Открыть"
+#| msgid "Виберіть номенклатуру для друку етикетки."
+msgid "Вміст може виходити за межі етикетки."
+msgstr "Выберите номенклатуру для печати этикетки."
+
+#: templates/core/labeltemplate_form.html:87
+#, fuzzy
+#| msgid "Штрихкод не знайдено."
+msgid "Текст може не поміститися на етикетці."
+msgstr "Штрихкод не найден."
+
+#: templates/core/labeltemplate_form.html:90
+#, fuzzy
+#| msgid "Створити локацію"
+msgid "Відкрити PDF-перегляд"
+msgstr "Создать локацию"
+
+#: templates/core/labeltemplate_form.html:93
+#, fuzzy
+#| msgid "Надрукувати етикетку після збереження"
+msgid "PDF-перегляд буде доступний після збереження шаблону."
+msgstr "Напечатать этикетку после сохранения"
 
 #: templates/core/labeltemplate_list.html:6
 msgid "Розмір"
@@ -2762,6 +2801,16 @@ msgid "Увійти"
 msgstr "Войти"
 
 #, fuzzy
+#~| msgid "Новий прихід товару"
+#~ msgid "Назва товару: Приклад товару"
+#~ msgstr "Новый приход товара"
+
+#, fuzzy
+#~| msgid "Відкрити"
+#~ msgid "Відкрити PDF preview"
+#~ msgstr "Открыть"
+
+#, fuzzy
 #~| msgid "Панель керування складом."
 #~ msgid "Панель швидких дій"
 #~ msgstr "Панель управления складом."
@@ -2830,11 +2879,6 @@ msgstr "Войти"
 #~| msgid "Надрукувати етикетку після збереження"
 #~ msgid "Порада: перевірте локацію перед збереженням."
 #~ msgstr "Напечатать этикетку после сохранения"
-
-#, fuzzy
-#~| msgid "Створити локацію"
-#~ msgid "Відкрити операцію"
-#~ msgstr "Создать локацию"
 
 #, fuzzy
 #~| msgid "Редагувати працівника / отримувача"
@@ -2915,9 +2959,6 @@ msgstr "Войти"
 
 #~ msgid "Комірки, стелажі та зони складу."
 #~ msgstr "Ячейки, стеллажи и зоны склада."
-
-#~ msgid "Виберіть номенклатуру для друку етикетки."
-#~ msgstr "Выберите номенклатуру для печати этикетки."
 
 #, fuzzy
 #~| msgid "Типові помилки"

@@ -8,15 +8,55 @@
         <div class="card-body">
             {% csrf_token %}
             {{ form.non_field_errors }}
-            <div class="row g-3">
-                {% for field in form %}
-                    <div class="col-md-6">
-                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        <div class="text-danger small">{{ field.errors }}</div>
-                    </div>
-                {% endfor %}
-            </div>
+
+            <section class="label-editor-section">
+                <h2 class="label-editor-section-title">{% trans "Основні параметри" %}</h2>
+                <div class="row g-3">
+                    <div class="col-md-6"><label class="form-label" for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>{{ form.name }}<div class="text-danger small">{{ form.name.errors }}</div></div>
+                    <div class="col-md-3"><label class="form-label" for="{{ form.width_mm.id_for_label }}">{{ form.width_mm.label }}</label>{{ form.width_mm }}<div class="text-danger small">{{ form.width_mm.errors }}</div></div>
+                    <div class="col-md-3"><label class="form-label" for="{{ form.height_mm.id_for_label }}">{{ form.height_mm.label }}</label>{{ form.height_mm }}<div class="text-danger small">{{ form.height_mm.errors }}</div></div>
+                    <div class="col-md-6"><label class="label-checkbox-row" for="{{ form.is_default.id_for_label }}">{{ form.is_default }}<span>{{ form.is_default.label }}</span></label></div>
+                    <div class="col-md-6"><label class="label-checkbox-row" for="{{ form.is_active.id_for_label }}">{{ form.is_active }}<span>{{ form.is_active.label }}</span></label></div>
+                </div>
+            </section>
+
+            <section class="label-editor-section">
+                <h2 class="label-editor-section-title">{% trans "Вміст етикетки" %}</h2>
+                <div class="row g-2">
+                    <div class="col-12"><label class="label-checkbox-row" for="{{ form.show_item_name.id_for_label }}">{{ form.show_item_name }}<span>{{ form.show_item_name.label }}</span></label></div>
+                    <div class="col-12"><label class="label-checkbox-row" for="{{ form.show_internal_code.id_for_label }}">{{ form.show_internal_code }}<span>{{ form.show_internal_code.label }}</span></label></div>
+                    <div class="col-12"><label class="label-checkbox-row" for="{{ form.show_barcode_text.id_for_label }}">{{ form.show_barcode_text }}<span>{{ form.show_barcode_text.label }}</span></label></div>
+                </div>
+            </section>
+
+            <section class="label-editor-section">
+                <h2 class="label-editor-section-title">{% trans "Відступи" %}</h2>
+                <div class="row g-3">
+                    <div class="col-md-3"><label class="form-label" for="{{ form.margin_top_mm.id_for_label }}">{{ form.margin_top_mm.label }}</label>{{ form.margin_top_mm }}<div class="text-danger small">{{ form.margin_top_mm.errors }}</div></div>
+                    <div class="col-md-3"><label class="form-label" for="{{ form.margin_right_mm.id_for_label }}">{{ form.margin_right_mm.label }}</label>{{ form.margin_right_mm }}<div class="text-danger small">{{ form.margin_right_mm.errors }}</div></div>
+                    <div class="col-md-3"><label class="form-label" for="{{ form.margin_bottom_mm.id_for_label }}">{{ form.margin_bottom_mm.label }}</label>{{ form.margin_bottom_mm }}<div class="text-danger small">{{ form.margin_bottom_mm.errors }}</div></div>
+                    <div class="col-md-3"><label class="form-label" for="{{ form.margin_left_mm.id_for_label }}">{{ form.margin_left_mm.label }}</label>{{ form.margin_left_mm }}<div class="text-danger small">{{ form.margin_left_mm.errors }}</div></div>
+                </div>
+            </section>
+
+            <section class="label-editor-section">
+                <h2 class="label-editor-section-title">{% trans "Шрифти" %}</h2>
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label" for="{{ form.item_name_font_size.id_for_label }}">{{ form.item_name_font_size.label }}</label>{{ form.item_name_font_size }}<div class="text-danger small">{{ form.item_name_font_size.errors }}</div></div>
+                    <div class="col-md-4"><label class="form-label" for="{{ form.internal_code_font_size.id_for_label }}">{{ form.internal_code_font_size.label }}</label>{{ form.internal_code_font_size }}<div class="text-danger small">{{ form.internal_code_font_size.errors }}</div></div>
+                    <div class="col-md-4"><label class="form-label" for="{{ form.barcode_text_font_size.id_for_label }}">{{ form.barcode_text_font_size.label }}</label>{{ form.barcode_text_font_size }}<div class="text-danger small">{{ form.barcode_text_font_size.errors }}</div></div>
+                </div>
+            </section>
+
+            <section class="label-editor-section mb-0">
+                <h2 class="label-editor-section-title">{% trans "Штрихкод" %}</h2>
+                <div class="row g-3">
+                    <div class="col-md-4"><label class="form-label" for="{{ form.barcode_type.id_for_label }}">{{ form.barcode_type.label }}</label>{{ form.barcode_type }}<div class="text-danger small">{{ form.barcode_type.errors }}</div></div>
+                    <div class="col-md-4"><label class="form-label" for="{{ form.barcode_height_mm.id_for_label }}">{{ form.barcode_height_mm.label }}</label>{{ form.barcode_height_mm }}<div class="text-danger small">{{ form.barcode_height_mm.errors }}</div></div>
+                    <div class="col-md-4"><label class="form-label" for="{{ form.barcode_bar_width_mm.id_for_label }}">{{ form.barcode_bar_width_mm.label }}</label>{{ form.barcode_bar_width_mm }}<div class="text-danger small">{{ form.barcode_bar_width_mm.errors }}</div></div>
+                </div>
+            </section>
+
             <div class="mt-4 d-flex gap-2">
                 <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
                 <a class="btn btn-outline-secondary" href="{% url 'labeltemplate_list' %}">{% trans "Скасувати" %}</a>
@@ -28,25 +68,29 @@
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                 <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2>
-                <span class="badge text-bg-light border label-preview-ruler" data-label-size>58 × 40 мм</span>
+                <span class="label-preview-size-badge" data-label-size>58 × 40 мм</span>
             </div>
-            <div class="label-preview-canvas">
+            <div class="label-preview-stage">
                 <div class="label-preview-sheet" data-preview-sheet>
-                    <div class="label-preview-content" data-preview-content>
-                        <div class="label-preview-item-name" data-preview-item-name>{% trans "Назва товару: Приклад товару" %}</div>
-                        <div class="label-preview-internal-code" data-preview-internal-code>{% trans "Код: YT-000001" %}</div>
+                    <div class="label-preview-safe-area" data-preview-content>
+                        <div class="label-preview-field label-preview-item-name" data-preview-item-name>{% trans "Дріт оцинкований Ø3 мм" %}</div>
+                        <div class="label-preview-field label-preview-internal-code" data-preview-internal-code>{% trans "Код: YT-000001" %}</div>
                         <div class="label-preview-barcode" data-preview-barcode aria-hidden="true"></div>
-                        <div class="label-preview-barcode-text" data-preview-barcode-text>4820000000012</div>
+                        <div class="label-preview-field label-preview-barcode-text" data-preview-barcode-text>4820000000012</div>
                     </div>
                 </div>
             </div>
             <div class="mt-2 small text-muted" data-preview-mm-size></div>
-            <div class="label-preview-warning mt-2" data-preview-warning-margins hidden>{% trans "Відступи можуть залишити мало місця для вмісту." %}</div>
+            <div class="label-preview-warning mt-2" data-preview-warning-margins hidden>{% trans "Відступи залишають мало місця для вмісту." %}</div>
             <div class="label-preview-warning mt-2" data-preview-warning-barcode hidden>{% trans "Штрихкод може не поміститися." %}</div>
+            <div class="label-preview-warning mt-2" data-preview-warning-overflow hidden>{% trans "Вміст може виходити за межі етикетки." %}</div>
+            <div class="label-preview-warning mt-2" data-preview-warning-text hidden>{% trans "Текст може не поміститися на етикетці." %}</div>
             {% if object %}
                 <div class="mt-3">
-                    <a class="btn btn-outline-primary btn-sm" href="{% url 'labeltemplate_preview' object.pk %}" target="_blank" rel="noopener">{% trans "Відкрити PDF preview" %}</a>
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'labeltemplate_preview' object.pk %}" target="_blank" rel="noopener">{% trans "Відкрити PDF-перегляд" %}</a>
                 </div>
+            {% else %}
+                <p class="small text-muted mt-3 mb-0">{% trans "PDF-перегляд буде доступний після збереження шаблону." %}</p>
             {% endif %}
         </div>
     </section>

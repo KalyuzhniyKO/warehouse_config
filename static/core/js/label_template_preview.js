@@ -3,6 +3,7 @@
   if (!root) return;
   const form = document.querySelector('form.label-template-form-panel');
   if (!form) return;
+
   const sheet = root.querySelector('[data-preview-sheet]');
   const content = root.querySelector('[data-preview-content]');
   const itemName = root.querySelector('[data-preview-item-name]');
@@ -13,44 +14,68 @@
   const sizeText = root.querySelector('[data-preview-mm-size]');
   const warningMargins = root.querySelector('[data-preview-warning-margins]');
   const warningBarcode = root.querySelector('[data-preview-warning-barcode]');
+  const warningOverflow = root.querySelector('[data-preview-warning-overflow]');
+  const warningText = root.querySelector('[data-preview-warning-text]');
+
   const getValue = (name, fallback = 0) => {
     const el = form.querySelector(`[name="${name}"]`);
     if (!el) return fallback;
     const value = parseFloat(el.value);
     return Number.isFinite(value) ? value : fallback;
   };
-  const isChecked = (name) => {
-    const el = form.querySelector(`[name="${name}"]`);
-    return !!el && !!el.checked;
-  };
+  const isChecked = (name) => !!form.querySelector(`[name="${name}"]`)?.checked;
+
   const refresh = () => {
-    const width = Math.max(getValue('width_mm', 58), 20);
-    const height = Math.max(getValue('height_mm', 40), 20);
+    const width = Math.min(Math.max(getValue('width_mm', 58), 20), 200);
+    const height = Math.min(Math.max(getValue('height_mm', 40), 20), 200);
     const mt = Math.max(getValue('margin_top_mm', 1), 0);
     const mr = Math.max(getValue('margin_right_mm', 1), 0);
     const mb = Math.max(getValue('margin_bottom_mm', 1), 0);
     const ml = Math.max(getValue('margin_left_mm', 1), 0);
     const barcodeHeight = Math.max(getValue('barcode_height_mm', 12), 1);
     const barWidth = Math.max(getValue('barcode_bar_width_mm', 0.3), 0.1);
-    const scale = Math.min(4, 300 / width, 220 / height);
+
+    const stageWidth = 350;
+    const stageHeight = 260;
+    const scale = Math.max(1.6, Math.min(6, stageWidth / width, stageHeight / height));
+
     sheet.style.width = `${width * scale}px`;
     sheet.style.height = `${height * scale}px`;
-    content.style.padding = `${mt * scale}px ${mr * scale}px ${mb * scale}px ${ml * scale}px`;
+
+    content.style.top = `${mt * scale}px`;
+    content.style.right = `${mr * scale}px`;
+    content.style.bottom = `${mb * scale}px`;
+    content.style.left = `${ml * scale}px`;
+
     itemName.style.display = isChecked('show_item_name') ? '' : 'none';
     internalCode.style.display = isChecked('show_internal_code') ? '' : 'none';
     barcodeText.style.display = isChecked('show_barcode_text') ? '' : 'none';
+
     itemName.style.fontSize = `${Math.max(getValue('item_name_font_size', 8), 6) * scale}px`;
     internalCode.style.fontSize = `${Math.max(getValue('internal_code_font_size', 7), 6) * scale}px`;
     barcodeText.style.fontSize = `${Math.max(getValue('barcode_text_font_size', 7), 6) * scale}px`;
+
     barcode.style.height = `${barcodeHeight * scale}px`;
-    barcode.style.backgroundSize = `${Math.max(barWidth * scale, 1)}px 100%`;
-    sizeBadge.textContent = `${width.toFixed(0)} × ${height.toFixed(0)} мм`;
+    barcode.style.setProperty('--bar-width', `${Math.max(barWidth * scale, 1)}px`);
+
+    sizeBadge.textContent = `${Math.round(width)} × ${Math.round(height)} мм`;
     sizeText.textContent = `${width.toFixed(1)} × ${height.toFixed(1)} мм`;
+
     const innerWidth = width - ml - mr;
     const innerHeight = height - mt - mb;
-    warningMargins.hidden = !(innerWidth < width * 0.45 || innerHeight < height * 0.45 || innerWidth <= 0 || innerHeight <= 0);
-    warningBarcode.hidden = !(barcodeHeight > innerHeight * 0.65);
+    const textEstimateMm = (isChecked('show_item_name') ? getValue('item_name_font_size', 8) * 0.55 : 0)
+      + (isChecked('show_internal_code') ? getValue('internal_code_font_size', 7) * 0.45 : 0)
+      + (isChecked('show_barcode_text') ? getValue('barcode_text_font_size', 7) * 0.45 : 0)
+      + 2.4;
+
+    const contentEstimateMm = textEstimateMm + barcodeHeight;
+
+    warningMargins.hidden = !(innerWidth <= 0 || innerHeight <= 0 || innerWidth < width * 0.5 || innerHeight < height * 0.45);
+    warningBarcode.hidden = !(barcodeHeight > innerHeight * 0.8);
+    warningOverflow.hidden = !(contentEstimateMm > innerHeight);
+    warningText.hidden = !(isChecked('show_item_name') && (innerWidth < 16 || getValue('item_name_font_size', 8) > innerHeight * 0.28));
   };
+
   form.addEventListener('input', refresh);
   form.addEventListener('change', refresh);
   refresh();
