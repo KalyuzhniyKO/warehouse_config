@@ -311,10 +311,10 @@ class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView
     @staticmethod
     def _create_default_elements(template):
         defaults = [
-            ("item_name", 3, 3, 52, 8, template.item_name_font_size, template.show_item_name, 10),
-            ("internal_code", 3, 12, 52, 5, template.internal_code_font_size, template.show_internal_code, 20),
-            ("barcode", 6, 18, 46, template.barcode_height_mm, 8, True, 30),
-            ("barcode_text", 6, 35, 46, 4, template.barcode_text_font_size, template.show_barcode_text, 40),
+            ("item_name", 3, 3, 52, 6, template.item_name_font_size, template.show_item_name, 10),
+            ("internal_code", 3, 10, 52, 5, template.internal_code_font_size, template.show_internal_code, 20),
+            ("barcode", 3, 17, 52, 14, 8, True, 30),
+            ("barcode_text", 3, 33, 52, 5, template.barcode_text_font_size, template.show_barcode_text, 40),
         ]
         for element_type, x, y, width, height, font_size, is_visible, sort_order in defaults:
             LabelTemplateElement.objects.create(
