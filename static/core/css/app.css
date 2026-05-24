@@ -158,6 +158,9 @@ header .navbar { min-height: 56px; }
 .label-designer-toolbar-fields{display:grid;grid-template-columns:minmax(230px,1.7fr) repeat(2,minmax(120px,.7fr));gap:.45rem;flex:1}
 .label-designer-workspace{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:.8rem;align-items:start}
 .label-designer-canvas-panel{border:1px solid #e6e9f0;border-radius:.75rem;padding:.65rem;background:#fcfdff}
+.label-designer-coordinates{font-size:.86rem;color:#475569;background:#f8fafc;border:1px solid #e2e8f0;border-radius:.5rem;padding:.35rem .5rem;margin-bottom:.5rem}
+.label-designer-warnings{display:grid;gap:.35rem;margin-bottom:.5rem}
+.label-designer-warnings .label-preview-warning{margin-top:0}
 .label-designer-stage{min-height:470px;padding:1rem}
 .label-designer-inspector{border:1px solid #e6e9f0;border-radius:.75rem;padding:.65rem;background:#fff;position:sticky;top:72px}
 .label-element-list{display:grid;gap:.45rem}

@@ -19,11 +19,15 @@
                 <div class="label-editor-actions">
                     <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
                     <a class="btn btn-outline-secondary" href="{% url 'labeltemplate_list' %}">{% trans "Скасувати" %}</a>
-                    {% if object %}<a class="btn btn-outline-primary" href="{% url 'labeltemplate_preview' object.pk %}" target="_blank" rel="noopener">{% trans "Відкрити PDF-перегляд" %}</a>{% endif %}
+                    {% if object %}
+                        <a class="btn btn-outline-primary" href="{% url 'labeltemplate_preview' object.pk %}" target="_blank" rel="noopener">{% trans "Відкрити PDF-перегляд" %}</a>
+                    {% else %}
+                        <span class="small text-muted">{% trans "PDF-перегляд доступний після збереження." %}</span>
+                    {% endif %}
                 </div>
             </section>
             <div class="label-designer-workspace">
-                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Розмір штрихкоду занадто малий для надійного друку.' %}">
+                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Розмір штрихкоду занадто малий для надійного друку.' %}" data-warning-overflow="{% trans 'Елемент виходить за межі етикетки.' %}" data-warning-small="{% trans 'Елемент занадто малий.' %}" data-warning-text-clip="{% trans 'Текст може обрізатися у PDF.' %}" data-warning-barcode-text="{% trans 'Підпис штрихкоду може не вміститися.' %}">
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2><span class="label-preview-size-badge" data-label-size>58 × 40 мм</span>
                     </div>
@@ -32,6 +36,8 @@
                         <label class="label-editor-checkbox-row"><input type="checkbox" data-snap-toggle checked><span>{% trans "Привʼязка до сітки" %}</span></label>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-reset-layout>{% trans "Скинути макет" %}</button>
                     </div>
+                    <div class="label-designer-coordinates" data-selected-element-summary>{% trans "Виберіть елемент, щоб побачити координати." %}</div>
+                    <div class="label-designer-warnings" data-element-warnings></div>
                     <div class="label-designer-stage label-preview-stage"><div class="label-preview-sheet" data-preview-sheet><div class="label-preview-safe-area" data-preview-content>
                         <div class="label-preview-field label-preview-item-name" data-preview-item-name data-label-element="item_name" tabindex="0">{% trans "Дріт оцинкований Ø3 мм" %}</div>
                         <div class="label-preview-field label-preview-internal-code" data-preview-internal-code data-label-element="internal_code" tabindex="0">{% trans "Код: YT-000001" %}</div>
