@@ -61,15 +61,15 @@
                 <div class="label-editor-section-body">
                     {{ element_formset.management_form }}
                     {% for element_form in element_formset %}
-                        <div class="border rounded p-2 mb-2" data-element-form data-element-type="{{ element_form.instance.element_type }}">
+                        <div class="border rounded p-2 mb-2 label-element-form-row" data-element-form data-element-form-row data-element-type="{{ element_form.instance.element_type }}" tabindex="0">
                             {{ element_form.id }}{{ element_form.element_type }}{{ element_form.sort_order }}
                             <div class="fw-semibold mb-1">{{ element_form.instance.get_element_type_display|default:element_form.instance.element_type }}</div>
                             <div class="label-editor-checkbox-row mb-2">{{ element_form.is_visible }}<span>{{ element_form.is_visible.label }}</span></div>
-                            <div class="row g-2">
-                                <div class="col-6"><label class="form-label">{{ element_form.x_mm.label }}</label>{{ element_form.x_mm }}</div>
-                                <div class="col-6"><label class="form-label">{{ element_form.y_mm.label }}</label>{{ element_form.y_mm }}</div>
-                                <div class="col-6"><label class="form-label">{{ element_form.width_mm.label }}</label>{{ element_form.width_mm }}</div>
-                                <div class="col-6"><label class="form-label">{{ element_form.height_mm.label }}</label>{{ element_form.height_mm }}</div>
+                            <div class="row g-2 label-element-coord-grid">
+                                <div class="col-6"><label class="form-label">{{ element_form.x_mm.label }} (мм)</label>{{ element_form.x_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.y_mm.label }} (мм)</label>{{ element_form.y_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.width_mm.label }} (мм)</label>{{ element_form.width_mm }}</div>
+                                <div class="col-6"><label class="form-label">{{ element_form.height_mm.label }} (мм)</label>{{ element_form.height_mm }}</div>
                                 <div class="col-6"><label class="form-label">{{ element_form.font_size.label }}</label>{{ element_form.font_size }}</div>
                             </div>
                         </div>
@@ -86,18 +86,31 @@
         </div>
     </form>
 
-    <section class="card content-card label-preview-panel" data-label-preview-root>
+    <section class="card content-card label-preview-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Розмір штрихкоду занадто малий для надійного друку.' %}">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                 <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2>
                 <span class="label-preview-size-badge" data-label-size>58 × 40 мм</span>
+            </div>
+                        <div class="label-designer-toolbar mb-2">
+                <label class="label-editor-checkbox-row"><input type="checkbox" data-grid-toggle><span>{% trans "Показати сітку" %}</span></label>
+                <label class="label-editor-checkbox-row"><input type="checkbox" data-snap-toggle checked><span>{% trans "Привʼязка до сітки" %}</span></label>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-reset-layout>{% trans "Скинути макет" %}</button>
+            </div>
+            <div class="label-designer-align-tools mb-2" data-alignment-tools>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="left">{% trans "Ліворуч" %}</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="hcenter">{% trans "По центру" %}</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="right">{% trans "Праворуч" %}</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="top">{% trans "Зверху" %}</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="vcenter">{% trans "По вертикальному центру" %}</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-align="bottom">{% trans "Знизу" %}</button>
             </div>
             <div class="label-preview-stage">
                 <div class="label-preview-sheet" data-preview-sheet>
                     <div class="label-preview-safe-area" data-preview-content>
                         <div class="label-preview-field label-preview-item-name" data-preview-item-name data-label-element="item_name">{% trans "Дріт оцинкований Ø3 мм" %}</div>
                         <div class="label-preview-field label-preview-internal-code" data-preview-internal-code data-label-element="internal_code">{% trans "Код: YT-000001" %}</div>
-                        <div class="label-preview-barcode" data-preview-barcode data-label-element="barcode" aria-hidden="true"></div>
+                        <div class="label-preview-barcode" data-preview-barcode data-label-element="barcode" aria-hidden="true"><span class="label-element-hitbox" aria-hidden="true"></span></div>
                         <div class="label-preview-field label-preview-barcode-text" data-preview-barcode-text data-label-element="barcode_text">4820000000012</div>
                     </div>
                 </div>

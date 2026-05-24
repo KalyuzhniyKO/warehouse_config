@@ -318,6 +318,11 @@ class LabelAndBarcodeTests(TestCase):
         self.assertContains(response, "data-label-element=\"internal_code\"")
         self.assertContains(response, "data-label-element=\"barcode\"")
         self.assertContains(response, "data-label-element=\"barcode_text\"")
+        self.assertContains(response, "data-grid-toggle")
+        self.assertContains(response, "data-snap-toggle")
+        self.assertContains(response, "data-reset-layout")
+        self.assertContains(response, "data-align=\"left\"")
+        self.assertContains(response, "data-element-form-row")
 
     def test_label_template_defaults_elements_created(self):
         template = LabelTemplate.objects.create(name="T1", show_item_name=False, show_internal_code=True, show_barcode_text=False)
