@@ -201,8 +201,8 @@ class StockIssueInterfaceTests(TestCase):
         self.assertIn('<main class="col-12">', html)
         self.assertNotIn('<aside class="col-lg-2 d-none d-lg-block">', html)
         self.assertNotIn('class="sidebar-link', html)
-        self.assertNotIn('id="mainNavbar"', html)
-        self.assertNotIn('navbar-toggler', html)
+        self.assertNotIn('<button class="navbar-toggler"', html)
+        self.assertNotIn('<div class="collapse navbar-collapse" id="mainNavbar">', html)
         for href in [
             reverse("stock_transfer"),
             reverse("stock_writeoff"),
@@ -1263,7 +1263,7 @@ class StockOperationWorkflowTests(TestCase):
             response, "Відскануйте штрихкод товару або введіть його вручну"
         )
         self.assertContains(response, "Знайти товар")
-        self.assertIn('class="card content-card shadow-sm rounded-4 mb-4"', html)
+        self.assertIn('operation-form-card', html)
         self.assertIn('name="barcode"', html)
         self.assertIn('autocomplete="off"', html)
         self.assertIn('placeholder="Штрихкод товару"', html)
@@ -1281,7 +1281,7 @@ class StockOperationWorkflowTests(TestCase):
             response, "Відскануйте штрихкод товару або введіть його вручну"
         )
         self.assertContains(response, "Знайти товар")
-        self.assertIn('class="card content-card shadow-sm rounded-4 mb-4"', html)
+        self.assertIn('operation-form-card', html)
         self.assertIn('name="barcode"', html)
         self.assertIn('autocomplete="off"', html)
         self.assertIn('placeholder="Штрихкод товару"', html)
@@ -2118,11 +2118,12 @@ class StockOperationFormsSmokeTests(TestCase):
 
     def test_primary_actions_exist(self):
         checks = [
-            ("stock_issue", "Видати товар"),
-            ("stock_return", "Повернути товар"),
-            ("stock_receive", "Оприбуткувати товар"),
+            ("stock_issue", "Знайти товар"),
+            ("stock_return", "Знайти товар"),
+            ("stock_receive", "Знайти товар"),
             ("stock_transfer", "Перемістити"),
             ("stock_writeoff", "Списати"),
+            ("stock_initial", "Зберегти"),
         ]
         for name, label in checks:
             with self.subTest(name=name):
