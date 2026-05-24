@@ -223,14 +223,15 @@ class DashboardPermissionTests(TestCase):
     def test_admin_dashboard_contains_required_groups_and_operations(self):
         response = self.dashboard_for(self.admin)
 
-        self.assertContains(response, "Операції складу")
+        self.assertContains(response, "Основні операції")
         self.assertContains(response, "Контроль")
-        self.assertContains(response, "Довідники")
+        self.assertContains(response, "Довідники і друк")
+        html = response.content.decode()
+        self.assertNotIn('class="sidebar-link"', html)
         for label in [
             "Прихід товару",
             "Видача товару",
             "Переміщення товару",
-            "Початкові залишки",
             "Інвентаризація",
         ]:
             self.assertContains(response, label)
@@ -240,9 +241,15 @@ class DashboardPermissionTests(TestCase):
         response = self.dashboard_for(self.admin)
         html = response.content.decode()
 
+        self.assertContains(response, "command-panel")
         self.assertContains(response, "quick-actions")
         self.assertContains(response, "dashboard-grid")
         self.assertContains(response, "operation-card")
+        self.assertContains(response, "Основні операції")
+        self.assertContains(response, "Контроль і звіти")
+        self.assertContains(response, "Довідники і друк")
+        html = response.content.decode()
+        self.assertNotIn('class="sidebar-link"', html)
         for url_name in [
             "stock_receive",
             "stock_issue",
@@ -355,7 +362,9 @@ class DashboardPermissionTests(TestCase):
         self.assertNotContains(response, "Навігація")
         self.assertContains(response, '<main class="col-12">')
         self.assertContains(response, "Головна")
-        self.assertContains(response, "Довідники")
+        self.assertContains(response, "Довідники і друк")
+        html = response.content.decode()
+        self.assertNotIn('class="sidebar-link"', html)
         self.assertIn(f'href="{reverse("stock_receive")}"', html)
         self.assertIn(f'href="{reverse("stock_issue")}"', html)
         self.assertIn(f'href="{reverse("stock_return")}"', html)
