@@ -27,7 +27,7 @@
                 </div>
             </section>
             <div class="label-designer-workspace">
-                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Штрихкод може бути замалий для надійного друку. Збільшіть ширину або висоту блоку.' %}" data-warning-overflow="{% trans 'Елемент виходить за межі етикетки.' %}" data-warning-small="{% trans 'Елемент занадто малий.' %}" data-warning-text-clip="{% trans 'Текст може обрізатися у PDF.' %}" data-warning-barcode-text="{% trans 'Текст штрихкоду може не вміститися. Збільшіть висоту блоку або зменшіть шрифт.' %}" data-label-item-name="{% trans 'Назва товару' %}" data-label-internal-code="{% trans 'Внутрішній код' %}" data-label-barcode="{% trans 'Штрихкод' %}" data-label-barcode-text="{% trans 'Текст штрихкоду' %}">
+                <section class="label-designer-canvas-panel" data-label-preview-root data-reset-confirm="{% trans 'Повернути стандартне розташування елементів?' %}" data-barcode-size-warning-text="{% trans 'Штрихкод може бути замалий для надійного друку. Збільшіть ширину або висоту блоку.' %}" data-warning-overflow="{% trans 'Елемент виходить за межі етикетки.' %}" data-warning-small="{% trans 'Елемент занадто малий.' %}" data-warning-text-clip="{% trans 'Текст може обрізатися у PDF.' %}" data-warning-barcode-text="{% trans 'Текст штрихкоду може не вміститися. Збільшіть висоту блоку або зменшіть шрифт.' %}" data-label-item-name="{% trans 'Назва товару' %}" data-label-internal-code="{% trans 'Внутрішній код' %}" data-label-barcode="{% trans 'Штрихкод' %}" data-label-barcode-text="{% trans 'Текст штрихкоду' %}" data-label-custom-text="{% trans 'Текст' %}">
                     <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                         <h2 class="h5 mb-0">{% trans "Попередній перегляд етикетки" %}</h2><span class="label-preview-size-badge" data-label-size>58 × 40 мм</span>
                     </div>
@@ -42,6 +42,7 @@
                         </div>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-reset-layout>{% trans "Скинути макет" %}</button>
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-optimize-layout>{% trans "Авто-розташування" %}</button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-add-custom-text>{% trans "Додати текст" %}</button>
                     </div>
                     <div class="label-designer-coordinates" data-selected-element-summary>{% trans "Виберіть елемент, щоб побачити координати." %}</div>
                     <div class="label-designer-warnings" data-element-warnings></div>
@@ -58,9 +59,10 @@
                     {{ element_formset.management_form }}
                     <div class="label-element-list" role="list">
                     {% for element_form in element_formset %}
-                        <div class="label-element-list-item" data-element-form data-element-form-row data-element-type="{{ element_form.instance.element_type }}" tabindex="0">{{ element_form.id }}{{ element_form.element_type }}{{ element_form.sort_order }}
+                        <div class="label-element-list-item" data-element-form data-element-form-row data-element-type="{{ element_form.instance.element_type|default:element_form.initial.element_type }}" data-form-index="{{ forloop.counter0 }}" tabindex="0">{{ element_form.id }}{{ element_form.element_type }}{{ element_form.sort_order }}{{ element_form.DELETE }}
                             <button type="button" class="label-element-list-item-title" data-select-element>{{ element_form.instance.get_element_type_display|default:element_form.instance.element_type }}</button>
                             <label class="label-editor-checkbox-row">{{ element_form.is_visible }}<span>{% trans "Видимий" %}</span></label>
+                            {% if element_form.instance.element_type == "custom_text" %}<div><label class="form-label">{% trans "Текст" %}</label>{{ element_form.text }}</div>{% endif %}
                             <div class="label-element-inspector">
                                 <div class="label-coordinate-grid">
                                     <div><label class="form-label">{{ element_form.x_mm.label }} (мм)</label>{{ element_form.x_mm }}</div>
@@ -68,12 +70,16 @@
                                     <div><label class="form-label">{{ element_form.width_mm.label }} (мм)</label>{{ element_form.width_mm }}</div>
                                     <div><label class="form-label">{{ element_form.height_mm.label }} (мм)</label>{{ element_form.height_mm }}</div>
                                     <div class="label-editor-field-full" data-label-font-size-input><label class="form-label">{{ element_form.font_size.label }}</label>{{ element_form.font_size }}</div>
+                                    {% if element_form.instance.element_type == "custom_text" %}<label class="label-editor-checkbox-row label-editor-field-full">{{ element_form.DELETE }}<span>{% trans "Видалити" %}</span></label>{% endif %}
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                     </div>
                 </aside>
+<template data-empty-element-form>
+<div class="label-element-list-item" data-element-form data-element-form-row data-element-type="custom_text" data-form-index="__prefix__" tabindex="0">{{ element_formset.empty_form.id }}{{ element_formset.empty_form.element_type }}{{ element_formset.empty_form.sort_order }}{{ element_formset.empty_form.DELETE }}<button type="button" class="label-element-list-item-title" data-select-element>{% trans "Текст" %}</button><label class="label-editor-checkbox-row">{{ element_formset.empty_form.is_visible }}<span>{% trans "Видимий" %}</span></label><div><label class="form-label">{% trans "Текст" %}</label>{{ element_formset.empty_form.text }}</div><div class="label-coordinate-grid"><div><label class="form-label">{{ element_formset.empty_form.x_mm.label }} (мм)</label>{{ element_formset.empty_form.x_mm }}</div><div><label class="form-label">{{ element_formset.empty_form.y_mm.label }} (мм)</label>{{ element_formset.empty_form.y_mm }}</div><div><label class="form-label">{{ element_formset.empty_form.width_mm.label }} (мм)</label>{{ element_formset.empty_form.width_mm }}</div><div><label class="form-label">{{ element_formset.empty_form.height_mm.label }} (мм)</label>{{ element_formset.empty_form.height_mm }}</div><div><label class="form-label">{{ element_formset.empty_form.font_size.label }}</label>{{ element_formset.empty_form.font_size }}</div><label class="label-editor-checkbox-row">{{ element_formset.empty_form.DELETE }}<span>{% trans "Видалити" %}</span></label></div></div>
+</template>
             </div>
             <details class="label-designer-secondary-settings mt-3"><summary>{% trans "Додаткові параметри / Legacy" %}</summary>
                 <div class="label-editor-field-grid mt-2">

@@ -71,6 +71,7 @@ class LabelTemplateElement(models.Model):
         INTERNAL_CODE = "internal_code", _("Внутрішній код")
         BARCODE = "barcode", _("Штрихкод")
         BARCODE_TEXT = "barcode_text", _("Текст штрихкоду")
+        CUSTOM_TEXT = "custom_text", _("Власний текст")
 
     template = models.ForeignKey(
         LabelTemplate, on_delete=models.CASCADE, related_name="elements", verbose_name=_("Шаблон етикетки")
@@ -81,6 +82,7 @@ class LabelTemplateElement(models.Model):
     width_mm = models.DecimalField(_("Ширина, мм"), max_digits=6, decimal_places=2, default=20)
     height_mm = models.DecimalField(_("Висота, мм"), max_digits=6, decimal_places=2, default=4)
     font_size = models.PositiveSmallIntegerField(_("Розмір шрифту"), blank=True, null=True)
+    text = models.CharField(_("Текст"), max_length=255, blank=True, default="")
     is_visible = models.BooleanField(_("Видимий"), default=True)
     sort_order = models.PositiveSmallIntegerField(_("Порядок"), default=0)
 
