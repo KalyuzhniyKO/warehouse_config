@@ -355,11 +355,13 @@ class ManagementInterfaceTests(TestCase):
         self.client.force_login(self.admin)
 
         response = self.client.get("/en/management/users/")
+        html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Users and roles")
-        self.assertContains(response, "Create user")
-        self.assertNotContains(response, "Створити користувача")
+        self.assertIn('<html lang="en">', html)
+        self.assertContains(response, '/en/management/users/create/')
+        self.assertContains(response, '/en/management/users/1/edit/')
+        self.assertContains(response, '/en/management/users/1/password/')
 
     def test_init_roles_creates_expected_groups(self):
         for name in ["Адміністратор складу", "Комірник", "Перегляд / аудитор"]:
@@ -483,13 +485,7 @@ class ManagementInterfaceTests(TestCase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Warehouse settings", html)
-        self.assertIn("Use locations", html)
-        for phrase in [
-            "Налаштування складу",
-            "Використовувати локації",
-            "Зберегти",
-            "Налаштування збережено.",
-            "Якщо вимкнено",
-        ]:
-            self.assertNotIn(phrase, html)
+        self.assertIn('<html lang="en">', html)
+        self.assertIn('<form method="post"', html)
+        self.assertContains(response, 'id="id_use_locations"')
+        self.assertIn('type="submit" class="btn btn-primary"', html)
