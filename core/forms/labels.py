@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
 
 from core.models import LabelTemplate, LabelTemplateElement, Printer
 from core.services.printers import list_system_printers
@@ -108,11 +108,28 @@ class PrintLabelForm(forms.Form):
 class LabelTemplateElementForm(BootstrapModelForm):
     class Meta:
         model = LabelTemplateElement
-        fields = ["id", "element_type", "x_mm", "y_mm", "width_mm", "height_mm", "font_size", "is_visible", "sort_order"]
+        fields = ["id", "element_type", "text", "x_mm", "y_mm", "width_mm", "height_mm", "font_size", "is_visible", "sort_order"]
         widgets = {
             "element_type": forms.HiddenInput(),
             "sort_order": forms.HiddenInput(),
         }
+
+
+class LabelTemplateElementBaseFormSet(BaseInlineFormSet):
+    FIXED_TYPES = {
+        LabelTemplateElement.ElementType.ITEM_NAME,
+        LabelTemplateElement.ElementType.INTERNAL_CODE,
+        LabelTemplateElement.ElementType.BARCODE,
+        LabelTemplateElement.ElementType.BARCODE_TEXT,
+    }
+
+    def clean(self):
+        super().clean()
+        for form in self.forms:
+            if not hasattr(form, "cleaned_data") or not form.cleaned_data or form.cleaned_data.get("DELETE") is not True:
+                continue
+            if form.cleaned_data.get("element_type") in self.FIXED_TYPES:
+                form.cleaned_data["DELETE"] = False
 
 
 LabelTemplateElementFormSet = inlineformset_factory(
@@ -120,5 +137,6 @@ LabelTemplateElementFormSet = inlineformset_factory(
     LabelTemplateElement,
     form=LabelTemplateElementForm,
     extra=0,
-    can_delete=False,
+    can_delete=True,
+    formset=LabelTemplateElementBaseFormSet,
 )

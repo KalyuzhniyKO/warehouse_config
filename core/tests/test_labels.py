@@ -387,6 +387,29 @@ class LabelAndBarcodeTests(TestCase):
         self.assertGreater(len(pdf), 900)
 
 
+
+    def test_custom_text_element_model_supported(self):
+        template = LabelTemplate.objects.create(name="CT")
+        element = LabelTemplateElement.objects.create(template=template, element_type="custom_text", text="Мій текст", x_mm=3, y_mm=3, width_mm=25, height_mm=6, font_size=7, sort_order=50)
+        self.assertEqual(element.text, "Мій текст")
+
+    def test_label_template_editor_has_add_text_button_and_empty_form_hook(self):
+        template = LabelTemplate.objects.create(name="Edit me")
+        from core.views.labels import LabelTemplateUpdateView
+        LabelTemplateUpdateView._create_default_elements(template)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+        self.assertContains(response, "Додати текст")
+        self.assertContains(response, "data-empty-element-form")
+
+    def test_generate_item_label_pdf_with_custom_text(self):
+        from core.services.labels import generate_item_label_pdf
+        template = LabelTemplate.objects.create(name="PDF CT")
+        from core.views.labels import LabelTemplateUpdateView
+        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateElement.objects.create(template=template, element_type="custom_text", text="Custom PDF", x_mm=5, y_mm=5, width_mm=20, height_mm=6, font_size=8, sort_order=90)
+        pdf = generate_item_label_pdf(self.item, template)
+        self.assertTrue(pdf.startswith(b"%PDF"))
+
     def test_label_template_update_ru_localization_without_ukrainian_fragments(self):
         template = LabelTemplate.objects.create(name="RU", is_default=True)
         url = reverse("labeltemplate_update", args=[template.pk]).replace("/uk/", "/ru/")

@@ -212,7 +212,8 @@ def generate_item_label_pdf(item, template=None):
         # Coordinate parity contract with canvas editor:
         # JS stores x/y/width/height in millimeters from top-left label corner.
         # PDF uses bottom-left origin, so we convert Y via (label_height - y - element_height).
-        element_map = {e.element_type: e for e in elements if e.is_visible}
+        visible_elements = [e for e in elements if e.is_visible]
+        element_map = {e.element_type: e for e in visible_elements if e.element_type != "custom_text"}
         name_el = element_map.get("item_name")
         if name_el:
             font_size = int(name_el.font_size or template.item_name_font_size)
@@ -238,6 +239,9 @@ def generate_item_label_pdf(item, template=None):
         if text_el:
             pdf.setFont(regular_font, int(text_el.font_size or template.barcode_text_font_size))
             pdf.drawString(float(text_el.x_mm) * mm, height - float(text_el.y_mm + text_el.height_mm) * mm, barcode_value)
+        for custom in [e for e in visible_elements if e.element_type == "custom_text" and (e.text or "").strip()]:
+            pdf.setFont(regular_font, int(custom.font_size or 7))
+            pdf.drawString(float(custom.x_mm) * mm, height - float(custom.y_mm + custom.height_mm) * mm, custom.text.strip()[:255])
         pdf.showPage()
         pdf.save()
         return buffer.getvalue()
