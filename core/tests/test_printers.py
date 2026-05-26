@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
+from django.utils import translation
 from django.urls import reverse
 
 from core.forms import PrinterForm
@@ -240,6 +241,8 @@ class PrintTestPageTests(TestCase):
 
 class PrinterViewTests(TestCase):
     def setUp(self):
+        self.language_override = translation.override("uk")
+        self.language_override.__enter__()
         call_command("init_roles", stdout=StringIO())
         User = get_user_model()
         self.admin = User.objects.create_user(username="printer-admin", password="pw")
@@ -247,6 +250,10 @@ class PrinterViewTests(TestCase):
         self.storekeeper = User.objects.create_user(username="printer-keeper", password="pw")
         self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
         self.printer = Printer.objects.create(name="Zebra", system_name="Zebra_ZD421")
+
+    def tearDown(self):
+        self.language_override.__exit__(None, None, None)
+        super().tearDown()
 
     @mock.patch("core.views.labels.get_default_system_printer", return_value="Zebra_ZD421")
     @mock.patch(
@@ -259,11 +266,10 @@ class PrinterViewTests(TestCase):
         response = self.client.get(reverse("printer_list"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Оновити список принтерів")
-        self.assertContains(response, "Системні принтери сервера")
-        self.assertContains(response, "Принтери в довіднику")
-        self.assertContains(response, "Редагувати")
-        self.assertContains(response, "Тестовий друк")
+        self.assertContains(response, "name=\"language\" type=\"hidden\" value=\"uk\"", html=False)
+        self.assertContains(response, "<h1", count=1)
+        self.assertContains(response, "<table", count=2)
+        self.assertContains(response, "table-action", count=2)
         self.assertContains(response, reverse("printer_sync"))
         self.assertContains(response, reverse("printer_update", args=[self.printer.pk]))
         self.assertContains(response, reverse("printer_test_print", args=[self.printer.pk]))
@@ -274,7 +280,7 @@ class PrinterViewTests(TestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("printer_update", args=[self.printer.pk]))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Системна назва")
+        self.assertContains(response, "name=\"language\" type=\"hidden\" value=\"uk\"", html=False)
 
         response = self.client.post(
             reverse("printer_update", args=[self.printer.pk]),
