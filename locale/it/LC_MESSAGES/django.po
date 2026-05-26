@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-26 23:13+0300\n"
+"POT-Creation-Date: 2026-05-26 23:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,21 +23,21 @@ msgstr ""
 msgid "Період"
 msgstr "Periodo fa"
 
-#: core/forms/analytics.py:11 core/views/analytics.py:145
+#: core/forms/analytics.py:11 core/views/analytics.py:173
 #, fuzzy
 #| msgid "Всього рядків"
 msgid "Сьогодні"
 msgstr "Righe totali"
 
-#: core/forms/analytics.py:12 core/views/analytics.py:145
+#: core/forms/analytics.py:12 core/views/analytics.py:173
 msgid "7 днів"
 msgstr ""
 
-#: core/forms/analytics.py:13 core/views/analytics.py:145
+#: core/forms/analytics.py:13 core/views/analytics.py:173
 msgid "30 днів"
 msgstr ""
 
-#: core/forms/analytics.py:14 core/views/analytics.py:145
+#: core/forms/analytics.py:14 core/views/analytics.py:173
 msgid "Поточний місяць"
 msgstr ""
 
@@ -77,7 +77,7 @@ msgstr "Luogo di utilizzo"
 #: core/forms/analytics.py:23 core/forms/filters.py:44
 #: core/views/stock_operations.py:475
 #: templates/core/stock_movement_print.html:36
-#: templates/core/stockmovement_list.html:46
+#: templates/core/stockmovement_list.html:49
 msgid "Тип операції"
 msgstr "Tipo di operazione"
 
@@ -245,11 +245,11 @@ msgstr "Ubicazione"
 #: core/models/barcodes.py:10 core/models/inventory.py:75
 #: core/models/labels.py:106 core/models/stock.py:11 core/models/stock.py:59
 #: core/models/warehouse.py:40 core/models/warehouse.py:41
-#: core/views/analytics.py:196 core/views/analytics.py:208
+#: core/views/analytics.py:225 core/views/analytics.py:237
 #: core/views/inventory.py:115 templates/core/inventory_count.html:28
 #: templates/core/inventory_line_table.html:7
 #: templates/core/item_label_print.html:7
-#: templates/core/management/dashboard.html:53
+#: templates/core/management/dashboard.html:54
 msgid "Номенклатура"
 msgstr "Articoli"
 
@@ -264,13 +264,13 @@ msgid "Назва, внутрішній код або штрихкод"
 msgstr "Nome, codice interno o codice a barre"
 
 #: core/forms/filters.py:50 core/models/directories.py:70
-#: core/models/stock.py:82 core/views/analytics.py:204
-#: templates/core/stockmovement_list.html:47
+#: core/models/stock.py:82 core/views/analytics.py:233
+#: templates/core/stockmovement_list.html:50
 msgid "Отримувач"
 msgstr "Destinatario"
 
 #: core/forms/filters.py:61 core/forms/stock_operations.py:137
-#: core/models/stock.py:97 templates/core/stockmovement_list.html:48
+#: core/models/stock.py:97 templates/core/stockmovement_list.html:51
 msgid "Тип видачі"
 msgstr "Tipo di problema"
 
@@ -279,11 +279,11 @@ msgid "Усі типи видачі"
 msgstr "Tutti i tipi di problemi"
 
 #: core/forms/filters.py:65 core/models/stock.py:102
-#: templates/core/stockmovement_list.html:48
+#: templates/core/stockmovement_list.html:51
 msgid "Цех / підрозділ"
 msgstr "Officina/reparto"
 
-#: core/forms/filters.py:67 templates/core/management/analytics.html:8
+#: core/forms/filters.py:67 templates/core/management/analytics.html:9
 #, fuzzy
 #| msgid "Номер документа"
 msgid "Без документа"
@@ -331,7 +331,7 @@ msgstr "Nome, internal_code o codice a barre"
 #: templates/core/stock_transfer_form.html:24
 #: templates/core/stock_transfer_result.html:15
 #: templates/core/stock_writeoff_result.html:13
-#: templates/core/stockmovement_list.html:48
+#: templates/core/stockmovement_list.html:51
 msgid "Коментар"
 msgstr "Commento"
 
@@ -515,16 +515,16 @@ msgstr ""
 "magazzino."
 
 #: core/forms/stock_operations.py:52 core/forms/stock_operations.py:220
-#: core/forms/stock_operations.py:272 core/views/analytics.py:196
-#: core/views/analytics.py:200 core/views/analytics.py:204
-#: core/views/analytics.py:208 core/views/stock_operations.py:480
+#: core/forms/stock_operations.py:272 core/views/analytics.py:225
+#: core/views/analytics.py:229 core/views/analytics.py:233
+#: core/views/analytics.py:237 core/views/stock_operations.py:480
 #: templates/core/stock_issue_result.html:18
 #: templates/core/stock_movement_print.html:40
 #: templates/core/stock_receive_result.html:18
 #: templates/core/stock_transfer_result.html:9
 #: templates/core/stock_writeoff_result.html:9
 #: templates/core/stockbalance_list.html:38
-#: templates/core/stockmovement_list.html:47
+#: templates/core/stockmovement_list.html:50
 msgid "Кількість"
 msgstr "Quantità"
 
@@ -705,7 +705,7 @@ msgstr "simbolo"
 
 #: core/models/directories.py:13 core/views/directories.py:259
 #: core/views/management.py:160 templates/base.html:153 templates/base.html:224
-#: templates/core/management/dashboard.html:57
+#: templates/core/management/dashboard.html:58
 msgid "Одиниці виміру"
 msgstr "Unità di misura"
 
@@ -715,7 +715,7 @@ msgstr "categoria padre"
 
 #: core/models/directories.py:38 core/views/directories.py:274
 #: core/views/management.py:154 templates/base.html:152 templates/base.html:223
-#: templates/core/management/dashboard.html:56
+#: templates/core/management/dashboard.html:57
 msgid "Категорії"
 msgstr "Categorie"
 
@@ -839,7 +839,7 @@ msgstr "predefinito"
 
 #: core/models/labels.py:15 templates/admin/index.html:18
 #: templates/base.html:164 templates/base.html:235
-#: templates/core/dashboard.html:41 templates/core/management/dashboard.html:73
+#: templates/core/dashboard.html:41 templates/core/management/dashboard.html:74
 #: templates/core/printer_form.html:3 templates/core/printer_list.html:3
 #: templates/core/printer_list.html:8
 msgid "Принтери"
@@ -928,7 +928,7 @@ msgstr "Modelli di etichette"
 #: templates/core/dashboard.html:42 templates/core/labeltemplate_form.html:3
 #: templates/core/labeltemplate_list.html:3
 #: templates/core/labeltemplate_list.html:7
-#: templates/core/management/dashboard.html:74
+#: templates/core/management/dashboard.html:75
 msgid "Шаблони етикеток"
 msgstr "Modelli di etichette"
 
@@ -950,7 +950,7 @@ msgstr "Nome prodotto"
 #: templates/core/stock_receive_form.html:38
 #: templates/core/stock_return_form.html:38
 #: templates/core/stockbalance_list.html:38
-#: templates/core/stockmovement_list.html:46
+#: templates/core/stockmovement_list.html:49
 msgid "Штрихкод"
 msgstr "Codice a barre"
 
@@ -1141,7 +1141,7 @@ msgstr "indirizzo"
 
 #: core/models/warehouse.py:82 core/views/directories.py:328
 #: core/views/management.py:166 templates/base.html:155 templates/base.html:226
-#: templates/core/dashboard.html:39 templates/core/management/dashboard.html:63
+#: templates/core/dashboard.html:39 templates/core/management/dashboard.html:64
 msgid "Склади"
 msgstr "Magazzini"
 
@@ -1155,7 +1155,7 @@ msgstr "tipo di posizione"
 
 #: core/models/warehouse.py:136 core/views/directories.py:342
 #: core/views/management.py:172 templates/base.html:156 templates/base.html:227
-#: templates/core/management/dashboard.html:64
+#: templates/core/management/dashboard.html:65
 msgid "Локації"
 msgstr "Celle / posizioni"
 
@@ -1203,6 +1203,133 @@ msgstr "Giacenze iniziali"
 #| msgid "Початкові залишки"
 msgid "Є підозрілі залишки"
 msgstr "Giacenze iniziali"
+
+#: core/services/analytics_presets.py:9
+#, fuzzy
+#| msgid "Видача товару"
+msgid "Видача за 7 днів"
+msgstr "Emissione di azioni"
+
+#: core/services/analytics_presets.py:9
+#, fuzzy
+#| msgid "Операція вже була збережена."
+msgid "Операції видачі за останні 7 днів."
+msgstr "Operazione già salvata."
+
+#: core/services/analytics_presets.py:9 core/services/analytics_presets.py:10
+#, fuzzy
+#| msgid "Операції складу"
+msgid "Операційні звіти"
+msgstr "Operazioni di magazzino"
+
+#: core/services/analytics_presets.py:10
+#, fuzzy
+#| msgid "Видача товару"
+msgid "Видача за 30 днів"
+msgstr "Emissione di azioni"
+
+#: core/services/analytics_presets.py:10
+#, fuzzy
+#| msgid "Операція вже була збережена."
+msgid "Операції видачі за останні 30 днів."
+msgstr "Operazione già salvata."
+
+#: core/services/analytics_presets.py:11
+#, fuzzy
+#| msgid "Топ-10 товарів за видачею"
+msgid "Топ товарів за місяць"
+msgstr "I 10 migliori consigli per l'acquisto"
+
+#: core/services/analytics_presets.py:11
+msgid "Аналітика з фокусом на товари з найбільшою видачею."
+msgstr ""
+
+#: core/services/analytics_presets.py:11 core/services/analytics_presets.py:12
+#: core/services/analytics_presets.py:16
+#, fuzzy
+#| msgid "Аналітика"
+msgid "Аналітичні звіти"
+msgstr "Analisi"
+
+#: core/services/analytics_presets.py:12
+#, fuzzy
+#| msgid "Попередня"
+msgid "Топ цехів за місяць"
+msgstr "Precedente"
+
+#: core/services/analytics_presets.py:12
+#, fuzzy
+#| msgid "Цехи / місця використання"
+msgid "Звіт по місцях використання за поточний місяць."
+msgstr "Reparti / luoghi di utilizzo"
+
+#: core/services/analytics_presets.py:13
+#, fuzzy
+#| msgid "Номер документа"
+msgid "Рухи без документа"
+msgstr "Numero del documento"
+
+#: core/services/analytics_presets.py:13
+msgid "Журнал рухів з порожнім номером документа."
+msgstr ""
+
+#: core/services/analytics_presets.py:13 core/services/analytics_presets.py:14
+#: core/services/analytics_presets.py:15
+#, fuzzy
+#| msgid "Контакт"
+msgid "Контроль якості даних"
+msgstr "Contatto"
+
+#: core/services/analytics_presets.py:14
+#, fuzzy
+#| msgid "Надрукувати етикетку"
+msgid "Проблеми якості даних"
+msgstr "Modifica l'etichetta"
+
+#: core/services/analytics_presets.py:14
+msgid "Огляд перевірок цілісності даних та узгодженості рухів."
+msgstr ""
+
+#: core/services/analytics_presets.py:15
+#: templates/core/management/analytics.html:9
+#: templates/core/management/analytics_data_quality.html:19
+#, fuzzy
+#| msgid "Початкові залишки"
+msgid "Негативні залишки"
+msgstr "Giacenze iniziali"
+
+#: core/services/analytics_presets.py:15
+msgid "Перевірка від’ємних залишків у секції контролю якості."
+msgstr ""
+
+#: core/services/analytics_presets.py:16
+#, fuzzy
+#| msgid "Початкові залишки"
+msgid "Неактивні товари з залишком"
+msgstr "Giacenze iniziali"
+
+#: core/services/analytics_presets.py:16
+msgid "Аналітика залишків по неактивних товарах."
+msgstr ""
+
+#: core/services/analytics_presets.py:17 core/views/analytics.py:237
+#: templates/core/management/analytics.html:14
+#, fuzzy
+#| msgid "Усі операції"
+msgid "Останні операції"
+msgstr "Tutte le operazioni"
+
+#: core/services/analytics_presets.py:17
+#, fuzzy
+#| msgid "Журнал операцій"
+msgid "Журнал операцій за останні 7 днів."
+msgstr "Registro operazioni"
+
+#: core/services/analytics_presets.py:17
+#, fuzzy
+#| msgid "Експорт CSV"
+msgid "Експорт"
+msgstr "Esporta CSV"
 
 #: core/services/inventory.py:114
 msgid "Інвентаризацію вже завершено."
@@ -1272,120 +1399,114 @@ msgstr "Non è stata inserita l'etichetta: %(error)s"
 msgid "Для видачі товару потрібно вказати отримувача."
 msgstr "Per emettere il prodotto è necessario indicare il destinatario."
 
-#: core/views/analytics.py:145
+#: core/views/analytics.py:173
 #, fuzzy
 #| msgid "Попередня"
 msgid "Попередній місяць"
 msgstr "Precedente"
 
-#: core/views/analytics.py:188
+#: core/views/analytics.py:217
 #, fuzzy
 #| msgid "Розділи"
 msgid "Розділ"
 msgstr "Sezioni"
 
-#: core/views/analytics.py:188
+#: core/views/analytics.py:217
 #, fuzzy
 #| msgid "Показувати текст штрихкоду"
 msgid "Показник"
 msgstr "Visualizza il testo a strisce"
 
-#: core/views/analytics.py:188
+#: core/views/analytics.py:217
 #, fuzzy
 #| msgid "Позначення"
 msgid "Значення"
 msgstr "Simbolo"
 
-#: core/views/analytics.py:189
+#: core/views/analytics.py:218
 #, fuzzy
 #| msgid "Операції складу"
 msgid "Операцій за період"
 msgstr "Operazioni di magazzino"
 
-#: core/views/analytics.py:189 core/views/analytics.py:192
+#: core/views/analytics.py:218 core/views/analytics.py:221
 msgid "Прихід"
 msgstr "Bene"
 
-#: core/views/analytics.py:189 core/views/analytics.py:192
+#: core/views/analytics.py:218 core/views/analytics.py:221
 msgid "Видача"
 msgstr "Emissione"
 
-#: core/views/analytics.py:189 core/views/analytics.py:192
+#: core/views/analytics.py:218 core/views/analytics.py:221
 #, fuzzy
 #| msgid "Повернення товару"
 msgid "Повернення"
 msgstr "Restituzione prodotto"
 
-#: core/views/analytics.py:189 core/views/analytics.py:192
+#: core/views/analytics.py:218 core/views/analytics.py:221
 #: templates/core/management/dashboard.html:38
 msgid "Списання"
 msgstr "Descrizione"
 
-#: core/views/analytics.py:190
+#: core/views/analytics.py:219
 #, fuzzy
 #| msgid "Повернення товару"
 msgid "Зведення"
 msgstr "Restituzione prodotto"
 
-#: core/views/analytics.py:192
+#: core/views/analytics.py:221
 #, fuzzy
 #| msgid "Рух товарів"
 msgid "Рух по днях"
 msgstr "Movimento delle merci"
 
-#: core/views/analytics.py:192 core/views/analytics.py:208
-#: templates/core/stockmovement_list.html:46
+#: core/views/analytics.py:221 core/views/analytics.py:237
+#: templates/core/stockmovement_list.html:49
 msgid "Дата"
 msgstr "Ecco"
 
-#: core/views/analytics.py:192 core/views/analytics.py:196
-#: core/views/analytics.py:200 core/views/analytics.py:204
+#: core/views/analytics.py:221 core/views/analytics.py:225
+#: core/views/analytics.py:229 core/views/analytics.py:233
 #, fuzzy
 #| msgid "ID операції"
 msgid "Операції"
 msgstr "ID operazione"
 
-#: core/views/analytics.py:196
+#: core/views/analytics.py:225
 #, fuzzy
 #| msgid "Рухи товарів"
 msgid "Топ товарів"
 msgstr "Movimenti di magazzino"
 
-#: core/views/analytics.py:200
+#: core/views/analytics.py:229
 #, fuzzy
 #| msgid "Топ-10 отримувачів"
 msgid "Топ цехів"
 msgstr "Top 10 destinatari"
 
-#: core/views/analytics.py:200
+#: core/views/analytics.py:229
 msgid "Цех"
 msgstr ""
 
-#: core/views/analytics.py:204 templates/core/management/analytics.html:11
+#: core/views/analytics.py:233 templates/core/management/analytics.html:12
 #, fuzzy
 #| msgid "Топ-10 отримувачів"
 msgid "Топ отримувачів"
 msgstr "Top 10 destinatari"
 
-#: core/views/analytics.py:208 templates/core/management/analytics.html:13
-#, fuzzy
-#| msgid "Усі операції"
-msgid "Останні операції"
-msgstr "Tutte le operazioni"
-
-#: core/views/analytics.py:208 core/views/directories.py:354
+#: core/views/analytics.py:237 core/views/directories.py:354
 msgid "Тип"
 msgstr "Tipo"
 
-#: core/views/analytics.py:208 templates/core/stockmovement_list.html:48
+#: core/views/analytics.py:237 templates/core/stockmovement_list.html:51
 msgid "Документ"
 msgstr "Documento"
 
-#: core/views/analytics.py:221
+#: core/views/analytics.py:250
 msgid "XLSX експорт недоступний: openpyxl не встановлено."
 msgstr "L'esportazione XLSX non è disponibile: openpyxl non è installato."
 
-#: core/views/analytics.py:284
+#: core/views/analytics.py:322
 msgid "Залишки перевіряються на поточний момент."
 msgstr ""
 
@@ -1481,7 +1602,7 @@ msgstr "Categoria di archivio"
 
 #: core/views/directories.py:288 core/views/management.py:178
 #: templates/base.html:158 templates/base.html:229
-#: templates/core/management/dashboard.html:65
+#: templates/core/management/dashboard.html:66
 msgid "Працівники / отримувачі"
 msgstr "Dipendenti / destinatari"
 
@@ -1503,9 +1624,9 @@ msgstr "Contatto"
 
 #: core/views/directories.py:307 core/views/management.py:148
 #: templates/base.html:150 templates/base.html:221
-#: templates/core/dashboard.html:38 templates/core/management/dashboard.html:55
+#: templates/core/dashboard.html:38 templates/core/management/dashboard.html:56
 #: templates/core/stockbalance_list.html:38
-#: templates/core/stockmovement_list.html:46
+#: templates/core/stockmovement_list.html:49
 msgid "Товари / матеріали"
 msgstr "Prodotti / materiali"
 
@@ -1976,6 +2097,7 @@ msgstr "YANTOS · Warehouse accounting"
 #: templates/core/management/dashboard.html:3
 #: templates/core/management/directories.html:3
 #: templates/core/management/help.html:3
+#: templates/core/management/reports.html:3
 #: templates/core/management/settings.html:3
 #: templates/core/management/user_form.html:3
 #: templates/core/management/user_password_form.html:3
@@ -2057,7 +2179,7 @@ msgstr "Giacenze iniziali"
 #: templates/core/inventory_detail.html:6 templates/core/inventory_list.html:3
 #: templates/core/inventory_list.html:9
 #: templates/core/management/dashboard.html:46
-#: templates/core/stockmovement_list.html:48
+#: templates/core/stockmovement_list.html:51
 msgid "Інвентаризація"
 msgstr "Conteggio dell'inventario"
 
@@ -2078,12 +2200,12 @@ msgid "Етикетки"
 msgstr "Labels"
 
 #: templates/base.html:162 templates/base.html:233
-#: templates/core/management/dashboard.html:72
+#: templates/core/management/dashboard.html:73
 msgid "Друк етикеток"
 msgstr "Stampa di etichette"
 
 #: templates/base.html:169 templates/base.html:240
-#: templates/core/dashboard.html:49 templates/core/management/dashboard.html:79
+#: templates/core/dashboard.html:49 templates/core/management/dashboard.html:80
 msgid "Адміністрування"
 msgstr "Administration"
 
@@ -2241,13 +2363,13 @@ msgid "Усі"
 msgstr "Tutti"
 
 #: templates/core/directory_list.html:31
-#: templates/core/stockmovement_list.html:29
+#: templates/core/stockmovement_list.html:31
 msgid "Скинути"
 msgstr "Pelle"
 
 #: templates/core/directory_list.html:32
-#: templates/core/management/analytics.html:6
-#: templates/core/stockmovement_list.html:30
+#: templates/core/management/analytics.html:7
+#: templates/core/stockmovement_list.html:33
 msgid "Застосувати"
 msgstr "Applica"
 
@@ -2392,13 +2514,13 @@ msgid "До списку інвентаризацій"
 msgstr "Torna all'elenco dell'inventario"
 
 #: templates/core/inventory_detail.html:9
-#: templates/core/management/analytics.html:7
+#: templates/core/management/analytics.html:8
 #: templates/core/management/dashboard.html:48
 msgid "Експорт CSV"
 msgstr "Esporta CSV"
 
 #: templates/core/inventory_detail.html:10
-#: templates/core/management/analytics.html:7
+#: templates/core/management/analytics.html:8
 msgid "Експорт XLSX"
 msgstr "Esporta XLSX"
 
@@ -2645,64 +2767,85 @@ msgstr "Visualizza"
 msgid "Поки немає шаблонів етикеток"
 msgstr "Modelli di etichette"
 
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:6
+#, fuzzy
+#| msgid "Контроль і звіти"
+msgid "Готові звіти"
+msgstr "Controllo e report"
+
+#: templates/core/management/analytics.html:7
+#: templates/core/management/analytics_data_quality.html:6
+#: templates/core/stockmovement_list.html:20
+msgid "Фільтри запамʼятовуються для вашого користувача."
+msgstr ""
+
+#: templates/core/management/analytics.html:7
+#: templates/core/management/analytics_data_quality.html:6
+#: templates/core/stockmovement_list.html:21
+#, fuzzy
+#| msgid "Налаштування збережено."
+msgid "Застосовано збережені фільтри."
+msgstr "Impostazioni salvate."
+
+#: templates/core/management/analytics.html:7
+#: templates/core/management/analytics_data_quality.html:6
+#: templates/core/stockmovement_list.html:32
+#, fuzzy
+#| msgid "Застосувати фільтр"
+msgid "Скинути збережені фільтри"
+msgstr "Installare il filtro"
+
+#: templates/core/management/analytics.html:9
 #, fuzzy
 #| msgid "Контакт"
 msgid "Контроль даних"
 msgstr "Contatto"
 
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:9
 msgid "Дані узгоджені"
 msgstr ""
 
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:9
 #, fuzzy
 #| msgid "Попередня"
 msgid "Є попередження"
 msgstr "Precedente"
 
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:9
 msgid "Оцінка якості"
 msgstr ""
 
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:9
 msgid "Неповні"
 msgstr ""
 
-#: templates/core/management/analytics.html:8
-#: templates/core/management/analytics_data_quality.html:19
-#, fuzzy
-#| msgid "Початкові залишки"
-msgid "Негативні залишки"
-msgstr "Giacenze iniziali"
-
-#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics.html:9
 #, fuzzy
 #| msgid "Надрукувати етикетку"
 msgid "Переглянути деталі якості даних"
 msgstr "Modifica l'etichetta"
 
-#: templates/core/management/analytics.html:9
+#: templates/core/management/analytics.html:10
 #, fuzzy
 #| msgid "Топ-10 товарів за видачею"
 msgid "Топ товарів по видачі"
 msgstr "I 10 migliori consigli per l'acquisto"
 
-#: templates/core/management/analytics.html:9
 #: templates/core/management/analytics.html:10
 #: templates/core/management/analytics.html:11
+#: templates/core/management/analytics.html:12
 #, fuzzy
 #| msgid "Журнал операцій"
 msgid "журнал"
 msgstr "Registro operazioni"
 
-#: templates/core/management/analytics.html:10
+#: templates/core/management/analytics.html:11
 #, fuzzy
 #| msgid "Цехи / місця використання"
 msgid "Топ цехів / місць використання"
 msgstr "Reparti / luoghi di utilizzo"
 
-#: templates/core/management/analytics.html:13
+#: templates/core/management/analytics.html:14
 #, fuzzy
 #| msgid "Залишок після операції"
 msgid "За вибраний період операцій немає."
@@ -2788,55 +2931,63 @@ msgstr ""
 msgid "Аналітика / звіти"
 msgstr "Analisi"
 
-#: templates/core/management/dashboard.html:53
+#: templates/core/management/dashboard.html:49
+#: templates/core/management/reports.html:3
+#: templates/core/management/reports.html:13
+#, fuzzy
+#| msgid "Аналітика"
+msgid "Звіти складу"
+msgstr "Analisi"
+
+#: templates/core/management/dashboard.html:54
 #, fuzzy
 #| msgid "Формати та шаблони для друку."
 msgid "Товари і класифікатори для обліку."
 msgstr "Print formats and templates."
 
-#: templates/core/management/dashboard.html:61
+#: templates/core/management/dashboard.html:62
 #, fuzzy
 #| msgid "Довідка адміністратора"
 msgid "Довідники підприємства"
 msgstr "Guida amministratore"
 
-#: templates/core/management/dashboard.html:61
+#: templates/core/management/dashboard.html:62
 #, fuzzy
 #| msgid "Створити працівника / отримувача"
 msgid "Структура складів, локацій та отримувачів."
 msgstr "Crea dipendente / destinatario"
 
-#: templates/core/management/dashboard.html:70
+#: templates/core/management/dashboard.html:71
 #, fuzzy
 #| msgid "Етикетки"
 msgid "Етикетки та друк"
 msgstr "Labels"
 
-#: templates/core/management/dashboard.html:70
+#: templates/core/management/dashboard.html:71
 #, fuzzy
 #| msgid "Друкувати контрольний талон"
 msgid "Друк етикеток, принтери та шаблони."
 msgstr "Stampa tagliando di controllo"
 
-#: templates/core/management/dashboard.html:79
+#: templates/core/management/dashboard.html:80
 #, fuzzy
 #| msgid "Користувачі та доступ"
 msgid "Користувачі, ролі та системні параметри."
 msgstr "Utenti e accessi"
 
-#: templates/core/management/dashboard.html:81
+#: templates/core/management/dashboard.html:82
 #: templates/core/management/users.html:3
 #: templates/core/management/users.html:6
 msgid "Користувачі та ролі"
 msgstr "Utenti e ruoli"
 
-#: templates/core/management/dashboard.html:82
+#: templates/core/management/dashboard.html:83
 #: templates/core/management/settings.html:3
 #: templates/core/management/settings.html:7
 msgid "Налаштування складу"
 msgstr "Impostazioni magazzino"
 
-#: templates/core/management/dashboard.html:83
+#: templates/core/management/dashboard.html:84
 msgid "Django admin"
 msgstr ""
 
@@ -2877,6 +3028,12 @@ msgstr "Inizio della cerimonia"
 #: templates/core/management/help.html:20
 msgid "Розділи"
 msgstr "Sezioni"
+
+#: templates/core/management/reports.html:24
+#, fuzzy
+#| msgid "Закрити"
+msgid "Відкрити"
+msgstr "Vicino"
 
 #: templates/core/management/user_form.html:9
 #: templates/core/management/user_password_form.html:9
@@ -3179,21 +3336,21 @@ msgstr "Nessuna giacenza per i filtri selezionati."
 msgid "До залишків"
 msgstr "Alle giacenze"
 
-#: templates/core/stockmovement_list.html:47
+#: templates/core/stockmovement_list.html:50
 msgid "Звідки"
 msgstr "Dove"
 
-#: templates/core/stockmovement_list.html:47
+#: templates/core/stockmovement_list.html:50
 msgid "Куди"
 msgstr "Ciao"
 
-#: templates/core/stockmovement_list.html:62
+#: templates/core/stockmovement_list.html:65
 #, fuzzy
 #| msgid "Товар за цим штрихкодом не знайдено."
 msgid "За вибраними фільтрами рухів не знайдено."
 msgstr "Prodotto non trovato"
 
-#: templates/core/stockmovement_list.html:62
+#: templates/core/stockmovement_list.html:65
 #, fuzzy
 #| msgid "Застосувати фільтр"
 msgid "Скинути фільтри"

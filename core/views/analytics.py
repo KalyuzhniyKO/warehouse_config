@@ -68,6 +68,7 @@ from ..permissions import (
 )
 from ..services import analytics as analytics_service
 from ..services.analytics_presets import get_analytics_report_presets
+from ..services.filter_memory import apply_remembered_filters, build_redirect_url, querydict_from_params
 from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
@@ -120,9 +121,18 @@ def clean_analytics_filters(form):
 class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics.html"
+    page_key = "management_analytics"
+
+    def get(self, request, *args, **kwargs):
+        params, used_remembered_filters, should_redirect = apply_remembered_filters(request, self.page_key)
+        self.used_remembered_filters = used_remembered_filters
+        if should_redirect:
+            return redirect(build_redirect_url(request.path, params))
+        self.effective_get = querydict_from_params(params) if params else request.GET
+        return super().get(request, *args, **kwargs)
 
     def get_filter_form(self):
-        return AnalyticsFilterForm(self.request.GET or None)
+        return AnalyticsFilterForm(getattr(self, "effective_get", self.request.GET) or None)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -135,7 +145,8 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty"]:
             summary_deltas[key] = analytics_service.get_kpi_delta(summary.get(key), previous_summary.get(key) if previous_summary else None)
 
-        query_base = {k: v for k, v in self.request.GET.items() if v}
+        request_get = getattr(self, "effective_get", self.request.GET)
+        query_base = {k: v for k, v in request_get.items() if v}
         date_params = {"date_from": filters.get("date_from"), "date_to": filters.get("date_to")}
         movement_query = {**{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location", "movement_type"}}, **{k: str(v) for k, v in date_params.items() if v}}
         filter_query = analytics_service.build_analytics_filter_query(filters)
@@ -162,6 +173,7 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
                 "quick_periods": [("today", _("Сьогодні")), ("7d", _("7 днів")), ("30d", _("30 днів")), ("month", _("Поточний місяць")), ("prev_month", _("Попередній місяць"))],
                 "data_quality": data_quality,
                 "data_quality_url": reverse("management_analytics_data_quality") + "?" + urlencode(filter_query),
+                "used_remembered_filters": getattr(self, "used_remembered_filters", False),
             }
         )
         return context
@@ -287,10 +299,19 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_data_quality.html"
+    page_key = "management_analytics_data_quality"
+
+    def get(self, request, *args, **kwargs):
+        params, used_remembered_filters, should_redirect = apply_remembered_filters(request, self.page_key)
+        self.used_remembered_filters = used_remembered_filters
+        if should_redirect:
+            return redirect(build_redirect_url(request.path, params))
+        self.effective_get = querydict_from_params(params) if params else request.GET
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = AnalyticsFilterForm(self.request.GET or None)
+        form = AnalyticsFilterForm(getattr(self, "effective_get", self.request.GET) or None)
         filters = clean_analytics_filters(form)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
         context.update({
@@ -299,6 +320,7 @@ class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateV
             "filter_query": filter_query,
             "movement_list_base_url": reverse("movement_list"),
             "stock_checked_note": _("Залишки перевіряються на поточний момент."),
+            "used_remembered_filters": getattr(self, "used_remembered_filters", False),
         })
         return context
 class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
