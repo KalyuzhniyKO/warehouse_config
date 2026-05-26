@@ -92,13 +92,11 @@ class AnalyticsRedirectView(LoginRequiredMixin, GroupRequiredMixin, View):
 
 
 def clean_analytics_filters(form):
-    if form.is_valid():
-        return {
-            key: value
-            for key, value in form.cleaned_data.items()
-            if value not in (None, "")
-        }
-    return {}
+    if not form.is_valid():
+        return {}
+    filters = {key: value for key, value in form.cleaned_data.items() if value not in (None, "")}
+    filters.update(analytics_service.get_analytics_filters(form.cleaned_data))
+    return filters
 
 
 class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
@@ -112,61 +110,16 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         form = self.get_filter_form()
         filters = clean_analytics_filters(form)
-        movement_summary = analytics_service.get_movement_summary(filters)
-        stock_summary = analytics_service.get_stock_summary(filters)
-        movements_by_day = analytics_service.get_movements_by_day(filters)
-        movements_by_type = analytics_service.get_movements_by_type(filters)
-        top_out = analytics_service.get_top_items_by_out(filters)
-        top_in = analytics_service.get_top_items_by_in(filters)
         context.update(
             {
                 "filter_form": form,
-                "movement_summary": movement_summary,
-                "stock_summary": stock_summary,
-                "top_out": top_out,
-                "top_in": top_in,
+                "summary": analytics_service.get_analytics_summary(filters),
+                "daily_movement": analytics_service.get_daily_movement(filters),
+                "top_issued_items": analytics_service.get_top_issued_items(filters),
+                "top_usage_places": analytics_service.get_top_usage_places(filters),
                 "top_recipients": analytics_service.get_top_recipients(filters),
-                "movements_by_day": movements_by_day,
-                "movements_by_type": movements_by_type,
-                "day_chart_json": json.dumps(
-                    {
-                        "labels": [str(row["day"]) for row in movements_by_day],
-                        "in": [float(row["in_qty"] or 0) for row in movements_by_day],
-                        "out": [float(row["out_qty"] or 0) for row in movements_by_day],
-                        "writeoff": [
-                            float(row["writeoff_qty"] or 0) for row in movements_by_day
-                        ],
-                    }
-                ),
-                "type_chart_json": json.dumps(
-                    {
-                        "labels": [
-                            str(StockMovement.MovementType(row["movement_type"]).label)
-                            for row in movements_by_type
-                        ],
-                        "values": [
-                            float(row["total_qty"] or 0) for row in movements_by_type
-                        ],
-                    }
-                ),
-                "warehouse_chart_json": json.dumps(
-                    {
-                        "labels": [
-                            row["location__warehouse__name"] or "—"
-                            for row in stock_summary["by_warehouse"]
-                        ],
-                        "values": [
-                            float(row["total_qty"] or 0)
-                            for row in stock_summary["by_warehouse"]
-                        ],
-                    }
-                ),
-                "top_out_chart_json": json.dumps(
-                    {
-                        "labels": [row["item__name"] for row in top_out],
-                        "values": [float(row["total_qty"] or 0) for row in top_out],
-                    }
-                ),
+                "inactive_stock_items": analytics_service.get_inactive_stock_items(filters),
+                "recent_movements": analytics_service.get_recent_movements(filters),
             }
         )
         return context
