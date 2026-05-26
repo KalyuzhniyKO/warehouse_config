@@ -114,3 +114,52 @@ def get_inactive_stock_items(filters):
 
 def get_recent_movements(filters):
     return filter_movements(filters).select_related("item", "recipient").order_by("-occurred_at", "-id")[:10]
+
+
+def get_previous_period(filters):
+    date_from = filters.get("date_from")
+    date_to = filters.get("date_to")
+    if not date_from or not date_to:
+        return {"date_from": None, "date_to": None}
+    span_days = (date_to - date_from).days + 1
+    prev_to = date_from - timedelta(days=1)
+    prev_from = prev_to - timedelta(days=span_days - 1)
+    previous_filters = dict(filters)
+    previous_filters["date_from"] = prev_from
+    previous_filters["date_to"] = prev_to
+    return previous_filters
+
+
+def get_kpi_delta(current_value, previous_value):
+    current = current_value or 0
+    previous = previous_value or 0
+    if previous == 0:
+        if current == 0:
+            return {"trend": "neutral", "label": _("без змін"), "percent": None}
+        return {"trend": "positive", "label": _("нові дані"), "percent": None}
+    delta_percent = ((current - previous) / previous) * 100
+    if delta_percent > 0:
+        return {"trend": "positive", "label": f"+{delta_percent:.0f}%", "percent": delta_percent}
+    if delta_percent < 0:
+        return {"trend": "negative", "label": f"{delta_percent:.0f}%", "percent": delta_percent}
+    return {"trend": "neutral", "label": _("без змін"), "percent": 0}
+
+
+def get_operation_mix(filters):
+    rows = filter_movements(filters).values("movement_type").annotate(total=Count("id"))
+    data = {k: 0 for k in ["receive", "issue", "return", "write_off", "transfer", "inventory"]}
+    mapping = {
+        StockMovement.MovementType.IN: "receive",
+        StockMovement.MovementType.INITIAL_BALANCE: "receive",
+        StockMovement.MovementType.OUT: "issue",
+        StockMovement.MovementType.RETURN: "return",
+        StockMovement.MovementType.WRITEOFF: "write_off",
+        StockMovement.MovementType.TRANSFER: "transfer",
+        StockMovement.MovementType.ADJUSTMENT: "inventory",
+    }
+    for row in rows:
+        key = mapping.get(row["movement_type"])
+        if key:
+            data[key] += row["total"]
+    total = sum(data.values())
+    return [{"key": k, "total": v, "percent": (v/total*100) if total else 0} for k,v in data.items()]

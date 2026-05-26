@@ -1,5 +1,6 @@
 import csv
 import json
+from urllib.parse import urlencode
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -110,16 +111,34 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         form = self.get_filter_form()
         filters = clean_analytics_filters(form)
+        summary = analytics_service.get_analytics_summary(filters)
+        previous_filters = analytics_service.get_previous_period(filters)
+        previous_summary = analytics_service.get_analytics_summary(previous_filters) if previous_filters.get("date_from") else None
+        summary_deltas = {}
+        for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty"]:
+            summary_deltas[key] = analytics_service.get_kpi_delta(summary.get(key), previous_summary.get(key) if previous_summary else None)
+
+        query_base = {k: v for k, v in self.request.GET.items() if v}
+        date_params = {"date_from": filters.get("date_from"), "date_to": filters.get("date_to")}
+        movement_query = {**{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location"}}, **{k: str(v) for k, v in date_params.items() if v}}
+        daily_movement = analytics_service.get_daily_movement(filters)
+        top_issued_items = analytics_service.get_top_issued_items(filters)
+        top_usage_places = analytics_service.get_top_usage_places(filters)
+        top_recipients = analytics_service.get_top_recipients(filters)
         context.update(
             {
                 "filter_form": form,
-                "summary": analytics_service.get_analytics_summary(filters),
-                "daily_movement": analytics_service.get_daily_movement(filters),
-                "top_issued_items": analytics_service.get_top_issued_items(filters),
-                "top_usage_places": analytics_service.get_top_usage_places(filters),
-                "top_recipients": analytics_service.get_top_recipients(filters),
+                "summary": summary,
+                "summary_deltas": summary_deltas,
+                "daily_movement": daily_movement,
+                "operation_mix": analytics_service.get_operation_mix(filters),
+                "top_issued_items": top_issued_items,
+                "top_usage_places": top_usage_places,
+                "top_recipients": top_recipients,
                 "inactive_stock_items": analytics_service.get_inactive_stock_items(filters),
                 "recent_movements": analytics_service.get_recent_movements(filters),
+                "movement_list_base_url": reverse("movement_list"),
+                "movement_query": urlencode(movement_query),
             }
         )
         return context
@@ -159,32 +178,30 @@ class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         )
         response.write("\ufeff")
         writer = csv.writer(response)
-        writer.writerow(
-            [
-                _("Дата"),
-                _("Тип операції"),
-                _("Номенклатура"),
-                _("Кількість"),
-                _("Склад"),
-                _("Локація"),
-                _("Отримувач"),
-            ]
-        )
-        for movement in analytics_service.filter_movements(filters).order_by(
-            "occurred_at", "id"
-        ):
-            location = movement_export_location(movement, filters)
-            writer.writerow(
-                [
-                    movement.occurred_at.strftime("%Y-%m-%d %H:%M"),
-                    movement.get_movement_type_display(),
-                    movement.item.name,
-                    movement.qty,
-                    location.warehouse.name if location else "",
-                    location.name if location else "",
-                    movement.recipient.name if movement.recipient else "",
-                ]
-            )
+        summary = analytics_service.get_analytics_summary(filters)
+        writer.writerow([_("Розділ"), _("Показник"), _("Значення")])
+        for key, label in [("operations_count", _("Операцій за період")), ("receive_qty", _("Прихід")), ("issue_qty", _("Видача")), ("return_qty", _("Повернення")), ("writeoff_qty", _("Списання"))]:
+            writer.writerow([_("Зведення"), label, summary[key]])
+        writer.writerow([])
+        writer.writerow([_("Рух по днях"), _("Дата"), _("Операції"), _("Прихід"), _("Видача"), _("Повернення"), _("Списання")])
+        for row in analytics_service.get_daily_movement(filters):
+            writer.writerow(["", row["day"], row["operations"], row["receive_qty"], row["issue_qty"], row["return_qty"], row["writeoff_qty"]])
+        writer.writerow([])
+        writer.writerow([_("Топ товарів"), _("Номенклатура"), _("Кількість"), _("Операції")])
+        for row in analytics_service.get_top_issued_items(filters):
+            writer.writerow(["", row["item__name"], row["total_qty"], row["operations"]])
+        writer.writerow([])
+        writer.writerow([_("Топ цехів"), _("Цех"), _("Кількість"), _("Операції")])
+        for row in analytics_service.get_top_usage_places(filters):
+            writer.writerow(["", row["department"], row["total_qty"], row["operations"]])
+        writer.writerow([])
+        writer.writerow([_("Топ отримувачів"), _("Отримувач"), _("Кількість"), _("Операції")])
+        for row in analytics_service.get_top_recipients(filters):
+            writer.writerow(["", row["recipient__name"], row["total_qty"], row["operations"]])
+        writer.writerow([])
+        writer.writerow([_("Останні операції"), _("Дата"), _("Тип"), _("Номенклатура"), _("Кількість"), _("Документ")])
+        for movement in analytics_service.get_recent_movements(filters):
+            writer.writerow(["", movement.occurred_at.strftime("%Y-%m-%d %H:%M"), movement.get_movement_type_display(), movement.item.name, movement.qty, movement.document_number or ""])
         return response
 
 
