@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from core.models import Item, Location, StockMovement, Warehouse
+from core.models import Item, Location, Recipient, StockMovement, Warehouse
 
 
 class StockBalanceFilterForm(forms.Form):
@@ -46,6 +46,9 @@ class StockMovementFilterForm(forms.Form):
         required=False,
     )
     item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.filter(is_active=True), required=False)
+    item_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    recipient = forms.ModelChoiceField(label=_("Отримувач"), queryset=Recipient.objects.filter(is_active=True), required=False)
+    recipient_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     warehouse = forms.ModelChoiceField(label=_("Склад"), queryset=Warehouse.objects.filter(is_active=True), required=False)
     location = forms.ModelChoiceField(
         label=_("Локація"),
@@ -60,6 +63,12 @@ class StockMovementFilterForm(forms.Form):
         required=False,
     )
     department = forms.CharField(label=_("Цех / підрозділ"), required=False)
+    usage_place_id = forms.CharField(label=_("Цех / місце використання"), required=False)
+    no_document = forms.BooleanField(label=_("Без документа"), required=False)
+    missing_recipient = forms.BooleanField(label=_("Без отримувача"), required=False)
+    missing_usage_place = forms.BooleanField(label=_("Без цеху"), required=False)
+    missing_destination = forms.BooleanField(label=_("Без місця призначення"), required=False)
+    invalid_qty = forms.BooleanField(label=_("Некоректна кількість"), required=False)
     document_number = forms.CharField(label=_("Номер документа"), required=False)
     q = forms.CharField(
         label=_("Пошук"),

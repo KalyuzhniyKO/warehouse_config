@@ -13,7 +13,7 @@
 <li>{% trans "Рухів без документа" %}: {{ data_quality.reconciliation.missing_documents }}</li>
 </ul>
 {% for key, check in data_quality.checks.items %}
-<h3 class="h6">{{ key }} ({{ check.count }})</h3>
+<h3 class="h6">{{ key }} ({{ check.count }})</h3><a href="{{ movement_list_base_url }}?{{ filter_query }}&no_document=1">journal</a>
 {% for m in check.examples %}<div>{{ m.occurred_at|date:"Y-m-d H:i" }} | {{ m.get_movement_type_display }} | {{ m.item }} | {{ m.qty }} | {{ m.document_number|default:"-" }} | {{ m.recipient|default:"-" }} | {{ m.department|default:"-" }} | {{ m.destination_location|default:m.source_location|default:"-" }}</div>{% empty %}<div>—</div>{% endfor %}
 {% endfor %}
 <h3 class="h6">{% trans "Негативні залишки" %} ({{ data_quality.stock.negative_balances|length }})</h3>
