@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Item, Location, Recipient, StockBalance, StockMovement, Unit, Warehouse
-from core.services.analytics import get_analytics_summary, get_top_issued_items
+from core.services.analytics import get_analytics_summary, get_kpi_delta, get_top_issued_items
 
 
 class AnalyticsDashboardTests(TestCase):
@@ -21,13 +21,15 @@ class AnalyticsDashboardTests(TestCase):
         self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
         self.superuser = get_user_model().objects.create_superuser("root", password="pw", email="r@e.com")
         self.unit = Unit.objects.create(name="шт", symbol="шт")
-        self.item = Item.objects.create(name="Кабель", unit=self.unit)
+        self.item = Item.objects.create(name="Кабель", unit=self.unit, internal_code="KB-1")
         self.wh = Warehouse.objects.create(name="WH")
         self.loc = Location.objects.create(name="L1", warehouse=self.wh)
         self.rec = Recipient.objects.create(name="Р1")
         StockBalance.objects.create(item=self.item, location=self.loc, qty=Decimal("5.000"))
-        StockMovement.objects.create(movement_type=StockMovement.MovementType.IN, item=self.item, qty=Decimal("10.000"), destination_location=self.loc, occurred_at=timezone.now(), document_number="DOC-IN")
-        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("2.000"), source_location=self.loc, recipient=self.rec, department="Цех 1", occurred_at=timezone.now(), document_number="DOC-OUT")
+        now = timezone.now()
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.IN, item=self.item, qty=Decimal("10.000"), destination_location=self.loc, occurred_at=now, document_number="DOC-IN")
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("2.000"), source_location=self.loc, recipient=self.rec, department="Цех 1", occurred_at=now, document_number="DOC-OUT")
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, occurred_at=now - timezone.timedelta(days=2), document_number="DOC-OLD")
 
     def test_access(self):
         self.assertEqual(self.client.get(reverse("management_analytics")).status_code, 302)
@@ -38,18 +40,35 @@ class AnalyticsDashboardTests(TestCase):
         self.client.force_login(self.superuser)
         self.assertEqual(self.client.get(reverse("management_analytics")).status_code, 200)
 
-    def test_page_sections(self):
+    def test_dashboard_markers_and_drilldown(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
-        self.assertContains(r, "Аналітика складу")
-        self.assertContains(r, "Операцій за період")
-        self.assertContains(r, "Топ товарів по видачі")
+        self.assertContains(r, "data-analytics-daily-chart")
+        self.assertContains(r, "data-analytics-operation-mix")
+        self.assertContains(r, "data-analytics-top-items-chart")
+        self.assertContains(r, "movement_type=out")
 
     def test_summary_and_top(self):
         summary = get_analytics_summary({})
-        self.assertEqual(summary["operations_count"], 2)
+        self.assertEqual(summary["operations_count"], 3)
         top = get_top_issued_items({})
         self.assertEqual(top[0]["item__name"], "Кабель")
+
+    def test_kpi_delta_helper(self):
+        self.assertEqual(get_kpi_delta(10, 5)["trend"], "positive")
+        self.assertEqual(get_kpi_delta(0, 0)["trend"], "neutral")
+        self.assertEqual(get_kpi_delta(3, 0)["label"], "нові дані")
+
+    def test_export_csv(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_export_csv"), {"movement_type": StockMovement.MovementType.OUT})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("text/csv", r["Content-Type"])
+        self.assertIn("analytics", r["Content-Disposition"])
+        body = r.content.decode("utf-8")
+        self.assertIn("Топ товарів", body)
+        self.assertIn("DOC-OUT", body)
+        self.assertNotIn("DOC-IN", body)
 
     def test_recent_document_and_empty_state(self):
         self.client.force_login(self.admin)
