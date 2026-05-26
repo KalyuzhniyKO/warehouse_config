@@ -65,6 +65,7 @@ from ..permissions import (
     user_in_groups,
 )
 from ..services import analytics as analytics_service
+from ..services.filter_memory import apply_remembered_filters, build_redirect_url, querydict_from_params
 from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
@@ -136,6 +137,7 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
+        context["used_remembered_filters"] = getattr(self, "used_remembered_filters", False)
         return context
 
 
@@ -145,9 +147,18 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     template_name = "core/stockmovement_list.html"
     context_object_name = "movements"
     paginate_by = 50
+    page_key = "movement_list"
+
+    def get(self, request, *args, **kwargs):
+        params, used_remembered_filters, should_redirect = apply_remembered_filters(request, self.page_key)
+        self.used_remembered_filters = used_remembered_filters
+        if should_redirect:
+            return redirect(build_redirect_url(request.path, params))
+        self.effective_get = querydict_from_params(params) if params else request.GET
+        return super().get(request, *args, **kwargs)
 
     def get_filter_form(self):
-        return StockMovementFilterForm(self.request.GET or None)
+        return StockMovementFilterForm(getattr(self, "effective_get", self.request.GET) or None)
 
     def get_queryset(self):
         queryset = StockMovement.objects.select_related(
@@ -209,4 +220,5 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
+        context["used_remembered_filters"] = getattr(self, "used_remembered_filters", False)
         return context

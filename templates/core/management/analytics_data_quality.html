@@ -3,7 +3,7 @@
 {% block content %}
 <h1 class="h3 mb-3">{% trans "Якість даних аналітики" %}</h1>
 <p><a href="{% url 'management_analytics' %}?{{ filter_query }}">{% trans "До аналітики" %}</a></p>
-<p>{{ stock_checked_note }}</p>
+<p class="small text-muted mb-1">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>{% if used_remembered_filters %}<p class="small text-success mb-1">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}<p><a class="btn btn-outline-secondary btn-sm" href="?reset_filters=1">{% trans "Скинути збережені фільтри" %}</a></p><p>{{ stock_checked_note }}</p>
 <h2 class="h5">{% trans "Перевірка узгодженості" %}</h2>
 <ul>
 <li>{% trans "Операцій у журналі" %}: {{ data_quality.reconciliation.total_movements }}</li>
