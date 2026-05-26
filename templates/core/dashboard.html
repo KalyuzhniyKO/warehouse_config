@@ -28,6 +28,7 @@
             {% if user.is_superuser or user|in_group:"Адміністратор складу" %}
             <a class="operation-card clickable-card report-card report-card--writeoff" href="{% url 'stock_writeoff' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">🗑️</span><div><h3 class="h6 mb-1">{% trans "Списання товару" %}</h3><p class="card-tip mb-0">{% trans "Облік втрат або браку." %}</p></div></div></div></a>
             {% endif %}
+            {% if user.is_superuser or user|in_group:"Адміністратор складу" %}<a class="operation-card clickable-card report-card" href="{% url 'management_analytics' %}"><div class="card-body"><span class="card-chevron" aria-hidden="true">→</span><div class="card-main"><span class="card-icon" aria-hidden="true">📈</span><div><h3 class="h6 mb-1">{% trans "Аналітика складу" %}</h3><p class="card-tip mb-0">{% trans "KPI та управлінський огляд за період." %}</p></div></div></div></a>{% endif %}
         </div>
     </section>
 
