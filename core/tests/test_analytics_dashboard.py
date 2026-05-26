@@ -11,7 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from core.models import Item, Location, Recipient, StockBalance, StockMovement, Unit, Warehouse
-from core.services.analytics import get_analytics_summary, get_kpi_delta, get_top_issued_items
+from core.services.analytics import get_analytics_summary, get_kpi_delta, get_top_issued_items, get_reconciliation_summary
 
 
 class AnalyticsDashboardTests(TestCase):
@@ -100,11 +100,49 @@ class AnalyticsDashboardTests(TestCase):
         self.assertEqual(self.client.get(reverse("management_analytics_usage_place_detail", args=["Цех 1"])).status_code, 200)
         self.assertEqual(self.client.get(reverse("management_analytics_recipient_detail", args=[self.rec.pk])).status_code, 200)
 
+
+    def test_dashboard_quality_card_marker(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics"))
+        self.assertContains(r, "data-analytics-quality-card")
+        self.assertContains(r, "Без документа")
+
+    def test_data_quality_page_access(self):
+        url = reverse("management_analytics_data_quality")
+        self.assertEqual(self.client.get(url).status_code, 302)
+        self.client.force_login(self.storekeeper)
+        self.assertEqual(self.client.get(url).status_code, 403)
+        self.client.force_login(self.admin)
+        self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_missing_document_is_reported(self):
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, occurred_at=timezone.now(), document_number="")
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_data_quality"))
+        self.assertContains(r, "missing_documents")
+        self.assertContains(r, "(1)")
+
+    def test_issue_without_recipient_warning(self):
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, department="Цех 2", occurred_at=timezone.now(), document_number="D")
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_data_quality"))
+        self.assertContains(r, "issue_without_recipient")
+
+    def test_negative_stock_warning(self):
+        StockBalance.objects.create(item=Item.objects.create(name="Neg", unit=self.unit, internal_code="NEG"), location=self.loc, qty=Decimal("-1.000"))
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_data_quality"))
+        self.assertContains(r, "Негативні залишки")
+        self.assertContains(r, "(1)")
+
+    def test_reconciliation_total_matches_queryset(self):
+        summary = get_reconciliation_summary({})
+        self.assertEqual(summary["total_movements"], StockMovement.objects.count())
     def test_xlsx_export(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_export_xlsx"), {"movement_type": StockMovement.MovementType.OUT})
         self.assertEqual(r.status_code, 200)
         self.assertIn("spreadsheetml", r["Content-Type"])
         wb = load_workbook(filename=BytesIO(r.content))
-        for title in ["Summary", "Daily movement", "Operation mix", "Top issued items", "Top usage places", "Top recipients", "Recent movements", "Inactive stock items"]:
+        for title in ["Summary", "Daily movement", "Operation mix", "Top issued items", "Top usage places", "Top recipients", "Recent movements", "Inactive stock items", "Data quality"]:
             self.assertIn(title, wb.sheetnames)
