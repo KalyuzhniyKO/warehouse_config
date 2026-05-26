@@ -163,6 +163,12 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             queryset = queryset.filter(movement_type=cd["movement_type"])
         if cd.get("item"):
             queryset = queryset.filter(item=cd["item"])
+        if cd.get("item_id"):
+            queryset = queryset.filter(item_id=cd["item_id"])
+        if cd.get("recipient"):
+            queryset = queryset.filter(recipient=cd["recipient"])
+        if cd.get("recipient_id"):
+            queryset = queryset.filter(recipient_id=cd["recipient_id"])
         if cd.get("warehouse"):
             queryset = queryset.filter(
                 Q(source_location__warehouse=cd["warehouse"]) | Q(destination_location__warehouse=cd["warehouse"])
@@ -179,8 +185,20 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             queryset = queryset.filter(issue_reason=cd["issue_reason"])
         if cd.get("department"):
             queryset = queryset.filter(department__icontains=cd["department"])
+        if cd.get("usage_place_id"):
+            queryset = queryset.filter(department__iexact=cd["usage_place_id"])
         if cd.get("document_number"):
             queryset = queryset.filter(document_number__icontains=cd["document_number"])
+        if cd.get("no_document"):
+            queryset = queryset.filter(Q(document_number__isnull=True) | Q(document_number=""))
+        if cd.get("missing_recipient"):
+            queryset = queryset.filter(recipient__isnull=True)
+        if cd.get("missing_usage_place"):
+            queryset = queryset.filter(Q(department__isnull=True) | Q(department=""))
+        if cd.get("missing_destination"):
+            queryset = queryset.filter(destination_location__isnull=True)
+        if cd.get("invalid_qty"):
+            queryset = queryset.filter(qty__lte=0)
         if cd.get("q"):
             q = cd["q"]
             queryset = queryset.filter(

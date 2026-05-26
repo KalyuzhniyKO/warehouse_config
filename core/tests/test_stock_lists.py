@@ -79,6 +79,7 @@ class StockMovementListTests(TestCase):
         self.destination_location = Location.objects.create(
             warehouse=self.destination_warehouse, name="Workflow destination location"
         )
+        self.recipient = Recipient.objects.create(name="Recipient 1")
 
     def test_transfer_movement_is_visible_in_movement_list(self):
         StockMovement.objects.create(
@@ -108,3 +109,20 @@ class StockMovementListTests(TestCase):
         response = self.client.get(reverse("movement_list"), {"q": "nothing"})
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "Find me")
+
+    def test_filters_item_recipient_department_and_document(self):
+        other = Item.objects.create(name="Other", unit=self.unit)
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.location, recipient=self.recipient, department="Цех 1", document_number="DOC-1")
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=other, qty=Decimal("1.000"), source_location=self.location, department="Цех 2", document_number="")
+
+        response = self.client.get(reverse("movement_list"), {"item_id": self.item.pk, "recipient_id": self.recipient.pk, "usage_place_id": "Цех 1", "document_number": "DOC-1"})
+        self.assertContains(response, "DOC-1")
+        self.assertNotContains(response, "Цех 2")
+
+    def test_problem_filters_and_badges(self):
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("0.000"), source_location=self.location, department="", document_number="")
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.location, recipient=self.recipient, department="Цех", document_number="OK")
+        response = self.client.get(reverse("movement_list"), {"no_document": "1", "missing_recipient": "1", "missing_usage_place": "1", "invalid_qty": "1"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'active-filter-badge')
+        self.assertContains(response, 'table-warning')
