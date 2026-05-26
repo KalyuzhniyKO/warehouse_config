@@ -89,3 +89,15 @@ class FilterMemoryTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("period=30d", response.url)
         self.assertIn("movement_type=out", response.url)
+
+    def test_remembered_filters_redirect_happens_only_once(self):
+        self.client.force_login(self.admin1)
+        url = reverse("management_analytics")
+        self.client.get(url, {"period": "7d", "movement_type": "out"})
+
+        first = self.client.get(url)
+        self.assertEqual(first.status_code, 302)
+        self.assertIn("period=7d", first.url)
+
+        second = self.client.get(first.url)
+        self.assertEqual(second.status_code, 200)

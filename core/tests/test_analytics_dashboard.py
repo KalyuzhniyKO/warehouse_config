@@ -72,6 +72,20 @@ class AnalyticsDashboardTests(TestCase):
         self.assertIn("DOC-OUT", body)
         self.assertNotIn("DOC-IN", body)
 
+    def test_export_access_permissions(self):
+        csv_url = reverse("management_analytics_export_csv")
+        xlsx_url = reverse("management_analytics_export_xlsx")
+        self.assertEqual(self.client.get(csv_url).status_code, 302)
+        self.assertEqual(self.client.get(xlsx_url).status_code, 302)
+
+        self.client.force_login(self.storekeeper)
+        self.assertEqual(self.client.get(csv_url).status_code, 403)
+        self.assertEqual(self.client.get(xlsx_url).status_code, 403)
+
+        self.client.force_login(self.superuser)
+        self.assertEqual(self.client.get(csv_url).status_code, 200)
+        self.assertEqual(self.client.get(xlsx_url).status_code, 200)
+
     def test_recent_document_and_empty_state(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
