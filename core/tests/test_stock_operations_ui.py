@@ -831,6 +831,62 @@ class StockIssueInterfaceTests(TestCase):
         self.assertContains(response, "Цех 1")
         self.assertContains(response, "DOC-1")
 
+    def test_movement_list_formats_date_and_time_compactly(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("2.000"),
+            destination_location=self.location,
+            occurred_at=timezone.datetime(
+                2026, 5, 26, 17, 15, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+        self.client.force_login(self.storekeeper)
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "26.05.2026")
+        self.assertContains(response, "17:15")
+        self.assertContains(response, 'class="movement-date-cell"')
+        self.assertContains(response, f'>{movement.occurred_at.strftime("%Y-%m-%d")}<', count=0)
+
+    def test_movement_list_shows_document_number_or_dash(self):
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            recipient=self.recipient,
+            document_number="INV-2026-15",
+        )
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            destination_location=self.other_location,
+            document_number="",
+        )
+        self.client.force_login(self.storekeeper)
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="movement-document-cell">INV-2026-15<')
+        self.assertContains(response, 'class="movement-document-cell">—<')
+
+    def test_movement_list_includes_readability_css_classes(self):
+        self.client.force_login(self.storekeeper)
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "movement-date-cell")
+        self.assertContains(response, "movement-document-cell")
+        self.assertContains(response, "movement-code-cell")
+        self.assertContains(response, "movement-qty-cell")
+
 
 class StockOperationWorkflowTests(TestCase):
 

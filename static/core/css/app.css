@@ -139,6 +139,12 @@ header .navbar { min-height: 56px; }
 .data-table th{font-weight:650;white-space:nowrap}
 .data-table td,.data-table th{padding:.65rem .75rem}
 .data-table tbody tr:hover{background:#f8fafc}
+.data-table td.movement-date-cell{white-space:nowrap;min-width:96px;line-height:1.2}
+.movement-date{font-variant-numeric:tabular-nums}
+.movement-time{font-size:.88rem;color:#64748b;font-variant-numeric:tabular-nums}
+.data-table td.movement-code-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
+.data-table td.movement-document-cell{white-space:nowrap}
+.data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .table-action{min-height:2rem}
 .status-badge{font-weight:600}
 .empty-state{color:#667085;font-weight:500}
