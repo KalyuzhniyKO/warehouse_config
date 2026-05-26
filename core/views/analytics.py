@@ -120,7 +120,8 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 
         query_base = {k: v for k, v in self.request.GET.items() if v}
         date_params = {"date_from": filters.get("date_from"), "date_to": filters.get("date_to")}
-        movement_query = {**{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location"}}, **{k: str(v) for k, v in date_params.items() if v}}
+        movement_query = {**{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location", "movement_type"}}, **{k: str(v) for k, v in date_params.items() if v}}
+        filter_query = analytics_service.build_analytics_filter_query(filters)
         daily_movement = analytics_service.get_daily_movement(filters)
         top_issued_items = analytics_service.get_top_issued_items(filters)
         top_usage_places = analytics_service.get_top_usage_places(filters)
@@ -139,6 +140,8 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
                 "recent_movements": analytics_service.get_recent_movements(filters),
                 "movement_list_base_url": reverse("movement_list"),
                 "movement_query": urlencode(movement_query),
+                "filter_query": urlencode(filter_query),
+                "quick_periods": [("today", _("Сьогодні")), ("7d", _("7 днів")), ("30d", _("30 днів")), ("month", _("Поточний місяць")), ("prev_month", _("Попередній місяць"))],
             }
         )
         return context
@@ -212,45 +215,79 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         try:
             from openpyxl import Workbook
         except ImportError:
-            return HttpResponse(
-                _("XLSX експорт недоступний: openpyxl не встановлено."), status=501
-            )
+            return HttpResponse(_("XLSX експорт недоступний: openpyxl не встановлено."), status=501)
         form = AnalyticsFilterForm(request.GET or None)
         filters = clean_analytics_filters(form)
-        workbook = Workbook()
-        sheet = workbook.active
-        sheet.title = "Аналітика"
-        sheet.append(
-            [
-                "Дата",
-                "Тип операції",
-                "Номенклатура",
-                "Кількість",
-                "Склад",
-                "Локація",
-                "Отримувач",
-            ]
-        )
-        for movement in analytics_service.filter_movements(filters).order_by(
-            "occurred_at", "id"
-        ):
-            location = movement_export_location(movement, filters)
-            sheet.append(
-                [
-                    movement.occurred_at.strftime("%Y-%m-%d %H:%M"),
-                    movement.get_movement_type_display(),
-                    movement.item.name,
-                    float(movement.qty),
-                    location.warehouse.name if location else "",
-                    location.name if location else "",
-                    movement.recipient.name if movement.recipient else "",
-                ]
-            )
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response["Content-Disposition"] = (
-            'attachment; filename="warehouse-analytics.xlsx"'
-        )
-        workbook.save(response)
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Summary"
+        ws.append(["Metric", "Value"])
+        summary = analytics_service.get_analytics_summary(filters)
+        for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty"]:
+            ws.append([key, float(summary[key]) if hasattr(summary[key], 'quantize') else summary[key]])
+        for title, headers, rows in [
+            ("Daily movement", ["Date", "Operations", "Receive", "Issue", "Return", "Writeoff"], [[r['day'].isoformat() if r['day'] else '', r['operations'], float(r['receive_qty'] or 0), float(r['issue_qty'] or 0), float(r['return_qty'] or 0), float(r['writeoff_qty'] or 0)] for r in analytics_service.get_daily_movement(filters)]),
+            ("Operation mix", ["Type", "Total", "Percent"], [[r['key'], r['total'], r['percent']] for r in analytics_service.get_operation_mix(filters)]),
+            ("Top issued items", ["Item", "Code", "Qty", "Ops"], [[r['item__name'], r['item__internal_code'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_issued_items(filters)]),
+            ("Top usage places", ["Usage place", "Qty", "Ops"], [[r['department'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_usage_places(filters)]),
+            ("Top recipients", ["Recipient", "Qty", "Ops"], [[r['recipient__name'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_recipients(filters)]),
+            ("Recent movements", ["Date", "Type", "Item", "Qty", "Document"], [[m.occurred_at.strftime('%Y-%m-%d %H:%M'), m.get_movement_type_display(), m.item.name, float(m.qty), m.document_number or ''] for m in analytics_service.get_recent_movements(filters)]),
+            ("Inactive stock items", ["Item", "Code", "Qty"], [[r['item__name'], r['item__internal_code'], float(r['qty'] or 0)] for r in analytics_service.get_inactive_stock_items(filters)]),
+        ]:
+            sh = wb.create_sheet(title)
+            sh.append(headers)
+            for row in rows:
+                sh.append(row)
+            sh.freeze_panes = 'A2'
+            sh.auto_filter.ref = sh.dimensions
+        ws.freeze_panes = 'A2'
+        ws.auto_filter.ref = ws.dimensions
+        response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        response["Content-Disposition"] = 'attachment; filename="warehouse-analytics.xlsx"'
+        wb.save(response)
         return response
+
+
+class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = ANALYTICS_GROUPS
+    template_name = "core/management/analytics_item_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = AnalyticsFilterForm(self.request.GET or None)
+        filters = clean_analytics_filters(form)
+        item = get_object_or_404(Item, pk=self.kwargs['item_id'])
+        data = analytics_service.get_item_analytics(item, filters)
+        filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        context.update({'item': item, 'filter_form': form, 'filters': filters, 'data': data, 'movement_list_base_url': reverse('movement_list'), 'filter_query': filter_query})
+        return context
+
+
+class AnalyticsUsagePlaceDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = ANALYTICS_GROUPS
+    template_name = "core/management/analytics_usage_place_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = AnalyticsFilterForm(self.request.GET or None)
+        filters = clean_analytics_filters(form)
+        usage_place = self.kwargs['usage_place_id']
+        data = analytics_service.get_usage_place_analytics(usage_place, filters)
+        filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        context.update({'usage_place': usage_place, 'filters': filters, 'data': data, 'movement_list_base_url': reverse('movement_list'), 'filter_query': filter_query})
+        return context
+
+
+class AnalyticsRecipientDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = ANALYTICS_GROUPS
+    template_name = "core/management/analytics_recipient_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = AnalyticsFilterForm(self.request.GET or None)
+        filters = clean_analytics_filters(form)
+        recipient = get_object_or_404(Recipient, pk=self.kwargs['recipient_id'])
+        data = analytics_service.get_recipient_analytics(recipient, filters)
+        filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        context.update({'recipient': recipient, 'filters': filters, 'data': data, 'movement_list_base_url': reverse('movement_list'), 'filter_query': filter_query})
+        return context

@@ -1,12 +1,13 @@
 from datetime import timedelta
 from decimal import Decimal
+from io import BytesIO
 
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from core.models import Item, Location, Recipient, StockBalance, StockMovement, Warehouse
+from core.models import Item, Location, Recipient, StockBalance, StockMovement
 
 IN_TYPES = {StockMovement.MovementType.IN, StockMovement.MovementType.INITIAL_BALANCE}
 ISSUE_TYPES = {StockMovement.MovementType.OUT}
@@ -31,14 +32,28 @@ def get_analytics_filters(params):
         date_from, date_to = today - timedelta(days=29), today
     elif period == "month":
         date_from, date_to = today.replace(day=1), today
+    elif period == "prev_month":
+        first_day = today.replace(day=1)
+        date_to = first_day - timedelta(days=1)
+        date_from = date_to.replace(day=1)
     elif period == "custom":
         date_from = params.get("date_from") or None
         date_to = params.get("date_to") or None
     return {"period": period, "date_from": date_from, "date_to": date_to}
 
 
+def build_analytics_filter_query(filters):
+    data = {}
+    for k in ["date_from", "date_to", "warehouse", "location", "movement_type"]:
+        val = filters.get(k)
+        if not val:
+            continue
+        data[k] = str(getattr(val, "pk", val))
+    return data
+
+
 def filter_movements(filters):
-    qs = StockMovement.objects.select_related("item", "source_location", "destination_location", "recipient")
+    qs = StockMovement.objects.select_related("item", "source_location", "source_location__warehouse", "destination_location", "destination_location__warehouse", "recipient")
     if filters.get("date_from"):
         qs = qs.filter(occurred_at__date__gte=filters["date_from"])
     if filters.get("date_to"):
@@ -60,6 +75,7 @@ def filter_balances(filters):
         qs = qs.filter(location=filters["location"])
     return qs
 
+# keep existing funcs...
 
 def get_analytics_summary(filters):
     mv = filter_movements(filters)
@@ -96,7 +112,7 @@ def get_daily_movement(filters):
 
 
 def get_top_issued_items(filters):
-    return list(filter_movements(filters).filter(movement_type__in=ISSUE_TYPES).values("item__name", "item__internal_code", "item__barcode__barcode").annotate(total_qty=Sum("qty"), operations=Count("id")).order_by("-total_qty", "item__name")[:10])
+    return list(filter_movements(filters).filter(movement_type__in=ISSUE_TYPES).values("item__id", "item__name", "item__internal_code", "item__barcode__barcode").annotate(total_qty=Sum("qty"), operations=Count("id")).order_by("-total_qty", "item__name")[:10])
 
 
 def get_top_usage_places(filters):
@@ -104,7 +120,7 @@ def get_top_usage_places(filters):
 
 
 def get_top_recipients(filters):
-    return list(filter_movements(filters).filter(recipient__isnull=False).values("recipient__name").annotate(total_qty=Sum("qty"), operations=Count("id")).order_by("-total_qty", "recipient__name")[:10])
+    return list(filter_movements(filters).filter(recipient__isnull=False).values("recipient__id", "recipient__name").annotate(total_qty=Sum("qty"), operations=Count("id")).order_by("-total_qty", "recipient__name")[:10])
 
 
 def get_inactive_stock_items(filters):
@@ -163,3 +179,37 @@ def get_operation_mix(filters):
             data[key] += row["total"]
     total = sum(data.values())
     return [{"key": k, "total": v, "percent": (v/total*100) if total else 0} for k,v in data.items()]
+
+
+def get_stock_by_location_for_item(item):
+    return list(StockBalance.objects.filter(item=item, qty__gt=0).select_related('location', 'location__warehouse').values('location__warehouse__name', 'location__name').annotate(total_qty=Sum('qty')).order_by('location__warehouse__name', 'location__name'))
+
+
+def get_item_analytics(item, filters):
+    mv = filter_movements(filters).filter(item=item)
+    return {
+        'summary': mv.aggregate(operations=Count('id'), receive_qty=Sum('qty', filter=Q(movement_type__in=IN_TYPES)), issue_qty=Sum('qty', filter=Q(movement_type__in=ISSUE_TYPES)), return_qty=Sum('qty', filter=Q(movement_type__in=RETURN_TYPES)), writeoff_qty=Sum('qty', filter=Q(movement_type__in=WRITEOFF_TYPES))),
+        'recent_movements': mv.order_by('-occurred_at', '-id')[:20],
+        'top_usage_places': list(mv.filter(movement_type__in=ISSUE_TYPES).values('department').annotate(total_qty=Sum('qty'), operations=Count('id')).order_by('-total_qty')[:10]),
+        'top_recipients': list(mv.filter(movement_type__in=ISSUE_TYPES, recipient__isnull=False).values('recipient__id', 'recipient__name').annotate(total_qty=Sum('qty'), operations=Count('id')).order_by('-total_qty')[:10]),
+        'stock_by_location': get_stock_by_location_for_item(item),
+    }
+
+
+def get_usage_place_analytics(usage_place, filters):
+    mv = filter_movements(filters).filter(department=usage_place)
+    return {
+        'summary': mv.aggregate(operations=Count('id'), total_qty=Sum('qty')),
+        'top_items': list(mv.values('item__id', 'item__name', 'item__internal_code').annotate(total_qty=Sum('qty'), operations=Count('id')).order_by('-total_qty')[:10]),
+        'top_recipients': list(mv.filter(recipient__isnull=False).values('recipient__id', 'recipient__name').annotate(total_qty=Sum('qty'), operations=Count('id')).order_by('-total_qty')[:10]),
+        'recent_movements': mv.order_by('-occurred_at', '-id')[:20],
+    }
+
+
+def get_recipient_analytics(recipient, filters):
+    mv = filter_movements(filters).filter(recipient=recipient)
+    return {
+        'summary': mv.aggregate(operations=Count('id'), total_qty=Sum('qty')),
+        'top_items': list(mv.values('item__id', 'item__name', 'item__internal_code').annotate(total_qty=Sum('qty'), operations=Count('id')).order_by('-total_qty')[:10]),
+        'recent_movements': mv.order_by('-occurred_at', '-id')[:20],
+    }

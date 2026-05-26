@@ -1,5 +1,7 @@
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO, StringIO
+
+from openpyxl import load_workbook
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -77,3 +79,32 @@ class AnalyticsDashboardTests(TestCase):
         StockMovement.objects.all().delete()
         r2 = self.client.get(reverse("management_analytics"))
         self.assertContains(r2, "За вибраний період операцій немає.")
+
+    def test_detail_pages_and_links_and_quick_filters(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics"), {"date_from": "2026-01-01", "date_to": "2026-01-31"})
+        self.assertContains(r, reverse("management_analytics_item_detail", args=[self.item.pk]))
+        self.assertContains(r, reverse("management_analytics_usage_place_detail", args=["Цех 1"]))
+        self.assertContains(r, reverse("management_analytics_recipient_detail", args=[self.rec.pk]))
+        self.assertContains(r, "period=today")
+        self.assertContains(r, "period=7d")
+        self.assertContains(r, "period=30d")
+        self.assertContains(r, "period=month")
+        self.assertContains(r, "period=prev_month")
+
+    def test_detail_access_permissions(self):
+        self.client.force_login(self.storekeeper)
+        self.assertEqual(self.client.get(reverse("management_analytics_item_detail", args=[self.item.pk])).status_code, 403)
+        self.client.force_login(self.admin)
+        self.assertEqual(self.client.get(reverse("management_analytics_item_detail", args=[self.item.pk])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("management_analytics_usage_place_detail", args=["Цех 1"])).status_code, 200)
+        self.assertEqual(self.client.get(reverse("management_analytics_recipient_detail", args=[self.rec.pk])).status_code, 200)
+
+    def test_xlsx_export(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_export_xlsx"), {"movement_type": StockMovement.MovementType.OUT})
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("spreadsheetml", r["Content-Type"])
+        wb = load_workbook(filename=BytesIO(r.content))
+        for title in ["Summary", "Daily movement", "Operation mix", "Top issued items", "Top usage places", "Top recipients", "Recent movements", "Inactive stock items"]:
+            self.assertIn(title, wb.sheetnames)
