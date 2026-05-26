@@ -17,6 +17,7 @@ from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+from itertools import groupby
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -66,6 +67,7 @@ from ..permissions import (
     user_in_groups,
 )
 from ..services import analytics as analytics_service
+from ..services.analytics_presets import get_analytics_report_presets
 from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
@@ -85,6 +87,21 @@ from ..services.stock import (
 
 
 
+
+
+class ManagementReportsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = ANALYTICS_GROUPS
+    template_name = "core/management/reports.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        presets = get_analytics_report_presets()
+        grouped = []
+        for _, items in groupby(presets, key=lambda x: x["category"]):
+            items = list(items)
+            grouped.append({"title": items[0]["category_title"], "presets": items})
+        context["preset_groups"] = grouped
+        return context
 class AnalyticsRedirectView(LoginRequiredMixin, GroupRequiredMixin, View):
     group_names = ANALYTICS_GROUPS
 

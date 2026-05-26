@@ -73,6 +73,7 @@ from .analytics import (
     AnalyticsItemDetailView,
     AnalyticsUsagePlaceDetailView,
     AnalyticsRecipientDetailView,
+    ManagementReportsView,
     clean_analytics_filters,
     movement_export_location,
 )
@@ -84,6 +85,7 @@ __all__ = [
     "AnalyticsView",
     "AnalyticsXLSXExportView",
     "AnalyticsRecipientDetailView",
+    "ManagementReportsView",
     "AnalyticsUsagePlaceDetailView",
     "AnalyticsDataQualityView",
     "AnalyticsItemDetailView",

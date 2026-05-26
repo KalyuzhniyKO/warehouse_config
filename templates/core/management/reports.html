@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Звіти складу" %} · {% trans "Складський облік" %}{% endblock %}
+{% block extra_css %}
+<style>
+.report-category-heading{font-size:1.1rem;font-weight:600;margin:1rem 0 .5rem;}
+.report-preset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;}
+.report-preset-card{border:1px solid rgba(17,24,39,.12);border-radius:.75rem;padding:.75rem;background:#fff;}
+.report-preset-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
+</style>
+{% endblock %}
+{% block content %}
+<h1 class="h3 mb-3">{% trans "Звіти складу" %}</h1>
+{% for group in preset_groups %}
+<h2 class="report-category-heading">{{ group.title }}</h2>
+<div class="report-preset-grid">
+{% for preset in group.presets %}
+<article class="report-preset-card" data-preset-key="{{ preset.key }}">
+<div class="mb-1"><span class="badge text-bg-light">{{ group.title }}</span></div>
+<h3 class="h6">{{ preset.title }}</h3>
+<p class="small text-muted">{{ preset.description }}</p>
+<p class="small"><code>{{ preset.url }}</code></p>
+<div class="report-preset-actions">
+<a class="btn btn-sm btn-primary" href="{{ preset.url }}">{% trans "Відкрити" %}</a>
+{% if preset.xlsx_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ preset.xlsx_url }}">XLSX</a>{% endif %}
+</div>
+</article>
+{% endfor %}
+</div>
+{% endfor %}
+{% endblock %}
