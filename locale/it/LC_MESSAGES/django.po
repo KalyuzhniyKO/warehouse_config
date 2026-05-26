@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-26 21:45+0300\n"
+"POT-Creation-Date: 2026-05-26 22:50+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,21 +23,21 @@ msgstr ""
 msgid "Період"
 msgstr "Periodo fa"
 
-#: core/forms/analytics.py:11
+#: core/forms/analytics.py:11 core/views/analytics.py:145
 #, fuzzy
 #| msgid "Всього рядків"
 msgid "Сьогодні"
 msgstr "Righe totali"
 
-#: core/forms/analytics.py:12
+#: core/forms/analytics.py:12 core/views/analytics.py:145
 msgid "7 днів"
 msgstr ""
 
-#: core/forms/analytics.py:13
+#: core/forms/analytics.py:13 core/views/analytics.py:145
 msgid "30 днів"
 msgstr ""
 
-#: core/forms/analytics.py:14
+#: core/forms/analytics.py:14 core/views/analytics.py:145
 msgid "Поточний місяць"
 msgstr ""
 
@@ -59,10 +59,9 @@ msgstr "Sì, sì"
 #: core/forms/filters.py:9 core/forms/filters.py:49 core/forms/inventory.py:9
 #: core/forms/stock_operations.py:46 core/models/barcodes.py:11
 #: core/models/inventory.py:19 core/models/warehouse.py:81
-#: core/models/warehouse.py:113 core/views/analytics.py:168
-#: core/views/directories.py:352 core/views/inventory.py:113
-#: core/views/stock_operations.py:481 templates/admin/index.html:25
-#: templates/core/inventory_detail.html:25
+#: core/models/warehouse.py:113 core/views/directories.py:352
+#: core/views/inventory.py:113 core/views/stock_operations.py:481
+#: templates/admin/index.html:25 templates/core/inventory_detail.html:25
 #: templates/core/inventory_list.html:22
 #: templates/core/stock_writeoff_result.html:10
 #: templates/core/stockbalance_list.html:38
@@ -76,7 +75,7 @@ msgid "Цех / місце використання"
 msgstr "Luogo di utilizzo"
 
 #: core/forms/analytics.py:23 core/forms/filters.py:44
-#: core/views/analytics.py:165 core/views/stock_operations.py:475
+#: core/views/stock_operations.py:475
 #: templates/core/stock_movement_print.html:36
 #: templates/core/stockmovement_list.html:41
 msgid "Тип операції"
@@ -231,9 +230,8 @@ msgstr "Ad esempio: A-01, riga 2, cella 5."
 #: core/forms/stock_operations.py:49 core/models/barcodes.py:13
 #: core/models/inventory.py:25 core/models/inventory.py:81
 #: core/models/stock.py:17 core/models/warehouse.py:108
-#: core/models/warehouse.py:135 core/views/analytics.py:169
-#: core/views/inventory.py:118 core/views/stock_operations.py:482
-#: templates/core/inventory_count.html:30
+#: core/models/warehouse.py:135 core/views/inventory.py:118
+#: core/views/stock_operations.py:482 templates/core/inventory_count.html:30
 #: templates/core/inventory_detail.html:26
 #: templates/core/inventory_line_table.html:9
 #: templates/core/inventory_list.html:23
@@ -247,8 +245,8 @@ msgstr "Ubicazione"
 #: core/models/barcodes.py:10 core/models/inventory.py:75
 #: core/models/labels.py:106 core/models/stock.py:11 core/models/stock.py:59
 #: core/models/warehouse.py:40 core/models/warehouse.py:41
-#: core/views/analytics.py:166 core/views/inventory.py:115
-#: templates/core/inventory_count.html:28
+#: core/views/analytics.py:196 core/views/analytics.py:208
+#: core/views/inventory.py:115 templates/core/inventory_count.html:28
 #: templates/core/inventory_line_table.html:7
 #: templates/core/item_label_print.html:7
 #: templates/core/management/dashboard.html:53
@@ -481,9 +479,9 @@ msgstr ""
 "magazzino."
 
 #: core/forms/stock_operations.py:52 core/forms/stock_operations.py:220
-#: core/forms/stock_operations.py:272 core/views/analytics.py:167
-#: core/views/stock_operations.py:480
-#: templates/core/management/analytics.html:20
+#: core/forms/stock_operations.py:272 core/views/analytics.py:196
+#: core/views/analytics.py:200 core/views/analytics.py:204
+#: core/views/analytics.py:208 core/views/stock_operations.py:480
 #: templates/core/stock_issue_result.html:18
 #: templates/core/stock_movement_print.html:40
 #: templates/core/stock_receive_result.html:18
@@ -710,7 +708,7 @@ msgid "notes"
 msgstr "note"
 
 #: core/models/directories.py:70 core/models/stock.py:82
-#: core/views/analytics.py:170 templates/core/stockmovement_list.html:47
+#: core/views/analytics.py:204 templates/core/stockmovement_list.html:47
 msgid "Отримувач"
 msgstr "Destinatario"
 
@@ -1139,6 +1137,42 @@ msgstr ""
 msgid "У вас немає прав для перегляду цієї сторінки."
 msgstr "Non hai fatto nulla per leggere queste storie."
 
+#: core/services/analytics.py:154 core/services/analytics.py:161
+msgid "без змін"
+msgstr ""
+
+#: core/services/analytics.py:155
+#, fuzzy
+#| msgid "Немає даних"
+msgid "нові дані"
+msgstr "No, Daniel"
+
+#: core/services/analytics.py:242
+msgid "Розбіжність між журналом та денним графіком"
+msgstr ""
+
+#: core/services/analytics.py:244
+#, fuzzy
+#| msgid "Номер документа"
+msgid "Є рухи без документа"
+msgstr "Numero del documento"
+
+#: core/services/analytics.py:246
+msgid "Є рухи з неповними даними"
+msgstr ""
+
+#: core/services/analytics.py:248
+#, fuzzy
+#| msgid "Початкові залишки"
+msgid "Виявлено негативні залишки"
+msgstr "Giacenze iniziali"
+
+#: core/services/analytics.py:250
+#, fuzzy
+#| msgid "Початкові залишки"
+msgid "Є підозрілі залишки"
+msgstr "Giacenze iniziali"
+
 #: core/services/inventory.py:114
 msgid "Інвентаризацію вже завершено."
 msgstr "Il conteggio dell'inventario è già stato completato."
@@ -1207,15 +1241,122 @@ msgstr "Non è stata inserita l'etichetta: %(error)s"
 msgid "Для видачі товару потрібно вказати отримувача."
 msgstr "Per emettere il prodotto è necessario indicare il destinatario."
 
-#: core/views/analytics.py:164 templates/core/management/analytics.html:15
-#: templates/core/management/analytics.html:20
+#: core/views/analytics.py:145
+#, fuzzy
+#| msgid "Попередня"
+msgid "Попередній місяць"
+msgstr "Precedente"
+
+#: core/views/analytics.py:188
+#, fuzzy
+#| msgid "Розділи"
+msgid "Розділ"
+msgstr "Sezioni"
+
+#: core/views/analytics.py:188
+#, fuzzy
+#| msgid "Показувати текст штрихкоду"
+msgid "Показник"
+msgstr "Visualizza il testo a strisce"
+
+#: core/views/analytics.py:188
+#, fuzzy
+#| msgid "Позначення"
+msgid "Значення"
+msgstr "Simbolo"
+
+#: core/views/analytics.py:189
+#, fuzzy
+#| msgid "Операції складу"
+msgid "Операцій за період"
+msgstr "Operazioni di magazzino"
+
+#: core/views/analytics.py:189 core/views/analytics.py:192
+msgid "Прихід"
+msgstr "Bene"
+
+#: core/views/analytics.py:189 core/views/analytics.py:192
+msgid "Видача"
+msgstr "Emissione"
+
+#: core/views/analytics.py:189 core/views/analytics.py:192
+#, fuzzy
+#| msgid "Повернення товару"
+msgid "Повернення"
+msgstr "Restituzione prodotto"
+
+#: core/views/analytics.py:189 core/views/analytics.py:192
+#: templates/core/management/dashboard.html:38
+msgid "Списання"
+msgstr "Descrizione"
+
+#: core/views/analytics.py:190
+#, fuzzy
+#| msgid "Повернення товару"
+msgid "Зведення"
+msgstr "Restituzione prodotto"
+
+#: core/views/analytics.py:192
+#, fuzzy
+#| msgid "Рух товарів"
+msgid "Рух по днях"
+msgstr "Movimento delle merci"
+
+#: core/views/analytics.py:192 core/views/analytics.py:208
 #: templates/core/stockmovement_list.html:40
 msgid "Дата"
 msgstr "Ecco"
 
-#: core/views/analytics.py:199
+#: core/views/analytics.py:192 core/views/analytics.py:196
+#: core/views/analytics.py:200 core/views/analytics.py:204
+#, fuzzy
+#| msgid "ID операції"
+msgid "Операції"
+msgstr "ID operazione"
+
+#: core/views/analytics.py:196
+#, fuzzy
+#| msgid "Рухи товарів"
+msgid "Топ товарів"
+msgstr "Movimenti di magazzino"
+
+#: core/views/analytics.py:200
+#, fuzzy
+#| msgid "Топ-10 отримувачів"
+msgid "Топ цехів"
+msgstr "Top 10 destinatari"
+
+#: core/views/analytics.py:200
+msgid "Цех"
+msgstr ""
+
+#: core/views/analytics.py:204 templates/core/management/analytics.html:11
+#, fuzzy
+#| msgid "Топ-10 отримувачів"
+msgid "Топ отримувачів"
+msgstr "Top 10 destinatari"
+
+#: core/views/analytics.py:208 templates/core/management/analytics.html:13
+#, fuzzy
+#| msgid "Усі операції"
+msgid "Останні операції"
+msgstr "Tutte le operazioni"
+
+#: core/views/analytics.py:208 core/views/directories.py:354
+msgid "Тип"
+msgstr "Tipo"
+
+#: core/views/analytics.py:208 templates/core/stockmovement_list.html:50
+msgid "Документ"
+msgstr "Documento"
+
+#: core/views/analytics.py:221
 msgid "XLSX експорт недоступний: openpyxl не встановлено."
 msgstr "L'esportazione XLSX non è disponibile: openpyxl non è installato."
+
+#: core/views/analytics.py:270
+msgid "Залишки перевіряються на поточний момент."
+msgstr ""
 
 #: core/views/barcode.py:90 templates/core/includes/barcode_scanner.html:2
 msgid "Штрихкод не знайдено."
@@ -1377,10 +1518,6 @@ msgstr "Modifica posizione"
 msgid "Архівувати локацію"
 msgstr "Posizione dell'archivio"
 
-#: core/views/directories.py:354 templates/core/management/analytics.html:20
-msgid "Тип"
-msgstr "Tipo"
-
 #: core/views/inventory.py:111
 msgid "Номер інвентаризації"
 msgstr "Numero di inventario"
@@ -1413,6 +1550,7 @@ msgstr "Quantità prevista"
 
 #: core/views/inventory.py:121 templates/core/inventory_count.html:33
 #: templates/core/inventory_line_table.html:12
+#: templates/core/management/analytics_data_quality.html:11
 msgid "Різниця"
 msgstr "Differenza"
 
@@ -1663,9 +1801,7 @@ msgstr "ID operazione"
 msgid "Дата і час операції"
 msgstr "Data e ora operazione"
 
-#: core/views/stock_operations.py:477
-#: templates/core/management/analytics.html:20
-#: templates/core/stock_issue_result.html:15
+#: core/views/stock_operations.py:477 templates/core/stock_issue_result.html:15
 #: templates/core/stock_receive_result.html:15
 #: templates/core/stock_transfer_result.html:8
 #: templates/core/stock_writeoff_result.html:8
@@ -2225,11 +2361,13 @@ msgid "До списку інвентаризацій"
 msgstr "Torna all'elenco dell'inventario"
 
 #: templates/core/inventory_detail.html:9
+#: templates/core/management/analytics.html:7
 #: templates/core/management/dashboard.html:48
 msgid "Експорт CSV"
 msgstr "Esporta CSV"
 
 #: templates/core/inventory_detail.html:10
+#: templates/core/management/analytics.html:7
 msgid "Експорт XLSX"
 msgstr "Esporta XLSX"
 
@@ -2478,128 +2616,107 @@ msgstr "Modelli di etichette"
 
 #: templates/core/management/analytics.html:8
 #, fuzzy
-#| msgid "Створити товар / матеріал"
-msgid "Усього товарів / матеріалів"
-msgstr "Crea prodotto / materiale"
+#| msgid "Контакт"
+msgid "Контроль даних"
+msgstr "Contatto"
 
-#: templates/core/management/analytics.html:9
-#, fuzzy
-#| msgid "Рух товарів"
-msgid "Активних товарів"
-msgstr "Movimento delle merci"
-
-#: templates/core/management/analytics.html:10
-#, fuzzy
-#| msgid "Початкові залишки"
-msgid "Позицій із залишком"
-msgstr "Giacenze iniziali"
-
-#: templates/core/management/analytics.html:11
-#, fuzzy
-#| msgid "Операції складу"
-msgid "Операцій за період"
-msgstr "Operazioni di magazzino"
-
-#: templates/core/management/analytics.html:13
-msgid "Мінімальні залишки не налаштовані"
+#: templates/core/management/analytics.html:8
+msgid "Дані узгоджені"
 msgstr ""
 
-#: templates/core/management/analytics.html:14
+#: templates/core/management/analytics.html:8
 #, fuzzy
-#| msgid "Рух товарів"
-msgid "Рух по днях"
-msgstr "Movimento delle merci"
+#| msgid "Попередня"
+msgid "Є попередження"
+msgstr "Precedente"
 
-#: templates/core/management/analytics.html:15
+#: templates/core/management/analytics.html:8
+msgid "Оцінка якості"
+msgstr ""
+
+#: templates/core/management/analytics.html:8
 #, fuzzy
-#| msgid "ID операції"
-msgid "Операції"
-msgstr "ID operazione"
+#| msgid "Номер документа"
+msgid "Без документа"
+msgstr "Numero del documento"
 
-#: templates/core/management/analytics.html:15
-msgid "Прихід"
-msgstr "Bene"
+#: templates/core/management/analytics.html:8
+msgid "Неповні"
+msgstr ""
 
-#: templates/core/management/analytics.html:15
-msgid "Видача"
-msgstr "Emissione"
-
-#: templates/core/management/analytics.html:15
+#: templates/core/management/analytics.html:8
+#: templates/core/management/analytics_data_quality.html:19
 #, fuzzy
-#| msgid "Повернення товару"
-msgid "Повернення"
-msgstr "Restituzione prodotto"
+#| msgid "Початкові залишки"
+msgid "Негативні залишки"
+msgstr "Giacenze iniziali"
 
-#: templates/core/management/analytics.html:15
-#: templates/core/management/dashboard.html:38
-msgid "Списання"
-msgstr "Descrizione"
-
-#: templates/core/management/analytics.html:15
-#: templates/core/management/analytics.html:20
+#: templates/core/management/analytics.html:8
 #, fuzzy
-#| msgid "Залишок після операції"
-msgid "За вибраний період операцій немає."
-msgstr "Saldo dopo l'operazione"
+#| msgid "Надрукувати етикетку"
+msgid "Переглянути деталі якості даних"
+msgstr "Modifica l'etichetta"
 
-#: templates/core/management/analytics.html:16
+#: templates/core/management/analytics.html:9
 #, fuzzy
 #| msgid "Топ-10 товарів за видачею"
 msgid "Топ товарів по видачі"
 msgstr "I 10 migliori consigli per l'acquisto"
 
-#: templates/core/management/analytics.html:16
-#, fuzzy
-#| msgid "Створити товар / матеріал"
-msgid "Немає даних для топу товарів."
-msgstr "Crea prodotto / materiale"
-
-#: templates/core/management/analytics.html:17
+#: templates/core/management/analytics.html:10
 #, fuzzy
 #| msgid "Цехи / місця використання"
 msgid "Топ цехів / місць використання"
 msgstr "Reparti / luoghi di utilizzo"
 
-#: templates/core/management/analytics.html:17
+#: templates/core/management/analytics.html:13
 #, fuzzy
-#| msgid "Створити товар / матеріал"
-msgid "Немає даних для топу цехів."
-msgstr "Crea prodotto / materiale"
+#| msgid "Залишок після операції"
+msgid "За вибраний період операцій немає."
+msgstr "Saldo dopo l'operazione"
 
-#: templates/core/management/analytics.html:18
+#: templates/core/management/analytics_data_quality.html:4
+msgid "Якість даних аналітики"
+msgstr ""
+
+#: templates/core/management/analytics_data_quality.html:5
+#: templates/core/management/analytics_item_detail.html:2
+#: templates/core/management/analytics_recipient_detail.html:1
+#: templates/core/management/analytics_usage_place_detail.html:1
 #, fuzzy
-#| msgid "Топ-10 отримувачів"
-msgid "Топ отримувачів"
-msgstr "Top 10 destinatari"
+#| msgid "Аналітика"
+msgid "До аналітики"
+msgstr "Analisi"
 
-#: templates/core/management/analytics.html:18
+#: templates/core/management/analytics_data_quality.html:7
 #, fuzzy
-#| msgid "Додаткова інформація про отримувача."
-msgid "Немає даних для топу отримувачів."
-msgstr "Ulteriori informazioni sul destinatario."
+#| msgid "Немає залишків за вибраними фільтрами."
+msgid "Перевірка узгодженості"
+msgstr "Nessuna giacenza per i filtri selezionati."
 
-#: templates/core/management/analytics.html:19
+#: templates/core/management/analytics_data_quality.html:9
 #, fuzzy
-#| msgid "Товари / матеріали"
-msgid "Товари без руху"
-msgstr "Prodotti / materiali"
+#| msgid "Операції складу"
+msgid "Операцій у журналі"
+msgstr "Operazioni di magazzino"
 
-#: templates/core/management/analytics.html:19
+#: templates/core/management/analytics_data_quality.html:10
 #, fuzzy
-#| msgid "Немає інвентаризацій."
-msgid "Немає товарів без руху."
-msgstr "Nessun inventario."
+#| msgid "ID операції"
+msgid "Операцій у daily chart"
+msgstr "ID operazione"
 
-#: templates/core/management/analytics.html:20
+#: templates/core/management/analytics_data_quality.html:12
 #, fuzzy
-#| msgid "Усі операції"
-msgid "Останні операції"
-msgstr "Tutte le operazioni"
+#| msgid "Немає рухів за вибраними фільтрами."
+msgid "Рухів з неповними даними"
+msgstr "Nessun movimento per i filtri selezionati."
 
-#: templates/core/management/analytics.html:20
-#: templates/core/stockmovement_list.html:50
-msgid "Документ"
-msgstr "Documento"
+#: templates/core/management/analytics_data_quality.html:13
+#, fuzzy
+#| msgid "Номер документа"
+msgid "Рухів без документа"
+msgstr "Numero del documento"
 
 #: templates/core/management/dashboard.html:27
 #, fuzzy
@@ -3074,6 +3191,46 @@ msgstr "Utente"
 msgid "Увійти"
 msgstr "Accedi"
 
+#, fuzzy
+#~| msgid "Створити товар / матеріал"
+#~ msgid "Усього товарів / матеріалів"
+#~ msgstr "Crea prodotto / materiale"
+
+#, fuzzy
+#~| msgid "Рух товарів"
+#~ msgid "Активних товарів"
+#~ msgstr "Movimento delle merci"
+
+#, fuzzy
+#~| msgid "Початкові залишки"
+#~ msgid "Позицій із залишком"
+#~ msgstr "Giacenze iniziali"
+
+#, fuzzy
+#~| msgid "Створити товар / матеріал"
+#~ msgid "Немає даних для топу товарів."
+#~ msgstr "Crea prodotto / materiale"
+
+#, fuzzy
+#~| msgid "Створити товар / матеріал"
+#~ msgid "Немає даних для топу цехів."
+#~ msgstr "Crea prodotto / materiale"
+
+#, fuzzy
+#~| msgid "Додаткова інформація про отримувача."
+#~ msgid "Немає даних для топу отримувачів."
+#~ msgstr "Ulteriori informazioni sul destinatario."
+
+#, fuzzy
+#~| msgid "Товари / матеріали"
+#~ msgid "Товари без руху"
+#~ msgstr "Prodotti / materiali"
+
+#, fuzzy
+#~| msgid "Немає інвентаризацій."
+#~ msgid "Немає товарів без руху."
+#~ msgstr "Nessun inventario."
+
 #~ msgid "Період від"
 #~ msgstr "Periodo visto"
 
@@ -3085,9 +3242,6 @@ msgstr "Accedi"
 
 #~ msgid "Унікальні товари"
 #~ msgstr "Prodotti unici"
-
-#~ msgid "Немає даних"
-#~ msgstr "No, Daniel"
 
 #~ msgid "Топ-10 товарів за приходом"
 #~ msgstr "I 10 migliori prodotti per l'acquisto"
@@ -3151,11 +3305,6 @@ msgstr "Accedi"
 #~| msgid "Усі операції"
 #~ msgid "Основна дія"
 #~ msgstr "Tutte le operazioni"
-
-#, fuzzy
-#~| msgid "Контакт"
-#~ msgid "Контроль"
-#~ msgstr "Contatto"
 
 #, fuzzy
 #~| msgid "Перегляд"

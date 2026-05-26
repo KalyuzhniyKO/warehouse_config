@@ -126,6 +126,7 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         top_issued_items = analytics_service.get_top_issued_items(filters)
         top_usage_places = analytics_service.get_top_usage_places(filters)
         top_recipients = analytics_service.get_top_recipients(filters)
+        data_quality = analytics_service.get_analytics_data_quality(filters)
         context.update(
             {
                 "filter_form": form,
@@ -142,6 +143,8 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
                 "movement_query": urlencode(movement_query),
                 "filter_query": urlencode(filter_query),
                 "quick_periods": [("today", _("Сьогодні")), ("7d", _("7 днів")), ("30d", _("30 днів")), ("month", _("Поточний місяць")), ("prev_month", _("Попередній місяць"))],
+                "data_quality": data_quality,
+                "data_quality_url": reverse("management_analytics_data_quality") + "?" + urlencode(filter_query),
             }
         )
         return context
@@ -240,6 +243,20 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
                 sh.append(row)
             sh.freeze_panes = 'A2'
             sh.auto_filter.ref = sh.dimensions
+        dq = analytics_service.get_analytics_data_quality(filters)
+        dq_sheet = wb.create_sheet("Data quality")
+        dq_sheet.append(["Metric", "Value"])
+        rec = dq["reconciliation"]
+        for key in ["score", "status"]:
+            dq_sheet.append([key, dq[key]])
+        for key in ["total_movements", "daily_chart_operations", "difference", "incomplete_movements", "missing_documents", "negative_stock", "suspicious_stock"]:
+            dq_sheet.append([key, rec[key]])
+        dq_sheet.append([])
+        dq_sheet.append(["Check", "Count"])
+        for key, value in dq["checks"].items():
+            dq_sheet.append([key, value["count"]])
+        dq_sheet.freeze_panes = 'A2'
+        dq_sheet.auto_filter.ref = dq_sheet.dimensions
         ws.freeze_panes = 'A2'
         ws.auto_filter.ref = ws.dimensions
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -248,6 +265,25 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         return response
 
 
+
+
+class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+    group_names = ANALYTICS_GROUPS
+    template_name = "core/management/analytics_data_quality.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = AnalyticsFilterForm(self.request.GET or None)
+        filters = clean_analytics_filters(form)
+        filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        context.update({
+            "filter_form": form,
+            "data_quality": analytics_service.get_analytics_data_quality(filters),
+            "filter_query": filter_query,
+            "movement_list_base_url": reverse("movement_list"),
+            "stock_checked_note": _("Залишки перевіряються на поточний момент."),
+        })
+        return context
 class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_item_detail.html"

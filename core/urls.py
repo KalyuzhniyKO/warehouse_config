@@ -272,5 +272,6 @@ urlpatterns = [
     path("management/analytics/items/<int:item_id>/", views.AnalyticsItemDetailView.as_view(), name="management_analytics_item_detail"),
     path("management/analytics/usage-places/<str:usage_place_id>/", views.AnalyticsUsagePlaceDetailView.as_view(), name="management_analytics_usage_place_detail"),
     path("management/analytics/recipients/<int:recipient_id>/", views.AnalyticsRecipientDetailView.as_view(), name="management_analytics_recipient_detail"),
+    path("management/analytics/data-quality/", views.AnalyticsDataQualityView.as_view(), name="management_analytics_data_quality"),
     path("management/help/", views.ManagementHelpView.as_view(), name="management_help"),
 ]
