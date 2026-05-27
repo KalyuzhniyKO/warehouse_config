@@ -1,21 +1,46 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% block content %}
-<h1 class="h3 mb-3">{% trans "Якість даних аналітики" %}</h1>
-<p><a href="{% url 'management_analytics' %}?{{ filter_query }}">{% trans "До аналітики" %}</a></p>
-<p class="small text-muted mb-1">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>{% if used_remembered_filters %}<p class="small text-success mb-1">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}<p><a class="btn btn-outline-secondary btn-sm" href="?reset_filters=1">{% trans "Скинути збережені фільтри" %}</a></p><p>{{ stock_checked_note }}</p>
-<h2 class="h5">{% trans "Перевірка узгодженості" %}</h2>
-<ul>
-<li>{% trans "Операцій у журналі" %}: {{ data_quality.reconciliation.total_movements }}</li>
-<li>{% trans "Операцій у daily chart" %}: {{ data_quality.reconciliation.daily_chart_operations }}</li>
-<li>{% trans "Різниця" %}: {{ data_quality.reconciliation.difference }}</li>
-<li>{% trans "Рухів з неповними даними" %}: {{ data_quality.reconciliation.incomplete_movements }}</li>
-<li>{% trans "Рухів без документа" %}: {{ data_quality.reconciliation.missing_documents }}</li>
-</ul>
-{% for key, check in data_quality.checks.items %}
-<h3 class="h6">{{ key }} ({{ check.count }})</h3><a href="{{ movement_list_base_url }}?{{ filter_query }}&no_document=1">journal</a>
-{% for m in check.examples %}<div>{{ m.occurred_at|date:"Y-m-d H:i" }} | {{ m.get_movement_type_display }} | {{ m.item }} | {{ m.qty }} | {{ m.document_number|default:"-" }} | {{ m.recipient|default:"-" }} | {{ m.department|default:"-" }} | {{ m.destination_location|default:m.source_location|default:"-" }}</div>{% empty %}<div>—</div>{% endfor %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{% trans "Якість даних аналітики" %}</h1>
+    <p class="analytics-muted mb-0">{% trans "Перевірка повноти документів, отримувачів, цехів, кількості та залишків." %}</p>
+  </div>
+  <span class="badge analytics-quality-status {% if data_quality.status == 'ok' %}analytics-quality-ok{% else %}analytics-quality-warning{% endif %}">{% if data_quality.status == 'ok' %}{% trans "Дані виглядають узгодженими" %}{% else %}{% trans "Є попередження" %}{% endif %}</span>
+</div>
+<div class="analytics-quality-actions mb-3">
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'management_analytics' %}?{{ filter_query }}">{% trans "До аналітики" %}</a>
+  <a class="btn btn-outline-secondary btn-sm" href="{{ movement_list_base_url }}?{{ filter_query }}">{% trans "До журналу операцій" %}</a>
+  <a class="btn btn-outline-secondary btn-sm" href="?reset_filters=1">{% trans "Скинути збережені фільтри" %}</a>
+</div>
+<p class="small analytics-muted mb-1">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>
+{% if used_remembered_filters %}<p class="small text-success mb-3">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}
+
+<div class="card content-card analytics-quality-summary mb-3" data-analytics-quality-detail>
+  <div class="card-body"><div class="row g-2">
+    <div class="col-md-4"><strong>{% trans "Операцій у журналі" %}:</strong> {{ data_quality.reconciliation.total_movements }}</div>
+    <div class="col-md-4"><strong>{% trans "Операцій у daily chart" %}:</strong> {{ data_quality.reconciliation.daily_chart_operations }}</div>
+    <div class="col-md-4"><strong>{% trans "Різниця" %}:</strong> {{ data_quality.reconciliation.difference }}</div>
+    <div class="col-md-4"><strong>{% trans "Рухів з неповними даними" %}:</strong> {{ data_quality.reconciliation.incomplete_movements }}</div>
+    <div class="col-md-4"><strong>{% trans "Рухів без документа" %}:</strong> {{ data_quality.reconciliation.missing_documents }}</div>
+    <div class="col-md-4"><strong>{% trans "Негативних залишків" %}:</strong> {{ data_quality.reconciliation.negative_stock }}</div>
+    <div class="col-md-4"><strong>{% trans "Оцінка якості" %}:</strong> {{ data_quality.score }}</div>
+  </div></div>
+</div>
+
+<div class="analytics-quality-grid">
+{% for check in quality_checks %}
+  <div class="card content-card analytics-quality-card mb-3">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">{{ check.label }}</h2><span class="badge analytics-count-badge">{{ check.count }}</span></div>
+      <p class="analytics-muted">{{ check.description }}</p>
+      <a class="btn btn-outline-secondary btn-sm mb-2" href="{{ check.journal_url }}">{% trans "Переглянути в журналі" %}</a>
+      {% if check.examples %}
+      <div class="table-responsive analytics-quality-table"><table class="table table-sm align-middle"><thead><tr><th>{% trans "Дата" %}</th><th>{% trans "Тип" %}</th><th>{% trans "Товар" %}</th><th>{% trans "Кількість" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Отримувач" %}</th><th>{% trans "Цех / місце використання" %}</th><th>{% trans "Склад / локація" %}</th><th>{% trans "Дія" %}</th></tr></thead>
+      <tbody>{% for m in check.examples %}<tr><td>{{ m.occurred_at|date:"Y-m-d H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.item|default:"—" }}</td><td>{{ m.qty }}</td><td>{{ m.document_number|default:"—" }}</td><td>{{ m.recipient|default:"—" }}</td><td>{{ m.department|default:"—" }}</td><td>{{ m.destination_location|default:m.source_location|default:"—" }}</td><td><a href="{{ movement_list_base_url }}?{{ filter_query }}&document_number={{ m.document_number|urlencode }}">{% trans "Відкрити" %}</a></td></tr>{% endfor %}</tbody></table></div>
+      {% else %}<p class="analytics-muted mb-0">{% trans "Прикладів немає." %}</p>{% endif %}
+    </div>
+  </div>
 {% endfor %}
-<h3 class="h6">{% trans "Негативні залишки" %} ({{ data_quality.stock.negative_balances|length }})</h3>
-{% for b in data_quality.stock.negative_balances %}<div>{{ b.item }} | {{ b.location }} | {{ b.qty }}</div>{% empty %}<div>—</div>{% endfor %}
+</div>
 {% endblock %}
