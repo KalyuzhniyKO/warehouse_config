@@ -14,9 +14,9 @@
         {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}<a class="btn btn-primary" href="{% url 'stock_receive' %}">{% trans "Нова операція" %}</a>{% endif %}
     </div>
 </div>
-<form method="get" class="card content-card filter-panel mb-4">
+<form method="get" class="card content-card filter-panel filter-panel--compact mb-3">
     <div class="card-body">
-        <div class="filter-grid">
+        <div class="filter-grid filter-grid--main">
             {% for field in filter_form %}
                 <div >
                     <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -24,9 +24,9 @@
                 </div>
             {% endfor %}
         </div>
-        <div class="mt-3 d-flex gap-2 justify-content-end">
-            <a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "Очистити" %}</a>
-            <button class="btn btn-primary" type="submit">{% trans "Фільтрувати" %}</button>
+        <div class="filter-action-group">
+            <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
         </div>
     </div>
 </form>
