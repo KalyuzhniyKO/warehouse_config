@@ -90,6 +90,16 @@ from ..services.stock import (
 
 
 
+
+DATA_QUALITY_CHECK_META = [
+    {"key": "missing_documents", "label": _("Рухи без документа"), "description": _("Рухи, у яких відсутній номер документа."), "journal_param": "no_document=1"},
+    {"key": "issue_without_recipient", "label": _("Видача без отримувача"), "description": _("Операції видачі без вказаного отримувача."), "journal_param": "missing_recipient=1"},
+    {"key": "issue_without_usage_place", "label": _("Видача без цеху / місця використання"), "description": _("Операції видачі без заповненого цеху або місця використання."), "journal_param": "missing_usage_place=1"},
+    {"key": "movement_without_item", "label": _("Рухи без товару"), "description": _("Операції, у яких не вказано товар."), "journal_param": "missing_item=1"},
+    {"key": "non_positive_qty", "label": _("Некоректна кількість"), "description": _("Операції з нульовою або від’ємною кількістю."), "journal_param": "non_positive_qty=1"},
+    {"key": "receive_without_destination", "label": _("Прихід без складу призначення"), "description": _("Операції приходу без складу або локації призначення."), "journal_param": "missing_destination=1"},
+]
+
 class ManagementReportsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/reports.html"
@@ -314,9 +324,19 @@ class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateV
         form = AnalyticsFilterForm(getattr(self, "effective_get", self.request.GET) or None)
         filters = clean_analytics_filters(form)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        data_quality = analytics_service.get_analytics_data_quality(filters)
+        quality_checks = []
+        for meta in DATA_QUALITY_CHECK_META:
+            check = data_quality["checks"].get(meta["key"], {"count": 0, "examples": []})
+            quality_checks.append({
+                "key": meta["key"], "label": meta["label"], "description": meta["description"],
+                "count": check["count"], "examples": check["examples"],
+                "journal_url": f"{reverse('movement_list')}?{filter_query}&{meta['journal_param']}",
+            })
         context.update({
             "filter_form": form,
-            "data_quality": analytics_service.get_analytics_data_quality(filters),
+            "data_quality": data_quality,
+            "quality_checks": quality_checks,
             "filter_query": filter_query,
             "movement_list_base_url": reverse("movement_list"),
             "stock_checked_note": _("Залишки перевіряються на поточний момент."),

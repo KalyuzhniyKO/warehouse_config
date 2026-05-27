@@ -119,7 +119,7 @@ class AnalyticsDashboardTests(TestCase):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
         self.assertContains(r, "data-analytics-quality-card")
-        self.assertContains(r, "Без документа")
+        self.assertContains(r, "Переглянути деталі якості даних")
 
     def test_data_quality_page_access(self):
         url = reverse("management_analytics_data_quality")
@@ -133,21 +133,47 @@ class AnalyticsDashboardTests(TestCase):
         StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, occurred_at=timezone.now(), document_number="")
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_data_quality"))
-        self.assertContains(r, "missing_documents")
-        self.assertContains(r, "(1)")
+        self.assertContains(r, "Рухи без документа")
+        self.assertNotContains(r, "missing_documents")
+        self.assertContains(r, "Переглянути в журналі")
 
     def test_issue_without_recipient_warning(self):
         StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, department="Цех 2", occurred_at=timezone.now(), document_number="D")
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_data_quality"))
-        self.assertContains(r, "issue_without_recipient")
+        self.assertContains(r, "Видача без отримувача")
+        self.assertNotContains(r, "issue_without_recipient")
 
     def test_negative_stock_warning(self):
         StockBalance.objects.create(item=Item.objects.create(name="Neg", unit=self.unit, internal_code="NEG"), location=self.loc, qty=Decimal("-1.000"))
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_data_quality"))
-        self.assertContains(r, "Негативні залишки")
-        self.assertContains(r, "(1)")
+        self.assertContains(r, "Негативних залишків")
+
+
+    def test_data_quality_page_has_human_labels_and_table_headers(self):
+        StockMovement.objects.create(movement_type=StockMovement.MovementType.OUT, item=self.item, qty=Decimal("1.000"), source_location=self.loc, department="", occurred_at=timezone.now(), document_number="")
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics_data_quality"))
+        self.assertContains(r, "Рухи без документа")
+        self.assertContains(r, "Видача без отримувача")
+        self.assertContains(r, "Видача без цеху")
+        self.assertContains(r, "Некоректна кількість")
+        self.assertContains(r, "Переглянути в журналі")
+        self.assertContains(r, "Дата")
+        self.assertContains(r, "Тип")
+        self.assertContains(r, "Товар")
+        self.assertContains(r, "Кількість")
+        self.assertContains(r, "Документ")
+        self.assertContains(r, "Отримувач")
+        self.assertContains(r, "data-analytics-quality-detail")
+        self.assertContains(r, "analytics-quality-table")
+        self.assertNotContains(r, ">missing_documents<", html=True)
+        self.assertNotContains(r, ">issue_without_recipient<", html=True)
+        self.assertNotContains(r, ">issue_without_usage_place<", html=True)
+        self.assertNotContains(r, ">movement_without_item<", html=True)
+        self.assertNotContains(r, ">non_positive_qty<", html=True)
+        self.assertNotContains(r, ">receive_without_destination<", html=True)
 
     def test_reconciliation_total_matches_queryset(self):
         summary = get_reconciliation_summary({})
