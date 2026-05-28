@@ -12,6 +12,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from .warehouse_access_utils import grant_warehouse_access
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -278,6 +279,7 @@ class DirectoryWebInterfaceTests(TestCase):
             unit=self.unit,
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
+        grant_warehouse_access(self.user, self.warehouse, can_delegate=True)
         self.location = Location.objects.create(warehouse=self.warehouse, name="A-01")
         self.balance = StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("5.000")

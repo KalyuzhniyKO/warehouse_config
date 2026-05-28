@@ -12,6 +12,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from .warehouse_access_utils import grant_warehouse_access
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -66,6 +67,19 @@ class AnalyticsInterfaceTests(TestCase):
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
         self.other_warehouse = Warehouse.objects.create(name="Резервний склад")
+        grant_warehouse_access(
+            self.admin,
+            [self.warehouse, self.other_warehouse],
+            can_delegate=True,
+        )
+        grant_warehouse_access(
+            self.storekeeper,
+            [self.warehouse, self.other_warehouse],
+        )
+        grant_warehouse_access(
+            self.auditor,
+            [self.warehouse, self.other_warehouse],
+        )
         self.location = Location.objects.create(warehouse=self.warehouse, name="A1")
         self.other_location = Location.objects.create(
             warehouse=self.other_warehouse, name="B1"

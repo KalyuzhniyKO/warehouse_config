@@ -22,6 +22,7 @@ from ..forms import (
     StockReturnForm,
     StockTransferForm,
 )
+from .warehouse_access_utils import grant_warehouse_access
 from ..services.locations import (
     DEFAULT_LOCATION_NAME,
     get_default_location_for_warehouse,
@@ -151,6 +152,19 @@ class StockIssueInterfaceTests(TestCase):
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
         self.other_warehouse = Warehouse.objects.create(name="Резервний склад")
+        grant_warehouse_access(
+            self.admin,
+            [self.warehouse, self.other_warehouse],
+            can_delegate=True,
+        )
+        grant_warehouse_access(
+            self.storekeeper,
+            [self.warehouse, self.other_warehouse],
+        )
+        grant_warehouse_access(
+            self.auditor,
+            [self.warehouse, self.other_warehouse],
+        )
         self.location = Location.objects.create(warehouse=self.warehouse, name="A1")
         self.other_location = Location.objects.create(
             warehouse=self.other_warehouse, name="B1"
@@ -938,6 +952,11 @@ class StockOperationWorkflowTests(TestCase):
         )
         self.destination_location = Location.objects.create(
             warehouse=self.destination_warehouse, name="Workflow destination location"
+        )
+        grant_warehouse_access(
+            self.user,
+            [self.warehouse, self.destination_warehouse],
+            can_delegate=True,
         )
         self.recipient = Recipient.objects.create(name="Workflow recipient")
         self.usage_place = UsagePlace.objects.create(name="Sales")
@@ -1881,6 +1900,7 @@ class StockOperationWorkflowTests(TestCase):
             "workflow_storekeeper", password="pass"
         )
         storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        grant_warehouse_access(storekeeper, self.warehouse)
         self.client.force_login(storekeeper)
 
         response = self.client.get("/en/")

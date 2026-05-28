@@ -13,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from core.models import Location, StockBalance, StockMovement
 from core.services.audit import log_action
 from core.services.barcodes import ensure_item_barcode
+from core.services.warehouse_access import get_accessible_warehouses
 
 QTY_QUANT = Decimal("0.001")
 
@@ -26,23 +27,27 @@ def can_cancel_stock_movement(user, movement):
     return bool(getattr(user, "is_authenticated", False) and user.is_superuser)
 
 
-def find_best_stock_balance_for_issue(item):
+def find_best_stock_balance_for_issue(item, user=None):
     """Return the active positive balance with the largest quantity for *item*."""
     if item is None:
         return None
+    queryset = StockBalance.objects.filter(item=item, is_active=True, qty__gt=0)
+    if user is not None:
+        queryset = queryset.filter(location__warehouse__in=get_accessible_warehouses(user))
     return (
-        StockBalance.objects.filter(item=item, is_active=True, qty__gt=0)
-        .select_related("location", "location__warehouse")
+        queryset.select_related("location", "location__warehouse")
         .order_by("-qty", "location__warehouse__name", "location__name", "pk")
         .first()
     )
 
 
-def find_default_stock_return_location():
+def find_default_stock_return_location(user=None):
     """Return the default active stock location for self-service returns."""
     locations = Location.objects.filter(
         is_active=True, warehouse__is_active=True
     ).select_related("warehouse")
+    if user is not None:
+        locations = locations.filter(warehouse__in=get_accessible_warehouses(user))
     preferred_names = {
         "основна локація",
         "основная локация",

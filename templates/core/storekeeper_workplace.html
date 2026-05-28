@@ -75,6 +75,11 @@
 </style>
 
 <section class="self-service-home container d-flex flex-column justify-content-center" aria-labelledby="self-service-title">
+    {% if not has_warehouse_access %}
+        <div class="alert alert-warning" role="alert">
+            {% trans "У вас немає доступу до жодного складу. Зверніться до адміністратора." %}
+        </div>
+    {% else %}
     <div class="text-center mb-4 mb-lg-5">
         <h1 id="self-service-title" class="self-service-heading fw-bold mb-3">{% trans "Склад самообслуговування" %}</h1>
         <p class="self-service-subtitle mb-0">{% trans "Оберіть дію" %}</p>
@@ -104,5 +109,6 @@
             </a>
         </div>
     </div>
+    {% endif %}
 </section>
 {% endblock %}

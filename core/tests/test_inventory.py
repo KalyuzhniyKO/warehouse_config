@@ -12,6 +12,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from .warehouse_access_utils import grant_warehouse_access
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -311,6 +312,9 @@ class InventoryInterfaceTests(TestCase):
         self.no_access = User.objects.create_user(username="inventory-no-access", password="pw")
         self.unit = Unit.objects.create(name="Piece", symbol="pcs")
         self.warehouse = Warehouse.objects.create(name="Inventory UI warehouse")
+        grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
+        grant_warehouse_access(self.storekeeper, self.warehouse)
+        grant_warehouse_access(self.auditor, self.warehouse)
         self.location = Location.objects.create(warehouse=self.warehouse, name="INV-A-01")
         self.item_barcode = BarcodeRegistry.objects.create(
             barcode="ITM9990000001", prefix=BarcodeRegistry.Prefix.ITEM
@@ -630,6 +634,11 @@ class InventoryBarcodeScannerTests(TestCase):
         self.destination_warehouse = Warehouse.objects.create(name="Workflow destination")
         self.destination_location = Location.objects.create(
             warehouse=self.destination_warehouse, name="Workflow destination location"
+        )
+        grant_warehouse_access(
+            self.user,
+            [self.warehouse, self.destination_warehouse],
+            can_delegate=True,
         )
 
     def test_inventory_count_page_contains_barcode_scanner_field(self):

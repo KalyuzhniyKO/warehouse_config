@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
-from django.db.models import Count, Q, Sum
+from django.db.models import Count, Prefetch, Q, Sum
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -57,6 +57,7 @@ from ..models import (
     StockMovement,
     SystemSettings,
     Unit,
+    UserWarehouseAccess,
     Warehouse,
 )
 from ..permissions import (
@@ -79,6 +80,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import get_accessible_warehouses
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -148,8 +150,10 @@ class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "hide_sidebar": True,
                 "counts": {
                     "items": Item.objects.count(),
-                    "warehouses": Warehouse.objects.count(),
-                    "locations": Location.objects.count(),
+                    "warehouses": get_accessible_warehouses(self.request.user).count(),
+                    "locations": Location.objects.filter(
+                        warehouse__in=get_accessible_warehouses(self.request.user)
+                    ).count(),
                     "users": get_user_model().objects.count(),
                 },
             }
@@ -163,6 +167,7 @@ class ManagementDirectoriesView(LoginRequiredMixin, GroupRequiredMixin, Template
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        accessible_warehouses = get_accessible_warehouses(self.request.user)
         context["directories"] = [
             {
                 "title": _("Товари / матеріали"),
@@ -185,13 +190,15 @@ class ManagementDirectoriesView(LoginRequiredMixin, GroupRequiredMixin, Template
             {
                 "title": _("Склади"),
                 "description": _("Склади, де ведеться облік залишків."),
-                "count": Warehouse.objects.count(),
+                "count": accessible_warehouses.count(),
                 "url": reverse("warehouse_list"),
             },
             {
                 "title": _("Локації"),
                 "description": _("Комірки, зони та місця зберігання на складах."),
-                "count": Location.objects.count(),
+                "count": Location.objects.filter(
+                    warehouse__in=accessible_warehouses
+                ).count(),
                 "url": reverse("location_list"),
             },
             {
@@ -211,7 +218,18 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["users"] = (
-            get_user_model().objects.prefetch_related("groups").order_by("username")
+            get_user_model()
+            .objects.prefetch_related(
+                "groups",
+                Prefetch(
+                    "warehouse_accesses",
+                    queryset=UserWarehouseAccess.objects.filter(
+                        is_active=True
+                    ).select_related("warehouse"),
+                    to_attr="active_warehouse_accesses",
+                ),
+            )
+            .order_by("username")
         )
         context["groups"] = warehouse_role_queryset()
         return context
@@ -250,7 +268,10 @@ class ManagementUserUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateVie
     success_url = reverse_lazy("management_users")
 
     def get_queryset(self):
-        return get_user_model().objects.prefetch_related("groups")
+        queryset = get_user_model().objects.prefetch_related("groups")
+        if not self.request.user.is_superuser:
+            queryset = queryset.filter(is_superuser=False)
+        return queryset
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -277,7 +298,10 @@ class ManagementUserPasswordView(LoginRequiredMixin, GroupRequiredMixin, FormVie
     success_url = reverse_lazy("management_users")
 
     def dispatch(self, request, *args, **kwargs):
-        self.target_user = get_object_or_404(get_user_model(), pk=kwargs["pk"])
+        queryset = get_user_model().objects.all()
+        if not request.user.is_superuser:
+            queryset = queryset.filter(is_superuser=False)
+        self.target_user = get_object_or_404(queryset, pk=kwargs["pk"])
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):

@@ -12,6 +12,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from .warehouse_access_utils import grant_warehouse_access
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -70,6 +71,19 @@ class ManagementInterfaceTests(TestCase):
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
         self.other_warehouse = Warehouse.objects.create(name="Резервний склад")
+        grant_warehouse_access(
+            self.admin,
+            [self.warehouse, self.other_warehouse],
+            can_delegate=True,
+        )
+        grant_warehouse_access(
+            self.storekeeper,
+            [self.warehouse, self.other_warehouse],
+        )
+        grant_warehouse_access(
+            self.auditor,
+            [self.warehouse, self.other_warehouse],
+        )
         self.location = Location.objects.create(warehouse=self.warehouse, name="A1")
         self.other_location = Location.objects.create(
             warehouse=self.other_warehouse, name="B1"
@@ -329,7 +343,7 @@ class ManagementInterfaceTests(TestCase):
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
 
-    def test_superuser_groups_are_not_changed_through_user_management_ui(self):
+    def test_warehouse_admin_cannot_edit_superuser_through_user_management_ui(self):
         self.client.force_login(self.admin)
         group = Group.objects.get(name="Комірник")
 
@@ -344,8 +358,7 @@ class ManagementInterfaceTests(TestCase):
             },
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Групи superuser не можна змінювати")
+        self.assertEqual(response.status_code, 404)
         self.superuser.refresh_from_db()
         self.assertFalse(self.superuser.groups.filter(name="Комірник").exists())
         self.assertTrue(self.superuser.is_superuser)

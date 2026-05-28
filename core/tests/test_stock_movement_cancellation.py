@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from core.models import AuditLog, Item, Location, Recipient, StockBalance, StockMovement, Unit, Warehouse
 from core.services import analytics as analytics_service
+from core.tests.warehouse_access_utils import grant_warehouse_access
 from core.services.stock import (
     InsufficientStockError,
     StockServiceError,
@@ -35,6 +36,8 @@ class StockMovementCancellationTests(TestCase):
         self.unit = Unit.objects.create(name="Piece", symbol="pc")
         self.item = Item.objects.create(name="Cable", unit=self.unit)
         self.warehouse = Warehouse.objects.create(name="Main")
+        grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
+        grant_warehouse_access(self.user, self.warehouse)
         self.source = Location.objects.create(warehouse=self.warehouse, name="Source")
         self.destination = Location.objects.create(warehouse=self.warehouse, name="Destination")
         self.recipient = Recipient.objects.create(name="Worker")
