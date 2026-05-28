@@ -2582,7 +2582,7 @@ msgstr "Создайте первую запись."
 #: templates/core/item_label_print.html:8
 #: templates/core/stock_movement_print.html:21
 msgid "Друкувати"
-msgstr "Печатать"
+msgstr "Печать"
 
 #: templates/core/item_label_print.html:8
 msgid "Завантажити PDF"
@@ -2897,7 +2897,7 @@ msgstr "Шаблоны этикеток"
 #: templates/core/management/analytics_data_quality.html:39
 #: templates/core/stock_movement_print.html:42
 msgid "Склад / локація"
-msgstr "Тип локации"
+msgstr "Склад / локация"
 
 #: templates/core/management/analytics_data_quality.html:39
 #, fuzzy
@@ -3205,7 +3205,7 @@ msgstr "На главный экран"
 
 #: templates/core/stock_movement_print.html:37
 msgid "Товар / матеріал"
-msgstr "Товары / материалы"
+msgstr "Товар / материал"
 
 #: templates/core/stock_receive_form.html:91
 msgid "Оприбуткувати товар"
@@ -3753,3 +3753,31 @@ msgstr "Быстрое добавление новой номенклатуры.
 
 msgid "Мої налаштування"
 msgstr "Мои настройки"
+
+#: templates/core/stock_movement_print.html
+msgid "Час для перевірки по відео"
+msgstr "Время для проверки по видео"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв"
+msgstr "Принял"
+
+#: templates/core/stock_movement_print.html
+msgid "Повернув"
+msgstr "Вернул"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв на склад"
+msgstr "Принял на склад"
+
+#: templates/core/stock_movement_print.html
+msgid "Відповідальний"
+msgstr "Ответственный"
+
+#: templates/core/stock_movement_print.html
+msgid "Списав"
+msgstr "Списал"
+
+#: templates/core/stock_movement_print.html
+msgid "Погодив"
+msgstr "Согласовал"

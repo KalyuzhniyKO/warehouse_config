@@ -2969,10 +2969,8 @@ msgstr "Надрукувати етикетку"
 
 #: templates/core/management/analytics_data_quality.html:39
 #: templates/core/stock_movement_print.html:42
-#, fuzzy
-#| msgid "Тип локації"
 msgid "Склад / локація"
-msgstr "Тип локації"
+msgstr "Склад / локація"
 
 #: templates/core/management/analytics_data_quality.html:39
 #, fuzzy
@@ -3315,10 +3313,8 @@ msgid "На головний екран"
 msgstr "На головний екран"
 
 #: templates/core/stock_movement_print.html:37
-#, fuzzy
-#| msgid "Товари / матеріали"
 msgid "Товар / матеріал"
-msgstr "Товари / матеріали"
+msgstr "Товар / матеріал"
 
 #: templates/core/stock_receive_form.html:91
 msgid "Оприбуткувати товар"
@@ -4029,3 +4025,31 @@ msgstr "Швидке додавання нової номенклатури."
 
 msgid "Мої налаштування"
 msgstr "Мої налаштування"
+
+#: templates/core/stock_movement_print.html
+msgid "Час для перевірки по відео"
+msgstr "Час для перевірки по відео"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв"
+msgstr "Прийняв"
+
+#: templates/core/stock_movement_print.html
+msgid "Повернув"
+msgstr "Повернув"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв на склад"
+msgstr "Прийняв на склад"
+
+#: templates/core/stock_movement_print.html
+msgid "Відповідальний"
+msgstr "Відповідальний"
+
+#: templates/core/stock_movement_print.html
+msgid "Списав"
+msgstr "Списав"
+
+#: templates/core/stock_movement_print.html
+msgid "Погодив"
+msgstr "Погодив"
