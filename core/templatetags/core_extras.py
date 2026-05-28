@@ -18,3 +18,19 @@ def in_group(user, group_name):
     if getattr(user, "is_superuser", False):
         return True
     return user.groups.filter(name=group_name).exists()
+
+
+@register.filter
+def display_name(user):
+    full_name_method = getattr(user, "get_full_name", None)
+    full_name = full_name_method() if callable(full_name_method) else ""
+    first_name = getattr(user, "first_name", "") or ""
+    username_method = getattr(user, "get_username", None)
+    username = username_method() if callable(username_method) else getattr(user, "username", "")
+    return (full_name or first_name or username or "").strip()
+
+
+@register.filter
+def first_letter(value):
+    value = str(value or "").strip()
+    return value[:1] if value else "?"

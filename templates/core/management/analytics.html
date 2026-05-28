@@ -54,6 +54,9 @@
             </div>
 
             <div class="analytics-toolbar mt-2">
+                {% for period, label in quick_periods %}
+                    <a class="btn btn-outline-secondary btn-sm" href="?period={{ period }}">{{ label }}</a>
+                {% endfor %}
                 <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт Excel" %}</a>
                 <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт PDF" %}</a>
             </div>
@@ -64,7 +67,42 @@
         <div class="card-body py-2">
             <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 mb-0">{% trans "Контроль даних" %}</h2><span class="badge analytics-quality-status {% if data_quality.status == 'ok' %}analytics-quality-ok{% else %}analytics-quality-warning{% endif %}">{% if data_quality.status == 'ok' %}{% trans "Дані виглядають узгодженими" %}{% else %}{% trans "Є попередження" %}{% endif %}</span></div>
             <div><span class="analytics-count-badge">{% trans "Рухи без документа" %}: {{ data_quality.checks.missing_documents.count }}</span> <span class="analytics-count-badge">{% trans "Неповні рухи" %}: {{ data_quality.reconciliation.incomplete_movements }}</span> <span class="analytics-count-badge">{% trans "Негативні залишки" %}: {{ data_quality.reconciliation.negative_stock }}</span></div>
+            <a href="{{ data_quality_url }}">{% trans "Переглянути деталі якості даних" %}</a>
         </div>
     </div>
+
+    <div class="card content-card mb-3">
+        <div class="card-body">
+            <h2 class="h5">{% trans "Топ товарів по видачі" %}</h2>
+            {% for row in top_issued_items %}
+                <div><a href="{% url 'management_analytics_item_detail' row.item__id %}?{{ filter_query }}">{{ row.item__name }}</a> {{ row.total_qty }}</div>
+            {% empty %}
+                <div class="text-muted">{% trans "За вибраний період операцій немає." %}</div>
+            {% endfor %}
+
+            <h2 class="h5 mt-3">{% trans "Топ цехів / місць використання" %}</h2>
+            {% for row in top_usage_places %}
+                <div><a href="{% url 'management_analytics_usage_place_detail' row.department|default:'-' %}?{{ filter_query }}">{{ row.department|default:"—" }}</a> {{ row.total_qty }}</div>
+            {% endfor %}
+
+            <h2 class="h5 mt-3">{% trans "Топ отримувачів" %}</h2>
+            {% for row in top_recipients %}
+                <div><a href="{% url 'management_analytics_recipient_detail' row.recipient__id %}?{{ filter_query }}">{{ row.recipient__name }}</a> {{ row.total_qty }}</div>
+            {% endfor %}
+
+            <a href="{{ movement_list_base_url }}?{{ movement_query }}&movement_type=out">movement_type=out</a>
+
+            <h2 class="h5 mt-3">{% trans "Останні операції" %}</h2>
+            {% for movement in recent_movements %}
+                <div>{{ movement.document_number|default:"—" }}</div>
+            {% empty %}
+                <div class="text-muted">{% trans "За вибраний період операцій немає." %}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div data-analytics-daily-chart></div>
+    <div data-analytics-operation-mix></div>
+    <div data-analytics-top-items-chart></div>
 </div>
 {% endblock %}

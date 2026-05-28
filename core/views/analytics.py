@@ -124,7 +124,9 @@ def clean_analytics_filters(form):
     if not form.is_valid():
         return {}
     filters = {key: value for key, value in form.cleaned_data.items() if value not in (None, "")}
-    filters.update(analytics_service.get_analytics_filters(form.cleaned_data))
+    period = form.cleaned_data.get("period")
+    if period:
+        filters.update(analytics_service.get_analytics_filters(form.cleaned_data))
     return filters
 
 
