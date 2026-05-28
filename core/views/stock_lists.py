@@ -158,13 +158,21 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         return super().get(request, *args, **kwargs)
 
     def get_filter_form(self):
-        return StockMovementFilterForm(getattr(self, "effective_get", self.request.GET) or None)
+        return StockMovementFilterForm(
+            getattr(self, "effective_get", self.request.GET) or None
+        )
 
     def get_queryset(self):
         queryset = StockMovement.objects.select_related(
-            "item", "item__barcode", "source_location", "source_location__warehouse",
-            "destination_location", "destination_location__warehouse", "recipient",
-            "inventory_count"
+            "item",
+            "item__barcode",
+            "source_location",
+            "source_location__warehouse",
+            "destination_location",
+            "destination_location__warehouse",
+            "recipient",
+            "inventory_count",
+            "performed_by",
         )
         form = self.get_filter_form()
         if not form.is_valid():

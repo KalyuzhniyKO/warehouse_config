@@ -65,7 +65,7 @@
                     <tr>
                         <th>{% trans "Дата" %}</th><th>{% trans "Тип операції" %}</th><th>{% trans "Товари / матеріали" %}</th><th>{% trans "Штрихкод" %}</th>
                         <th class="text-end">{% trans "Кількість" %}</th><th>{% trans "Звідки" %}</th><th>{% trans "Куди" %}</th><th>{% trans "Отримувач" %}</th>
-                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Цех / підрозділ" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th>
+                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Виконав" %}</th><th>{% trans "Цех / підрозділ" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,11 +75,11 @@
                             <td><span class="status-badge">{{ movement.get_movement_type_display }}</span></td><td>{{ movement.item }}</td>
                             <td class="movement-code-cell">{{ movement.item.barcode.barcode|default:movement.item.internal_code|default:"—" }}</td>
                             <td class="text-end movement-qty-cell">{{ movement.qty }}</td><td>{{ movement.source_location|default:"—" }}</td><td>{{ movement.destination_location|default:"—" }}</td>
-                            <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{{ movement.department|default:"—" }}</td>
+                            <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td><td>{{ movement.department|default:"—" }}</td>
                             <td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td><td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{{ movement.comment|default:"—" }}</td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="13" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{% url 'movement_list' %}">{% trans "Скинути фільтри" %}</a></td></tr>
+                        <tr><td colspan="14" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{% url 'movement_list' %}">{% trans "Скинути фільтри" %}</a></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

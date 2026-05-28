@@ -27,6 +27,7 @@ from ..services.locations import (
     get_default_location_for_warehouse,
 )
 from ..models import (
+    AuditLog,
     BarcodeRegistry,
     BarcodeSequence,
     Category,
@@ -1009,6 +1010,100 @@ class StockOperationWorkflowTests(TestCase):
             ).qty,
             Decimal("2.000"),
         )
+
+
+    def test_stock_operation_views_store_request_user_as_performer(self):
+        from ..services.stock import receive_stock
+
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "2.000",
+                "comment": "Authorship receive",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        receive_movement = StockMovement.objects.get(comment="Authorship receive")
+        self.assertEqual(receive_movement.performed_by, self.user)
+
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "recipient": self.recipient.pk,
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "department": self.usage_place.pk,
+                "document_number": "AUTH-ISSUE",
+                "comment": "Authorship issue",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        issue_movement = StockMovement.objects.get(document_number="AUTH-ISSUE")
+        self.assertEqual(issue_movement.performed_by, self.user)
+
+        receive_stock(item=self.item, location=self.location, qty=Decimal("3.000"))
+        response = self.client.post(reverse("stock_transfer"), self._transfer_data(comment="Authorship transfer", qty="1.000"))
+        self.assertEqual(response.status_code, 302)
+        transfer_movement = StockMovement.objects.get(comment="Authorship transfer")
+        self.assertEqual(transfer_movement.performed_by, self.user)
+
+    def test_superuser_only_audit_log_page(self):
+        superuser = get_user_model().objects.create_superuser(
+            username="root", password="pass", email="root@example.com"
+        )
+        admin = get_user_model().objects.create_user("warehouse-admin", password="pass")
+        admin.groups.add(Group.objects.get(name="Адміністратор складу"))
+        storekeeper = get_user_model().objects.create_user("warehouse-user", password="pass")
+        storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        AuditLog.objects.create(
+            actor=self.user,
+            action="stock_movement.created",
+            object_type="StockMovement",
+            object_id="1",
+            object_repr="Movement",
+            changes={"qty": "1.000"},
+            ip_address="127.0.0.1",
+        )
+
+        self.client.force_login(superuser)
+        response = self.client.get(reverse("management_audit"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Журнал аудиту")
+        self.assertContains(response, "stock_movement.created")
+        self.assertNotContains(response, ">root<")
+        self.assertNotContains(response, "root@example.com")
+
+        self.client.force_login(admin)
+        self.assertEqual(self.client.get(reverse("management_audit")).status_code, 403)
+
+        self.client.force_login(storekeeper)
+        self.assertEqual(self.client.get(reverse("management_audit")).status_code, 403)
+
+    def test_stock_movement_journal_shows_performed_by_column(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            performed_by=self.user,
+        )
+        self.user.first_name = "Workflow"
+        self.user.last_name = "Performer"
+        self.user.save(update_fields=["first_name", "last_name"])
+
+        response = self.client.get(reverse("movement_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Виконав")
+        self.assertContains(response, "Workflow Performer")
 
     def _transfer_data(self, **overrides):
         data = {

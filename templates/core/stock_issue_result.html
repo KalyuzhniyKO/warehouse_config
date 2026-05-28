@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{% trans "Видачу виконано" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <section class="mx-auto py-4 py-md-5" style="max-width: 860px;" aria-labelledby="operation-success-title">
@@ -23,6 +23,9 @@
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Цех / місце використання" %}</dt>
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.department|default:"—" }}</dd>
+
+                <dt class="col-md-5 text-muted fw-semibold">{% trans "Виконав" %}</dt>
+                <dd class="col-md-7 mb-0 fw-semibold">{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</dd>
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Дата і час операції" %}</dt>
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>

@@ -240,6 +240,8 @@ class StockReceiveView(
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data.get("comment", ""),
                 occurred_at=form.cleaned_data.get("occurred_at"),
+                performed_by=self.request.user,
+                request=self.request,
             )
         except StockServiceError as exc:
             message = str(exc)
@@ -275,7 +277,9 @@ class StockReturnView(
 
     def get_initial(self):
         initial = super().get_initial()
-        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime("%Y-%m-%dT%H:%M")
+        initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
         initial["comment"] = ""
         return_location = self.get_return_location()
         if self.scanned_item is not None and return_location is not None:
@@ -294,8 +298,12 @@ class StockReturnView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["return_location"] = self.get_return_location()
-        context["can_submit_receive"] = (self.scanned_item is not None and self.get_return_location() is not None)
-        context["operation_token"] = self.get_operation_token_for_context(context["can_submit_receive"])
+        context["can_submit_receive"] = (
+            self.scanned_item is not None and self.get_return_location() is not None
+        )
+        context["operation_token"] = self.get_operation_token_for_context(
+            context["can_submit_receive"]
+        )
         context["operation_token_field"] = self.operation_token_field
         return context
 
@@ -304,7 +312,17 @@ class StockReturnView(
         if duplicate_redirect is not None:
             return duplicate_redirect
         try:
-            movement = return_stock(item=form.cleaned_data["item"], location=form.cleaned_data["location"], qty=form.cleaned_data["qty"], recipient=form.cleaned_data["recipient"], department=form.cleaned_data["department"], comment=form.cleaned_data.get("comment", ""), occurred_at=form.cleaned_data.get("occurred_at"))
+            movement = return_stock(
+                item=form.cleaned_data["item"],
+                location=form.cleaned_data["location"],
+                qty=form.cleaned_data["qty"],
+                recipient=form.cleaned_data["recipient"],
+                department=form.cleaned_data["department"],
+                comment=form.cleaned_data.get("comment", ""),
+                occurred_at=form.cleaned_data.get("occurred_at"),
+                performed_by=self.request.user,
+                request=self.request,
+            )
         except StockServiceError as exc:
             message = str(exc)
             messages.error(self.request, message)
@@ -327,6 +345,7 @@ class StockReceiveResultView(
                 "destination_location",
                 "destination_location__warehouse",
                 "recipient",
+                "performed_by",
             ),
             pk=self.kwargs["pk"],
             movement_type__in=[StockMovement.MovementType.IN, StockMovement.MovementType.RETURN],
@@ -413,6 +432,8 @@ class StockIssueView(
                 document_number=form.cleaned_data["document_number"],
                 comment=form.cleaned_data["comment"],
                 occurred_at=form.cleaned_data["occurred_at"],
+                performed_by=self.request.user,
+                request=self.request,
             )
         except InsufficientStockError:
             message = _(
@@ -447,6 +468,7 @@ class StockMovementPrintView(
                 "destination_location",
                 "destination_location__warehouse",
                 "recipient",
+                "performed_by",
             ),
             pk=self.kwargs["pk"],
         )
@@ -508,7 +530,11 @@ class StockIssueResultView(
         context = super().get_context_data(**kwargs)
         movement = get_object_or_404(
             StockMovement.objects.select_related(
-                "item", "source_location", "source_location__warehouse", "recipient"
+                "item",
+                "source_location",
+                "source_location__warehouse",
+                "recipient",
+                "performed_by",
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.OUT,
@@ -557,6 +583,8 @@ class StockWriteOffView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 qty=form.cleaned_data["qty"],
                 comment=comment,
                 occurred_at=form.cleaned_data["occurred_at"],
+                performed_by=self.request.user,
+                request=self.request,
             )
         except InsufficientStockError:
             message = _(
@@ -581,7 +609,7 @@ class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
         context = super().get_context_data(**kwargs)
         context["movement"] = get_object_or_404(
             StockMovement.objects.select_related(
-                "item", "source_location", "source_location__warehouse"
+                "item", "source_location", "source_location__warehouse", "performed_by"
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.WRITEOFF,
@@ -610,6 +638,8 @@ class StockTransferView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data["comment"],
                 occurred_at=form.cleaned_data["occurred_at"],
+                performed_by=self.request.user,
+                request=self.request,
             )
         except InsufficientStockError:
             message = _(
@@ -646,6 +676,7 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "source_location__warehouse",
                 "destination_location",
                 "destination_location__warehouse",
+                "performed_by",
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.TRANSFER,
@@ -673,6 +704,8 @@ class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data["comment"],
                 occurred_at=form.cleaned_data["occurred_at"],
+                performed_by=self.request.user,
+                request=self.request,
             )
         except StockServiceError as exc:
             message = str(exc)

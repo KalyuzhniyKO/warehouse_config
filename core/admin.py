@@ -11,6 +11,7 @@ from .forms import (
     StockMovementAdminForm,
 )
 from .models import (
+    AuditLog,
     SystemSettings,
     BarcodeRegistry,
     BarcodeSequence,
@@ -210,7 +211,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
     actions = [make_active, make_inactive]
     form = StockMovementAdminForm
     list_per_page = 30
-    list_select_related = ("item", "source_location", "destination_location", "recipient")
+    list_select_related = ("item", "source_location", "destination_location", "recipient", "performed_by")
     list_display = (
         "id",
         "movement_type_badge",
@@ -219,12 +220,13 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         "source_location",
         "destination_location",
         "recipient",
+        "performed_by",
         "department",
         "occurred_at",
         "created_at",
         "active_badge",
     )
-    list_filter = ("movement_type", "source_location", "destination_location", "occurred_at", "is_active")
+    list_filter = ("movement_type", "source_location", "destination_location", "performed_by", "occurred_at", "is_active")
     search_fields = (
         "item__name",
         "item__internal_code",
@@ -235,6 +237,9 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         "department",
         "document_number",
         "comment",
+        "performed_by__username",
+        "performed_by__first_name",
+        "performed_by__last_name",
     )
     date_hierarchy = "occurred_at"
     ordering = ("-occurred_at",)
@@ -244,6 +249,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         ("Товар і кількість", {"fields": ("item", "qty", "unit")}),
         ("Локації", {"fields": ("source_location", "destination_location")}),
         ("Отримувач / місце використання", {"fields": ("recipient", "usage_place", "issue_reason", "department")}),
+        ("Авторство", {"fields": ("performed_by", "created_by", "updated_by")}),
         ("Службове", {"fields": ("document_number", "inventory_count", "comment", "created_at", "updated_at")}),
     )
 
@@ -332,3 +338,20 @@ class SystemSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not SystemSettings.objects.exists()
+
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_per_page = 50
+    list_select_related = ("actor",)
+    list_display = ("created_at", "actor", "action", "object_type", "object_id", "ip_address")
+    list_filter = ("action", "object_type", "created_at")
+    search_fields = ("actor__username", "actor__first_name", "actor__last_name", "action", "object_type", "object_id", "object_repr", "ip_address")
+    readonly_fields = ("actor", "action", "object_type", "object_id", "object_repr", "changes", "ip_address", "user_agent", "created_at")
+    ordering = ("-created_at", "-id")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

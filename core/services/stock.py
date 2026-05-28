@@ -10,6 +10,7 @@ from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Location, StockBalance, StockMovement
+from core.services.audit import log_action
 from core.services.barcodes import ensure_item_barcode
 
 QTY_QUANT = Decimal("0.001")
@@ -132,11 +133,13 @@ def _create_movement(
     department="",
     document_number="",
     inventory_count=None,
+    performed_by=None,
+    request=None,
 ):
     kwargs = {}
     if occurred_at is not None:
         kwargs["occurred_at"] = occurred_at
-    return StockMovement.objects.create(
+    movement = StockMovement.objects.create(
         movement_type=movement_type,
         item=item,
         qty=qty,
@@ -148,8 +151,22 @@ def _create_movement(
         department=department,
         document_number=document_number,
         inventory_count=inventory_count,
+        performed_by=performed_by,
+        created_by=performed_by,
         **kwargs,
     )
+    log_action(
+        performed_by,
+        "stock_movement.created",
+        obj=movement,
+        changes={
+            "movement_type": movement.movement_type,
+            "item_id": movement.item_id,
+            "qty": str(movement.qty),
+        },
+        request=request,
+    )
+    return movement
 
 
 def _increase_balance(balance, qty):
@@ -171,7 +188,9 @@ def _decrease_balance(balance, qty):
     return balance
 
 
-def create_initial_balance(*, item, location, qty, comment="", occurred_at=None):
+def create_initial_balance(
+    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+):
     """Create an initial balance movement and increase stock at a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
@@ -185,11 +204,15 @@ def create_initial_balance(*, item, location, qty, comment="", occurred_at=None)
             destination_location=location,
             comment=comment,
             occurred_at=occurred_at,
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
 
-def receive_stock(*, item, location, qty, comment="", occurred_at=None):
+def receive_stock(
+    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+):
     """Receive stock into a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
@@ -203,6 +226,8 @@ def receive_stock(*, item, location, qty, comment="", occurred_at=None):
             destination_location=location,
             comment=comment,
             occurred_at=occurred_at,
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
@@ -218,6 +243,8 @@ def issue_stock(
     document_number="",
     comment="",
     occurred_at=None,
+    performed_by=None,
+    request=None,
 ):
     """Issue stock from a location and record the business reason."""
     qty = validate_positive_qty(qty)
@@ -239,12 +266,23 @@ def issue_stock(
             issue_reason=issue_reason,
             department=(department or "").strip(),
             document_number=(document_number or "").strip(),
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
 
 def return_stock(
-    *, item, location, qty, recipient=None, department="", comment="", occurred_at=None
+    *,
+    item,
+    location,
+    qty,
+    recipient=None,
+    department="",
+    comment="",
+    occurred_at=None,
+    performed_by=None,
+    request=None,
 ):
     """Return stock back into a location."""
     qty = validate_positive_qty(qty)
@@ -260,11 +298,15 @@ def return_stock(
             department=(department or "").strip(),
             comment=comment,
             occurred_at=occurred_at,
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
 
-def writeoff_stock(*, item, location, qty, comment="", occurred_at=None):
+def writeoff_stock(
+    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+):
     """Write off stock from a location."""
     qty = validate_positive_qty(qty)
     with transaction.atomic():
@@ -277,11 +319,23 @@ def writeoff_stock(*, item, location, qty, comment="", occurred_at=None):
             source_location=location,
             comment=comment,
             occurred_at=occurred_at,
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
 
-def transfer_stock(*, item, source_location, target_location, qty, comment="", occurred_at=None):
+def transfer_stock(
+    *,
+    item,
+    source_location,
+    target_location,
+    qty,
+    comment="",
+    occurred_at=None,
+    performed_by=None,
+    request=None,
+):
     """Transfer stock between two different locations in a single transaction."""
     if source_location == target_location:
         raise SameLocationTransferError(
@@ -301,6 +355,8 @@ def transfer_stock(*, item, source_location, target_location, qty, comment="", o
             destination_location=target_location,
             comment=comment,
             occurred_at=occurred_at,
+            performed_by=performed_by,
+            request=request,
         )
     return movement
 
@@ -316,6 +372,8 @@ def adjust_stock(
     occurred_at=None,
     inventory_count=None,
     target_qty=None,
+    performed_by=None,
+    request=None,
 ):
     """Adjust a stock balance by delta and create an adjustment movement.
 
@@ -351,5 +409,7 @@ def adjust_stock(
             comment=comment,
             occurred_at=occurred_at,
             inventory_count=inventory_count,
+            performed_by=performed_by or user,
+            request=request,
         )
     return movement
