@@ -333,7 +333,7 @@ class LabelAndBarcodeTests(TestCase):
         template = LabelTemplate.objects.create(name="T1", show_item_name=False, show_internal_code=True, show_barcode_text=False)
         # emulate migration behavior for runtime-created template
         from core.views.labels import LabelTemplateUpdateView
-        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateUpdateView._ensure_default_elements(template)
         self.assertEqual(template.elements.count(), 4)
         self.assertFalse(template.elements.get(element_type="item_name").is_visible)
         self.assertFalse(template.elements.get(element_type="barcode_text").is_visible)
@@ -345,7 +345,7 @@ class LabelAndBarcodeTests(TestCase):
     def test_label_template_element_coordinates_saved(self):
         template = LabelTemplate.objects.create(name="Coords")
         from core.views.labels import LabelTemplateUpdateView
-        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateUpdateView._ensure_default_elements(template)
         url = reverse("labeltemplate_update", args=[template.pk])
         payload = {
             "name": "Coords", "width_mm": 58, "height_mm": 40, "show_item_name": "on", "show_internal_code": "on", "show_barcode_text": "on",
@@ -377,7 +377,7 @@ class LabelAndBarcodeTests(TestCase):
         from core.views.labels import LabelTemplateUpdateView
 
         template = LabelTemplate.objects.create(name="58x40 coords", width_mm=58, height_mm=40)
-        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateUpdateView._ensure_default_elements(template)
         template.elements.filter(element_type="item_name").update(x_mm=3, y_mm=3, width_mm=52, height_mm=8, font_size=9)
         template.elements.filter(element_type="internal_code").update(x_mm=3, y_mm=13, width_mm=25, height_mm=5, font_size=7)
         template.elements.filter(element_type="barcode").update(x_mm=3, y_mm=20, width_mm=52, height_mm=12)
@@ -396,7 +396,7 @@ class LabelAndBarcodeTests(TestCase):
     def test_label_template_editor_has_add_text_button_and_empty_form_hook(self):
         template = LabelTemplate.objects.create(name="Edit me")
         from core.views.labels import LabelTemplateUpdateView
-        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateUpdateView._ensure_default_elements(template)
         response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
         self.assertContains(response, "Додати текст")
         self.assertContains(response, "data-empty-element-form")
@@ -405,7 +405,7 @@ class LabelAndBarcodeTests(TestCase):
         from core.services.labels import generate_item_label_pdf
         template = LabelTemplate.objects.create(name="PDF CT")
         from core.views.labels import LabelTemplateUpdateView
-        LabelTemplateUpdateView._create_default_elements(template)
+        LabelTemplateUpdateView._ensure_default_elements(template)
         LabelTemplateElement.objects.create(template=template, element_type="custom_text", text="Custom PDF", x_mm=5, y_mm=5, width_mm=20, height_mm=6, font_size=8, sort_order=90)
         pdf = generate_item_label_pdf(self.item, template)
         self.assertTrue(pdf.startswith(b"%PDF"))
@@ -432,6 +432,46 @@ class LabelAndBarcodeTests(TestCase):
         self.assertIn("data-preview-barcode", html)
         self.assertIn("data-label-size", html)
 
+
+
+    def test_label_template_create_persists_default_elements_when_none_submitted(self):
+        response = self.client.post(
+            reverse("labeltemplate_create"),
+            {
+                "name": "Auto defaults",
+                "width_mm": "58",
+                "height_mm": "40",
+                "show_item_name": "on",
+                "show_internal_code": "on",
+                "show_barcode_text": "on",
+                "barcode_type": "code128",
+                "margin_top_mm": "1",
+                "margin_right_mm": "1",
+                "margin_bottom_mm": "1",
+                "margin_left_mm": "1",
+                "item_name_font_size": "8",
+                "internal_code_font_size": "7",
+                "barcode_text_font_size": "7",
+                "barcode_height_mm": "14",
+                "barcode_bar_width_mm": "0.4",
+                "is_active": "on",
+                "elements-TOTAL_FORMS": "0",
+                "elements-INITIAL_FORMS": "0",
+                "elements-MIN_NUM_FORMS": "0",
+                "elements-MAX_NUM_FORMS": "1000",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+        template = LabelTemplate.objects.get(name="Auto defaults")
+        self.assertEqual(template.elements.count(), 4)
+
+    def test_label_template_update_creates_default_elements_when_missing(self):
+        template = LabelTemplate.objects.create(name="Needs defaults")
+        self.assertEqual(template.elements.count(), 0)
+        response = self.client.get(reverse("labeltemplate_update", args=[template.pk]))
+        self.assertEqual(response.status_code, 200)
+        template.refresh_from_db()
+        self.assertEqual(template.elements.count(), 4)
     def test_item_label_print_page_has_preview_link(self):
         printer = Printer.objects.create(name="P", system_name="P1", is_default=True)
         template = LabelTemplate.objects.create(name="T", is_default=True)

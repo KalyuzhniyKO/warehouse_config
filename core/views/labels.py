@@ -27,6 +27,7 @@ from ..forms import (
     InventoryCountLineForm,
     LabelTemplateElementFormSet,
     LabelTemplateForm,
+    DEFAULT_LABEL_TEMPLATE_ELEMENTS,
     LocationForm,
     PrintLabelForm,
     PrinterForm,
@@ -260,9 +261,10 @@ class LabelTemplateCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["element_formset"] = kwargs.get("element_formset") or LabelTemplateElementFormSet(
-            prefix="elements"
-        )
+        element_formset = kwargs.get("element_formset")
+        if element_formset is None:
+            element_formset = LabelTemplateElementFormSet(prefix="elements", initial=self._default_element_initial())
+        context["element_formset"] = element_formset
         return context
 
     def form_valid(self, form):
@@ -273,10 +275,50 @@ class LabelTemplateCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView
         response = super().form_valid(form)
         formset.instance = self.object
         formset.save()
+        self._ensure_default_elements(self.object)
         return response
 
     def form_invalid(self, form, formset=None):
         return self.render_to_response(self.get_context_data(form=form, element_formset=formset))
+
+    @staticmethod
+    def _default_element_initial():
+        return [
+            {
+                "element_type": element_type,
+                "x_mm": x,
+                "y_mm": y,
+                "width_mm": width,
+                "height_mm": height,
+                "font_size": 8,
+                "is_visible": True,
+                "sort_order": sort_order,
+            }
+            for element_type, x, y, width, height, sort_order in DEFAULT_LABEL_TEMPLATE_ELEMENTS
+        ]
+
+    @staticmethod
+    def _ensure_default_elements(template):
+        if template.elements.exists():
+            return
+        visibility = {
+            "item_name": template.show_item_name,
+            "internal_code": template.show_internal_code,
+            "barcode": True,
+            "barcode_text": template.show_barcode_text,
+        }
+        for element_type, x, y, width, height, sort_order in DEFAULT_LABEL_TEMPLATE_ELEMENTS:
+            LabelTemplateElement.objects.create(
+                template=template,
+                element_type=element_type,
+                x_mm=x,
+                y_mm=y,
+                width_mm=width,
+                height_mm=height,
+                font_size=8,
+                is_visible=visibility.get(element_type, True),
+                sort_order=sort_order,
+            )
 
 
 class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
@@ -288,8 +330,7 @@ class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if not self.object.elements.exists():
-            self._create_default_elements(self.object)
+        self._ensure_default_elements(self.object)
         context["element_formset"] = kwargs.get("element_formset") or LabelTemplateElementFormSet(
             instance=self.object, prefix="elements"
         )
@@ -303,28 +344,10 @@ class LabelTemplateUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView
         response = super().form_valid(form)
         formset.instance = self.object
         formset.save()
+        self._ensure_default_elements(self.object)
         return response
 
     def form_invalid(self, form, formset=None):
         return self.render_to_response(self.get_context_data(form=form, element_formset=formset))
 
-    @staticmethod
-    def _create_default_elements(template):
-        defaults = [
-            ("item_name", 3, 3, 52, 6, template.item_name_font_size, template.show_item_name, 10),
-            ("internal_code", 3, 10, 52, 5, template.internal_code_font_size, template.show_internal_code, 20),
-            ("barcode", 3, 17, 52, 14, 8, True, 30),
-            ("barcode_text", 3, 33, 52, 5, template.barcode_text_font_size, template.show_barcode_text, 40),
-        ]
-        for element_type, x, y, width, height, font_size, is_visible, sort_order in defaults:
-            LabelTemplateElement.objects.create(
-                template=template,
-                element_type=element_type,
-                x_mm=x,
-                y_mm=y,
-                width_mm=width,
-                height_mm=height,
-                font_size=font_size,
-                is_visible=is_visible,
-                sort_order=sort_order,
-            )
+    _ensure_default_elements = staticmethod(LabelTemplateCreateView._ensure_default_elements)

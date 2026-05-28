@@ -22,7 +22,7 @@ from core.forms.directories import (
 )
 from core.forms.filters import StockBalanceFilterForm, StockMovementFilterForm
 from core.forms.inventory import InventoryCountCreateForm, InventoryCountLineForm
-from core.forms.labels import LabelTemplateElementFormSet, LabelTemplateForm, PrintLabelForm, PrinterForm
+from core.forms.labels import DEFAULT_LABEL_TEMPLATE_ELEMENTS, LabelTemplateElementFormSet, LabelTemplateForm, PrintLabelForm, PrinterForm
 from core.forms.management import (
     ManagementUserCreateForm,
     ManagementUserPasswordForm,
@@ -51,6 +51,7 @@ __all__ = [
     "InventoryCountLineForm",
     "ItemForm",
     "LabelTemplateForm",
+    "DEFAULT_LABEL_TEMPLATE_ELEMENTS",
     "LabelTemplateElementFormSet",
     "LocationForm",
     "ManagementUserCreateForm",
