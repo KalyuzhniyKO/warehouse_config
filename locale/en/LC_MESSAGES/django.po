@@ -2965,10 +2965,8 @@ msgstr "Print label"
 
 #: templates/core/management/analytics_data_quality.html:39
 #: templates/core/stock_movement_print.html:42
-#, fuzzy
-#| msgid "Тип локації"
 msgid "Склад / локація"
-msgstr "Location type"
+msgstr "Warehouse / location"
 
 #: templates/core/management/analytics_data_quality.html:39
 #, fuzzy
@@ -3317,10 +3315,8 @@ msgid "На головний екран"
 msgstr "Home"
 
 #: templates/core/stock_movement_print.html:37
-#, fuzzy
-#| msgid "Товари / матеріали"
 msgid "Товар / матеріал"
-msgstr "Items / materials"
+msgstr "Item / material"
 
 #: templates/core/stock_receive_form.html:91
 msgid "Оприбуткувати товар"
@@ -4027,3 +4023,31 @@ msgstr "Quickly add a new item to the catalog."
 
 msgid "Мої налаштування"
 msgstr "My settings"
+
+#: templates/core/stock_movement_print.html
+msgid "Час для перевірки по відео"
+msgstr "Video check time"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв"
+msgstr "Accepted"
+
+#: templates/core/stock_movement_print.html
+msgid "Повернув"
+msgstr "Returned"
+
+#: templates/core/stock_movement_print.html
+msgid "Прийняв на склад"
+msgstr "Accepted into warehouse"
+
+#: templates/core/stock_movement_print.html
+msgid "Відповідальний"
+msgstr "Responsible person"
+
+#: templates/core/stock_movement_print.html
+msgid "Списав"
+msgstr "Written off by"
+
+#: templates/core/stock_movement_print.html
+msgid "Погодив"
+msgstr "Approved by"

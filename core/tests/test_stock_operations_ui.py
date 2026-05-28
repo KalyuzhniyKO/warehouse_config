@@ -539,6 +539,31 @@ class StockIssueInterfaceTests(TestCase):
         self.assertEqual(movement.qty, movement_qty)
         self.assertEqual(self.balance.qty, balance_qty)
 
+    def test_russian_stock_movement_print_page_uses_russian_control_labels(self):
+        self.client.force_login(self.storekeeper)
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            occurred_at=timezone.datetime(
+                2026, 5, 13, 10, 6, 32, tzinfo=timezone.get_current_timezone()
+            ),
+        )
+
+        response = self.client.get(
+            f"/ru/stock/movements/{movement.pk}/print/?autoprint=1"
+        )
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Время для проверки по видео", html)
+        self.assertIn("Принял на склад", html)
+        self.assertIn("Ответственный", html)
+        self.assertNotIn("Час для перевірки по відео", html)
+        self.assertNotIn("Прийняв на склад", html)
+        self.assertNotIn("Відповідальний", html)
+
     def test_stock_movement_print_page_autoprint_is_opt_in(self):
         self.client.force_login(self.storekeeper)
         movement = StockMovement.objects.create(

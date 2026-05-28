@@ -3,7 +3,7 @@
 <html lang="{{ LANGUAGE_CODE|default:'uk' }}">
 <head>
     <meta charset="utf-8">
-    <title>{% if LANGUAGE_CODE == "en" %}Warehouse operation control slip{% else %}{% trans "Контрольний талон складської операції" %}{% endif %} #{{ movement.pk }}</title>
+    <title>{% trans "Контрольний талон складської операції" %} #{{ movement.pk }}</title>
     <style>
         @page { size: A4; margin: 14mm; }
         body { font-family: Arial, sans-serif; color:#000; background:#fff; margin:0; font-size:14px; }
@@ -18,8 +18,8 @@
 </head>
 <body>
 <div class="toolbar">
-    <button type="button" onclick="window.print()">{% if LANGUAGE_CODE == "en" %}Print{% else %}{% trans "Друкувати" %}{% endif %}</button>
-    <button type="button" onclick="window.history.back()">{% if LANGUAGE_CODE == "en" %}Back{% else %}{% trans "Назад" %}{% endif %}</button>
+    <button type="button" onclick="window.print()">{% trans "Друкувати" %}</button>
+    <button type="button" onclick="window.history.back()">{% trans "Назад" %}</button>
 </div>
 <main class="doc">
     <h1>
@@ -31,22 +31,22 @@
         {% else %}{{ movement.get_movement_type_display }}{% endif %}
     </h1>
     <table>
-        <tr><th>{% if LANGUAGE_CODE == "en" %}Operation ID{% else %}ID операції{% endif %}</th><td>{{ movement.pk }}</td></tr>
+        <tr><th>{% trans "ID операції" %}</th><td>{{ movement.pk }}</td></tr>
         <tr><th>{% trans "Дата і час операції" %}</th><td>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</td></tr>
         <tr><th>{% trans "Тип операції" %}</th><td>{{ movement.get_movement_type_display }}</td></tr>
-        <tr><th>{% if LANGUAGE_CODE == "en" %}Item{% else %}{% trans "Товар / матеріал" %}{% endif %}</th><td>{{ movement.item }}</td></tr>
+        <tr><th>{% trans "Товар / матеріал" %}</th><td>{{ movement.item }}</td></tr>
         <tr><th>{% trans "Внутрішній код" %}</th><td>{{ movement.item.internal_code|default:"—" }}</td></tr>
         <tr><th>{% trans "Штрихкод" %}</th><td>{% if movement.item.barcode %}{{ movement.item.barcode.barcode }}{% else %}—{% endif %}</td></tr>
         <tr><th>{% trans "Кількість" %}</th><td>{{ movement.qty }}</td></tr>
         <tr><th>{% trans "Одиниця виміру" %}</th><td>{{ movement.item.unit|default:"—" }}</td></tr>
-        <tr><th>{% if LANGUAGE_CODE == "en" %}Warehouse / location{% else %}{% trans "Склад / локація" %}{% endif %}</th><td>{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% elif movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</td></tr>
+        <tr><th>{% trans "Склад / локація" %}</th><td>{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% elif movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</td></tr>
 
         {% if movement.movement_type == movement.MovementType.OUT %}
-            <tr><th>{% if LANGUAGE_CODE == "en" %}Who takes the item{% else %}Хто взяв товар{% endif %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
-            <tr><th>{% if LANGUAGE_CODE == "en" %}Department / place of use{% else %}Цех / місце використання{% endif %}</th><td>{{ movement.department|default:"—" }}</td></tr>
+            <tr><th>{% trans "Хто взяв товар" %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
+            <tr><th>{% trans "Цех / місце використання" %}</th><td>{{ movement.department|default:"—" }}</td></tr>
         {% elif movement.movement_type == movement.MovementType.RETURN %}
-            <tr><th>{% if LANGUAGE_CODE == "en" %}Who returned the item{% else %}Хто повернув товар{% endif %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
-            <tr><th>{% if LANGUAGE_CODE == "en" %}Department / place of use{% else %}Цех / місце використання{% endif %}</th><td>{{ movement.department|default:"—" }}</td></tr>
+            <tr><th>{% trans "Хто повернув товар" %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>
+            <tr><th>{% trans "Цех / місце використання" %}</th><td>{{ movement.department|default:"—" }}</td></tr>
         {% endif %}
 
         {% if movement.movement_type != movement.MovementType.OUT and movement.movement_type != movement.MovementType.RETURN %}
@@ -55,18 +55,18 @@
     </table>
 
     <section style="margin-top:12px;border:1px solid #000;padding:8px;">
-        {% if LANGUAGE_CODE == "en" %}Video check time:{% else %}Час для перевірки по відео:{% endif %}
+        {% trans "Час для перевірки по відео" %}:
         <div>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</div>
     </section>
 
     {% if movement.movement_type == movement.MovementType.RETURN or movement.movement_type == movement.MovementType.IN or movement.movement_type == movement.MovementType.WRITEOFF %}
     <section style="margin-top:12px;">
         {% if movement.movement_type == movement.MovementType.RETURN %}
-            <div>Прийняв: ____________________</div><div>Повернув: ____________________</div>
+            <div>{% trans "Прийняв" %}: ____________________</div><div>{% trans "Повернув" %}: ____________________</div>
         {% elif movement.movement_type == movement.MovementType.IN %}
-            <div>Прийняв на склад: ____________________</div><div>Відповідальний: ____________________</div>
+            <div>{% trans "Прийняв на склад" %}: ____________________</div><div>{% trans "Відповідальний" %}: ____________________</div>
         {% elif movement.movement_type == movement.MovementType.WRITEOFF %}
-            <div>Списав: ____________________</div><div>Погодив: ____________________</div>
+            <div>{% trans "Списав" %}: ____________________</div><div>{% trans "Погодив" %}: ____________________</div>
         {% endif %}
     </section>
     {% endif %}
