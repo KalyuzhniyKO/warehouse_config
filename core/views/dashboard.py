@@ -104,4 +104,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["is_storekeeper_workplace"] = self.is_storekeeper_workplace()
         context["hide_sidebar"] = not context["is_storekeeper_workplace"]
         context["show_sidebar"] = False
+        context["can_edit_directories"] = self.request.user.is_superuser or user_in_groups(
+            self.request.user, DIRECTORY_EDIT_GROUPS
+        )
         return context

@@ -269,6 +269,13 @@ class DashboardPermissionTests(TestCase):
         self.assertNotIn("quick-action-btn--return", html)
         self.assertNotIn("quick-action-btn--receive", html)
 
+
+    def test_admin_dashboard_has_item_create_quick_action(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+
+        self.assertContains(response, reverse("item_create"))
+        self.assertContains(response, "+ Створити товар / матеріал")
+
     def test_admin_dashboard_cards_are_fully_clickable_without_cta_buttons(self):
         response = self.dashboard_for(self.admin)
         html = response.content.decode()
