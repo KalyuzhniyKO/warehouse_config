@@ -54,9 +54,9 @@ def build_analytics_filter_query(filters):
 
 def filter_movements(filters):
     qs = StockMovement.objects.select_related("item", "source_location", "source_location__warehouse", "destination_location", "destination_location__warehouse", "recipient")
-    if filters.get("date_from"):
+    if filters.get("date_from") and filters.get("period"):
         qs = qs.filter(occurred_at__date__gte=filters["date_from"])
-    if filters.get("date_to"):
+    if filters.get("date_to") and filters.get("period"):
         qs = qs.filter(occurred_at__date__lte=filters["date_to"])
     if filters.get("warehouse"):
         qs = qs.filter(Q(source_location__warehouse=filters["warehouse"]) | Q(destination_location__warehouse=filters["warehouse"]))
@@ -76,6 +76,21 @@ def filter_balances(filters):
     return qs
 
 # keep existing funcs...
+
+
+def get_movement_summary(filters):
+    normalized_filters = dict(filters)
+    if normalized_filters.get("date_from") or normalized_filters.get("date_to"):
+        normalized_filters.setdefault("period", "custom")
+    movements = filter_movements(normalized_filters)
+    totals = movements.aggregate(
+        total_in=Sum("qty", filter=Q(movement_type__in=IN_TYPES)),
+        total_out=Sum("qty", filter=Q(movement_type__in=ISSUE_TYPES)),
+    )
+    return {
+        "total_in": decimal_zero(totals["total_in"]),
+        "total_out": decimal_zero(totals["total_out"]),
+    }
 
 def get_analytics_summary(filters):
     mv = filter_movements(filters)
