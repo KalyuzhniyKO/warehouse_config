@@ -173,6 +173,8 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             "recipient",
             "inventory_count",
             "performed_by",
+            "cancelled_by",
+            "reversal_of",
         )
         form = self.get_filter_form()
         if not form.is_valid():

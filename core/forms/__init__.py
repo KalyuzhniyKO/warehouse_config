@@ -33,6 +33,7 @@ from core.forms.management import (
 from core.forms.stock_operations import (
     InitialBalanceForm,
     StockIssueForm,
+    StockMovementCancellationForm,
     StockOperationForm,
     StockReceiveForm,
     StockReturnForm,
@@ -64,6 +65,7 @@ __all__ = [
     "StockBalanceFilterForm",
     "StockIssueForm",
     "StockMovementAdminForm",
+    "StockMovementCancellationForm",
     "StockMovementFilterForm",
     "StockOperationForm",
     "SystemSettingsForm",

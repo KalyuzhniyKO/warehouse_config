@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.forms.models import model_to_dict
 from django.db.models import Count, Q, Sum
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -33,6 +34,7 @@ from ..forms import (
     RecipientForm,
     StockBalanceFilterForm,
     StockIssueForm,
+    StockMovementCancellationForm,
     StockMovementFilterForm,
     StockReceiveForm,
     StockReturnForm,
@@ -80,6 +82,8 @@ from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
     StockServiceError,
+    can_cancel_stock_movement,
+    cancel_stock_movement,
     create_initial_balance,
     find_best_stock_balance_for_issue,
     find_default_stock_return_location,
@@ -346,6 +350,8 @@ class StockReceiveResultView(
                 "destination_location__warehouse",
                 "recipient",
                 "performed_by",
+                "cancelled_by",
+                "reversal_of",
             ),
             pk=self.kwargs["pk"],
             movement_type__in=[StockMovement.MovementType.IN, StockMovement.MovementType.RETURN],
@@ -451,6 +457,50 @@ class StockIssueView(
         return redirect("stock_issue_result", pk=movement.pk)
 
 
+class StockMovementCancelView(LoginRequiredMixin, FormView):
+    template_name = "core/stock_movement_cancel.html"
+    form_class = StockMovementCancellationForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.movement = get_object_or_404(
+            StockMovement.objects.select_related(
+                "item",
+                "source_location",
+                "source_location__warehouse",
+                "destination_location",
+                "destination_location__warehouse",
+                "recipient",
+                "performed_by",
+                "cancelled_by",
+            ),
+            pk=kwargs["pk"],
+        )
+        if not can_cancel_stock_movement(request.user, self.movement):
+            raise PermissionDenied(_("У вас немає прав для перегляду цієї сторінки."))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["movement"] = self.movement
+        return context
+
+    def form_valid(self, form):
+        try:
+            cancellation_movement = cancel_stock_movement(
+                movement=self.movement,
+                cancelled_by=self.request.user,
+                reason=form.cleaned_data["reason"],
+                request=self.request,
+            )
+        except StockServiceError as exc:
+            message = str(exc)
+            messages.error(self.request, message)
+            form.add_error(None, message)
+            return self.form_invalid(form)
+        messages.success(self.request, _("Рух анульовано."))
+        return redirect("stock_movement_print", pk=cancellation_movement.pk)
+
+
 class StockMovementPrintView(
     LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
 ):
@@ -469,6 +519,8 @@ class StockMovementPrintView(
                 "destination_location__warehouse",
                 "recipient",
                 "performed_by",
+                "cancelled_by",
+                "reversal_of",
             ),
             pk=self.kwargs["pk"],
         )
@@ -535,6 +587,8 @@ class StockIssueResultView(
                 "source_location__warehouse",
                 "recipient",
                 "performed_by",
+                "cancelled_by",
+                "reversal_of",
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.OUT,
@@ -677,6 +731,8 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "destination_location",
                 "destination_location__warehouse",
                 "performed_by",
+                "cancelled_by",
+                "reversal_of",
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.TRANSFER,

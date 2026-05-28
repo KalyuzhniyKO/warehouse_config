@@ -65,21 +65,21 @@
                     <tr>
                         <th>{% trans "Дата" %}</th><th>{% trans "Тип операції" %}</th><th>{% trans "Товари / матеріали" %}</th><th>{% trans "Штрихкод" %}</th>
                         <th class="text-end">{% trans "Кількість" %}</th><th>{% trans "Звідки" %}</th><th>{% trans "Куди" %}</th><th>{% trans "Отримувач" %}</th>
-                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Виконав" %}</th><th>{% trans "Цех / підрозділ" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th>
+                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Виконав" %}</th><th>{% trans "Цех / підрозділ" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th><th>{% trans "Дії" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for movement in movements %}
-                        <tr class="{% if movement.qty <= 0 or not movement.document_number or not movement.recipient and movement.movement_type == movement.MovementType.OUT or not movement.department and movement.movement_type == movement.MovementType.OUT %}table-warning{% endif %}">
+                        <tr class="{% if movement.is_cancelled %}table-secondary text-muted{% elif movement.qty <= 0 or not movement.document_number or not movement.recipient and movement.movement_type == movement.MovementType.OUT or not movement.department and movement.movement_type == movement.MovementType.OUT %}table-warning{% endif %}">
                             <td class="movement-date-cell"><div class="movement-date">{{ movement.occurred_at|date:"d.m.Y" }}</div><div class="movement-time">{{ movement.occurred_at|date:"H:i" }}</div></td>
                             <td><span class="status-badge">{{ movement.get_movement_type_display }}</span></td><td>{{ movement.item }}</td>
                             <td class="movement-code-cell">{{ movement.item.barcode.barcode|default:movement.item.internal_code|default:"—" }}</td>
                             <td class="text-end movement-qty-cell">{{ movement.qty }}</td><td>{{ movement.source_location|default:"—" }}</td><td>{{ movement.destination_location|default:"—" }}</td>
-                            <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td><td>{{ movement.department|default:"—" }}</td>
-                            <td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td><td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{{ movement.comment|default:"—" }}</td>
+                            <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{% if movement.is_cancelled %}<span class="badge text-bg-danger">{% trans "Анулювано" %}</span><div class="small">{{ movement.cancelled_at|date:"d.m.Y H:i" }}</div>{% elif movement.reversal_of_id %}<span class="badge text-bg-warning">{% trans "Рух анулювання" %}</span>{% else %}<span class="badge text-bg-success">{% trans "Активно" %}</span>{% endif %}</td><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td><td>{{ movement.department|default:"—" }}</td>
+                            <td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td><td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{% if movement.is_cancelled %}<strong>{% trans "Причина анулювання" %}:</strong> {{ movement.cancellation_reason }}{% else %}{{ movement.comment|default:"—" }}{% endif %}</td><td class="text-nowrap"><a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друк" %}</a>{% if user.is_superuser and not movement.is_cancelled and not movement.reversal_of_id %} <a class="btn btn-outline-danger btn-sm" href="{% url 'stock_movement_cancel' movement.pk %}">{% trans "Анулювати" %}</a>{% endif %}</td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="14" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{% url 'movement_list' %}">{% trans "Скинути фільтри" %}</a></td></tr>
+                        <tr><td colspan="16" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{% url 'movement_list' %}">{% trans "Скинути фільтри" %}</a></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

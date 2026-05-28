@@ -126,6 +126,35 @@ class StockMovement(ActiveModel):
         on_delete=models.SET_NULL,
         related_name="updated_stock_movements",
     )
+    is_cancelled = models.BooleanField(default=False, verbose_name=_("Анулювано"))
+    cancelled_at = models.DateTimeField(
+        null=True, blank=True, verbose_name=_("Час анулювання")
+    )
+    cancelled_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Анулював"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="cancelled_stock_movements",
+    )
+    cancellation_reason = models.TextField(_("Причина анулювання"), blank=True)
+    cancellation_movement = models.ForeignKey(
+        "self",
+        verbose_name=_("Рух анулювання"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="cancelled_original_movements",
+    )
+    reversal_of = models.ForeignKey(
+        "self",
+        verbose_name=_("Рух анулювання"),
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="reversal_movements",
+    )
     occurred_at = models.DateTimeField(_("occurred at"), default=timezone.now)
     comment = models.TextField(_("comment"), blank=True)
 
