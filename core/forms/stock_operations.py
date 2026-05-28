@@ -364,3 +364,18 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
 
 class InitialBalanceForm(StockOperationForm):
     pass
+
+
+class StockMovementCancellationForm(forms.Form):
+    reason = forms.CharField(
+        label=_("Причина анулювання"),
+        required=True,
+        widget=forms.Textarea(attrs={"rows": 4, "class": "form-control"}),
+        error_messages={"required": _("Причина анулювання обов'язкова.")},
+    )
+
+    def clean_reason(self):
+        reason = normalize_text(self.cleaned_data.get("reason"))
+        if not reason:
+            raise forms.ValidationError(_("Причина анулювання обов'язкова."))
+        return reason

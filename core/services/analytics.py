@@ -53,7 +53,7 @@ def build_analytics_filter_query(filters):
 
 
 def filter_movements(filters):
-    qs = StockMovement.objects.select_related("item", "source_location", "source_location__warehouse", "destination_location", "destination_location__warehouse", "recipient")
+    qs = StockMovement.objects.select_related("item", "source_location", "source_location__warehouse", "destination_location", "destination_location__warehouse", "recipient").filter(is_cancelled=False, reversal_of__isnull=True)
     if filters.get("date_from") and filters.get("period"):
         qs = qs.filter(occurred_at__date__gte=filters["date_from"])
     if filters.get("date_to") and filters.get("period"):

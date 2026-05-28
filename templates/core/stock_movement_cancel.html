@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n core_extras %}
+
+{% block title %}{% trans "Підтвердити анулювання" %} · {% trans "Складський облік" %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card content-card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h1 class="h4 mb-0">{% trans "Підтвердити анулювання" %}</h1>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-danger fw-semibold" role="alert">
+                {% trans "Операція буде анульована, але залишиться в історії." %}
+            </div>
+
+            <dl class="row mb-4">
+                <dt class="col-sm-4">{% trans "ID операції" %}</dt><dd class="col-sm-8">{{ movement.pk }}</dd>
+                <dt class="col-sm-4">{% trans "Товар / матеріал" %}</dt><dd class="col-sm-8">{{ movement.item }}</dd>
+                <dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty }}</dd>
+                <dt class="col-sm-4">{% trans "Тип операції" %}</dt><dd class="col-sm-8">{{ movement.get_movement_type_display }}</dd>
+                <dt class="col-sm-4">{% trans "Звідки" %}</dt><dd class="col-sm-8">{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% else %}—{% endif %}</dd>
+                <dt class="col-sm-4">{% trans "Куди" %}</dt><dd class="col-sm-8">{% if movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</dd>
+                <dt class="col-sm-4">{% trans "Виконав" %}</dt><dd class="col-sm-8">{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</dd>
+                <dt class="col-sm-4">{% trans "Дата і час операції" %}</dt><dd class="col-sm-8">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
+            </dl>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="mb-3">
+                    <label class="form-label" for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+                    {{ form.reason }}
+                    {{ form.reason.errors }}
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-danger" type="submit">{% trans "Анулювати" %}</button>
+                    <a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "Назад" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

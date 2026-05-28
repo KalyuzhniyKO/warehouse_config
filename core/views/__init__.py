@@ -15,6 +15,7 @@ from .stock_operations import (
     InitialBalanceView,
     StockIssueResultView,
     StockIssueView,
+    StockMovementCancelView,
     StockMovementPrintView,
     StockReceiveResultView,
     StockReceiveView,

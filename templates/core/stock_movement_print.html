@@ -34,6 +34,12 @@
         <tr><th>{% trans "ID операції" %}</th><td>{{ movement.pk }}</td></tr>
         <tr><th>{% trans "Дата і час операції" %}</th><td>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</td></tr>
         <tr><th>{% trans "Тип операції" %}</th><td>{{ movement.get_movement_type_display }}</td></tr>
+        <tr><th>{% trans "Статус" %}</th><td>{% if movement.is_cancelled %}<strong>{% trans "Анулювано" %}</strong>{% elif movement.reversal_of_id %}{% trans "Рух анулювання" %}{% else %}{% trans "Активно" %}{% endif %}</td></tr>
+        {% if movement.is_cancelled %}
+        <tr><th>{% trans "Анулював" %}</th><td>{% if movement.cancelled_by %}{{ movement.cancelled_by|display_name }}{% else %}—{% endif %}</td></tr>
+        <tr><th>{% trans "Час анулювання" %}</th><td>{{ movement.cancelled_at|date:"Y-m-d H:i:s" }}</td></tr>
+        <tr><th>{% trans "Причина анулювання" %}</th><td>{{ movement.cancellation_reason|linebreaksbr }}</td></tr>
+        {% endif %}
         <tr><th>{% trans "Виконав" %}</th><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td></tr>
         <tr><th>{% trans "Товар / матеріал" %}</th><td>{{ movement.item }}</td></tr>
         <tr><th>{% trans "Внутрішній код" %}</th><td>{{ movement.item.internal_code|default:"—" }}</td></tr>
