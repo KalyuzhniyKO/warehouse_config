@@ -216,3 +216,18 @@ header .navbar { min-height: 56px; }
 .analytics-kpi-value{font-size:1.2rem;font-weight:700;line-height:1.1}
 .analytics-toolbar{display:flex;gap:.45rem;flex-wrap:wrap}
 @media (max-width:767.98px){.filter-action-group .btn{flex:1 1 auto;min-height:2.4rem}.filter-grid--main,.filter-grid--advanced{grid-template-columns:1fr}}
+
+.user-menu-dropdown .language-switcher .btn {
+  width: 100%;
+  justify-content: space-between;
+  --bs-btn-color: #111827;
+  --bs-btn-border-color: #d1d5db;
+  --bs-btn-hover-bg: #f9fafb;
+  --bs-btn-hover-color: #111827;
+}
+.user-menu-dropdown .language-switcher .dropdown-menu {
+  width: 100%;
+}
+@media (max-width: 575.98px) {
+  .user-menu-name { max-width: 110px; }
+}

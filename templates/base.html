@@ -89,6 +89,47 @@
     
         .app-header-meta { font-size: .85rem; color: rgba(17,24,39,.8); }
         .app-header-user { font-weight: 600; }
+        .user-menu-toggle {
+            border: 1px solid rgba(17, 24, 39, .24);
+            background: rgba(255, 255, 255, .35);
+            color: var(--yantos-text);
+            border-radius: 999px;
+            padding: .25rem .75rem .25rem .35rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            max-width: min(88vw, 320px);
+        }
+        .user-menu-toggle:hover,
+        .user-menu-toggle:focus { background: rgba(255,255,255,.6); color: #000; }
+        .user-avatar-badge {
+            width: 1.9rem;
+            height: 1.9rem;
+            border-radius: 50%;
+            background: var(--yantos-text);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .82rem;
+            text-transform: uppercase;
+        }
+        .user-menu-name {
+            font-weight: 600;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .user-menu-dropdown { width: min(260px, calc(100vw - 1.5rem)); }
+        .user-menu-section {
+            font-size: .72rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: #6b7280;
+            padding: .4rem 1rem .25rem;
+        }
         .navbar-toggler { border-color: rgba(17,24,39,.25); }
         .navbar-toggler:focus { box-shadow: 0 0 0 .2rem rgba(255,210,0,.35); }
         @media (max-width: 991.98px) {
@@ -110,15 +151,25 @@
             </span>
         </a>
         {% if is_storekeeper_workplace %}
-            <div class="ms-auto d-flex align-items-center gap-2 gap-sm-3 navbar-text">
-                {% include "includes/language_switcher.html" %}
-                {% if user.is_authenticated %}
+            {% with is_warehouse_admin=user|in_group:"Адміністратор складу" %}
+            {% if user.is_authenticated %}
+            <div class="ms-auto dropdown">
+                <button class="btn user-menu-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="user-avatar-badge">{{ user.get_username|first|default:'?' }}</span>
+                    <span class="user-menu-name">{{ user.get_username }}</span>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
+                    <h6 class="user-menu-section">{% trans "Система" %}</h6>
+                    <div class="px-2 pb-1">{% include "includes/language_switcher.html" %}</div>
+                    <div class="dropdown-divider"></div>
                     <form method="post" action="{% url 'logout' %}" class="m-0">
                         {% csrf_token %}
-                        <button class="btn btn-outline-light btn-sm" type="submit">{% trans "Вийти" %}</button>
+                        <button class="dropdown-item text-danger" type="submit">{% trans "Вийти" %}</button>
                     </form>
-                {% endif %}
+                </div>
             </div>
+            {% endif %}
+            {% endwith %}
         {% else %}
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="{% trans 'Перемкнути навігацію' %}">
             <span class="navbar-toggler-icon"></span>
@@ -173,14 +224,32 @@
                     {% endif %}
                 {% endwith %}
             </ul>
-            <div class="ms-auto d-flex align-items-center gap-2 gap-sm-3 navbar-text app-header-meta">
-                {% include "includes/language_switcher.html" %}
+            <div class="ms-auto d-flex align-items-center navbar-text app-header-meta">
                 {% if user.is_authenticated %}
-                    <span class="small d-none d-sm-inline"><span class="app-header-user">{{ user.get_username }}</span></span>
-                    <form method="post" action="{% url 'logout' %}" class="m-0">
-                        {% csrf_token %}
-                        <button class="btn btn-outline-light btn-sm" type="submit">{% trans "Вийти" %}</button>
-                    </form>
+                    {% with is_warehouse_admin=user|in_group:"Адміністратор складу" %}
+                    <div class="dropdown">
+                        <button class="btn user-menu-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="user-avatar-badge">{{ user.get_username|first|default:'?' }}</span>
+                            <span class="user-menu-name">{{ user.get_username }}</span>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
+                            <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Мої налаштування" %}</a>
+                            {% if user.is_superuser or is_warehouse_admin %}
+                                <h6 class="user-menu-section">{% trans "Налаштування складу" %}</h6>
+                                <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
+                                <a class="dropdown-item" href="{% url 'printer_list' %}">{% trans "Принтери" %}</a>
+                                <a class="dropdown-item" href="{% url 'labeltemplate_list' %}">{% trans "Шаблони етикеток" %}</a>
+                            {% endif %}
+                            <h6 class="user-menu-section">{% trans "Система" %}</h6>
+                            <div class="px-2 pb-1">{% include "includes/language_switcher.html" %}</div>
+                            <div class="dropdown-divider"></div>
+                            <form method="post" action="{% url 'logout' %}" class="m-0">
+                                {% csrf_token %}
+                                <button class="dropdown-item text-danger" type="submit">{% trans "Вийти" %}</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endwith %}
                 {% endif %}
             </div>
         </div>

@@ -544,6 +544,28 @@ class DashboardLocalizationTests(TestCase):
         ]:
             self.assertNotIn(phrase, html)
 
+
+    def test_admin_sees_account_dropdown_with_management_links(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
+
+        self.assertIn("user-menu-toggle", html)
+        self.assertIn("Мої налаштування", html)
+        self.assertIn("Налаштування складу", html)
+        self.assertIn('href="/uk/management/"', html)
+        self.assertIn('href="/uk/settings/printers/"', html)
+        self.assertIn('href="/uk/settings/label-templates/"', html)
+
+    def test_auditor_account_dropdown_hides_management_links(self):
+        response = self.dashboard_for(self.auditor, "/uk/")
+        html = response.content.decode()
+
+        self.assertIn("user-menu-toggle", html)
+        self.assertIn("Мої налаштування", html)
+        self.assertNotIn("Налаштування складу", html)
+        self.assertNotIn('href="/uk/settings/printers/"', html)
+        self.assertNotIn('href="/uk/settings/label-templates/"', html)
+
     def test_language_switcher_lists_all_configured_languages(self):
         from django.conf import settings
 
