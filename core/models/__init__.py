@@ -6,6 +6,7 @@ so every existing import (from core.models import X, from ..models import X, etc
 continues to work without any changes.
 """
 
+from .audit import AuditLog
 from .base import ActiveModel, SystemSettings
 from .barcodes import BarcodeRegistry, BarcodeSequence
 from .directories import Category, Recipient, Unit, UsagePlace
@@ -15,6 +16,8 @@ from .stock import StockBalance, StockMovement
 from .warehouse import Item, Location, Warehouse
 
 __all__ = [
+    # audit
+    "AuditLog",
     # base
     "ActiveModel",
     "SystemSettings",

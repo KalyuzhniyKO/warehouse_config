@@ -148,6 +148,7 @@ def complete_inventory_count(*, inventory_count, user=None):
                 location=line.location,
                 quantity_delta=difference_qty,
                 user=user,
+                performed_by=user,
                 comment=_("Коригування за інвентаризацією"),
                 inventory_count=locked_inventory_count,
             )

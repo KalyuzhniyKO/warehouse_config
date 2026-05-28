@@ -51,6 +51,7 @@ from .labels import (
     PrinterUpdateView,
 )
 from .management import (
+    AuditLogView,
     HELP_SECTIONS,
     HelpView,
     ManagementDashboardView,
@@ -80,6 +81,7 @@ from .analytics import (
 
 __all__ = [
     "ActiveDirectoryQuerysetMixin",
+    "AuditLogView",
     "AnalyticsCSVExportView",
     "AnalyticsRedirectView",
     "AnalyticsView",

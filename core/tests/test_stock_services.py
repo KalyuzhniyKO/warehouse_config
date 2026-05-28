@@ -20,6 +20,7 @@ from ..forms import (
     StockTransferForm,
 )
 from ..models import (
+    AuditLog,
     BarcodeRegistry,
     BarcodeSequence,
     Category,
@@ -70,11 +71,77 @@ class StockServiceTests(TestCase):
             warehouse=self.warehouse,
             name="Target",
         )
+        self.user = get_user_model().objects.create_user(
+            username="stock-user", first_name="Stock", last_name="User"
+        )
 
     def get_balance_qty(self, location=None):
         location = location or self.source_location
         return StockBalance.objects.get(item=self.item, location=location).qty
 
+
+
+    def test_stock_operations_store_performed_by_and_create_audit_log(self):
+        from ..services.stock import (
+            adjust_stock,
+            issue_stock,
+            receive_stock,
+            return_stock,
+            transfer_stock,
+            writeoff_stock,
+        )
+
+        received = receive_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("20.000"),
+            performed_by=self.user,
+        )
+        issued = issue_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+            recipient=self.recipient,
+            performed_by=self.user,
+        )
+        returned = return_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+            recipient=self.recipient,
+            performed_by=self.user,
+        )
+        written_off = writeoff_stock(
+            item=self.item,
+            location=self.source_location,
+            qty=Decimal("1.000"),
+            performed_by=self.user,
+        )
+        transferred = transfer_stock(
+            item=self.item,
+            source_location=self.source_location,
+            target_location=self.target_location,
+            qty=Decimal("1.000"),
+            performed_by=self.user,
+        )
+        adjusted = adjust_stock(
+            item=self.item,
+            location=self.source_location,
+            quantity_delta=Decimal("1.000"),
+            performed_by=self.user,
+        )
+
+        for movement in [received, issued, returned, written_off, transferred, adjusted]:
+            movement.refresh_from_db()
+            self.assertEqual(movement.performed_by, self.user)
+            self.assertEqual(movement.created_by, self.user)
+
+        self.assertEqual(
+            AuditLog.objects.filter(
+                actor=self.user, action="stock_movement.created"
+            ).count(),
+            6,
+        )
 
     def test_find_best_stock_balance_for_issue_returns_largest_positive_active_balance(self):
         from ..services.stock import find_best_stock_balance_for_issue

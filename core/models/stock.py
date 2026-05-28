@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -101,6 +102,30 @@ class StockMovement(ActiveModel):
     )
     department = models.CharField(_("Цех / підрозділ"), max_length=200, blank=True)
     document_number = models.CharField(_("Номер документа"), max_length=100, blank=True)
+    performed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Виконав"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="performed_stock_movements",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Створив"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_stock_movements",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Оновив"),
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="updated_stock_movements",
+    )
     occurred_at = models.DateTimeField(_("occurred at"), default=timezone.now)
     comment = models.TextField(_("comment"), blank=True)
 

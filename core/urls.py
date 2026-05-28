@@ -225,6 +225,11 @@ urlpatterns = [
         name="management_dashboard",
     ),
     path(
+        "management/audit/",
+        views.AuditLogView.as_view(),
+        name="management_audit",
+    ),
+    path(
         "management/directories/",
         views.ManagementDirectoriesView.as_view(),
         name="management_directories",

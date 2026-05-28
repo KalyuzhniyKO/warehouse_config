@@ -27,7 +27,10 @@ def display_name(user):
     first_name = getattr(user, "first_name", "") or ""
     username_method = getattr(user, "get_username", None)
     username = username_method() if callable(username_method) else getattr(user, "username", "")
-    return (full_name or first_name or username or "").strip()
+    display = (full_name or first_name or username or "").strip()
+    if display.lower() == "root":
+        return "Superuser"
+    return display
 
 
 @register.filter

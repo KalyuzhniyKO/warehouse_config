@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n core_extras %}
+
+{% block title %}{% trans "Журнал аудиту" %} · {% trans "Складський облік" %}{% endblock %}
+
+{% block content %}
+<div class="list-page">
+    <div class="list-page-header">
+        <div class="list-page-title"><h1 class="mb-0">{% trans "Журнал аудиту" %}</h1></div>
+    </div>
+    <div class="card content-card data-table-card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 data-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>{% trans "Дата" %}</th>
+                        <th>{% trans "Користувач" %}</th>
+                        <th>{% trans "Дія" %}</th>
+                        <th>{% trans "Об'єкт" %}</th>
+                        <th>{% trans "Зміни" %}</th>
+                        <th>{% trans "IP-адреса" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in audit_logs %}
+                        <tr>
+                            <td>{{ entry.created_at|date:"Y-m-d H:i:s" }}</td>
+                            <td>{% if entry.actor %}{{ entry.actor|display_name }}{% else %}—{% endif %}</td>
+                            <td>{{ entry.action }}</td>
+                            <td>{% if entry.object_repr %}{{ entry.object_repr }}{% else %}{{ entry.object_type }} #{{ entry.object_id }}{% endif %}</td>
+                            <td><pre class="mb-0 small">{{ entry.changes }}</pre></td>
+                            <td>{{ entry.ip_address|default:"—" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="text-center py-5">{% trans "Записів аудиту не знайдено." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

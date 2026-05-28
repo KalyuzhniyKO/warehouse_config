@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.forms.models import model_to_dict
 from django.db.models import Count, Q, Sum
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -43,6 +44,7 @@ from ..forms import (
     WarehouseForm,
 )
 from ..models import (
+    AuditLog,
     Category,
     InventoryCount,
     Item,
@@ -98,6 +100,24 @@ class PlaceholderPageView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["title"] = self.title
         context["description"] = self.description
+        return context
+
+
+class AuditLogView(LoginRequiredMixin, TemplateView):
+    template_name = "core/management/audit_log.html"
+    paginate_by = 100
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied(_("У вас немає прав для перегляду цієї сторінки."))
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        logs = AuditLog.objects.select_related("actor").order_by("-created_at", "-id")[
+            : self.paginate_by
+        ]
+        context["audit_logs"] = logs
         return context
 
 
