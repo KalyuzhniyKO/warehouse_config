@@ -3166,7 +3166,10 @@ msgstr "New stock receipt"
 #, fuzzy
 #| msgid "Створити товар / матеріал"
 msgid "Оновити список принтерів"
-msgstr "Create item / material"
+msgstr "Refresh printer list"
+msgid "У CUPS не додано жодного принтера. Додайте принтер у CUPS, після цього натисніть «Оновити список принтерів»."
+msgstr "No printers are added in CUPS. Add a printer in CUPS, then click \"Refresh printer list\"."
+
 
 #: templates/core/printer_list.html:21
 #, fuzzy

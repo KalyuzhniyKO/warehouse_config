@@ -26,6 +26,13 @@
                 <div class="alert alert-warning mb-0">{{ cups_error }}</div>
             </div>
         {% else %}
+            {% if not system_printers %}
+                <div class="card-body pb-0">
+                    <div class="alert alert-warning mb-3">
+                        {% trans "У CUPS не додано жодного принтера. Додайте принтер у CUPS, після цього натисніть «Оновити список принтерів»." %}
+                    </div>
+                </div>
+            {% endif %}
             <div class="table-responsive">
                 <table class="table mb-0 data-table align-middle">
                     <thead>
