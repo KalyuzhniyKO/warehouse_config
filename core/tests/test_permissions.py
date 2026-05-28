@@ -223,9 +223,9 @@ class DashboardPermissionTests(TestCase):
     def test_admin_dashboard_contains_required_groups_and_operations(self):
         response = self.dashboard_for(self.admin)
 
-        self.assertContains(response, "Основні операції")
-        self.assertContains(response, "Контроль і звіти")
-        self.assertContains(response, "Довідники і друк")
+        self.assertContains(response, "Швидкі складські операції")
+        self.assertContains(response, "Контроль складу")
+        self.assertContains(response, "Номенклатура і структура складу")
         html = response.content.decode()
         self.assertNotIn('class="sidebar-link"', html)
         for label in [
@@ -246,9 +246,9 @@ class DashboardPermissionTests(TestCase):
         self.assertContains(response, "compact-card-grid")
         self.assertContains(response, "dashboard-grid--compact")
         self.assertContains(response, "operation-card")
-        self.assertContains(response, "Основні операції")
-        self.assertContains(response, "Контроль і звіти")
-        self.assertContains(response, "Довідники і друк")
+        self.assertContains(response, "Швидкі складські операції")
+        self.assertContains(response, "Контроль складу")
+        self.assertContains(response, "Номенклатура і структура складу")
         html = response.content.decode()
         self.assertNotIn('class="sidebar-link"', html)
         for url_name in [
@@ -398,9 +398,14 @@ class DashboardPermissionTests(TestCase):
         self.assertNotContains(response, "Навігація")
         self.assertContains(response, '<main class="col-12">')
         self.assertContains(response, "Головна")
-        self.assertContains(response, "Довідники і друк")
+        self.assertContains(response, "Швидкі складські операції")
+        self.assertContains(response, "Контроль складу")
+        self.assertContains(response, "Номенклатура і структура складу")
         html = response.content.decode()
+        main_html = html[html.index('<main class="col-12">'):]
         self.assertNotIn('class="sidebar-link"', html)
+        for label in ["Принтери", "Шаблони етикеток", "Керування складом", "Аналітика складу"]:
+            self.assertNotIn(label, main_html)
         self.assertIn(f'href="{reverse("stock_receive")}"', html)
         self.assertIn(f'href="{reverse("stock_issue")}"', html)
         self.assertIn(f'href="{reverse("stock_return")}"', html)

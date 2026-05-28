@@ -2280,10 +2280,9 @@ msgid "Закрити"
 msgstr "Close"
 
 #: templates/core/dashboard.html:6
-#, fuzzy
 #| msgid "Назад до керування"
 msgid "Головна панель складу"
-msgstr "Back to management"
+msgstr "Warehouse dashboard"
 
 #: templates/core/dashboard.html:11
 #, fuzzy
@@ -2351,10 +2350,9 @@ msgid "Довідники і друк"
 msgstr "Directories"
 
 #: templates/core/dashboard.html:38
-#, fuzzy
 #| msgid "Групування номенклатури."
 msgid "Пошук, перегляд і редагування номенклатури."
-msgstr "Item grouping."
+msgstr "Search, view, and edit item catalog."
 
 #: templates/core/dashboard.html:39
 #, fuzzy
@@ -2990,84 +2988,72 @@ msgid "Прикладів немає."
 msgstr "No users yet."
 
 #: templates/core/management/dashboard.html:27
-#, fuzzy
 #| msgid ""
 #| "Оберіть розділ для роботи з довідниками складу, номенклатурою або "
 #| "залишками."
 msgid ""
 "Центр керування щоденними процесами складу, контролем залишків і доступами."
-msgstr ""
-"Choose a section to work with warehouse guides, nomenclature or balances."
+msgstr "Control center for daily warehouse processes, stock control, and access."
 
 #: templates/core/management/dashboard.html:32
 msgid "Щоденні складські дії та журнал рухів."
-msgstr ""
+msgstr "Daily warehouse actions and movement journal."
 
 #: templates/core/management/dashboard.html:37
-#, fuzzy
 #| msgid "Нове переміщення"
 msgid "Переміщення"
-msgstr "New transfer"
+msgstr "Transfers"
 
 #: templates/core/management/dashboard.html:43
-#, fuzzy
 #| msgid "Залишки на складі"
 msgid "Залишки та контроль"
-msgstr "Stock balances"
+msgstr "Balances and control"
 
 #: templates/core/management/dashboard.html:43
 msgid "Контроль залишків, інвентаризація та аналітичні звіти."
-msgstr ""
+msgstr "Stock control, inventory counts, and analytics reports."
 
 #: templates/core/management/dashboard.html:47
-#, fuzzy
 #| msgid "Аналітика"
 msgid "Аналітика / звіти"
-msgstr "Analytics"
+msgstr "Analytics / reports"
 
 #: templates/core/management/dashboard.html:49
 #: templates/core/management/reports.html:3
 #: templates/core/management/reports.html:13
-#, fuzzy
 #| msgid "Аналітика"
 msgid "Звіти складу"
-msgstr "Analytics"
+msgstr "Warehouse reports"
 
 #: templates/core/management/dashboard.html:54
-#, fuzzy
 #| msgid "Формати та шаблони для друку."
 msgid "Товари і класифікатори для обліку."
-msgstr "Print formats and templates."
+msgstr "Items and classifiers for accounting."
 
 #: templates/core/management/dashboard.html:62
-#, fuzzy
 #| msgid "Довідка адміністратора"
 msgid "Довідники підприємства"
-msgstr "Administrator help"
+msgstr "Company directories"
 
 #: templates/core/management/dashboard.html:62
-#, fuzzy
 #| msgid "Номенклатура, категорії, склади, локації та отримувачі."
 msgid "Структура складів, локацій та отримувачів."
-msgstr "Items, categories, warehouses, locations, and recipients."
+msgstr "Warehouse, location, and recipient structure."
 
 #: templates/core/management/dashboard.html:71
-#, fuzzy
 #| msgid "Етикетки"
 msgid "Етикетки та друк"
-msgstr "Labels"
+msgstr "Labels and printing"
 
 #: templates/core/management/dashboard.html:71
-#, fuzzy
 #| msgid "Друкувати контрольний талон"
 msgid "Друк етикеток, принтери та шаблони."
-msgstr "Print control slip"
+msgstr "Label printing, printers, and templates."
 
 #: templates/core/management/dashboard.html:80
-#, fuzzy
 #| msgid "Користувачі та доступ"
 msgid "Користувачі, ролі та системні параметри."
-msgstr "Users and access"
+msgstr "Users, roles, and system parameters."
 
 #: templates/core/management/dashboard.html:82
 #: templates/core/management/users.html:3
@@ -3339,22 +3325,19 @@ msgid "Новий прихід товару"
 msgstr "New stock receipt"
 
 #: templates/core/stock_transfer_form.html:9
-#, fuzzy
 #| msgid "Перемістіть товар між складами або локаціями."
 msgid "Перемістіть товар між складами та локаціями у кілька дотиків."
-msgstr "Move items between warehouses or locations."
+msgstr "Move items between warehouses and locations in a few taps."
 
 #: templates/core/stock_transfer_form.html:16
-#, fuzzy
 #| msgid "Нове переміщення"
 msgid "Що переміщуємо"
-msgstr "New transfer"
+msgstr "What to move"
 
 #: templates/core/stock_transfer_form.html:20
-#, fuzzy
 #| msgid "Звідки"
 msgid "Звідки / куди"
-msgstr "From"
+msgstr "From / to"
 
 #: templates/core/stock_transfer_form.html:27
 msgid "Перемістити"
@@ -3362,10 +3345,9 @@ msgstr "Transfer"
 
 #: templates/core/stock_transfer_form.html:27
 #: templates/core/stock_writeoff_form.html:16
-#, fuzzy
 #| msgid "На головний екран"
 msgid "До головної панелі"
-msgstr "Home"
+msgstr "Back to dashboard"
 
 #: templates/core/stock_transfer_result.html:3
 #: templates/core/stock_transfer_result.html:5
@@ -4027,3 +4009,63 @@ msgstr "Quickly add a new item to the catalog."
 
 msgid "Мої налаштування"
 msgstr "My settings"
+
+msgid "Аналітика"
+msgstr "Analytics"
+
+msgid "Швидкі складські операції"
+msgstr "Quick warehouse actions"
+
+msgid "Оприбуткувати товар або матеріали на склад."
+msgstr "Receive goods or materials into stock."
+
+msgid "Видати товар працівнику або підрозділу."
+msgstr "Issue goods to an employee or department."
+
+msgid "Зафіксувати повернення товару на склад."
+msgstr "Record returned goods back into stock."
+
+msgid "Перемістити між складами або локаціями."
+msgstr "Move between warehouses or locations."
+
+msgid "Списати втрати або непридатні залишки."
+msgstr "Write off losses or unusable stock."
+
+msgid "Контроль складу"
+msgstr "Warehouse control"
+
+msgid "Перевірити фактичні залишки за товарами."
+msgstr "Check current stock balances by item."
+
+msgid "Історія рухів товарів і матеріалів."
+msgstr "History of item and material movements."
+
+msgid "Провести або переглянути інвентаризацію."
+msgstr "Run or review inventory counts."
+
+msgid "Номенклатура і структура складу"
+msgstr "Items and warehouse structure"
+
+msgid "Переглянути склади та складські зони."
+msgstr "View warehouses and storage zones."
+
+msgid "Комірки та місця зберігання на складах."
+msgstr "Bins and storage locations in warehouses."
+
+msgid "Кому видаються товари та матеріали."
+msgstr "People who receive goods and materials."
+
+msgid "Групування товарів і матеріалів."
+msgstr "Grouping for goods and materials."
+
+msgid "Одиниці для обліку номенклатури."
+msgstr "Units used for item catalog accounting."
+
+msgid "Внести стартові залишки для запуску обліку."
+msgstr "Enter opening balances to start accounting."
+
+msgid "Обрати товари для друку етикеток."
+msgstr "Open items to print labels."
+
+msgid "Підказки щодо роботи зі складом."
+msgstr "Tips for working with the warehouse."
