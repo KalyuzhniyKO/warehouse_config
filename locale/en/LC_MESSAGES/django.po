@@ -4024,3 +4024,6 @@ msgstr "+ Add item / material"
 
 msgid "Швидке додавання нової номенклатури."
 msgstr "Quickly add a new item to the catalog."
+
+msgid "Мої налаштування"
+msgstr "My settings"
