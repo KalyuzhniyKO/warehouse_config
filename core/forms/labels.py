@@ -8,6 +8,14 @@ from core.models import LabelTemplate, LabelTemplateElement, Printer
 from core.services.printers import list_system_printers
 
 
+DEFAULT_LABEL_TEMPLATE_ELEMENTS = [
+    ("item_name", 3, 3, 52, 6, 10),
+    ("internal_code", 3, 10, 52, 5, 20),
+    ("barcode", 3, 17, 52, 14, 30),
+    ("barcode_text", 3, 33, 52, 5, 40),
+]
+
+
 class PrinterForm(BootstrapModelForm):
     class Meta:
         model = Printer
