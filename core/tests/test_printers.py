@@ -75,6 +75,15 @@ class CupsPrinterDiscoveryTests(TestCase):
             ["lpstat", "-d"], capture_output=True, text=True, check=False
         )
 
+    @mock.patch("core.services.printers.subprocess.run")
+    def test_list_system_printers_returns_empty_for_no_destinations(self, run):
+        run.return_value = CommandResult(
+            returncode=1,
+            stderr="lpstat: No destinations added.\n",
+        )
+
+        self.assertEqual(list_system_printers(), [])
+
     @mock.patch("core.services.printers.get_default_system_printer", return_value=None)
     @mock.patch(
         "core.services.printers.list_system_printers",
@@ -274,6 +283,20 @@ class PrinterViewTests(TestCase):
         self.assertContains(response, reverse("printer_update", args=[self.printer.pk]))
         self.assertContains(response, reverse("printer_test_print", args=[self.printer.pk]))
         self.assertNotContains(response, reverse("labeltemplate_update", args=[self.printer.pk]))
+        self.assertNotContains(response, reverse("item_create"))
+
+    @mock.patch("core.views.labels.get_default_system_printer", return_value=None)
+    @mock.patch("core.views.labels.list_system_printers", return_value=[])
+    def test_printer_list_page_shows_empty_cups_warning_without_error(self, _list, _default):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("printer_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "У CUPS не додано жодного принтера. Додайте принтер у CUPS, після цього натисніть «Оновити список принтерів».",
+        )
 
     @mock.patch("core.forms.labels.list_system_printers", side_effect=Exception("dev CUPS down"))
     def test_printer_edit_page_available_only_to_settings_groups(self, _list):

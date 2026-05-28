@@ -41,6 +41,11 @@ def _command_error(result, fallback):
     return (result.stderr or result.stdout or fallback).strip()
 
 
+def _is_no_destinations_output(text):
+    normalized = (text or "").strip().lower()
+    return "no destinations added" in normalized
+
+
 def _parse_lpstat_printers(output):
     printers = []
     seen = set()
@@ -68,8 +73,16 @@ def _parse_lpstat_printers(output):
 
 def list_system_printers():
     result = _run_command(["lpstat", "-v"])
+    if result.returncode != 0 and _is_no_destinations_output(
+        _command_error(result, "")
+    ):
+        return []
     if result.returncode != 0:
         result = _run_command(["lpstat", "-p"])
+        if result.returncode != 0 and _is_no_destinations_output(
+            _command_error(result, "")
+        ):
+            return []
     if result.returncode != 0:
         raise PrinterDiscoveryError(
             _command_error(result, _("Не вдалося отримати список CUPS-принтерів."))
