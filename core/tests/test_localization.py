@@ -701,12 +701,12 @@ class DashboardLocalizationTests(TestCase):
 
         for phrase in [
             "Головна",
-            "Швидкі складські операції",
+            "Часті операції",
             "Прихід товару",
             "Видача товару",
             "Переміщення товару",
             "Списання товару",
-            "Початкові залишки",
+            "Контроль",
             "Інвентаризація",
             "Залишки на складі",
             "Журнал операцій",
@@ -731,13 +731,12 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("YANTOS", html)
         for phrase in [
             "Home",
-            "Quick warehouse actions",
-            "Warehouse operations",
+            "Frequent operations",
             "Stock receipt",
             "Stock issue",
             "Stock transfer",
             "Stock write-off",
-            "Initial balances",
+            "Control",
             "Inventory count",
             "Stock balances",
             "Operation journal",
@@ -880,7 +879,7 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertIn("YANTOS", html)
-        self.assertIn("Quick warehouse actions", html)
+        self.assertIn("Frequent operations", html)
         for phrase in [
             "Швидкі складські операції",
             "Прихід товару",
