@@ -8,6 +8,7 @@ from core.models import (
     Item,
     Location,
     Recipient,
+    StockBalance,
     StockMovement,
     SystemSettings,
     UsagePlace,
@@ -50,6 +51,33 @@ class LocationsModeMixin:
                 cleaned_data[location_field] = get_default_location_for_warehouse(
                     warehouse
                 )
+        return cleaned_data
+
+    def set_best_stock_location_when_disabled(
+        self, cleaned_data, warehouse_field="warehouse", location_field="location"
+    ):
+        if self.use_locations and location_field in self.fields:
+            return cleaned_data
+        item = cleaned_data.get("item")
+        warehouse = cleaned_data.get(warehouse_field)
+        if not item or not warehouse:
+            return cleaned_data
+        balance = (
+            StockBalance.objects.filter(
+                item=item,
+                is_active=True,
+                qty__gt=0,
+                location__is_active=True,
+                location__warehouse=warehouse,
+            )
+            .select_related("location", "location__warehouse")
+            .order_by("-qty", "location__name", "location__pk")
+            .first()
+        )
+        if balance is not None:
+            cleaned_data[location_field] = balance.location
+        else:
+            cleaned_data[location_field] = get_default_location_for_warehouse(warehouse)
         return cleaned_data
 
     def setup_single_warehouse_mode(
@@ -296,6 +324,11 @@ class StockIssueForm(StockOperationForm):
     def clean_document_number(self):
         return normalize_text(self.cleaned_data.get("document_number"))
 
+    def clean(self):
+        cleaned_data = super().clean()
+        self.set_best_stock_location_when_disabled(cleaned_data)
+        return cleaned_data
+
 
 class StockWriteOffForm(StockOperationForm):
     qty = forms.DecimalField(
@@ -334,6 +367,11 @@ class StockWriteOffForm(StockOperationForm):
 
     def clean_document_number(self):
         return normalize_text(self.cleaned_data.get("document_number"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        self.set_best_stock_location_when_disabled(cleaned_data)
+        return cleaned_data
 
 
 class StockTransferForm(LocationsModeMixin, forms.Form):
@@ -405,8 +443,25 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
                     _("Неможливо перемістити товар у той самий склад.")
                 )
             if source_warehouse:
-                cleaned_data["source_location"] = get_default_location_for_warehouse(
-                    source_warehouse
+                item = cleaned_data.get("item")
+                balance = None
+                if item is not None:
+                    balance = (
+                        StockBalance.objects.filter(
+                            item=item,
+                            is_active=True,
+                            qty__gt=0,
+                            location__is_active=True,
+                            location__warehouse=source_warehouse,
+                        )
+                        .select_related("location", "location__warehouse")
+                        .order_by("-qty", "location__name", "location__pk")
+                        .first()
+                    )
+                cleaned_data["source_location"] = (
+                    balance.location
+                    if balance is not None
+                    else get_default_location_for_warehouse(source_warehouse)
                 )
             if destination_warehouse:
                 cleaned_data["destination_location"] = (

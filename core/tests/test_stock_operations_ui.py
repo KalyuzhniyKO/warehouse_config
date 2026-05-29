@@ -971,6 +971,7 @@ class StockOperationWorkflowTests(TestCase):
             f'{reverse("stock_return")}?barcode={self.item.barcode.barcode}'
         )
         return_location = prefill_response.context["form"].initial["location"]
+        expected_location = get_default_location_for_warehouse(return_location.warehouse)
 
         response = self.client.post(
             reverse("stock_return"),
@@ -986,7 +987,7 @@ class StockOperationWorkflowTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, 302)
-        balance = StockBalance.objects.get(item=self.item, location=return_location)
+        balance = StockBalance.objects.get(item=self.item, location=expected_location)
         movement = StockMovement.objects.get(department=self.usage_place.name)
         self.item.refresh_from_db()
         self.assertEqual(balance.qty, Decimal("7.000"))
@@ -1018,14 +1019,17 @@ class StockOperationWorkflowTests(TestCase):
         movement = StockMovement.objects.get(comment="UI transfer")
         self.assertEqual(movement.movement_type, StockMovement.MovementType.TRANSFER)
         self.assertEqual(movement.source_location, self.location)
-        self.assertEqual(movement.destination_location, self.destination_location)
+        expected_destination = get_default_location_for_warehouse(
+            self.destination_warehouse
+        )
+        self.assertEqual(movement.destination_location, expected_destination)
         self.assertEqual(
             StockBalance.objects.get(item=self.item, location=self.location).qty,
             Decimal("3.000"),
         )
         self.assertEqual(
             StockBalance.objects.get(
-                item=self.item, location=self.destination_location
+                item=self.item, location=expected_destination
             ).qty,
             Decimal("2.000"),
         )
@@ -1391,7 +1395,12 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Неможливо перемістити товар у той самий склад.")
         self.assertEqual(StockMovement.objects.count(), movement_count)
 
-    def test_use_locations_true_keeps_location_fields_visible(self):
+    def test_use_locations_true_keeps_location_fields_visible_for_superuser(self):
+        superuser = get_user_model().objects.create_superuser(
+            "workflow-root", "root@example.com", "pass"
+        )
+        self.client.force_login(superuser)
+
         receive_response = self.client.get(reverse("stock_return"))
         transfer_response = self.client.get(reverse("stock_transfer"))
 
@@ -1510,7 +1519,7 @@ class StockOperationWorkflowTests(TestCase):
         self.assertContains(response, "Дані для видачі визначено автоматично.")
 
 
-    def test_stock_receive_get_barcode_requires_explicit_destination(self):
+    def test_stock_receive_get_barcode_requires_explicit_warehouse_destination(self):
         response = self.client.get(
             f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
         )
@@ -1522,14 +1531,14 @@ class StockOperationWorkflowTests(TestCase):
         self.assertNotIn("warehouse", form.initial)
         self.assertNotIn("location", form.initial)
         self.assertContains(response, "Склад")
-        self.assertContains(response, "Локація")
+        self.assertNotContains(response, "Локація")
         self.assertIn('name="warehouse"', html)
-        self.assertIn('name="location"', html)
+        self.assertNotIn('name="location"', html)
         self.assertContains(response, self.warehouse.name)
         self.assertContains(response, self.destination_warehouse.name)
         self.assertNotContains(response, "Дані для повернення визначено автоматично.")
 
-    def test_stock_receive_posts_to_user_selected_destination(self):
+    def test_stock_receive_posts_to_user_selected_warehouse_destination(self):
         get_response = self.client.get(
             f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'
         )
@@ -1550,13 +1559,21 @@ class StockOperationWorkflowTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.IN)
-        self.assertEqual(movement.destination_location, self.destination_location)
+        expected_destination = get_default_location_for_warehouse(
+            self.destination_warehouse
+        )
+        self.assertEqual(movement.destination_location, expected_destination)
         self.assertFalse(
             StockBalance.objects.filter(item=self.item, location=self.location).exists()
         )
+        self.assertFalse(
+            StockBalance.objects.filter(
+                item=self.item, location=self.destination_location
+            ).exists()
+        )
         self.assertEqual(
             StockBalance.objects.get(
-                item=self.item, location=self.destination_location
+                item=self.item, location=expected_destination
             ).qty,
             Decimal("4.000"),
         )
