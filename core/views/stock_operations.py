@@ -93,6 +93,7 @@ from ..services.stock import (
     transfer_stock,
     writeoff_stock,
 )
+from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
 
 
 SELF_SERVICE_OPERATION_TOKEN_FIELD = "operation_token"
@@ -166,13 +167,22 @@ class SelfServiceShellContextMixin:
         return context
 
 
-def stock_operation_barcode_context(item):
+class RequestUserFormKwargsMixin:
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request_user"] = self.request.user
+        return kwargs
+
+
+def stock_operation_barcode_context(item, user=None):
     if item is None:
         return None
-    available_qty = (
-        StockBalance.objects.filter(item=item, is_active=True).aggregate(total=Sum("qty"))["total"]
-        or 0
-    )
+    queryset = StockBalance.objects.filter(item=item, is_active=True)
+    if user is not None and not user.is_superuser:
+        from ..services.warehouse_access import get_accessible_warehouses
+
+        queryset = queryset.filter(location__warehouse__in=get_accessible_warehouses(user))
+    available_qty = queryset.aggregate(total=Sum("qty"))["total"] or 0
     return {"item": item, "available_qty": available_qty}
 
 
@@ -199,12 +209,15 @@ class BarcodePrefillMixin:
         context = super().get_context_data(**kwargs)
         context["barcode_query"] = self.scanned_barcode
         context["scanned_item"] = self.scanned_item
-        context["scanned_item_context"] = stock_operation_barcode_context(self.scanned_item)
+        context["scanned_item_context"] = stock_operation_barcode_context(
+            self.scanned_item, self.request.user
+        )
         return context
 
 
 class StockReceiveView(
     LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
     SelfServiceShellContextMixin,
     GroupRequiredMixin,
     BarcodePrefillMixin,
@@ -261,6 +274,7 @@ class StockReceiveView(
 
 class StockReturnView(
     LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
     SelfServiceShellContextMixin,
     GroupRequiredMixin,
     BarcodePrefillMixin,
@@ -276,7 +290,7 @@ class StockReturnView(
 
     def get_return_location(self):
         if not hasattr(self, "return_location"):
-            self.return_location = find_default_stock_return_location()
+            self.return_location = find_default_stock_return_location(self.request.user)
         return self.return_location
 
     def get_initial(self):
@@ -343,7 +357,9 @@ class StockReceiveResultView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["movement"] = get_object_or_404(
-            StockMovement.objects.select_related(
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.select_related(
                 "item",
                 "item__barcode",
                 "destination_location",
@@ -352,6 +368,7 @@ class StockReceiveResultView(
                 "performed_by",
                 "cancelled_by",
                 "reversal_of",
+                ),
             ),
             pk=self.kwargs["pk"],
             movement_type__in=[StockMovement.MovementType.IN, StockMovement.MovementType.RETURN],
@@ -361,6 +378,7 @@ class StockReceiveResultView(
 
 class StockIssueView(
     LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
     SelfServiceShellContextMixin,
     GroupRequiredMixin,
     BarcodePrefillMixin,
@@ -379,7 +397,7 @@ class StockIssueView(
     def get_best_stock_balance(self):
         if not hasattr(self, "best_stock_balance"):
             self.best_stock_balance = find_best_stock_balance_for_issue(
-                self.scanned_item
+                self.scanned_item, self.request.user
             )
         return self.best_stock_balance
 
@@ -510,7 +528,9 @@ class StockMovementPrintView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         movement = get_object_or_404(
-            StockMovement.objects.select_related(
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.select_related(
                 "item",
                 "item__barcode",
                 "source_location",
@@ -521,6 +541,7 @@ class StockMovementPrintView(
                 "performed_by",
                 "cancelled_by",
                 "reversal_of",
+                ),
             ),
             pk=self.kwargs["pk"],
         )
@@ -581,7 +602,9 @@ class StockIssueResultView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         movement = get_object_or_404(
-            StockMovement.objects.select_related(
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.select_related(
                 "item",
                 "source_location",
                 "source_location__warehouse",
@@ -589,6 +612,7 @@ class StockIssueResultView(
                 "performed_by",
                 "cancelled_by",
                 "reversal_of",
+                ),
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.OUT,
@@ -609,7 +633,7 @@ def _format_writeoff_comment(*, reason, document_number, comment):
     return "\n".join(lines)
 
 
-class StockWriteOffView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_writeoff_form.html"
     form_class = StockWriteOffForm
@@ -662,8 +686,11 @@ class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["movement"] = get_object_or_404(
-            StockMovement.objects.select_related(
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.select_related(
                 "item", "source_location", "source_location__warehouse", "performed_by"
+                ),
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.WRITEOFF,
@@ -671,7 +698,7 @@ class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
         return context
 
 
-class StockTransferView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_transfer_form.html"
     form_class = StockTransferForm
@@ -724,7 +751,9 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["movement"] = get_object_or_404(
-            StockMovement.objects.select_related(
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.select_related(
                 "item",
                 "source_location",
                 "source_location__warehouse",
@@ -733,6 +762,7 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "performed_by",
                 "cancelled_by",
                 "reversal_of",
+                ),
             ),
             pk=self.kwargs["pk"],
             movement_type=StockMovement.MovementType.TRANSFER,
@@ -740,7 +770,7 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
         return context
 
 
-class InitialBalanceView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/initial_balance_form.html"
     form_class = InitialBalanceForm

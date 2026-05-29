@@ -2,6 +2,16 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Item, Location, Recipient, StockMovement, Warehouse
+from core.services.warehouse_access import (
+    get_accessible_warehouses,
+    get_single_accessible_warehouse_or_none,
+)
+
+
+def active_warehouses_for_form_user(user):
+    if user is None:
+        return Warehouse.objects.filter(is_active=True)
+    return get_accessible_warehouses(user)
 
 
 class StockBalanceFilterForm(forms.Form):
@@ -31,7 +41,21 @@ class StockBalanceFilterForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop("user", kwargs.pop("request_user", None))
         super().__init__(*args, **kwargs)
+        accessible_warehouses = active_warehouses_for_form_user(self.request_user)
+        self.fields["warehouse"].queryset = accessible_warehouses
+        self.fields["location"].queryset = Location.objects.filter(
+            is_active=True,
+            warehouse__is_active=True,
+            warehouse__in=accessible_warehouses,
+        ).select_related("warehouse")
+        if not self.is_bound and "warehouse" not in self.initial:
+            single_warehouse = get_single_accessible_warehouse_or_none(
+                self.request_user
+            )
+            if single_warehouse is not None:
+                self.initial["warehouse"] = single_warehouse
         for field in self.fields.values():
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
@@ -77,7 +101,21 @@ class StockMovementFilterForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop("user", kwargs.pop("request_user", None))
         super().__init__(*args, **kwargs)
+        accessible_warehouses = active_warehouses_for_form_user(self.request_user)
+        self.fields["warehouse"].queryset = accessible_warehouses
+        self.fields["location"].queryset = Location.objects.filter(
+            is_active=True,
+            warehouse__is_active=True,
+            warehouse__in=accessible_warehouses,
+        ).select_related("warehouse")
+        if not self.is_bound and "warehouse" not in self.initial:
+            single_warehouse = get_single_accessible_warehouse_or_none(
+                self.request_user
+            )
+            if single_warehouse is not None:
+                self.initial["warehouse"] = single_warehouse
         for field in self.fields.values():
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")

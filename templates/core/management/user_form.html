@@ -10,14 +10,15 @@
         </div>
         {% if is_superuser_target %}
             <div class="alert alert-warning" role="alert">
-                {% trans "Це superuser. Групи та технічні права краще змінювати тільки в Django Admin." %}
+                {% trans "Це системний адміністратор. Групи та технічні права краще змінювати тільки в Django Admin." %}
             </div>
         {% endif %}
         <form method="post" novalidate>
             {% csrf_token %}
             {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
             {% for field in form %}
-                {% if field.field.widget.input_type == "checkbox" and field.name != "groups" %}
+                {% if field.name|slice:":17" == "warehouse_access_" or field.name|slice:":19" == "warehouse_delegate_" %}
+                {% elif field.field.widget.input_type == "checkbox" and field.name != "groups" %}
                     <div class="form-check mb-3">
                         {{ field }}
                         <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -41,6 +42,45 @@
                     </div>
                 {% endif %}
             {% endfor %}
+            {% if form.has_warehouse_access_rows %}
+                <div class="border rounded p-3 mb-4">
+                    <h2 class="h5 mb-3">{% trans "Доступ до складів" %}</h2>
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Доступні склади" %}</th>
+                                    <th class="text-center">{% trans "Доступ" %}</th>
+                                    <th class="text-center">{% trans "Може делегувати доступ" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in form.warehouse_access_rows %}
+                                    <tr>
+                                        <td>{{ row.warehouse.name }}</td>
+                                        <td class="text-center">
+                                            <div class="form-check d-inline-block m-0">
+                                                {{ row.has_access }}
+                                                <label class="visually-hidden" for="{{ row.has_access.id_for_label }}">{{ row.has_access.label }}</label>
+                                            </div>
+                                            {% if row.has_access.errors %}<div class="text-danger">{{ row.has_access.errors }}</div>{% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check d-inline-block m-0">
+                                                {{ row.can_delegate }}
+                                                <label class="visually-hidden" for="{{ row.can_delegate.id_for_label }}">{{ row.can_delegate.label }}</label>
+                                            </div>
+                                            {% if row.can_delegate.errors %}<div class="text-danger">{{ row.can_delegate.errors }}</div>{% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr><td colspan="3" class="text-muted py-3">{% trans "Немає доступу до складів" %}</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endif %}
             <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
         </form>
     </div>

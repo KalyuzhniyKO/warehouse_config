@@ -14,6 +14,7 @@ from .inventory import InventoryCount, InventoryCountLine
 from .labels import LabelTemplate, LabelTemplateElement, PrintJob, Printer
 from .stock import StockBalance, StockMovement
 from .warehouse import Item, Location, Warehouse
+from .warehouse_access import UserWarehouseAccess
 
 __all__ = [
     # audit
@@ -43,5 +44,6 @@ __all__ = [
     # warehouse
     "Item",
     "Location",
+    "UserWarehouseAccess",
     "Warehouse",
 ]

@@ -13,7 +13,8 @@ from core.admin import (
     make_active,
     make_inactive,
 )
-from core.models import LabelTemplate, PrintJob, Printer, StockMovement, UsagePlace
+from core.models import LabelTemplate, PrintJob, Printer, StockMovement, UsagePlace, Warehouse
+from core.tests.warehouse_access_utils import grant_warehouse_access
 
 
 class BaseTemplateReturnLinksTests(TestCase):
@@ -22,6 +23,8 @@ class BaseTemplateReturnLinksTests(TestCase):
         Group.objects.get_or_create(name="Комірник")
         cls.user = get_user_model().objects.create_user(username="storekeeper", password="pw")
         cls.user.groups.add(Group.objects.get(name="Комірник"))
+        cls.warehouse = Warehouse.objects.create(name="Storekeeper warehouse")
+        grant_warehouse_access(cls.user, cls.warehouse)
 
     def test_storekeeper_menu_has_stock_return_link_for_return_action(self):
         self.client.force_login(self.user)
@@ -158,4 +161,3 @@ class AdminModelConfigurationTests(TestCase):
     def test_label_template_fieldsets_include_layout(self):
         fieldset_titles = [name for name, _ in LabelTemplateAdmin.fieldsets]
         self.assertIn("Макет", fieldset_titles)
-

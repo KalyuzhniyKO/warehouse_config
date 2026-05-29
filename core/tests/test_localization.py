@@ -12,6 +12,7 @@ from django.utils import timezone
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
+from .warehouse_access_utils import grant_warehouse_access
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -51,6 +52,7 @@ class LocalizedWebInterfaceTests(TestCase):
             unit=self.unit,
         )
         self.warehouse = Warehouse.objects.create(name="Основний склад")
+        grant_warehouse_access(self.user, self.warehouse, can_delegate=True)
         self.location = Location.objects.create(warehouse=self.warehouse, name="A-01")
         self.balance = StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("5.000")
@@ -108,6 +110,8 @@ class I18NReadinessAuditTests(TestCase):
             unit=self.unit,
         )
         self.warehouse = Warehouse.objects.create(name="Main warehouse")
+        grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
+        grant_warehouse_access(self.storekeeper, self.warehouse)
         self.location = Location.objects.create(
             warehouse=self.warehouse, name="Main location"
         )
@@ -370,6 +374,10 @@ class DashboardLocalizationTests(TestCase):
         self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
         self.auditor = User.objects.create_user(username="dash-auditor", password="pw")
         self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
+        self.warehouse = Warehouse.objects.create(name="Dashboard warehouse")
+        grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
+        grant_warehouse_access(self.storekeeper, self.warehouse)
+        grant_warehouse_access(self.auditor, self.warehouse)
 
     def dashboard_for(self, user, path=None):
         from django.utils import translation

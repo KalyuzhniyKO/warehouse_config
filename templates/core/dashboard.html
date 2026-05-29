@@ -2,6 +2,11 @@
 {% load i18n core_extras %}
 {% block title %}{% trans "Складський облік" %}{% endblock %}
 {% block content %}
+{% if not has_warehouse_access %}
+<div class="alert alert-warning" role="alert">
+    {% trans "У вас немає доступу до жодного складу. Зверніться до адміністратора." %}
+</div>
+{% else %}
 <div class="dashboard-main">
     <h1 class="dashboard-strip-title mb-3">{% trans "Головна панель складу" %}</h1>
     <section class="section-shell" aria-labelledby="warehouse-actions-heading">
@@ -42,4 +47,5 @@
         </div>
     </section>
 </div>
+{% endif %}
 {% endblock %}

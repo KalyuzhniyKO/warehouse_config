@@ -28,6 +28,7 @@ from .models import (
     StockMovement,
     Unit,
     UsagePlace,
+    UserWarehouseAccess,
     Warehouse,
 )
 
@@ -158,6 +159,23 @@ class WarehouseAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
     autocomplete_fields = ("barcode",)
     readonly_fields = ("created_at", "updated_at")
     list_per_page = 30
+
+
+@admin.register(UserWarehouseAccess)
+class UserWarehouseAccessAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
+    list_per_page = 30
+    list_select_related = ("user", "warehouse", "created_by")
+    list_display = ("user", "warehouse", "can_delegate", "active_badge", "created_by", "updated_at")
+    list_filter = ("can_delegate", "is_active", "warehouse")
+    search_fields = (
+        "user__username",
+        "user__first_name",
+        "user__last_name",
+        "warehouse__name",
+        "created_by__username",
+    )
+    autocomplete_fields = ("user", "warehouse", "created_by")
+    readonly_fields = ("created_at", "updated_at")
 
 
 @admin.register(Location)

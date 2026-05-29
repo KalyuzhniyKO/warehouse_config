@@ -73,6 +73,10 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import (
+    get_accessible_warehouses,
+    restrict_stock_movement_queryset_for_user,
+)
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -93,7 +97,7 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     paginate_by = 50
 
     def get_filter_form(self):
-        return StockBalanceFilterForm(self.request.GET or None)
+        return StockBalanceFilterForm(self.request.GET or None, request_user=self.request.user)
 
     def get_queryset(self):
         queryset = (
@@ -108,6 +112,7 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
                 item__is_active=True,
                 location__is_active=True,
                 location__warehouse__is_active=True,
+                location__warehouse__in=get_accessible_warehouses(self.request.user),
             )
             .order_by("item__name", "location__warehouse__name", "location__name")
         )
@@ -159,22 +164,26 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
 
     def get_filter_form(self):
         return StockMovementFilterForm(
-            getattr(self, "effective_get", self.request.GET) or None
+            getattr(self, "effective_get", self.request.GET) or None,
+            request_user=self.request.user,
         )
 
     def get_queryset(self):
-        queryset = StockMovement.objects.select_related(
-            "item",
-            "item__barcode",
-            "source_location",
-            "source_location__warehouse",
-            "destination_location",
-            "destination_location__warehouse",
-            "recipient",
-            "inventory_count",
-            "performed_by",
-            "cancelled_by",
-            "reversal_of",
+        queryset = restrict_stock_movement_queryset_for_user(
+            self.request.user,
+            StockMovement.objects.select_related(
+                "item",
+                "item__barcode",
+                "source_location",
+                "source_location__warehouse",
+                "destination_location",
+                "destination_location__warehouse",
+                "recipient",
+                "inventory_count",
+                "performed_by",
+                "cancelled_by",
+                "reversal_of",
+            ),
         )
         form = self.get_filter_form()
         if not form.is_valid():

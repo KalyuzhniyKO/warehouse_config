@@ -50,6 +50,7 @@ from ..models import (
     StockBalance,
     StockMovement,
     Unit,
+    UserWarehouseAccess,
     Warehouse,
 )
 from ..permissions import (
@@ -65,6 +66,7 @@ from ..permissions import (
     user_in_groups,
 )
 from ..services import analytics as analytics_service
+from ..services.audit import log_action
 from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
@@ -72,6 +74,10 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import (
+    get_accessible_warehouses,
+    restrict_warehouse_queryset_for_user,
+)
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -124,6 +130,12 @@ class DirectoryConfigMixin:
 class ActiveDirectoryQuerysetMixin:
     def get_queryset(self):
         queryset = self.model.objects.all()
+        if self.model is Warehouse:
+            queryset = restrict_warehouse_queryset_for_user(self.request.user, queryset)
+        elif self.model is Location:
+            queryset = queryset.filter(
+                warehouse__in=get_accessible_warehouses(self.request.user)
+            )
         status = self.request.GET.get("status", "active")
         query = self.request.GET.get("q", "").strip()
 
@@ -165,8 +177,38 @@ class DirectoryCreateView(
     group_names = DIRECTORY_EDIT_GROUPS
     template_name = "core/directory_form.html"
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.model is Location:
+            kwargs["request_user"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         response = super().form_valid(form)
+        if isinstance(self.object, Warehouse) and not self.request.user.is_superuser:
+            access, created = UserWarehouseAccess.objects.get_or_create(
+                user=self.request.user,
+                warehouse=self.object,
+                defaults={
+                    "can_delegate": True,
+                    "is_active": True,
+                    "created_by": self.request.user,
+                },
+            )
+            if created:
+                log_action(
+                    self.request.user,
+                    "warehouse_access.created",
+                    obj=access,
+                    changes={
+                        "target_user_id": self.request.user.pk,
+                        "target_user": self.request.user.get_username(),
+                        "warehouse_id": self.object.pk,
+                        "warehouse": str(self.object),
+                        "can_delegate": True,
+                        "actor_id": self.request.user.pk,
+                    },
+                )
         if isinstance(self.object, Item) and self.object.barcode_id:
             messages.success(
                 self.request,
@@ -183,6 +225,22 @@ class DirectoryUpdateView(
 ):
     group_names = DIRECTORY_EDIT_GROUPS
     template_name = "core/directory_form.html"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.model is Warehouse:
+            return restrict_warehouse_queryset_for_user(self.request.user, queryset)
+        if self.model is Location:
+            return queryset.filter(
+                warehouse__in=get_accessible_warehouses(self.request.user)
+            )
+        return queryset
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        if self.model is Location:
+            kwargs["request_user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         messages.success(self.request, _("Запис успішно оновлено."))
@@ -219,7 +277,14 @@ class DirectoryArchiveView(
         return None
 
     def post(self, request, *args, **kwargs):
-        obj = self.model.objects.get(pk=kwargs["pk"])
+        queryset = self.model.objects.all()
+        if self.model is Warehouse:
+            queryset = restrict_warehouse_queryset_for_user(request.user, queryset)
+        elif self.model is Location:
+            queryset = queryset.filter(
+                warehouse__in=get_accessible_warehouses(request.user)
+            )
+        obj = get_object_or_404(queryset, pk=kwargs["pk"])
         blocking_message = self.get_blocking_message(obj)
         if blocking_message:
             messages.error(request, blocking_message)
@@ -236,10 +301,20 @@ class DirectoryRestoreView(
     group_names = DIRECTORY_EDIT_GROUPS
 
     def post(self, request, *args, **kwargs):
-        obj = self.model.objects.get(pk=kwargs["pk"])
+        queryset = self.model.objects.all()
+        if self.model is Warehouse:
+            queryset = restrict_warehouse_queryset_for_user(request.user, queryset)
+        elif self.model is Location:
+            queryset = queryset.filter(
+                warehouse__in=get_accessible_warehouses(request.user)
+            )
+        obj = get_object_or_404(queryset, pk=kwargs["pk"])
         data = model_to_dict(obj, fields=self.form_class.Meta.fields)
         data["is_active"] = True
-        form = self.form_class(data=data, instance=obj)
+        form_kwargs = {"data": data, "instance": obj}
+        if self.model is Location:
+            form_kwargs["request_user"] = request.user
+        form = self.form_class(**form_kwargs)
         if form.is_valid():
             form.save()
             messages.success(request, _("Запис відновлено з архіву."))

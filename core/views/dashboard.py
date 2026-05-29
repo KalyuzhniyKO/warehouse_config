@@ -72,6 +72,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import get_accessible_warehouses
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -101,9 +102,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        accessible_warehouses = get_accessible_warehouses(self.request.user)
         context["is_storekeeper_workplace"] = self.is_storekeeper_workplace()
         context["hide_sidebar"] = not context["is_storekeeper_workplace"]
         context["show_sidebar"] = False
+        context["accessible_warehouses"] = accessible_warehouses
+        context["has_warehouse_access"] = (
+            self.request.user.is_superuser or accessible_warehouses.exists()
+        )
+        context["no_warehouse_access_message"] = _(
+            "У вас немає доступу до жодного складу. Зверніться до адміністратора."
+        )
         context["can_edit_stock"] = self.request.user.is_superuser or user_in_groups(
             self.request.user, STOCK_EDIT_GROUPS
         )

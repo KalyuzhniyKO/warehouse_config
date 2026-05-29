@@ -72,6 +72,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import get_accessible_warehouses
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -128,7 +129,10 @@ class InventoryCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 
     def get(self, request, pk, *args, **kwargs):
         inventory_count = get_object_or_404(
-            InventoryCount.objects.select_related("warehouse", "location"), pk=pk
+            InventoryCount.objects.select_related("warehouse", "location").filter(
+                warehouse__in=get_accessible_warehouses(request.user)
+            ),
+            pk=pk,
         )
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = (
@@ -153,7 +157,10 @@ class InventoryXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
             return HttpResponse(_("XLSX export requires openpyxl."), status=503)
 
         inventory_count = get_object_or_404(
-            InventoryCount.objects.select_related("warehouse", "location"), pk=pk
+            InventoryCount.objects.select_related("warehouse", "location").filter(
+                warehouse__in=get_accessible_warehouses(request.user)
+            ),
+            pk=pk,
         )
         workbook = Workbook()
         sheet = workbook.active
@@ -194,6 +201,8 @@ class InventoryListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     def get_queryset(self):
         return InventoryCount.objects.select_related(
             "warehouse", "location", "created_by"
+        ).filter(
+            warehouse__in=get_accessible_warehouses(self.request.user)
         ).order_by("-started_at", "-id")
 
     def get_context_data(self, **kwargs):
@@ -206,6 +215,11 @@ class InventoryCreateView(LoginRequiredMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/inventory_create.html"
     form_class = InventoryCountCreateForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["request_user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         inventory_count = create_inventory_count(
@@ -224,7 +238,9 @@ class InventoryDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 
     def get_inventory_count(self):
         return get_object_or_404(
-            InventoryCount.objects.select_related("warehouse", "location", "created_by"),
+            InventoryCount.objects.select_related(
+                "warehouse", "location", "created_by"
+            ).filter(warehouse__in=get_accessible_warehouses(self.request.user)),
             pk=self.kwargs["pk"],
         )
 
@@ -264,7 +280,12 @@ class InventoryCompleteView(LoginRequiredMixin, GroupRequiredMixin, View):
     group_names = STOCK_EDIT_GROUPS
 
     def post(self, request, pk):
-        inventory_count = get_object_or_404(InventoryCount, pk=pk)
+        inventory_count = get_object_or_404(
+            InventoryCount.objects.filter(
+                warehouse__in=get_accessible_warehouses(request.user)
+            ),
+            pk=pk,
+        )
         try:
             complete_inventory_count(inventory_count=inventory_count, user=request.user)
         except InventoryServiceError as exc:
@@ -283,7 +304,9 @@ class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 
     def get_inventory_count(self):
         return get_object_or_404(
-            InventoryCount.objects.select_related("warehouse", "location", "created_by"),
+            InventoryCount.objects.select_related(
+                "warehouse", "location", "created_by"
+            ).filter(warehouse__in=get_accessible_warehouses(self.request.user)),
             pk=self.kwargs["pk"],
             status=InventoryCount.Status.IN_PROGRESS,
         )

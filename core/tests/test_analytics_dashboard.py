@@ -12,6 +12,7 @@ from django.utils import timezone
 
 from core.models import Item, Location, Recipient, StockBalance, StockMovement, Unit, Warehouse
 from core.services.analytics import get_analytics_summary, get_kpi_delta, get_top_issued_items, get_reconciliation_summary
+from core.tests.warehouse_access_utils import grant_warehouse_access
 
 
 class AnalyticsDashboardTests(TestCase):
@@ -25,6 +26,7 @@ class AnalyticsDashboardTests(TestCase):
         self.unit = Unit.objects.create(name="шт", symbol="шт")
         self.item = Item.objects.create(name="Кабель", unit=self.unit, internal_code="KB-1")
         self.wh = Warehouse.objects.create(name="WH")
+        grant_warehouse_access(self.admin, self.wh, can_delegate=True)
         self.loc = Location.objects.create(name="L1", warehouse=self.wh)
         self.rec = Recipient.objects.create(name="Р1")
         StockBalance.objects.create(item=self.item, location=self.loc, qty=Decimal("5.000"))

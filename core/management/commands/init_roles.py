@@ -11,6 +11,7 @@ from core.models import (
     StockBalance,
     StockMovement,
     Unit,
+    UserWarehouseAccess,
     Warehouse,
 )
 from core.permissions import AUDITOR_GROUP, STOREKEEPER_GROUP, WAREHOUSE_ADMIN_GROUP
@@ -26,7 +27,11 @@ class Command(BaseCommand):
 
         directory_models = [Unit, Category, Recipient, Item, Warehouse, Location]
         stock_models = [StockBalance, StockMovement]
-        admin_models = directory_models + stock_models + [get_user_model(), Group]
+        admin_models = directory_models + stock_models + [
+            UserWarehouseAccess,
+            get_user_model(),
+            Group,
+        ]
         all_models = directory_models + stock_models
 
         admin_group.permissions.set(

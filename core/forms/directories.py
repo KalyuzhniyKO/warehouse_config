@@ -22,6 +22,7 @@ from core.models import (
     Unit,
     Warehouse,
 )
+from core.services.warehouse_access import get_accessible_warehouses
 
 
 class UnitForm(BootstrapModelForm):
@@ -239,6 +240,7 @@ class LocationForm(BootstrapModelForm):
         help_texts = {"name": _("Наприклад: A-01, Ряд 2, Комірка 5.")}
 
     def __init__(self, *args, include_current_relations=False, **kwargs):
+        self.request_user = kwargs.pop("user", kwargs.pop("request_user", None))
         self.include_current_relations = include_current_relations
         super().__init__(*args, **kwargs)
         warehouse = (
@@ -246,9 +248,13 @@ class LocationForm(BootstrapModelForm):
             if include_current_relations
             else None
         )
-        set_active_model_choice(
-            self, "warehouse", active_queryset(Warehouse, include=warehouse)
-        )
+        if self.request_user is None:
+            queryset = active_queryset(Warehouse, include=warehouse)
+        else:
+            queryset = get_accessible_warehouses(self.request_user)
+            if warehouse is not None:
+                queryset = queryset | Warehouse.objects.filter(pk=warehouse.pk)
+        set_active_model_choice(self, "warehouse", queryset.distinct())
 
     def clean_warehouse(self):
         warehouse = self.cleaned_data.get("warehouse")

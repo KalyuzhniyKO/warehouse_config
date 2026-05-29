@@ -76,6 +76,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.warehouse_access import get_accessible_warehouses
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -120,10 +121,15 @@ class AnalyticsRedirectView(LoginRequiredMixin, GroupRequiredMixin, View):
         return redirect("management_analytics")
 
 
-def clean_analytics_filters(form):
+def clean_analytics_filters(form, user=None):
+    filters = {}
+    if user is not None:
+        filters["accessible_warehouses"] = get_accessible_warehouses(user)
     if not form.is_valid():
-        return {}
-    filters = {key: value for key, value in form.cleaned_data.items() if value not in (None, "")}
+        return filters
+    filters.update(
+        {key: value for key, value in form.cleaned_data.items() if value not in (None, "")}
+    )
     period = form.cleaned_data.get("period")
     if period:
         filters.update(analytics_service.get_analytics_filters(form.cleaned_data))
@@ -144,12 +150,15 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         return super().get(request, *args, **kwargs)
 
     def get_filter_form(self):
-        return AnalyticsFilterForm(getattr(self, "effective_get", self.request.GET) or None)
+        return AnalyticsFilterForm(
+            getattr(self, "effective_get", self.request.GET) or None,
+            request_user=self.request.user,
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         form = self.get_filter_form()
-        filters = clean_analytics_filters(form)
+        filters = clean_analytics_filters(form, self.request.user)
         summary = analytics_service.get_analytics_summary(filters)
         previous_filters = analytics_service.get_previous_period(filters)
         previous_summary = analytics_service.get_analytics_summary(previous_filters) if previous_filters.get("date_from") else None
@@ -217,8 +226,8 @@ class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
     group_names = ANALYTICS_GROUPS
 
     def get(self, request, *args, **kwargs):
-        form = AnalyticsFilterForm(request.GET or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(request.GET or None, request_user=request.user)
+        filters = clean_analytics_filters(form, request.user)
         response = HttpResponse(content_type="text/csv; charset=utf-8")
         response["Content-Disposition"] = (
             'attachment; filename="warehouse-analytics.csv"'
@@ -260,8 +269,8 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
             from openpyxl import Workbook
         except ImportError:
             return HttpResponse(_("XLSX експорт недоступний: openpyxl не встановлено."), status=501)
-        form = AnalyticsFilterForm(request.GET or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(request.GET or None, request_user=request.user)
+        filters = clean_analytics_filters(form, request.user)
         wb = Workbook()
         ws = wb.active
         ws.title = "Summary"
@@ -323,8 +332,11 @@ class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = AnalyticsFilterForm(getattr(self, "effective_get", self.request.GET) or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(
+            getattr(self, "effective_get", self.request.GET) or None,
+            request_user=self.request.user,
+        )
+        filters = clean_analytics_filters(form, self.request.user)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
         data_quality = analytics_service.get_analytics_data_quality(filters)
         quality_checks = []
@@ -351,8 +363,8 @@ class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = AnalyticsFilterForm(self.request.GET or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(self.request.GET or None, request_user=self.request.user)
+        filters = clean_analytics_filters(form, self.request.user)
         item = get_object_or_404(Item, pk=self.kwargs['item_id'])
         data = analytics_service.get_item_analytics(item, filters)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
@@ -366,8 +378,8 @@ class AnalyticsUsagePlaceDetailView(LoginRequiredMixin, GroupRequiredMixin, Temp
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = AnalyticsFilterForm(self.request.GET or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(self.request.GET or None, request_user=self.request.user)
+        filters = clean_analytics_filters(form, self.request.user)
         usage_place = self.kwargs['usage_place_id']
         data = analytics_service.get_usage_place_analytics(usage_place, filters)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
@@ -381,8 +393,8 @@ class AnalyticsRecipientDetailView(LoginRequiredMixin, GroupRequiredMixin, Templ
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        form = AnalyticsFilterForm(self.request.GET or None)
-        filters = clean_analytics_filters(form)
+        form = AnalyticsFilterForm(self.request.GET or None, request_user=self.request.user)
+        filters = clean_analytics_filters(form, self.request.user)
         recipient = get_object_or_404(Recipient, pk=self.kwargs['recipient_id'])
         data = analytics_service.get_recipient_analytics(recipient, filters)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
