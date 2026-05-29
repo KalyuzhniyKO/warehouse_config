@@ -94,11 +94,11 @@ class AnalyticsDashboardTests(TestCase):
         self.assertContains(r, "DOC-OUT")
         StockMovement.objects.all().delete()
         r2 = self.client.get(reverse("management_analytics"))
-        self.assertContains(r2, "За вибраний період операцій немає.")
+        self.assertContains(r2, "За вибраний період немає складських операцій.")
 
     def test_detail_pages_and_links_and_quick_filters(self):
         self.client.force_login(self.admin)
-        r = self.client.get(reverse("management_analytics"), {"date_from": "2026-01-01", "date_to": "2026-01-31"})
+        r = self.client.get(reverse("management_analytics"), {"date_from": timezone.localdate().isoformat(), "date_to": timezone.localdate().isoformat()})
         self.assertContains(r, reverse("management_analytics_item_detail", args=[self.item.pk]))
         self.assertContains(r, reverse("management_analytics_usage_place_detail", args=["Цех 1"]))
         self.assertContains(r, reverse("management_analytics_recipient_detail", args=[self.rec.pk]))

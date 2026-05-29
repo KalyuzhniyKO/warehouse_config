@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: warehouse_config\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-29 08:18+0300\n"
+"POT-Creation-Date: 2026-05-29 21:25+0300\n"
 "PO-Revision-Date: 2026-05-21 20:20+0300\n"
 "Last-Translator: Codex\n"
 "Language-Team: Russian\n"
@@ -20,16 +20,12 @@ msgstr ""
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #: core/forms/analytics.py:19
-#, fuzzy
-#| msgid "Період до"
 msgid "Період"
-msgstr "Период по"
+msgstr "Период"
 
 #: core/forms/analytics.py:21 core/views/analytics.py:194
-#, fuzzy
-#| msgid "Всього рядків"
 msgid "Сьогодні"
-msgstr "Всего строк"
+msgstr "Сегодня"
 
 #: core/forms/analytics.py:22 core/views/analytics.py:194
 msgid "7 днів"
@@ -44,10 +40,8 @@ msgid "Поточний місяць"
 msgstr "Текущий месяц"
 
 #: core/forms/analytics.py:25
-#, fuzzy
-#| msgid "Довідники"
 msgid "Довільний"
-msgstr "Справочники"
+msgstr "Произвольный"
 
 #: core/forms/analytics.py:29 core/forms/filters.py:82
 msgid "Дата від"
@@ -71,15 +65,20 @@ msgstr "Дата по"
 msgid "Склад"
 msgstr "Склад"
 
-#: core/forms/analytics.py:32 core/forms/filters.py:90
-#: core/forms/stock_operations.py:251 core/models/directories.py:54
-#: core/views/stock_operations.py:579
-#: templates/core/management/analytics_data_quality.html:39
-#: templates/core/stock_issue_result.html:24
-#: templates/core/stock_movement_print.html:53
-#: templates/core/stock_movement_print.html:56
-msgid "Цех / місце використання"
-msgstr "Цех / место использования"
+#: core/forms/analytics.py:32 core/forms/filters.py:24 core/forms/filters.py:78
+#: core/forms/inventory.py:21 core/forms/stock_operations.py:112
+#: core/models/barcodes.py:13 core/models/inventory.py:25
+#: core/models/inventory.py:81 core/models/stock.py:18
+#: core/models/warehouse.py:108 core/models/warehouse.py:135
+#: core/views/inventory.py:119 core/views/stock_operations.py:577
+#: templates/core/inventory_count.html:30
+#: templates/core/inventory_detail.html:26
+#: templates/core/inventory_line_table.html:9
+#: templates/core/inventory_list.html:23
+#: templates/core/stock_writeoff_result.html:11
+#: templates/core/stockbalance_list.html:38
+msgid "Локація"
+msgstr "Локация"
 
 #: core/forms/analytics.py:33 core/forms/filters.py:68
 #: core/views/stock_operations.py:570
@@ -235,20 +234,6 @@ msgstr "Тип локации"
 msgid "Наприклад: A-01, Ряд 2, Комірка 5."
 msgstr "Например: A-01, Ряд 2, Ячейка 5."
 
-#: core/forms/filters.py:24 core/forms/filters.py:78 core/forms/inventory.py:21
-#: core/forms/stock_operations.py:112 core/models/barcodes.py:13
-#: core/models/inventory.py:25 core/models/inventory.py:81
-#: core/models/stock.py:18 core/models/warehouse.py:108
-#: core/models/warehouse.py:135 core/views/inventory.py:119
-#: core/views/stock_operations.py:577 templates/core/inventory_count.html:30
-#: templates/core/inventory_detail.html:26
-#: templates/core/inventory_line_table.html:9
-#: templates/core/inventory_list.html:23
-#: templates/core/stock_writeoff_result.html:11
-#: templates/core/stockbalance_list.html:38
-msgid "Локація"
-msgstr "Локация"
-
 #: core/forms/filters.py:31 core/forms/filters.py:72
 #: core/forms/stock_operations.py:107 core/forms/stock_operations.py:378
 #: core/models/barcodes.py:10 core/models/inventory.py:75
@@ -293,6 +278,15 @@ msgstr "Все типы выдачи"
 #: templates/core/stockmovement_list.html:68
 msgid "Цех / підрозділ"
 msgstr "Цех / подразделение"
+
+#: core/forms/filters.py:90 core/forms/stock_operations.py:251
+#: core/models/directories.py:54 core/views/stock_operations.py:579
+#: templates/core/management/analytics_data_quality.html:39
+#: templates/core/stock_issue_result.html:24
+#: templates/core/stock_movement_print.html:53
+#: templates/core/stock_movement_print.html:56
+msgid "Цех / місце використання"
+msgstr "Цех / место использования"
 
 #: core/forms/filters.py:91
 #, fuzzy
@@ -1278,37 +1272,37 @@ msgstr "Доступ к складам"
 msgid "У вас немає прав для перегляду цієї сторінки."
 msgstr "У вас нет прав для просмотра этой страницы."
 
-#: core/services/analytics.py:178 core/services/analytics.py:185
+#: core/services/analytics.py:187 core/services/analytics.py:194
 msgid "без змін"
 msgstr ""
 
-#: core/services/analytics.py:179
+#: core/services/analytics.py:188
 #, fuzzy
 #| msgid "Немає даних"
 msgid "нові дані"
 msgstr "Нет данных"
 
-#: core/services/analytics.py:266
+#: core/services/analytics.py:275
 msgid "Розбіжність між журналом та денним графіком"
 msgstr ""
 
-#: core/services/analytics.py:268
+#: core/services/analytics.py:277
 #, fuzzy
 #| msgid "Номер документа"
 msgid "Є рухи без документа"
 msgstr "Номер документа"
 
-#: core/services/analytics.py:270
+#: core/services/analytics.py:279
 msgid "Є рухи з неповними даними"
 msgstr ""
 
-#: core/services/analytics.py:272
+#: core/services/analytics.py:281
 #, fuzzy
 #| msgid "Початкові залишки"
 msgid "Виявлено негативні залишки"
 msgstr "Начальные остатки"
 
-#: core/services/analytics.py:274
+#: core/services/analytics.py:283
 #, fuzzy
 #| msgid "Початкові залишки"
 msgid "Є підозрілі залишки"
@@ -3060,10 +3054,8 @@ msgstr "Топ-10 товаров по выдаче"
 
 #: templates/core/management/analytics.html:80
 #: templates/core/management/analytics.html:99
-#, fuzzy
-#| msgid "Залишок після операції"
-msgid "За вибраний період операцій немає."
-msgstr "Остаток после операции"
+msgid "За вибраний період немає складських операцій."
+msgstr "За выбранный период нет складских операций."
 
 #: templates/core/management/analytics.html:83
 #, fuzzy
