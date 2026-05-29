@@ -4319,3 +4319,31 @@ msgstr "Sign in"
 
 #~ msgid "Розширене адміністрування"
 #~ msgstr "Advanced administration"
+
+#: core/forms/stock_operations.py
+msgid "Локація використовується автоматично"
+msgstr "Location is used automatically"
+
+#: core/forms/stock_operations.py
+msgid "Склад призначається автоматично"
+msgstr "Warehouse is assigned automatically"
+
+#: core/services/locations.py
+msgid "Основна локація"
+msgstr "Main location"
+
+#: core/services/locations.py
+msgid "Основная локация"
+msgstr "Main location"
+
+#: core/services/locations.py
+msgid "Main location"
+msgstr "Main location"
+
+#: templates/base.html
+msgid "Власник"
+msgstr "Owner"
+
+#: templates/base.html
+msgid "Адміністратор"
+msgstr "Administrator"

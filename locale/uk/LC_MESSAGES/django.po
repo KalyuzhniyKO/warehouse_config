@@ -4355,3 +4355,31 @@ msgstr "Увійти"
 
 #~ msgid "Розширене адміністрування"
 #~ msgstr "Розширене адміністрування"
+
+#: core/forms/stock_operations.py
+msgid "Локація використовується автоматично"
+msgstr "Локація використовується автоматично"
+
+#: core/forms/stock_operations.py
+msgid "Склад призначається автоматично"
+msgstr "Склад призначається автоматично"
+
+#: core/services/locations.py
+msgid "Основна локація"
+msgstr "Основна локація"
+
+#: core/services/locations.py
+msgid "Основная локация"
+msgstr "Основная локация"
+
+#: core/services/locations.py
+msgid "Main location"
+msgstr "Main location"
+
+#: templates/base.html
+msgid "Власник"
+msgstr "Власник"
+
+#: templates/base.html
+msgid "Адміністратор"
+msgstr "Адміністратор"

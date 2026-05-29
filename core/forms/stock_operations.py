@@ -14,10 +14,7 @@ from core.models import (
     Warehouse,
 )
 from core.services.locations import get_default_location_for_warehouse
-from core.services.warehouse_access import (
-    get_accessible_warehouses,
-    get_single_accessible_warehouse_or_none,
-)
+from core.services.warehouse_access import get_accessible_warehouses
 
 
 def active_warehouses_for_form_user(user):
@@ -27,12 +24,18 @@ def active_warehouses_for_form_user(user):
 
 
 class LocationsModeMixin:
-    locations_disabled_message = _(
-        "Локації вимкнено. Операція буде виконана по складу."
-    )
+    locations_disabled_message = _("Локація використовується автоматично")
+    warehouse_auto_message = _("Склад призначається автоматично")
 
     def setup_locations_mode(self):
-        self.use_locations = SystemSettings.get_solo().use_locations
+        settings = SystemSettings.get_solo()
+        self.use_locations = bool(
+            settings.use_locations
+            and (
+                self.request_user is None
+                or getattr(self.request_user, "is_superuser", False)
+            )
+        )
 
     def hide_location_field_when_disabled(self, field_name="location"):
         if not self.use_locations:
@@ -41,12 +44,34 @@ class LocationsModeMixin:
     def set_default_location_when_disabled(
         self, cleaned_data, warehouse_field="warehouse", location_field="location"
     ):
-        if not self.use_locations:
+        if not self.use_locations or location_field not in self.fields:
             warehouse = cleaned_data.get(warehouse_field)
             if warehouse:
                 cleaned_data[location_field] = get_default_location_for_warehouse(
                     warehouse
                 )
+        return cleaned_data
+
+    def setup_single_warehouse_mode(
+        self, accessible_warehouses, field_name="warehouse"
+    ):
+        self.single_accessible_warehouse = None
+        if self.request_user is None or getattr(
+            self.request_user, "is_superuser", False
+        ):
+            return
+        warehouses = list(accessible_warehouses[:2])
+        if len(warehouses) == 1:
+            self.single_accessible_warehouse = warehouses[0]
+            self.initial[field_name] = self.single_accessible_warehouse
+            self.fields.pop(field_name, None)
+
+    def set_single_warehouse_when_hidden(self, cleaned_data, field_name="warehouse"):
+        if (
+            field_name not in self.fields
+            and self.single_accessible_warehouse is not None
+        ):
+            cleaned_data[field_name] = self.single_accessible_warehouse
         return cleaned_data
 
 
@@ -79,12 +104,7 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
             is_active=True
         ).select_related("unit")
         self.fields["warehouse"].queryset = accessible_warehouses
-        if not self.is_bound and "warehouse" not in self.initial:
-            single_warehouse = get_single_accessible_warehouse_or_none(
-                self.request_user
-            )
-            if single_warehouse is not None:
-                self.initial["warehouse"] = single_warehouse
+        self.setup_single_warehouse_mode(accessible_warehouses)
         if "location" in self.fields:
             self.fields["location"].queryset = Location.objects.filter(
                 is_active=True,
@@ -108,6 +128,7 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        self.set_single_warehouse_when_hidden(cleaned_data)
         self.set_default_location_when_disabled(cleaned_data)
         warehouse = cleaned_data.get("warehouse")
         location = cleaned_data.get("location")
@@ -117,7 +138,9 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
 
 
 class StockReceiveForm(StockOperationForm):
-    print_label = forms.BooleanField(label=_("Надрукувати етикетку після збереження"), required=False)
+    print_label = forms.BooleanField(
+        label=_("Надрукувати етикетку після збереження"), required=False
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -126,24 +149,64 @@ class StockReceiveForm(StockOperationForm):
                 self.fields[field_name].widget = forms.HiddenInput()
         for field_name in ["warehouse", "location"]:
             if field_name in self.fields:
-                self.fields[field_name].widget.attrs["class"] = "form-select form-select-lg"
-        self.fields["qty"].widget.attrs.update({"class": "form-control form-control-lg text-center", "min": "1", "step": "1", "inputmode": "numeric", "pattern": "[0-9]*"})
-        self.order_fields(["item", "warehouse", "location", "qty", "comment", "occurred_at", "print_label"])
+                self.fields[field_name].widget.attrs[
+                    "class"
+                ] = "form-select form-select-lg"
+        self.fields["qty"].widget.attrs.update(
+            {
+                "class": "form-control form-control-lg text-center",
+                "min": "1",
+                "step": "1",
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+            }
+        )
+        self.order_fields(
+            [
+                "item",
+                "warehouse",
+                "location",
+                "qty",
+                "comment",
+                "occurred_at",
+                "print_label",
+            ]
+        )
 
 
 class StockReturnForm(StockOperationForm):
-    recipient = forms.ModelChoiceField(label=_("Хто повертає"), queryset=Recipient.objects.none(), required=True, empty_label=_("Виберіть працівника"))
-    department = forms.ModelChoiceField(label=_("Місце використання"), queryset=UsagePlace.objects.none(), required=True, empty_label=_("Виберіть місце використання"))
+    recipient = forms.ModelChoiceField(
+        label=_("Хто повертає"),
+        queryset=Recipient.objects.none(),
+        required=True,
+        empty_label=_("Виберіть працівника"),
+    )
+    department = forms.ModelChoiceField(
+        label=_("Місце використання"),
+        queryset=UsagePlace.objects.none(),
+        required=True,
+        empty_label=_("Виберіть місце використання"),
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         usage_places = UsagePlace.objects.filter(is_active=True).order_by("name")
         self.fields["department"].queryset = usage_places
-        self.fields["recipient"].queryset = Recipient.objects.filter(is_active=True).order_by("name")
-        for field_name in ["item", "warehouse", "location", "comment", "occurred_at"]:
+        self.fields["recipient"].queryset = Recipient.objects.filter(
+            is_active=True
+        ).order_by("name")
+        for field_name in ["item", "location", "comment", "occurred_at"]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
-        self.fields["qty"].widget.attrs.update({"class": "form-control form-control-lg text-center", "min": "1", "step": "1", "inputmode": "numeric", "pattern": "[0-9]*"})
+        self.fields["qty"].widget.attrs.update(
+            {
+                "class": "form-control form-control-lg text-center",
+                "min": "1",
+                "step": "1",
+                "inputmode": "numeric",
+                "pattern": "[0-9]*",
+            }
+        )
         self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
         self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
 
@@ -190,7 +253,6 @@ class StockIssueForm(StockOperationForm):
         self.fields["comment"].required = False
         for field_name in [
             "item",
-            "warehouse",
             "location",
             "issue_reason",
             "document_number",

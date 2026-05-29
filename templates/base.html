@@ -98,7 +98,7 @@
             display: inline-flex;
             align-items: center;
             gap: .5rem;
-            max-width: min(88vw, 320px);
+            max-width: min(88vw, 420px);
         }
         .user-menu-toggle:hover,
         .user-menu-toggle:focus { background: rgba(255,255,255,.6); color: #000; }
@@ -117,12 +117,23 @@
         }
         .user-menu-name {
             font-weight: 600;
-            max-width: 160px;
+            max-width: 300px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .user-menu-dropdown { width: min(260px, calc(100vw - 1.5rem)); }
+        .user-role-badge {
+            border: 1px solid rgba(17, 24, 39, .18);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .5);
+            color: #374151;
+            font-size: .68rem;
+            font-weight: 700;
+            line-height: 1;
+            padding: .18rem .38rem;
+            white-space: nowrap;
+        }
+        .user-menu-dropdown { width: min(320px, calc(100vw - 1.5rem)); }
         .user-menu-section {
             font-size: .72rem;
             letter-spacing: .04em;
@@ -235,6 +246,7 @@
                         <button class="btn user-menu-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="user-avatar-badge">{{ display_name|first_letter }}</span>
                             <span class="user-menu-name">{{ display_name }}</span>
+                            <span class="user-role-badge">{% if user.is_superuser %}{% trans "Власник" %}{% elif is_warehouse_admin %}{% trans "Адміністратор" %}{% else %}{% trans "Користувач" %}{% endif %}</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
                             <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Мої налаштування" %}</a>
@@ -244,8 +256,16 @@
                             {% if user.is_superuser or is_warehouse_admin %}
                                 <h6 class="user-menu-section">{% trans "Налаштування складу" %}</h6>
                                 <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
+                                <a class="dropdown-item" href="{% url 'warehouse_list' %}">{% trans "Склади" %}</a>
+                                <a class="dropdown-item" href="{% url 'location_list' %}">{% trans "Локації" %}</a>
+                                <a class="dropdown-item" href="{% url 'recipient_list' %}">{% trans "Працівники / отримувачі" %}</a>
+                                <a class="dropdown-item" href="{% url 'category_list' %}">{% trans "Категорії" %}</a>
+                                <a class="dropdown-item" href="{% url 'unit_list' %}">{% trans "Одиниці виміру" %}</a>
+                                <a class="dropdown-item" href="{% url 'stock_initial' %}">{% trans "Початкові залишки" %}</a>
+                                <a class="dropdown-item" href="{% url 'item_list' %}">{% trans "Друк етикеток" %}</a>
                                 <a class="dropdown-item" href="{% url 'printer_list' %}">{% trans "Принтери" %}</a>
                                 <a class="dropdown-item" href="{% url 'labeltemplate_list' %}">{% trans "Шаблони етикеток" %}</a>
+                                <a class="dropdown-item" href="{% url 'help' %}">{% trans "Допомога" %}</a>
                             {% endif %}
                             <div class="dropdown-divider"></div>
                             <form method="post" action="{% url 'logout' %}" class="m-0">
