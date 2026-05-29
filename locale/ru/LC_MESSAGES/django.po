@@ -4086,3 +4086,31 @@ msgstr "Войти"
 
 #~ msgid "Підрозділи та контакти для видач."
 #~ msgstr "Departments and contacts for issues."
+
+#: core/forms/stock_operations.py
+msgid "Локація використовується автоматично"
+msgstr "Локация используется автоматически"
+
+#: core/forms/stock_operations.py
+msgid "Склад призначається автоматично"
+msgstr "Склад назначается автоматически"
+
+#: core/services/locations.py
+msgid "Основна локація"
+msgstr "Основная локация"
+
+#: core/services/locations.py
+msgid "Основная локация"
+msgstr "Основная локация"
+
+#: core/services/locations.py
+msgid "Main location"
+msgstr "Основная локация"
+
+#: templates/base.html
+msgid "Власник"
+msgstr "Владелец"
+
+#: templates/base.html
+msgid "Адміністратор"
+msgstr "Администратор"

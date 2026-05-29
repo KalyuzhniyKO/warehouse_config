@@ -11,17 +11,17 @@
 
 .dashboard-strip-title { font-size: .92rem; margin: 0; color: var(--dash-title); font-weight: 650; }
 
-.section-header { margin-bottom: .55rem; }
-.section-title { font-size: 1rem; margin: 0; }
-.section-shell { margin-bottom: .8rem; }
+.section-header { margin-bottom: .45rem; }
+.section-title { font-size: 1.05rem; margin: 0; font-weight: 750; }
+.section-shell { margin-bottom: .65rem; }
 
-.dashboard-grid { display: grid; grid-template-columns: repeat(1,minmax(0,1fr)); gap: .65rem; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(1,minmax(0,1fr)); gap: .5rem; }
 .compact-card-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
 @media (min-width: 768px) { .compact-card-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (min-width: 1100px) { .compact-card-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+@media (min-width: 992px) { .compact-card-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
 .dashboard-grid--compact { grid-template-columns: repeat(1,minmax(0,1fr)); }
 @media (min-width: 768px) { .dashboard-grid--compact { grid-template-columns: repeat(2,minmax(0,1fr)); } }
-@media (min-width: 1100px) { .dashboard-grid--compact { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+@media (min-width: 992px) { .dashboard-grid--compact { grid-template-columns: repeat(4,minmax(0,1fr)); } }
 
 .clickable-card { display: block; text-decoration: none; color: inherit; }
 .operation-card {
@@ -31,23 +31,24 @@
     border-radius: .78rem;
     background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, white), #fff 45%);
     box-shadow: 0 .15rem .5rem rgba(15, 23, 42, .06);
-    min-height: 148px;
+    min-height: 108px;
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
 }
-.operation-card .card-body { min-height: 100%; padding: .9rem; position: relative; }
-.card-main { display: flex; gap: .75rem; align-items: flex-start; }
+.operation-card .card-body { min-height: 100%; padding: .68rem .75rem; position: relative; }
+.card-main { display: flex; gap: .58rem; align-items: flex-start; padding-right: .75rem; }
+.operation-card h3 { font-weight: 760; font-size: .98rem; line-height: 1.2; }
 .operation-card:hover, .operation-card:focus-visible { transform: translateY(-2px); box-shadow: 0 .45rem 1rem rgba(15,23,42,.11); }
 .clickable-card:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 42%, #1d4ed8); outline-offset: 2px; }
 .card-icon {
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: .62rem;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: .55rem;
     background: color-mix(in srgb, var(--accent) 18%, white);
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
-.card-tip { color: var(--dash-muted); font-size: .82rem; }
+.card-tip { color: var(--dash-muted); font-size: .79rem; line-height: 1.25; }
 .card-chevron {
     position: absolute;
     top: .7rem;
@@ -66,7 +67,7 @@
 .report-card--journal { --accent: #0e7490; }
 .report-card--inventory { --accent: #7c3aed; }
 .report-card--writeoff { --accent: #6b7280; }
-.admin-card { --accent: #334155; min-height: 102px; }
+.admin-card { --accent: #334155; min-height: 96px; }
 .admin-card--items { --accent: #0f766e; }
 .admin-card--warehouses { --accent: #1d4ed8; }
 .admin-card--printers { --accent: #475569; }
@@ -221,5 +222,6 @@ header .navbar { min-height: 56px; }
   font-weight: 600;
 }
 @media (max-width: 575.98px) {
-  .user-menu-name { max-width: 110px; }
+  .user-menu-name { max-width: 140px; }
+  .user-role-badge { display: none; }
 }
