@@ -77,7 +77,7 @@
             {% for row in top_issued_items %}
                 <div><a href="{% url 'management_analytics_item_detail' row.item__id %}?{{ filter_query }}">{{ row.item__name }}</a> {{ row.total_qty }}</div>
             {% empty %}
-                <div class="text-muted">{% trans "За вибраний період операцій немає." %}</div>
+                <div class="text-muted">{% trans "За вибраний період немає складських операцій." %}</div>
             {% endfor %}
 
             <h2 class="h5 mt-3">{% trans "Топ цехів / місць використання" %}</h2>
@@ -96,7 +96,7 @@
             {% for movement in recent_movements %}
                 <div>{{ movement.document_number|default:"—" }}</div>
             {% empty %}
-                <div class="text-muted">{% trans "За вибраний період операцій немає." %}</div>
+                <div class="text-muted">{% trans "За вибраний період немає складських операцій." %}</div>
             {% endfor %}
         </div>
     </div>

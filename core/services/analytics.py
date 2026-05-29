@@ -60,9 +60,9 @@ def filter_movements(filters):
             Q(source_location__warehouse__in=accessible_warehouses)
             | Q(destination_location__warehouse__in=accessible_warehouses)
         )
-    if filters.get("date_from") and filters.get("period"):
+    if filters.get("date_from"):
         qs = qs.filter(occurred_at__date__gte=filters["date_from"])
-    if filters.get("date_to") and filters.get("period"):
+    if filters.get("date_to"):
         qs = qs.filter(occurred_at__date__lte=filters["date_to"])
     if filters.get("warehouse"):
         qs = qs.filter(Q(source_location__warehouse=filters["warehouse"]) | Q(destination_location__warehouse=filters["warehouse"]))
@@ -101,6 +101,14 @@ def get_movement_summary(filters):
         "total_out": decimal_zero(totals["total_out"]),
     }
 
+def filter_items(filters):
+    balance_item_ids = filter_balances(filters).values("item_id")
+    movement_item_ids = filter_movements(filters).values("item_id")
+    return Item.objects.filter(
+        Q(id__in=balance_item_ids) | Q(id__in=movement_item_ids)
+    ).distinct()
+
+
 def get_analytics_summary(filters):
     mv = filter_movements(filters)
     agg = mv.aggregate(
@@ -111,9 +119,10 @@ def get_analytics_summary(filters):
         writeoff_qty=Sum("qty", filter=Q(movement_type__in=WRITEOFF_TYPES)),
     )
     balances = filter_balances(filters)
+    items = filter_items(filters)
     return {
-        "total_items": Item.objects.count(),
-        "active_items": Item.objects.filter(is_active=True).count(),
+        "total_items": items.count(),
+        "active_items": items.filter(is_active=True).count(),
         "positions_with_stock": balances.filter(qty__gt=0).count(),
         "zero_stock_items": balances.filter(qty=0).values("item_id").distinct().count(),
         "operations_count": agg["operations_count"] or 0,
