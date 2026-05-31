@@ -1,0 +1,12 @@
+<a class="operation-card clickable-card {{ css_classes }}" href="{{ url }}"{% if aria_label %} aria-label="{{ aria_label }}"{% endif %}{% if extra_attrs %} {{ extra_attrs }}{% endif %}>
+    <div class="card-body">
+        <span class="card-chevron" aria-hidden="true">→</span>
+        <div class="card-main">
+            <span class="card-icon" aria-hidden="true">{{ icon }}</span>
+            <div>
+                <h3 class="h6 mb-1">{{ title }}</h3>
+                <p class="card-tip mb-0">{{ description }}</p>
+            </div>
+        </div>
+    </div>
+</a>
