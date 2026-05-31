@@ -6,6 +6,16 @@ WAREHOUSE_ADMIN_GROUP = "Адміністратор складу"
 STOREKEEPER_GROUP = "Комірник"
 AUDITOR_GROUP = "Перегляд / аудитор"
 
+ROLE_DISPLAY_NAMES = {
+    WAREHOUSE_ADMIN_GROUP: _("Адміністратор"),
+    STOREKEEPER_GROUP: _("Користувач"),
+}
+
+ROLE_DESCRIPTIONS = {
+    WAREHOUSE_ADMIN_GROUP: _("Керує складом і користувачами"),
+    STOREKEEPER_GROUP: _("Простий складський інтерфейс"),
+}
+
 MANAGEMENT_GROUPS = {WAREHOUSE_ADMIN_GROUP}
 ANALYTICS_GROUPS = {WAREHOUSE_ADMIN_GROUP}
 DIRECTORY_EDIT_GROUPS = {WAREHOUSE_ADMIN_GROUP}

@@ -1,4 +1,7 @@
 from django import template
+from django.utils.translation import gettext as _
+
+from core.permissions import ROLE_DESCRIPTIONS, ROLE_DISPLAY_NAMES
 
 register = template.Library()
 
@@ -29,7 +32,7 @@ def display_name(user):
     username = username_method() if callable(username_method) else getattr(user, "username", "")
     display = (full_name or first_name or username or "").strip()
     if display.lower() == "root":
-        return "Superuser"
+        return _("Адміністратор")
     return display
 
 
@@ -37,3 +40,15 @@ def display_name(user):
 def first_letter(value):
     value = str(value or "").strip()
     return value[:1] if value else "?"
+
+
+@register.filter
+def role_display_name(group):
+    name = getattr(group, "name", group)
+    return ROLE_DISPLAY_NAMES.get(name, name)
+
+
+@register.filter
+def role_description(group):
+    name = getattr(group, "name", group)
+    return ROLE_DESCRIPTIONS.get(name, "")

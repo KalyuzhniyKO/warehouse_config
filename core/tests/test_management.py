@@ -221,6 +221,32 @@ class ManagementInterfaceTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Створити користувача")
 
+    def test_user_management_shows_business_roles_and_hides_root(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("management_users"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Адміністратор")
+        self.assertContains(response, "Користувач")
+        self.assertContains(response, "Керує складом і користувачами")
+        self.assertContains(response, "Простий складський інтерфейс")
+        self.assertNotContains(response, f"/management/users/{self.superuser.pk}/edit/")
+        self.assertNotContains(response, "Superuser")
+        self.assertNotContains(response, "Перегляд / аудитор")
+
+    def test_user_create_form_uses_business_role_labels(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("management_user_create"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Адміністратор")
+        self.assertContains(response, "Користувач")
+        self.assertNotContains(response, "Адміністратор складу")
+        self.assertNotContains(response, "Комірник")
+        self.assertNotContains(response, "Перегляд / аудитор")
+
     def test_auditor_cannot_open_user_management_forms(self):
         self.client.force_login(self.auditor)
         target = self.storekeeper
@@ -291,7 +317,7 @@ class ManagementInterfaceTests(TestCase):
 
     def test_update_user_changes_profile_and_groups(self):
         self.client.force_login(self.admin)
-        group = Group.objects.get(name="Перегляд / аудитор")
+        group = Group.objects.get(name="Адміністратор складу")
 
         response = self.client.post(
             reverse("management_user_update", args=[self.storekeeper.pk]),
@@ -309,7 +335,7 @@ class ManagementInterfaceTests(TestCase):
         self.assertEqual(self.storekeeper.email, "olena@example.com")
         self.assertEqual(self.storekeeper.first_name, "Олена")
         self.assertEqual(self.storekeeper.last_name, "Петренко")
-        self.assertTrue(self.storekeeper.groups.filter(name="Перегляд / аудитор").exists())
+        self.assertTrue(self.storekeeper.groups.filter(name="Адміністратор складу").exists())
         self.assertFalse(self.storekeeper.groups.filter(name="Комірник").exists())
 
     def test_password_view_changes_password(self):

@@ -246,7 +246,7 @@
                         <button class="btn user-menu-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="user-avatar-badge">{{ display_name|first_letter }}</span>
                             <span class="user-menu-name">{{ display_name }}</span>
-                            <span class="user-role-badge">{% if user.is_superuser %}{% trans "Власник" %}{% elif is_warehouse_admin %}{% trans "Адміністратор" %}{% else %}{% trans "Користувач" %}{% endif %}</span>
+                            <span class="user-role-badge">{% if user.is_superuser or is_warehouse_admin %}{% trans "Адміністратор" %}{% else %}{% trans "Користувач" %}{% endif %}</span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
                             <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Мої налаштування" %}</a>
