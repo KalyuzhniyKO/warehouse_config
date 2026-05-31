@@ -13,19 +13,22 @@ from .directories import (
 )
 from .stock_operations import (
     InitialBalanceView,
-    StockIssueResultView,
     StockIssueView,
-    StockMovementCancelView,
-    StockMovementPrintView,
-    StockReceiveResultView,
     StockReceiveView,
     StockReturnView,
-    StockTransferResultView,
     StockTransferView,
-    StockWriteOffResultView,
     StockWriteOffView,
 )
-from .stock_lists import StockBalanceListView, StockMovementListView
+from .stock_lists import StockBalanceListView
+from .stock_movements import (
+    StockIssueResultView,
+    StockMovementCancelView,
+    StockMovementListView,
+    StockMovementPrintView,
+    StockReceiveResultView,
+    StockTransferResultView,
+    StockWriteOffResultView,
+)
 from .inventory import (
     INVENTORY_EXPORT_HEADERS,
     InventoryCSVExportView,
