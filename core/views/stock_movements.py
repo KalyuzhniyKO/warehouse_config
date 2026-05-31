@@ -10,7 +10,8 @@ from ..forms import StockMovementCancellationForm, StockMovementFilterForm
 from ..models import StockBalance, StockMovement
 from ..permissions import STOCK_EDIT_GROUPS, STOCK_VIEW_GROUPS, GroupRequiredMixin
 from ..services.filter_memory import apply_remembered_filters, build_redirect_url, querydict_from_params
-from ..services.stock import StockServiceError, can_cancel_stock_movement, cancel_stock_movement
+from ..services.stock import StockServiceError
+from ..services.stock_cancellation import can_cancel_stock_movement, cancel_stock_movement
 from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
 from .stock_operations import SelfServiceShellContextMixin
 

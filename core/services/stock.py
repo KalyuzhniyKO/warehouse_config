@@ -7,7 +7,6 @@ row-level locks and every change is represented by a StockMovement record.
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.db import IntegrityError, transaction
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Location, StockBalance, StockMovement
@@ -16,15 +15,6 @@ from core.services.barcodes import ensure_item_barcode
 from core.services.warehouse_access import get_accessible_warehouses
 
 QTY_QUANT = Decimal("0.001")
-
-
-CANCELLATION_NEGATIVE_BALANCE_ERROR = _(
-    "Неможливо анулювати рух, бо на складі вже недостатньо залишку для зворотної операції."
-)
-
-
-def can_cancel_stock_movement(user, movement):
-    return bool(getattr(user, "is_authenticated", False) and user.is_superuser)
 
 
 def find_best_stock_balance_for_issue(item, user=None):
@@ -430,141 +420,10 @@ def adjust_stock(
     return movement
 
 
-def _format_location(location):
-    if location is None:
-        return None
-    return str(location)
-
-
-def _apply_cancellation_delta(*, item, location, qty_delta):
-    if location is None or qty_delta == 0:
-        return None
-    balance = get_or_create_balance_locked(item, location)
-    if qty_delta > 0:
-        return _increase_balance(balance, qty_delta)
-    try:
-        return _decrease_balance(balance, abs(qty_delta))
-    except InsufficientStockError as exc:
-        raise InsufficientStockError(CANCELLATION_NEGATIVE_BALANCE_ERROR) from exc
-
-
-def _cancellation_deltas(movement):
-    qty = validate_positive_qty(movement.qty)
-    movement_type = movement.movement_type
-    if movement_type in {
-        StockMovement.MovementType.IN,
-        StockMovement.MovementType.INITIAL_BALANCE,
-        StockMovement.MovementType.RETURN,
-    }:
-        return [(movement.destination_location, -qty)]
-    if movement_type in {
-        StockMovement.MovementType.OUT,
-        StockMovement.MovementType.WRITEOFF,
-    }:
-        return [(movement.source_location, qty)]
-    if movement_type == StockMovement.MovementType.TRANSFER:
-        return [(movement.source_location, qty), (movement.destination_location, -qty)]
-    if movement_type == StockMovement.MovementType.ADJUSTMENT:
-        deltas = []
-        if movement.source_location_id:
-            deltas.append((movement.source_location, qty))
-        if movement.destination_location_id:
-            deltas.append((movement.destination_location, -qty))
-        return deltas
-    raise StockServiceError(_("Неможливо анулювати рух"))
-
-
-def cancel_stock_movement(*, movement, cancelled_by, reason, request=None):
-    reason = (reason or "").strip()
-    if not reason:
-        raise StockServiceError(_("Причина анулювання обов'язкова."))
-    if not can_cancel_stock_movement(cancelled_by, movement):
-        raise StockServiceError(_("Неможливо анулювати рух"))
-
-    with transaction.atomic():
-        movement = (
-            StockMovement.objects.select_for_update()
-            .select_related(
-                "item",
-                "source_location",
-                "source_location__warehouse",
-                "destination_location",
-                "destination_location__warehouse",
-            )
-            .get(pk=movement.pk)
-        )
-        if movement.is_cancelled:
-            raise StockServiceError(_("Неможливо анулювати рух: рух уже анульовано."))
-        if movement.reversal_of_id:
-            raise StockServiceError(_("Неможливо анулювати рух анулювання."))
-
-        deltas = _cancellation_deltas(movement)
-        if not deltas:
-            raise StockServiceError(_("Неможливо анулювати рух"))
-
-        # Apply balance changes with row-level locks before creating the audit/history rows.
-        for location, qty_delta in deltas:
-            _apply_cancellation_delta(
-                item=movement.item, location=location, qty_delta=qty_delta
-            )
-
-        cancellation_source = None
-        cancellation_destination = None
-        for location, qty_delta in deltas:
-            if qty_delta < 0 and cancellation_source is None:
-                cancellation_source = location
-            elif qty_delta > 0 and cancellation_destination is None:
-                cancellation_destination = location
-        if cancellation_source is None and cancellation_destination is None:
-            cancellation_destination = movement.destination_location or movement.source_location
-
-        cancellation_movement = StockMovement.objects.create(
-            movement_type=StockMovement.MovementType.ADJUSTMENT,
-            item=movement.item,
-            qty=movement.qty,
-            source_location=cancellation_source,
-            destination_location=cancellation_destination,
-            recipient=movement.recipient,
-            issue_reason="",
-            department=movement.department,
-            document_number=movement.document_number,
-            performed_by=cancelled_by,
-            created_by=cancelled_by,
-            comment=_("Анулювання руху #%(movement_id)s. Причина: %(reason)s")
-            % {"movement_id": movement.pk, "reason": reason},
-            reversal_of=movement,
-        )
-
-        movement.is_cancelled = True
-        movement.cancelled_at = timezone.now()
-        movement.cancelled_by = cancelled_by
-        movement.cancellation_reason = reason
-        movement.cancellation_movement = cancellation_movement
-        movement.save(
-            update_fields=[
-                "is_cancelled",
-                "cancelled_at",
-                "cancelled_by",
-                "cancellation_reason",
-                "cancellation_movement",
-                "updated_at",
-            ]
-        )
-
-        log_action(
-            cancelled_by,
-            "stock_movement.cancelled",
-            obj=movement,
-            changes={
-                "original_movement_id": movement.pk,
-                "cancellation_movement_id": cancellation_movement.pk,
-                "reason": reason,
-                "cancelled_by": getattr(cancelled_by, "pk", None),
-                "item_id": movement.item_id,
-                "qty": str(movement.qty),
-                "source_location": _format_location(movement.source_location),
-                "destination_location": _format_location(movement.destination_location),
-            },
-            request=request,
-        )
-    return cancellation_movement
+# Compatibility re-exports for callers that still import cancellation helpers
+# from core.services.stock. New code should import these from
+# core.services.stock_cancellation directly.
+from core.services.stock_cancellation import (  # noqa: E402
+    can_cancel_stock_movement,
+    cancel_stock_movement,
+)
