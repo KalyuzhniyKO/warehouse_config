@@ -200,26 +200,7 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         return context
 
 
-def movement_export_location(movement, filters):
-    if filters.get("location"):
-        location = filters["location"]
-        if movement.source_location_id == location.pk:
-            return movement.source_location
-        if movement.destination_location_id == location.pk:
-            return movement.destination_location
-    if filters.get("warehouse"):
-        warehouse = filters["warehouse"]
-        if (
-            movement.source_location
-            and movement.source_location.warehouse_id == warehouse.pk
-        ):
-            return movement.source_location
-        if (
-            movement.destination_location
-            and movement.destination_location.warehouse_id == warehouse.pk
-        ):
-            return movement.destination_location
-    return movement.destination_location or movement.source_location
+movement_export_location = analytics_service.movement_export_location
 
 
 class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
@@ -234,30 +215,12 @@ class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         )
         response.write("\ufeff")
         writer = csv.writer(response)
-        summary = analytics_service.get_analytics_summary(filters)
-        writer.writerow([_("Розділ"), _("Показник"), _("Значення")])
-        for key, label in [("operations_count", _("Операцій за період")), ("receive_qty", _("Прихід")), ("issue_qty", _("Видача")), ("return_qty", _("Повернення")), ("writeoff_qty", _("Списання"))]:
-            writer.writerow([_("Зведення"), label, summary[key]])
-        writer.writerow([])
-        writer.writerow([_("Рух по днях"), _("Дата"), _("Операції"), _("Прихід"), _("Видача"), _("Повернення"), _("Списання")])
-        for row in analytics_service.get_daily_movement(filters):
-            writer.writerow(["", row["day"], row["operations"], row["receive_qty"], row["issue_qty"], row["return_qty"], row["writeoff_qty"]])
-        writer.writerow([])
-        writer.writerow([_("Топ товарів"), _("Номенклатура"), _("Кількість"), _("Операції")])
-        for row in analytics_service.get_top_issued_items(filters):
-            writer.writerow(["", row["item__name"], row["total_qty"], row["operations"]])
-        writer.writerow([])
-        writer.writerow([_("Топ цехів"), _("Цех"), _("Кількість"), _("Операції")])
-        for row in analytics_service.get_top_usage_places(filters):
-            writer.writerow(["", row["department"], row["total_qty"], row["operations"]])
-        writer.writerow([])
-        writer.writerow([_("Топ отримувачів"), _("Отримувач"), _("Кількість"), _("Операції")])
-        for row in analytics_service.get_top_recipients(filters):
-            writer.writerow(["", row["recipient__name"], row["total_qty"], row["operations"]])
-        writer.writerow([])
-        writer.writerow([_("Останні операції"), _("Дата"), _("Тип"), _("Номенклатура"), _("Кількість"), _("Документ")])
-        for movement in analytics_service.get_recent_movements(filters):
-            writer.writerow(["", movement.occurred_at.strftime("%Y-%m-%d %H:%M"), movement.get_movement_type_display(), movement.item.name, movement.qty, movement.document_number or ""])
+        for section_index, (header, rows) in enumerate(analytics_service.get_csv_export_sections(filters)):
+            if section_index:
+                writer.writerow([])
+            writer.writerow(header)
+            for row in rows:
+                writer.writerow(row)
         return response
 
 
@@ -275,36 +238,24 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         ws = wb.active
         ws.title = "Summary"
         ws.append(["Metric", "Value"])
-        summary = analytics_service.get_analytics_summary(filters)
-        for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty"]:
-            ws.append([key, float(summary[key]) if hasattr(summary[key], 'quantize') else summary[key]])
-        for title, headers, rows in [
-            ("Daily movement", ["Date", "Operations", "Receive", "Issue", "Return", "Writeoff"], [[r['day'].isoformat() if r['day'] else '', r['operations'], float(r['receive_qty'] or 0), float(r['issue_qty'] or 0), float(r['return_qty'] or 0), float(r['writeoff_qty'] or 0)] for r in analytics_service.get_daily_movement(filters)]),
-            ("Operation mix", ["Type", "Total", "Percent"], [[r['key'], r['total'], r['percent']] for r in analytics_service.get_operation_mix(filters)]),
-            ("Top issued items", ["Item", "Code", "Qty", "Ops"], [[r['item__name'], r['item__internal_code'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_issued_items(filters)]),
-            ("Top usage places", ["Usage place", "Qty", "Ops"], [[r['department'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_usage_places(filters)]),
-            ("Top recipients", ["Recipient", "Qty", "Ops"], [[r['recipient__name'], float(r['total_qty'] or 0), r['operations']] for r in analytics_service.get_top_recipients(filters)]),
-            ("Recent movements", ["Date", "Type", "Item", "Qty", "Document"], [[m.occurred_at.strftime('%Y-%m-%d %H:%M'), m.get_movement_type_display(), m.item.name, float(m.qty), m.document_number or ''] for m in analytics_service.get_recent_movements(filters)]),
-            ("Inactive stock items", ["Item", "Code", "Qty"], [[r['item__name'], r['item__internal_code'], float(r['qty'] or 0)] for r in analytics_service.get_inactive_stock_items(filters)]),
-        ]:
+        for row in analytics_service.get_xlsx_summary_rows(filters):
+            ws.append(row)
+        for title, headers, rows in analytics_service.get_xlsx_data_sheets(filters):
             sh = wb.create_sheet(title)
             sh.append(headers)
             for row in rows:
                 sh.append(row)
             sh.freeze_panes = 'A2'
             sh.auto_filter.ref = sh.dimensions
-        dq = analytics_service.get_analytics_data_quality(filters)
         dq_sheet = wb.create_sheet("Data quality")
         dq_sheet.append(["Metric", "Value"])
-        rec = dq["reconciliation"]
-        for key in ["score", "status"]:
-            dq_sheet.append([key, dq[key]])
-        for key in ["total_movements", "daily_chart_operations", "difference", "incomplete_movements", "missing_documents", "negative_stock", "suspicious_stock"]:
-            dq_sheet.append([key, rec[key]])
+        metric_rows, check_rows = analytics_service.get_xlsx_data_quality_rows(filters)
+        for row in metric_rows:
+            dq_sheet.append(row)
         dq_sheet.append([])
         dq_sheet.append(["Check", "Count"])
-        for key, value in dq["checks"].items():
-            dq_sheet.append([key, value["count"]])
+        for row in check_rows:
+            dq_sheet.append(row)
         dq_sheet.freeze_panes = 'A2'
         dq_sheet.auto_filter.ref = dq_sheet.dimensions
         ws.freeze_panes = 'A2'
