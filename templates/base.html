@@ -243,38 +243,7 @@
                         <a class="btn btn-outline-light btn-sm navbar-analytics-link" href="{% url 'management_analytics' %}">{% trans "Аналітика" %}</a>
                     {% endif %}
                     {% include "includes/language_switcher.html" %}
-                    <div class="dropdown">
-                        <button class="btn user-menu-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="user-avatar-badge">{{ display_name|first_letter }}</span>
-                            <span class="user-menu-name">{{ display_name }}</span>
-                            <span class="user-role-badge">{% if user.is_superuser %}{% trans "Власник" %}{% elif is_warehouse_admin %}{% trans "Адміністратор" %}{% else %}{% trans "Користувач" %}{% endif %}</span>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
-                            <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Мої налаштування" %}</a>
-                            {% if user.is_superuser %}
-                                <a class="dropdown-item" href="{% url 'management_audit' %}">{% trans "Журнал аудиту" %}</a>
-                            {% endif %}
-                            {% if user.is_superuser or is_warehouse_admin %}
-                                <h6 class="user-menu-section">{% trans "Налаштування складу" %}</h6>
-                                <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
-                                <a class="dropdown-item" href="{% url 'warehouse_list' %}">{% trans "Склади" %}</a>
-                                <a class="dropdown-item" href="{% url 'location_list' %}">{% trans "Локації" %}</a>
-                                <a class="dropdown-item" href="{% url 'recipient_list' %}">{% trans "Працівники / отримувачі" %}</a>
-                                <a class="dropdown-item" href="{% url 'category_list' %}">{% trans "Категорії" %}</a>
-                                <a class="dropdown-item" href="{% url 'unit_list' %}">{% trans "Одиниці виміру" %}</a>
-                                <a class="dropdown-item" href="{% url 'stock_initial' %}">{% trans "Початкові залишки" %}</a>
-                                <a class="dropdown-item" href="{% url 'item_list' %}">{% trans "Друк етикеток" %}</a>
-                                <a class="dropdown-item" href="{% url 'printer_list' %}">{% trans "Принтери" %}</a>
-                                <a class="dropdown-item" href="{% url 'labeltemplate_list' %}">{% trans "Шаблони етикеток" %}</a>
-                                <a class="dropdown-item" href="{% url 'help' %}">{% trans "Допомога" %}</a>
-                            {% endif %}
-                            <div class="dropdown-divider"></div>
-                            <form method="post" action="{% url 'logout' %}" class="m-0">
-                                {% csrf_token %}
-                                <button class="dropdown-item text-danger" type="submit">{% trans "Вийти" %}</button>
-                            </form>
-                        </div>
-                    </div>
+                    {% include "core/includes/user_menu.html" %}
                     {% endwith %}
                 {% endif %}
             </div>
