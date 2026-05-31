@@ -28,7 +28,7 @@
                         <td>{% if app_user.is_superuser %}—{% else %}{{ app_user.email|default:"—" }}{% endif %}</td>
                         <td>
                             {% for group in app_user.groups.all %}
-                                <span class="badge text-bg-secondary">{{ group.name }}</span>
+                                <span class="badge text-bg-secondary">{{ group|role_display_name }}</span>
                             {% empty %}—{% endfor %}
                         </td>
                         <td>
@@ -68,5 +68,9 @@
     </div>
 </div>
 <h2 class="h5 mt-4">{% trans "Доступні ролі" %}</h2>
-<ul>{% for group in groups %}<li>{{ group.name }}</li>{% endfor %}</ul>
+<ul>
+    {% for role in role_details %}
+        <li><strong>{{ role.name }}</strong>{% if role.description %} — {{ role.description }}{% endif %}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

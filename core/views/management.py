@@ -65,6 +65,8 @@ from ..permissions import (
     MANAGEMENT_GROUPS,
     DIRECTORY_EDIT_GROUPS,
     PRINT_GROUPS,
+    ROLE_DESCRIPTIONS,
+    ROLE_DISPLAY_NAMES,
     SETTINGS_GROUPS,
     STOCK_EDIT_GROUPS,
     STOCK_VIEW_GROUPS,
@@ -217,9 +219,13 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        role_names = tuple(warehouse_role_queryset().values_list("name", flat=True))
         context["users"] = (
             get_user_model()
-            .objects.prefetch_related(
+            .objects.filter(is_superuser=False)
+            .filter(Q(groups__name__in=role_names) | Q(groups__isnull=True))
+            .distinct()
+            .prefetch_related(
                 "groups",
                 Prefetch(
                     "warehouse_accesses",
@@ -232,6 +238,14 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
             .order_by("username")
         )
         context["groups"] = warehouse_role_queryset()
+        context["role_details"] = [
+            {
+                "group": group,
+                "name": ROLE_DISPLAY_NAMES.get(group.name, group.name),
+                "description": ROLE_DESCRIPTIONS.get(group.name, ""),
+            }
+            for group in context["groups"]
+        ]
         return context
 
 

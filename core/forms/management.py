@@ -5,17 +5,22 @@ from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
 from core.models import SystemSettings, UserWarehouseAccess
-from core.permissions import AUDITOR_GROUP, STOREKEEPER_GROUP, WAREHOUSE_ADMIN_GROUP
+from core.permissions import ROLE_DISPLAY_NAMES, STOREKEEPER_GROUP, WAREHOUSE_ADMIN_GROUP
 from core.services.audit import log_action
 from core.services.warehouse_access import get_delegatable_warehouses
 
-WAREHOUSE_ROLE_GROUPS = (WAREHOUSE_ADMIN_GROUP, STOREKEEPER_GROUP, AUDITOR_GROUP)
+WAREHOUSE_ROLE_GROUPS = (WAREHOUSE_ADMIN_GROUP, STOREKEEPER_GROUP)
 WAREHOUSE_ACCESS_PREFIX = "warehouse_access_"
 WAREHOUSE_DELEGATE_PREFIX = "warehouse_delegate_"
 
 
 def warehouse_role_queryset():
     return Group.objects.filter(name__in=WAREHOUSE_ROLE_GROUPS).order_by("name")
+
+
+class WarehouseRoleChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return ROLE_DISPLAY_NAMES.get(obj.name, obj.name)
 
 
 class SystemSettingsForm(BootstrapModelForm):
@@ -268,7 +273,7 @@ class ManagementUserCreateForm(ManagementUserFormMixin, forms.ModelForm):
     password2 = forms.CharField(
         label=_("Підтвердження пароля"), widget=forms.PasswordInput
     )
-    groups = forms.ModelMultipleChoiceField(
+    groups = WarehouseRoleChoiceField(
         label=_("Ролі"),
         queryset=Group.objects.none(),
         required=False,
@@ -322,7 +327,7 @@ class ManagementUserCreateForm(ManagementUserFormMixin, forms.ModelForm):
 
 
 class ManagementUserUpdateForm(ManagementUserFormMixin, forms.ModelForm):
-    groups = forms.ModelMultipleChoiceField(
+    groups = WarehouseRoleChoiceField(
         label=_("Ролі"),
         queryset=Group.objects.none(),
         required=False,
