@@ -12,10 +12,10 @@ Notable current files by size and responsibility:
 
 | Area | Current files | Notes |
 | --- | --- | --- |
-| Stock operations and movement UI | `core/views/stock_operations.py`, `core/views/stock_lists.py`, `core/forms/stock_operations.py`, `core/services/stock.py`, `templates/core/stock*.html` | Covers self-service tokens, barcode context, operation forms, result pages, lists, printing, cancellation, and service mutations. |
+| Stock operations and movement UI | `core/views/stock_operations.py`, `core/views/stock_movements.py`, `core/views/stock_lists.py`, `core/forms/stock_operations.py`, `core/services/stock.py`, `templates/core/stock*.html` | Operation entry views now stay in `stock_operations.py`, while movement list/result/print/cancel views live in `stock_movements.py`; stock services still own mutations. |
 | Warehouse access | `core/services/warehouse_access.py`, `core/models/warehouse_access.py`, warehouse-aware forms/views/tests | Central service exists, but callers still need to coordinate access filtering in views, forms, analytics, and templates. |
 | Audit log | `core/models/audit.py`, `core/services/audit.py`, `templates/core/management/audit_log.html`, stock/admin callers | Audit model and service are present and used by stock cancellation and management flows. |
-| Movement cancellation | `core/services/stock.py`, `core/forms/stock_operations.py`, `core/views/stock_operations.py`, `templates/core/stock_movement_cancel.html` | Cancellation is auditable and protected, but lives inside the broader stock service and stock operation view module. |
+| Movement cancellation | `core/services/stock.py`, `core/forms/stock_operations.py`, `core/views/stock_movements.py`, `templates/core/stock_movement_cancel.html` | Cancellation is auditable and protected; its UI now lives with the other stock movement views while the service implementation remains in the broader stock service. |
 | Analytics | `core/views/analytics.py`, `core/forms/analytics.py`, `core/services/analytics.py`, `core/services/analytics_presets.py`, `templates/core/management/analytics*.html` | Feature is separated from stock views, but one analytics service still contains filtering, summaries, details, data quality, and export-facing helpers. |
 | Inventory | `core/models/inventory.py`, `core/forms/inventory.py`, `core/views/inventory.py`, `core/services/inventory.py`, `templates/core/inventory*.html` | Better bounded than stock operations, with service-backed completion logic. |
 | User management | `core/views/management.py`, `core/forms/management.py`, `templates/core/management/users.html`, `templates/core/management/user_form.html`, `templates/core/management/user_password_form.html` | User CRUD, role presentation, warehouse access assignment, and management dashboard concerns are close together. |
@@ -87,7 +87,7 @@ The dashboard and navbar define the first user experience for warehouse administ
 
 The following files are the largest current maintenance hotspots:
 
-- `core/views/stock_operations.py` is approximately 800 lines and mixes stock operation views, self-service token handling, barcode context, result pages, stock movement printing, and cancellation UI.
+- `core/views/stock_operations.py` is smaller after moving movement list/result/print/cancel views to `core/views/stock_movements.py`, but it still carries stock operation forms, self-service token handling, and barcode context.
 - `core/services/stock.py` is approximately 570 lines and combines stock mutation primitives, public operation functions, balance updates, cancellation eligibility, cancellation deltas, reversal movement creation, and audit logging calls.
 - `core/forms/stock_operations.py` is approximately 520 lines and contains operation-specific form logic, warehouse/location scoping, barcode defaults, recipient/comment requirements, transfer validation, initial balance, and cancellation reason validation.
 - `core/views/directories.py`, `core/views/management.py`, `core/views/analytics.py`, `core/forms/management.py`, and `core/forms/directories.py` are each large enough that future unrelated changes can collide.
@@ -192,9 +192,9 @@ Additional recommendations:
 
 Create include templates for repeated dashboard cards and the authenticated user menu. Replace repeated markup in `templates/core/dashboard.html`, `templates/core/management/dashboard.html`, and the relevant part of `templates/base.html` without changing URLs, text, permissions, or CSS classes. This is the safest first refactor because it is mostly HTML extraction.
 
-### PR 2: Split stock movement views from stock operation views
+### PR 2: Split stock movement views from stock operation views — completed
 
-Move movement list/print/cancel views and movement-specific helpers from stock operation views into `core/views/stock_movements.py`. Keep URL names and imports stable. Do not change service behavior.
+Moved movement list, operation result, print, and cancel views into `core/views/stock_movements.py`. URL names and service behavior stayed stable.
 
 ### PR 3: Move cancellation logic from `stock.py` into `stock_cancellation.py` while keeping public API stable
 

@@ -1,89 +1,30 @@
-import csv
-import json
 import secrets
 
 from django.contrib import messages
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.conf import settings
-from django.forms.models import model_to_dict
-from django.db.models import Count, Q, Sum
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse, reverse_lazy
+from django.db.models import Sum
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import format_html, linebreaks, urlize
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
+from django.views.generic import FormView
 
 from ..forms import (
-    AnalyticsFilterForm,
-    CategoryForm,
-    ItemForm,
     InitialBalanceForm,
-    InventoryCountCreateForm,
-    InventoryCountLineForm,
-    LabelTemplateForm,
-    LocationForm,
-    PrintLabelForm,
-    PrinterForm,
-    RecipientForm,
-    StockBalanceFilterForm,
     StockIssueForm,
-    StockMovementCancellationForm,
-    StockMovementFilterForm,
     StockReceiveForm,
     StockReturnForm,
     StockTransferForm,
     StockWriteOffForm,
-    UnitForm,
-    WarehouseForm,
 )
-from ..models import (
-    Category,
-    InventoryCount,
-    Item,
-    LabelTemplate,
-    Location,
-    PrintJob,
-    Printer,
-    Recipient,
-    StockBalance,
-    StockMovement,
-    Unit,
-    Warehouse,
-)
-from ..permissions import (
-    ANALYTICS_GROUPS,
-    MANAGEMENT_GROUPS,
-    DIRECTORY_EDIT_GROUPS,
-    PRINT_GROUPS,
-    SETTINGS_GROUPS,
-    STOCK_EDIT_GROUPS,
-    STOCK_VIEW_GROUPS,
-    USER_MANAGEMENT_GROUPS,
-    GroupRequiredMixin,
-    user_in_groups,
-)
-from ..services import analytics as analytics_service
+from ..models import StockBalance, StockMovement
+from ..permissions import STOCK_EDIT_GROUPS, GroupRequiredMixin
 from ..services.items import find_item_by_barcode
-from ..services.inventory import (
-    InventoryServiceError,
-    complete_inventory_count,
-    create_inventory_count,
-    update_inventory_line_actual_qty,
-)
-from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
     StockServiceError,
-    can_cancel_stock_movement,
-    cancel_stock_movement,
     create_initial_balance,
     find_best_stock_balance_for_issue,
     find_default_stock_return_location,
@@ -93,7 +34,6 @@ from ..services.stock import (
     transfer_stock,
     writeoff_stock,
 )
-from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
 
 
 SELF_SERVICE_OPERATION_TOKEN_FIELD = "operation_token"
@@ -348,32 +288,6 @@ class StockReturnView(
             return self.form_invalid(form)
         self.mark_operation_token_used(movement)
         return redirect(reverse("stock_receive_result", kwargs={"pk": movement.pk}))
-class StockReceiveResultView(
-    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
-):
-    group_names = STOCK_EDIT_GROUPS
-    template_name = "core/stock_receive_result.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["movement"] = get_object_or_404(
-            restrict_stock_movement_queryset_for_user(
-                self.request.user,
-                StockMovement.objects.select_related(
-                "item",
-                "item__barcode",
-                "destination_location",
-                "destination_location__warehouse",
-                "recipient",
-                "performed_by",
-                "cancelled_by",
-                "reversal_of",
-                ),
-            ),
-            pk=self.kwargs["pk"],
-            movement_type__in=[StockMovement.MovementType.IN, StockMovement.MovementType.RETURN],
-        )
-        return context
 
 
 class StockIssueView(
@@ -475,155 +389,6 @@ class StockIssueView(
         return redirect("stock_issue_result", pk=movement.pk)
 
 
-class StockMovementCancelView(LoginRequiredMixin, FormView):
-    template_name = "core/stock_movement_cancel.html"
-    form_class = StockMovementCancellationForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.movement = get_object_or_404(
-            StockMovement.objects.select_related(
-                "item",
-                "source_location",
-                "source_location__warehouse",
-                "destination_location",
-                "destination_location__warehouse",
-                "recipient",
-                "performed_by",
-                "cancelled_by",
-            ),
-            pk=kwargs["pk"],
-        )
-        if not can_cancel_stock_movement(request.user, self.movement):
-            raise PermissionDenied(_("У вас немає прав для перегляду цієї сторінки."))
-        return super().dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["movement"] = self.movement
-        return context
-
-    def form_valid(self, form):
-        try:
-            cancellation_movement = cancel_stock_movement(
-                movement=self.movement,
-                cancelled_by=self.request.user,
-                reason=form.cleaned_data["reason"],
-                request=self.request,
-            )
-        except StockServiceError as exc:
-            message = str(exc)
-            messages.error(self.request, message)
-            form.add_error(None, message)
-            return self.form_invalid(form)
-        messages.success(self.request, _("Рух анульовано."))
-        return redirect("stock_movement_print", pk=cancellation_movement.pk)
-
-
-class StockMovementPrintView(
-    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
-):
-    group_names = STOCK_VIEW_GROUPS
-    template_name = "core/stock_movement_print.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        movement = get_object_or_404(
-            restrict_stock_movement_queryset_for_user(
-                self.request.user,
-                StockMovement.objects.select_related(
-                "item",
-                "item__barcode",
-                "source_location",
-                "source_location__warehouse",
-                "destination_location",
-                "destination_location__warehouse",
-                "recipient",
-                "performed_by",
-                "cancelled_by",
-                "reversal_of",
-                ),
-            ),
-            pk=self.kwargs["pk"],
-        )
-        location = movement.source_location or movement.destination_location
-        is_self_service_movement = movement.movement_type in {
-            StockMovement.MovementType.OUT,
-            StockMovement.MovementType.RETURN,
-        }
-        if movement.movement_type == StockMovement.MovementType.OUT:
-            operation_type = _("Видача товару")
-            responsible_label = _("Хто взяв товар")
-        elif movement.movement_type == StockMovement.MovementType.RETURN:
-            operation_type = _("Повернення товару")
-            responsible_label = _("Хто повернув товар")
-        elif movement.movement_type == StockMovement.MovementType.IN:
-            operation_type = _("Прихід товару")
-            responsible_label = _("Отримувач / відповідальний")
-        else:
-            operation_type = movement.get_movement_type_display()
-            responsible_label = _("Отримувач / відповідальний")
-        labels = {
-            "title": _("Контрольний талон складської операції"),
-            "print": _("Друк"),
-            "back": _("Назад"),
-            "operation_id": _("ID операції"),
-            "operation_type": _("Тип операції"),
-            "occurred_at": _("Дата і час операції"),
-            "item": _("Товар"),
-            "internal_code": _("Внутрішній код"),
-            "barcode": _("Штрихкод"),
-            "qty": _("Кількість"),
-            "warehouse": _("Склад"),
-            "location": _("Локація"),
-            "responsible": responsible_label,
-            "department": _("Цех / місце використання"),
-            "comment_document": _("Коментар / документ"),
-            "video_time": _("Час для перевірки по відео:"),
-        }
-        context.update(
-            {
-                "labels": labels,
-                "movement": movement,
-                "operation_type": operation_type,
-                "location": location,
-                "warehouse": location.warehouse if location else None,
-                "is_self_service_movement": is_self_service_movement,
-            }
-        )
-        return context
-
-
-class StockIssueResultView(
-    LoginRequiredMixin, SelfServiceShellContextMixin, GroupRequiredMixin, TemplateView
-):
-    group_names = STOCK_EDIT_GROUPS
-    template_name = "core/stock_issue_result.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        movement = get_object_or_404(
-            restrict_stock_movement_queryset_for_user(
-                self.request.user,
-                StockMovement.objects.select_related(
-                "item",
-                "source_location",
-                "source_location__warehouse",
-                "recipient",
-                "performed_by",
-                "cancelled_by",
-                "reversal_of",
-                ),
-            ),
-            pk=self.kwargs["pk"],
-            movement_type=StockMovement.MovementType.OUT,
-        )
-        context["movement"] = movement
-        context["balance_after"] = get_object_or_404(
-            StockBalance, item=movement.item, location=movement.source_location
-        ).qty
-        return context
-
-
 def _format_writeoff_comment(*, reason, document_number, comment):
     lines = [_("Причина списання: %(reason)s") % {"reason": reason}]
     if document_number:
@@ -679,25 +444,6 @@ class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
         return redirect("stock_writeoff_result", pk=movement.pk)
 
 
-class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
-    group_names = STOCK_VIEW_GROUPS
-    template_name = "core/stock_writeoff_result.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["movement"] = get_object_or_404(
-            restrict_stock_movement_queryset_for_user(
-                self.request.user,
-                StockMovement.objects.select_related(
-                "item", "source_location", "source_location__warehouse", "performed_by"
-                ),
-            ),
-            pk=self.kwargs["pk"],
-            movement_type=StockMovement.MovementType.WRITEOFF,
-        )
-        return context
-
-
 class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_transfer_form.html"
@@ -742,32 +488,6 @@ class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
             form.add_error(None, message)
             return self.form_invalid(form)
         return redirect("stock_transfer_result", pk=movement.pk)
-
-
-class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
-    group_names = STOCK_VIEW_GROUPS
-    template_name = "core/stock_transfer_result.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["movement"] = get_object_or_404(
-            restrict_stock_movement_queryset_for_user(
-                self.request.user,
-                StockMovement.objects.select_related(
-                "item",
-                "source_location",
-                "source_location__warehouse",
-                "destination_location",
-                "destination_location__warehouse",
-                "performed_by",
-                "cancelled_by",
-                "reversal_of",
-                ),
-            ),
-            pk=self.kwargs["pk"],
-            movement_type=StockMovement.MovementType.TRANSFER,
-        )
-        return context
 
 
 class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
