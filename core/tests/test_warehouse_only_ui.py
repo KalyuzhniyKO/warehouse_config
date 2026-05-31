@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
+from django.utils import translation
 from django.urls import reverse
 
 from core.forms import (
@@ -223,6 +224,39 @@ class CompactDashboardAndNavbarTests(TestCase):
         self.assertIn("Журнал аудиту", html)
         self.assertIn("Власник", html)
         self.assertNotIn(">root<", html.lower())
+
+    def test_admin_dropdown_does_not_contain_audit_log(self):
+        self.client.force_login(self.admin)
+        html = self.client.get(reverse("dashboard")).content.decode()
+
+        self.assertNotIn("Журнал аудиту", html)
+        self.assertIn("Адміністратор", html)
+
+    def test_navbar_role_badge_renders_business_labels_by_locale(self):
+        expectations = {
+            "uk": (self.superuser, "Власник"),
+            "ru": (self.superuser, "Владелец"),
+            "en": (self.superuser, "Owner"),
+        }
+
+        for language_code, (user, label) in expectations.items():
+            with self.subTest(language_code=language_code), translation.override(language_code):
+                self.client.force_login(user)
+                html = self.client.get(reverse("dashboard")).content.decode()
+
+            self.assertIn(f'<span class="user-role-badge">{label}</span>', html)
+            self.assertNotIn(">root<", html.lower())
+
+    def test_warehouse_user_navbar_uses_business_label(self):
+        user = get_user_model().objects.create_user(username="keeper", password="pw")
+        user.groups.add(Group.objects.get(name="Комірник"))
+        grant_warehouse_access(user, self.warehouse)
+
+        self.client.force_login(user)
+        html = self.client.get(reverse("dashboard")).content.decode()
+
+        self.assertIn('<span class="user-role-badge">Користувач</span>', html)
+        self.assertNotIn("Комірник", html)
 
     def test_navbar_name_width_is_not_too_aggressive(self):
         css = open("static/core/css/app.css", encoding="utf-8").read()

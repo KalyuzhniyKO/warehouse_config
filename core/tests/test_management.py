@@ -221,6 +221,16 @@ class ManagementInterfaceTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Створити користувача")
 
+    def test_superuser_management_users_page_renders(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(reverse("management_users"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Користувачі")
+        self.assertContains(response, "Адміністратор")
+        self.assertContains(response, "Користувач")
+
     def test_user_management_shows_business_roles_and_hides_root(self):
         self.client.force_login(self.admin)
 
@@ -232,6 +242,8 @@ class ManagementInterfaceTests(TestCase):
         self.assertContains(response, "Керує складом і користувачами")
         self.assertContains(response, "Простий складський інтерфейс")
         self.assertNotContains(response, f"/management/users/{self.superuser.pk}/edit/")
+        self.assertNotContains(response, "root@example.com")
+        self.assertNotContains(response, ">root<")
         self.assertNotContains(response, "Superuser")
         self.assertNotContains(response, "Перегляд / аудитор")
 
@@ -246,6 +258,8 @@ class ManagementInterfaceTests(TestCase):
         self.assertNotContains(response, "Адміністратор складу")
         self.assertNotContains(response, "Комірник")
         self.assertNotContains(response, "Перегляд / аудитор")
+        self.assertNotContains(response, 'name="is_staff"')
+        self.assertNotContains(response, 'name="is_superuser"')
 
     def test_auditor_cannot_open_user_management_forms(self):
         self.client.force_login(self.auditor)
@@ -401,6 +415,10 @@ class ManagementInterfaceTests(TestCase):
         self.assertContains(response, '/en/management/users/create/')
         self.assertContains(response, '/en/management/users/1/edit/')
         self.assertContains(response, '/en/management/users/1/password/')
+        self.assertContains(response, "Administrator")
+        self.assertContains(response, "User")
+        self.assertContains(response, "Manages warehouse and users")
+        self.assertContains(response, "Simple warehouse interface")
 
     def test_init_roles_creates_expected_groups(self):
         for name in ["Адміністратор складу", "Комірник", "Перегляд / аудитор"]:
