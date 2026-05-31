@@ -196,9 +196,9 @@ Create include templates for repeated dashboard cards and the authenticated user
 
 Moved movement list, operation result, print, and cancel views into `core/views/stock_movements.py`. URL names and service behavior stayed stable.
 
-### PR 3: Move cancellation logic from `stock.py` into `stock_cancellation.py` while keeping public API stable
+### PR 3: Move cancellation logic from `stock.py` into `stock_cancellation.py` while keeping public API stable — completed
 
-Extract `can_cancel_stock_movement`, cancellation delta helpers, and `cancel_stock_movement` implementation into `core/services/stock_cancellation.py`. Re-export or wrap the public functions from `core/services/stock.py` so existing imports continue to work during the transition.
+Cancellation eligibility, reversal delta helpers, reversal movement creation, negative-balance validation, and audit payload construction now live in `core/services/stock_cancellation.py`. `core/services/stock.py` re-exports the public cancellation helpers so existing imports continue to work during the transition.
 
 ### PR 4: Split analytics service into small modules
 
