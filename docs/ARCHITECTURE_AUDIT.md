@@ -16,7 +16,7 @@ Notable current files by size and responsibility:
 | Warehouse access | `core/services/warehouse_access.py`, `core/models/warehouse_access.py`, warehouse-aware forms/views/tests | Central service exists, but callers still need to coordinate access filtering in views, forms, analytics, and templates. |
 | Audit log | `core/models/audit.py`, `core/services/audit.py`, `templates/core/management/audit_log.html`, stock/admin callers | Audit model and service are present and used by stock cancellation and management flows. |
 | Movement cancellation | `core/services/stock.py`, `core/forms/stock_operations.py`, `core/views/stock_movements.py`, `templates/core/stock_movement_cancel.html` | Cancellation is auditable and protected; its UI now lives with the other stock movement views while the service implementation remains in the broader stock service. |
-| Analytics | `core/views/analytics.py`, `core/forms/analytics.py`, `core/services/analytics.py`, `core/services/analytics_presets.py`, `templates/core/management/analytics*.html` | Feature is separated from stock views, but one analytics service still contains filtering, summaries, details, data quality, and export-facing helpers. |
+| Analytics | `core/views/analytics.py`, `core/forms/analytics.py`, `core/services/analytics/`, `core/services/analytics_presets.py`, `templates/core/management/analytics*.html` | Feature is separated from stock views, and analytics service internals are split into filters, summaries, data quality, and export helper modules with package-level compatibility imports. |
 | Inventory | `core/models/inventory.py`, `core/forms/inventory.py`, `core/views/inventory.py`, `core/services/inventory.py`, `templates/core/inventory*.html` | Better bounded than stock operations, with service-backed completion logic. |
 | User management | `core/views/management.py`, `core/forms/management.py`, `templates/core/management/users.html`, `templates/core/management/user_form.html`, `templates/core/management/user_password_form.html` | User CRUD, role presentation, warehouse access assignment, and management dashboard concerns are close together. |
 | Directories | `core/models/directories.py`, `core/forms/directories.py`, `core/views/directories.py`, directory templates | Large but understandable CRUD surface for units, categories, items, warehouses, locations, and recipients. |
@@ -44,7 +44,7 @@ Movement cancellation is implemented as a reversal-style domain operation: the o
 
 #### Analytics
 
-Analytics has a dedicated view, form, service, presets helper, management templates, and tests. It covers scoped filtering, summary metrics, daily movement data, top issued items, usage places, recipients, inactive stock, recent movements, detail pages, data quality, and CSV export support. Because it combines many read models in one service, it is useful but increasingly dense.
+Analytics has a dedicated view, form, service package, presets helper, management templates, and tests. It covers scoped filtering, summary metrics, daily movement data, top issued items, usage places, recipients, inactive stock, recent movements, detail pages, data quality, and CSV/XLSX export support. Service internals now live in focused `core/services/analytics/` modules while `core.services.analytics` remains the stable import surface.
 
 #### Inventory
 
@@ -200,16 +200,16 @@ Moved movement list, operation result, print, and cancel views into `core/views/
 
 Cancellation eligibility, reversal delta helpers, reversal movement creation, negative-balance validation, and audit payload construction now live in `core/services/stock_cancellation.py`. `core/services/stock.py` re-exports the public cancellation helpers so existing imports continue to work during the transition.
 
-### PR 4: Split analytics service into small modules
+### PR 4: Split analytics service into small modules — completed
 
-Move analytics internals into:
+Analytics internals now live in `core/services/analytics/`:
 
 - `filters.py` for filter normalization and scoped movement/balance querysets;
 - `summaries.py` for dashboard summary metrics and top lists;
 - `data_quality.py` for data quality checks;
 - `exports.py` for CSV/export row preparation.
 
-Keep `core/services/analytics.py` as a compatibility facade until callers are migrated.
+Keep package-level re-exports in `core/services/analytics/__init__.py` so existing `core.services.analytics` imports remain stable.
 
 ### PR 5: Split management user forms/views from general management dashboard
 
