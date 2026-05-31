@@ -100,4 +100,5 @@ lpstat -d
 
 - Інструкція користувача: `docs/USER_GUIDE.md`
 - Інструкція адміністратора: `docs/ADMIN_GUIDE.md`
+- Архітектурний аудит і roadmap рефакторингу: `docs/ARCHITECTURE_AUDIT.md`
 - Production runbook: `docs/SERVER01_GUNICORN_SWITCHOVER.md`
