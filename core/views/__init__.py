@@ -61,13 +61,15 @@ from .management import (
     ManagementDashboardView,
     ManagementDirectoriesView,
     ManagementHelpView,
+    ManagementSettingsView,
+    PlaceholderPageView,
+    render_markdown_document,
+)
+from .management_users import (
     ManagementUserCreateView,
     ManagementUserPasswordView,
     ManagementUserUpdateView,
-    ManagementSettingsView,
     ManagementUsersView,
-    PlaceholderPageView,
-    render_markdown_document,
 )
 from .analytics import (
     AnalyticsCSVExportView,
