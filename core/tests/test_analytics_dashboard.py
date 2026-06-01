@@ -52,6 +52,17 @@ class AnalyticsDashboardTests(TestCase):
         self.assertContains(r, "data-analytics-top-items-chart")
         self.assertContains(r, "movement_type=out")
 
+    def test_analytics_visual_blocks_render_existing_data(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics"))
+        self.assertContains(r, "analytics-visual-list")
+        self.assertContains(r, "analytics-visual-bar-fill")
+        self.assertContains(r, "Кабель")
+        self.assertContains(r, "analytics-visual-value\">3", html=False)
+        self.assertContains(r, "width: 100%")
+        for label in ["Прихід", "Видача", "Повернення", "Списання", "Переміщення"]:
+            self.assertContains(r, label)
+
     def test_summary_and_top(self):
         summary = get_analytics_summary({})
         self.assertEqual(summary["operations_count"], 3)

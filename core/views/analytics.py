@@ -136,6 +136,43 @@ def clean_analytics_filters(form, user=None):
     return filters
 
 
+def build_top_issued_items_visual(top_issued_items):
+    max_qty = max((row.get("total_qty") or 0 for row in top_issued_items), default=0)
+    visual_rows = []
+    for row in top_issued_items:
+        total_qty = row.get("total_qty") or 0
+        bar_percent = int((total_qty / max_qty) * 100) if max_qty else 0
+        visual_rows.append(
+            {
+                "item_id": row.get("item__id"),
+                "item_name": row.get("item__name"),
+                "total_qty": total_qty,
+                "bar_percent": bar_percent,
+            }
+        )
+    return visual_rows
+
+
+def build_operation_mix_visual(operation_mix):
+    labels = {
+        "receive": _("Прихід"),
+        "issue": _("Видача"),
+        "return": _("Повернення"),
+        "write_off": _("Списання"),
+        "transfer": _("Переміщення"),
+    }
+    rows_by_key = {row.get("key"): row for row in operation_mix}
+    return [
+        {
+            "key": key,
+            "label": label,
+            "total": rows_by_key.get(key, {}).get("total", 0) or 0,
+            "bar_percent": int(rows_by_key.get(key, {}).get("percent", 0) or 0),
+        }
+        for key, label in labels.items()
+    ]
+
+
 class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics.html"
@@ -173,6 +210,7 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         filter_query = analytics_service.build_analytics_filter_query(filters)
         daily_movement = analytics_service.get_daily_movement(filters)
         top_issued_items = analytics_service.get_top_issued_items(filters)
+        operation_mix = analytics_service.get_operation_mix(filters)
         top_usage_places = analytics_service.get_top_usage_places(filters)
         top_recipients = analytics_service.get_top_recipients(filters)
         data_quality = analytics_service.get_analytics_data_quality(filters)
@@ -182,8 +220,10 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
                 "summary": summary,
                 "summary_deltas": summary_deltas,
                 "daily_movement": daily_movement,
-                "operation_mix": analytics_service.get_operation_mix(filters),
+                "operation_mix": operation_mix,
+                "operation_mix_visual": build_operation_mix_visual(operation_mix),
                 "top_issued_items": top_issued_items,
+                "top_issued_items_visual": build_top_issued_items_visual(top_issued_items),
                 "top_usage_places": top_usage_places,
                 "top_recipients": top_recipients,
                 "inactive_stock_items": analytics_service.get_inactive_stock_items(filters),

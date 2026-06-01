@@ -74,11 +74,28 @@
     <div class="card content-card mb-3">
         <div class="card-body">
             <h2 class="h5">{% trans "Топ товарів по видачі" %}</h2>
-            {% for row in top_issued_items %}
-                <div><a href="{% url 'management_analytics_item_detail' row.item__id %}?{{ filter_query }}">{{ row.item__name }}</a> {{ row.total_qty }}</div>
-            {% empty %}
+            {% if top_issued_items_visual %}
+                <div class="analytics-visual-list">
+                    {% for row in top_issued_items_visual %}
+                        <div class="analytics-visual-row">
+                            <div class="analytics-visual-label"><a href="{% url 'management_analytics_item_detail' row.item_id %}?{{ filter_query }}">{{ row.item_name }}</a> <span class="analytics-visual-value">{{ row.total_qty }}</span></div>
+                            <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
                 <div class="text-muted">{% trans "За вибраний період немає складських операцій." %}</div>
-            {% endfor %}
+            {% endif %}
+
+            <h2 class="h5 mt-3">{% trans "Операції" %}</h2>
+            <div class="analytics-visual-list">
+                {% for row in operation_mix_visual %}
+                    <div class="analytics-visual-row">
+                        <div class="analytics-visual-label">{{ row.label }} <span class="analytics-visual-value">{{ row.total }}</span></div>
+                        <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
+                    </div>
+                {% endfor %}
+            </div>
 
             <h2 class="h5 mt-3">{% trans "Топ цехів / місць використання" %}</h2>
             {% for row in top_usage_places %}
