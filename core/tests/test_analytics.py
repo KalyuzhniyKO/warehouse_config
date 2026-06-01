@@ -200,6 +200,7 @@ class WarehouseAnalyticsAuditTests(TestCase):
         grant_warehouse_access(self.no_access_user, [])
 
         self.now = timezone.now()
+        self.today = timezone.localdate(self.now)
         StockBalance.objects.create(
             item=self.item, location=self.location, qty=Decimal("12.000")
         )
@@ -342,16 +343,16 @@ class WarehouseAnalyticsAuditTests(TestCase):
     def test_custom_date_range_includes_and_excludes_correctly(self):
         summary = self.summary_for_user(
             self.superuser,
-            date_from=(self.now - timezone.timedelta(days=1)).date(),
-            date_to=self.now.date(),
+            date_from=self.today - timezone.timedelta(days=1),
+            date_to=self.today,
         )
         self.assertEqual(summary["operations_count"], 6)
         self.assertEqual(summary["receive_qty"], Decimal("27.000"))
 
         old_summary = self.summary_for_user(
             self.superuser,
-            date_from=(self.now - timezone.timedelta(days=46)).date(),
-            date_to=(self.now - timezone.timedelta(days=44)).date(),
+            date_from=self.today - timezone.timedelta(days=46),
+            date_to=self.today - timezone.timedelta(days=44),
         )
         self.assertEqual(old_summary["operations_count"], 1)
         self.assertEqual(old_summary["receive_qty"], Decimal("11.000"))

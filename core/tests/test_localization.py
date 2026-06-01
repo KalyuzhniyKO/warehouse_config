@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
@@ -76,7 +76,8 @@ class LocalizedWebInterfaceTests(TestCase):
         self.assertNotIn('brand-name">Yantos</span>', template)
 
     def test_item_form_labels_are_ukrainian(self):
-        response = self.client.get(reverse("item_create"))
+        with translation.override("uk"):
+            response = self.client.get("/uk/items/create/")
 
         for label in ["Назва", "Внутрішній код", "Категорія", "Одиниця виміру", "Опис"]:
             self.assertContains(response, label)
@@ -380,18 +381,6 @@ class DashboardLocalizationTests(TestCase):
         grant_warehouse_access(self.auditor, self.warehouse)
 
     def dashboard_for(self, user, path=None):
-        from django.utils import translation
-
-        language = "uk"
-        if path and path.startswith("/en/"):
-            language = "en"
-        elif path and path.startswith("/ru/"):
-            language = "ru"
-        elif path and path.startswith("/it/"):
-            language = "it"
-        elif path and path.startswith("/pl/"):
-            language = "pl"
-        translation.activate(language)
         self.client.force_login(user)
         return self.client.get(path or reverse("dashboard"))
 
@@ -644,7 +633,8 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Hasło", html)
 
     def test_russian_storekeeper_self_service_smoke(self):
-        response = self.dashboard_for(self.storekeeper, "/ru/")
+        with translation.override("ru"):
+            response = self.dashboard_for(self.storekeeper, "/ru/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
@@ -655,7 +645,8 @@ class DashboardLocalizationTests(TestCase):
         self.assertNotIn("Повернути товар", html)
 
     def test_italian_storekeeper_self_service_smoke(self):
-        response = self.dashboard_for(self.storekeeper, "/it/")
+        with translation.override("it"):
+            response = self.dashboard_for(self.storekeeper, "/it/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
@@ -675,7 +666,8 @@ class DashboardLocalizationTests(TestCase):
         self.assertNotIn("Зіскануйте товар", html)
 
     def test_polish_storekeeper_self_service_smoke(self):
-        response = self.dashboard_for(self.storekeeper, "/pl/")
+        with translation.override("pl"):
+            response = self.dashboard_for(self.storekeeper, "/pl/")
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
