@@ -211,9 +211,9 @@ Analytics internals now live in `core/services/analytics/`:
 
 Keep package-level re-exports in `core/services/analytics/__init__.py` so existing `core.services.analytics` imports remain stable.
 
-### PR 5: Split management user forms/views from general management dashboard
+### PR 5: Split management user forms/views from general management dashboard — completed
 
-Move user CRUD, password update, role assignment, and warehouse access assignment into `core/views/management_users.py` and `core/forms/management_users.py`. Keep management dashboard/settings/help in a smaller management dashboard module.
+User CRUD, password update, role assignment, and warehouse access assignment now live in `core/views/management_users.py` and `core/forms/management_users.py`. `core/views/management.py` retains dashboard/settings/help concerns and compatibility re-exports, while `core/forms/management.py` keeps settings plus compatibility imports.
 
 ### PR 6: Create centralized permission helpers
 

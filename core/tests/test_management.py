@@ -35,6 +35,11 @@ from ..models import (
 
 class ManagementInterfaceTests(TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        call_command("compilemessages", verbosity=0)
+
     def setUp(self):
         from django.utils import translation
 
