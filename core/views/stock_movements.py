@@ -8,10 +8,15 @@ from django.views.generic import FormView, ListView, TemplateView
 
 from ..forms import StockMovementCancellationForm, StockMovementFilterForm
 from ..models import StockBalance, StockMovement
-from ..permissions import STOCK_EDIT_GROUPS, STOCK_VIEW_GROUPS, GroupRequiredMixin
+from ..permissions import (
+    STOCK_EDIT_GROUPS,
+    STOCK_VIEW_GROUPS,
+    GroupRequiredMixin,
+    can_cancel_movement,
+)
 from ..services.filter_memory import apply_remembered_filters, build_redirect_url, querydict_from_params
 from ..services.stock import StockServiceError
-from ..services.stock_cancellation import can_cancel_stock_movement, cancel_stock_movement
+from ..services.stock_cancellation import cancel_stock_movement
 from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
 from .stock_operations import SelfServiceShellContextMixin
 
@@ -159,7 +164,7 @@ class StockMovementCancelView(LoginRequiredMixin, FormView):
             ),
             pk=kwargs["pk"],
         )
-        if not can_cancel_stock_movement(request.user, self.movement):
+        if not can_cancel_movement(request.user, self.movement):
             raise PermissionDenied(_("У вас немає прав для перегляду цієї сторінки."))
         return super().dispatch(request, *args, **kwargs)
 

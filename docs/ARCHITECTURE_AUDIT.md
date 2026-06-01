@@ -79,7 +79,7 @@ The dashboard and navbar define the first user experience for warehouse administ
 - **Cancellation is auditable and reversible.** Stock movements are not hard-deleted; cancellation creates an explicit reversal and stores cancellation metadata.
 - **Analytics is covered by tests.** Analytics behavior is tested at both service/view levels, including warehouse-scoped behavior and dashboard expectations.
 - **Default technical locations exist.** Warehouse-only operation mode can rely on default locations without deleting the underlying location model or movement history.
-- **Roles have presentation helpers.** Role display names and descriptions are centralized enough to support warehouse-only UI language, even though broader permission helpers are still needed.
+- **Roles and common permissions have helpers.** Role display names/descriptions and named permission helpers are centralized enough to support warehouse-only UI language and safer permission audits.
 
 ## 3. Weak points / risks
 
@@ -114,13 +114,13 @@ Dashboard and management templates repeatedly implement card-like links with the
 
 Permission concepts currently appear in several forms:
 
-- constants and `GroupRequiredMixin` in `core/permissions.py`;
+- constants, `GroupRequiredMixin`, and named helpers in `core/permissions.py`;
 - warehouse access helpers in `core/services/warehouse_access.py`;
 - cancellation helper in `core/services/stock.py`;
 - `user.is_superuser` and group checks in templates;
 - access-scoped querysets in views/forms/services.
 
-The rules are generally correct, but the lack of named helpers such as `can_manage_users` or `can_view_warehouse_data` makes future audits harder.
+The rules are generally correct, and centralized helpers now cover common Python call sites; remaining template-level checks should be migrated gradually in focused UI PRs.
 
 ### Translation catalogs contain legacy/fuzzy risk
 
@@ -215,17 +215,21 @@ Keep package-level re-exports in `core/services/analytics/__init__.py` so existi
 
 User CRUD, password update, role assignment, and warehouse access assignment now live in `core/views/management_users.py` and `core/forms/management_users.py`. `core/views/management.py` retains dashboard/settings/help concerns and compatibility re-exports, while `core/forms/management.py` keeps settings plus compatibility imports.
 
-### PR 6: Create centralized permission helpers
+### PR 6: Create centralized permission helpers — completed
 
-Add named helpers for commonly audited rules:
+Added named helpers for commonly audited rules:
 
 - `can_manage_users(user)`;
 - `can_view_audit(user)`;
-- `can_cancel_movement(user, movement)`;
-- `can_assign_warehouse_access(user, warehouse)`;
-- `can_view_warehouse_data(user, warehouse)`.
+- `can_cancel_movement(user, movement=None)`;
+- `can_assign_warehouse_access(user, warehouse=None)`;
+- `can_view_warehouse_data(user, warehouse=None)`;
+- `can_view_analytics(user)`;
+- `can_manage_directories(user)`;
+- `can_print_labels(user)`;
+- `can_manage_settings(user)`.
 
-Migrate call sites gradually and keep tests around both positive and negative cases.
+Safe Python call sites for audit access, movement cancellation, analytics access, management user access, and management dashboard flags now use the helpers. Broad template migration remains intentionally out of scope.
 
 ### PR 7: Clean active translation catalogs and remove/disable unused legacy locales if present
 

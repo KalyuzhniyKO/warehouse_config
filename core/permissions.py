@@ -34,6 +34,60 @@ def user_in_groups(user, group_names):
     return user.groups.filter(name__in=group_names).exists()
 
 
+def can_manage_users(user):
+    return user_in_groups(user, USER_MANAGEMENT_GROUPS)
+
+
+def can_view_audit(user):
+    return bool(getattr(user, "is_authenticated", False) and user.is_superuser)
+
+
+def can_cancel_movement(user, movement=None):
+    return bool(getattr(user, "is_authenticated", False) and user.is_superuser)
+
+
+def can_assign_warehouse_access(user, warehouse=None):
+    if not getattr(user, "is_authenticated", False):
+        return False
+    from core.services.warehouse_access import (  # noqa: PLC0415
+        get_delegatable_warehouses,
+        user_can_delegate_warehouse,
+    )
+
+    if warehouse is not None:
+        return user_can_delegate_warehouse(user, warehouse)
+    return get_delegatable_warehouses(user).exists()
+
+
+def can_view_warehouse_data(user, warehouse=None):
+    if not getattr(user, "is_authenticated", False):
+        return False
+    from core.services.warehouse_access import (  # noqa: PLC0415
+        get_accessible_warehouses,
+        user_can_access_warehouse,
+    )
+
+    if warehouse is not None:
+        return user_can_access_warehouse(user, warehouse)
+    return get_accessible_warehouses(user).exists()
+
+
+def can_view_analytics(user):
+    return user_in_groups(user, ANALYTICS_GROUPS)
+
+
+def can_manage_directories(user):
+    return user_in_groups(user, DIRECTORY_EDIT_GROUPS)
+
+
+def can_print_labels(user):
+    return user_in_groups(user, PRINT_GROUPS)
+
+
+def can_manage_settings(user):
+    return user_in_groups(user, SETTINGS_GROUPS)
+
+
 class GroupRequiredMixin(UserPassesTestMixin):
     group_names = set()
     permission_denied_message = _("У вас немає прав для перегляду цієї сторінки.")

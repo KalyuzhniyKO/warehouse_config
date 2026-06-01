@@ -19,10 +19,18 @@ from core.permissions import (
     ROLE_DISPLAY_NAMES,
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
+    can_manage_users,
 )
 
 
-class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class CanManageUsersMixin(GroupRequiredMixin):
+    group_names = USER_MANAGEMENT_GROUPS
+
+    def test_func(self):
+        return can_manage_users(self.request.user)
+
+
+class ManagementUsersView(LoginRequiredMixin, CanManageUsersMixin, TemplateView):
     group_names = USER_MANAGEMENT_GROUPS
     template_name = "core/management/users.html"
 
@@ -58,7 +66,7 @@ class ManagementUsersView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         return context
 
 
-class ManagementUserCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateView):
+class ManagementUserCreateView(LoginRequiredMixin, CanManageUsersMixin, CreateView):
     group_names = USER_MANAGEMENT_GROUPS
     model = get_user_model()
     form_class = ManagementUserCreateForm
@@ -82,7 +90,7 @@ class ManagementUserCreateView(LoginRequiredMixin, GroupRequiredMixin, CreateVie
         return response
 
 
-class ManagementUserUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateView):
+class ManagementUserUpdateView(LoginRequiredMixin, CanManageUsersMixin, UpdateView):
     group_names = USER_MANAGEMENT_GROUPS
     model = get_user_model()
     form_class = ManagementUserUpdateForm
@@ -113,7 +121,7 @@ class ManagementUserUpdateView(LoginRequiredMixin, GroupRequiredMixin, UpdateVie
         return response
 
 
-class ManagementUserPasswordView(LoginRequiredMixin, GroupRequiredMixin, FormView):
+class ManagementUserPasswordView(LoginRequiredMixin, CanManageUsersMixin, FormView):
     group_names = USER_MANAGEMENT_GROUPS
     form_class = ManagementUserPasswordForm
     template_name = "core/management/user_password_form.html"

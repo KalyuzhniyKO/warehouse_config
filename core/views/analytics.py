@@ -64,6 +64,7 @@ from ..permissions import (
     STOCK_VIEW_GROUPS,
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
+    can_view_analytics,
     user_in_groups,
 )
 from ..services import analytics as analytics_service
@@ -87,9 +88,11 @@ from ..services.stock import (
     transfer_stock,
 )
 
+class AnalyticsPermissionMixin(GroupRequiredMixin):
+    group_names = ANALYTICS_GROUPS
 
-
-
+    def test_func(self):
+        return can_view_analytics(self.request.user)
 
 
 DATA_QUALITY_CHECK_META = [
@@ -101,7 +104,7 @@ DATA_QUALITY_CHECK_META = [
     {"key": "receive_without_destination", "label": _("Прихід без складу призначення"), "description": _("Операції приходу без складу або локації призначення."), "journal_param": "missing_destination=1"},
 ]
 
-class ManagementReportsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class ManagementReportsView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/reports.html"
 
@@ -114,7 +117,7 @@ class ManagementReportsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView
             grouped.append({"title": items[0]["category_title"], "presets": items})
         context["preset_groups"] = grouped
         return context
-class AnalyticsRedirectView(LoginRequiredMixin, GroupRequiredMixin, View):
+class AnalyticsRedirectView(LoginRequiredMixin, AnalyticsPermissionMixin, View):
     group_names = ANALYTICS_GROUPS
 
     def get(self, request, *args, **kwargs):
@@ -173,7 +176,7 @@ def build_operation_mix_visual(operation_mix):
     ]
 
 
-class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class AnalyticsView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics.html"
     page_key = "management_analytics"
@@ -243,7 +246,7 @@ class AnalyticsView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 movement_export_location = analytics_service.movement_export_location
 
 
-class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
+class AnalyticsCSVExportView(LoginRequiredMixin, AnalyticsPermissionMixin, View):
     group_names = ANALYTICS_GROUPS
 
     def get(self, request, *args, **kwargs):
@@ -264,7 +267,7 @@ class AnalyticsCSVExportView(LoginRequiredMixin, GroupRequiredMixin, View):
         return response
 
 
-class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
+class AnalyticsXLSXExportView(LoginRequiredMixin, AnalyticsPermissionMixin, View):
     group_names = ANALYTICS_GROUPS
 
     def get(self, request, *args, **kwargs):
@@ -308,7 +311,7 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 
 
 
-class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class AnalyticsDataQualityView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_data_quality.html"
     page_key = "management_analytics_data_quality"
@@ -348,7 +351,7 @@ class AnalyticsDataQualityView(LoginRequiredMixin, GroupRequiredMixin, TemplateV
             "used_remembered_filters": getattr(self, "used_remembered_filters", False),
         })
         return context
-class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class AnalyticsItemDetailView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_item_detail.html"
 
@@ -363,7 +366,7 @@ class AnalyticsItemDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
         return context
 
 
-class AnalyticsUsagePlaceDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class AnalyticsUsagePlaceDetailView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_usage_place_detail.html"
 
@@ -378,7 +381,7 @@ class AnalyticsUsagePlaceDetailView(LoginRequiredMixin, GroupRequiredMixin, Temp
         return context
 
 
-class AnalyticsRecipientDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
+class AnalyticsRecipientDetailView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
     group_names = ANALYTICS_GROUPS
     template_name = "core/management/analytics_recipient_detail.html"
 

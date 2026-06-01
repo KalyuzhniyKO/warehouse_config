@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.db import IntegrityError
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase, override_settings
@@ -13,6 +14,17 @@ from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
 from .warehouse_access_utils import grant_warehouse_access
+from ..permissions import (
+    can_assign_warehouse_access,
+    can_cancel_movement,
+    can_manage_directories,
+    can_manage_settings,
+    can_manage_users,
+    can_print_labels,
+    can_view_analytics,
+    can_view_audit,
+    can_view_warehouse_data,
+)
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -30,6 +42,154 @@ from ..models import (
     Unit,
     Warehouse,
 )
+
+
+class PermissionHelperTests(TestCase):
+    def setUp(self):
+        call_command("init_roles", stdout=StringIO())
+        user_model = get_user_model()
+        self.superuser = user_model.objects.create_superuser(
+            username="root", password="pw", email="root@example.com"
+        )
+        self.admin = user_model.objects.create_user(username="admin", password="pw")
+        self.admin.groups.add(Group.objects.get(name="Адміністратор складу"))
+        self.storekeeper = user_model.objects.create_user(username="keeper", password="pw")
+        self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        self.auditor = user_model.objects.create_user(username="auditor", password="pw")
+        self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
+        self.plain_user = user_model.objects.create_user(username="plain", password="pw")
+        self.warehouse = Warehouse.objects.create(name="Основний склад")
+        self.other_warehouse = Warehouse.objects.create(name="Резервний склад")
+        grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
+        grant_warehouse_access(self.storekeeper, self.warehouse)
+        grant_warehouse_access(self.auditor, self.warehouse)
+
+    def helper_results(self, user):
+        return {
+            "manage_users": can_manage_users(user),
+            "view_audit": can_view_audit(user),
+            "cancel_movement": can_cancel_movement(user),
+            "assign_warehouse_access": can_assign_warehouse_access(user),
+            "view_warehouse_data": can_view_warehouse_data(user),
+            "view_analytics": can_view_analytics(user),
+            "manage_directories": can_manage_directories(user),
+            "print_labels": can_print_labels(user),
+            "manage_settings": can_manage_settings(user),
+        }
+
+    def test_anonymous_user_returns_false_for_all_helpers(self):
+        self.assertEqual(
+            self.helper_results(AnonymousUser()),
+            {
+                "manage_users": False,
+                "view_audit": False,
+                "cancel_movement": False,
+                "assign_warehouse_access": False,
+                "view_warehouse_data": False,
+                "view_analytics": False,
+                "manage_directories": False,
+                "print_labels": False,
+                "manage_settings": False,
+            },
+        )
+
+    def test_superuser_behavior(self):
+        self.assertEqual(
+            self.helper_results(self.superuser),
+            {
+                "manage_users": True,
+                "view_audit": True,
+                "cancel_movement": True,
+                "assign_warehouse_access": True,
+                "view_warehouse_data": True,
+                "view_analytics": True,
+                "manage_directories": True,
+                "print_labels": True,
+                "manage_settings": True,
+            },
+        )
+        self.assertTrue(can_assign_warehouse_access(self.superuser, self.warehouse))
+        self.assertTrue(can_view_warehouse_data(self.superuser, self.warehouse))
+
+    def test_warehouse_admin_behavior(self):
+        self.assertEqual(
+            self.helper_results(self.admin),
+            {
+                "manage_users": True,
+                "view_audit": False,
+                "cancel_movement": False,
+                "assign_warehouse_access": True,
+                "view_warehouse_data": True,
+                "view_analytics": True,
+                "manage_directories": True,
+                "print_labels": True,
+                "manage_settings": True,
+            },
+        )
+        self.assertTrue(can_assign_warehouse_access(self.admin, self.warehouse))
+        self.assertFalse(can_assign_warehouse_access(self.admin, self.other_warehouse))
+
+    def test_storekeeper_behavior(self):
+        self.assertEqual(
+            self.helper_results(self.storekeeper),
+            {
+                "manage_users": False,
+                "view_audit": False,
+                "cancel_movement": False,
+                "assign_warehouse_access": False,
+                "view_warehouse_data": True,
+                "view_analytics": False,
+                "manage_directories": False,
+                "print_labels": True,
+                "manage_settings": False,
+            },
+        )
+
+    def test_user_without_groups_behavior(self):
+        self.assertEqual(
+            self.helper_results(self.plain_user),
+            {
+                "manage_users": False,
+                "view_audit": False,
+                "cancel_movement": False,
+                "assign_warehouse_access": False,
+                "view_warehouse_data": False,
+                "view_analytics": False,
+                "manage_directories": False,
+                "print_labels": False,
+                "manage_settings": False,
+            },
+        )
+
+    def test_can_view_audit_is_superuser_only(self):
+        self.assertTrue(can_view_audit(self.superuser))
+        for user in [self.admin, self.storekeeper, self.auditor, self.plain_user]:
+            self.assertFalse(can_view_audit(user))
+
+    def test_can_cancel_movement_is_superuser_only(self):
+        self.assertTrue(can_cancel_movement(self.superuser))
+        for user in [self.admin, self.storekeeper, self.auditor, self.plain_user]:
+            self.assertFalse(can_cancel_movement(user))
+
+    def test_can_view_analytics_matches_current_analytics_access(self):
+        self.assertTrue(can_view_analytics(self.superuser))
+        self.assertTrue(can_view_analytics(self.admin))
+        for user in [self.storekeeper, self.auditor, self.plain_user]:
+            self.assertFalse(can_view_analytics(user))
+
+    def test_can_manage_users_matches_current_management_user_access(self):
+        self.assertTrue(can_manage_users(self.superuser))
+        self.assertTrue(can_manage_users(self.admin))
+        for user in [self.storekeeper, self.auditor, self.plain_user]:
+            self.assertFalse(can_manage_users(user))
+
+    def test_can_view_warehouse_data_respects_user_warehouse_access(self):
+        self.assertTrue(can_view_warehouse_data(self.admin, self.warehouse))
+        self.assertTrue(can_view_warehouse_data(self.storekeeper, self.warehouse))
+        self.assertTrue(can_view_warehouse_data(self.auditor, self.warehouse))
+        self.assertFalse(can_view_warehouse_data(self.admin, self.other_warehouse))
+        self.assertFalse(can_view_warehouse_data(self.storekeeper, self.other_warehouse))
+        self.assertFalse(can_view_warehouse_data(self.plain_user, self.warehouse))
 
 
 class ManagementPermissionTests(TestCase):

@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import StockMovement
+from core.permissions import can_cancel_movement
 from core.services.audit import log_action
 
 CANCELLATION_NEGATIVE_BALANCE_ERROR = _(
@@ -18,7 +19,7 @@ CANCELLATION_NEGATIVE_BALANCE_ERROR = _(
 
 
 def can_cancel_stock_movement(user, movement):
-    return bool(getattr(user, "is_authenticated", False) and user.is_superuser)
+    return can_cancel_movement(user, movement)
 
 
 def _stock_service():

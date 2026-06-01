@@ -56,16 +56,18 @@ from ..models import (
     Warehouse,
 )
 from ..permissions import (
-    ANALYTICS_GROUPS,
     MANAGEMENT_GROUPS,
     DIRECTORY_EDIT_GROUPS,
-    PRINT_GROUPS,
-    SETTINGS_GROUPS,
     STOCK_EDIT_GROUPS,
     STOCK_VIEW_GROUPS,
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
-    user_in_groups,
+    can_manage_directories,
+    can_manage_settings,
+    can_manage_users,
+    can_print_labels,
+    can_view_analytics,
+    can_view_audit,
 )
 from ..services import analytics as analytics_service
 from ..services.inventory import (
@@ -105,7 +107,7 @@ class AuditLogView(LoginRequiredMixin, TemplateView):
     paginate_by = 100
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
+        if not can_view_audit(request.user):
             raise PermissionDenied(_("У вас немає прав для перегляду цієї сторінки."))
         return super().dispatch(request, *args, **kwargs)
 
@@ -126,21 +128,11 @@ class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "can_manage_users": user_in_groups(
-                    self.request.user, USER_MANAGEMENT_GROUPS
-                ),
-                "can_manage_directories": user_in_groups(
-                    self.request.user, DIRECTORY_EDIT_GROUPS
-                ),
-                "can_view_analytics": user_in_groups(
-                    self.request.user, ANALYTICS_GROUPS
-                ),
-                "can_manage_print": user_in_groups(
-                    self.request.user, PRINT_GROUPS
-                ),
-                "can_manage_settings": user_in_groups(
-                    self.request.user, SETTINGS_GROUPS
-                ),
+                "can_manage_users": can_manage_users(self.request.user),
+                "can_manage_directories": can_manage_directories(self.request.user),
+                "can_view_analytics": can_view_analytics(self.request.user),
+                "can_manage_print": can_print_labels(self.request.user),
+                "can_manage_settings": can_manage_settings(self.request.user),
                 "show_technical_admin": self.request.user.is_superuser,
                 "hide_sidebar": True,
                 "counts": {
