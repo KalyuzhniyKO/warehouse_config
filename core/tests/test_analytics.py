@@ -369,7 +369,8 @@ class WarehouseAnalyticsAuditTests(TestCase):
         response = self.client.get(reverse("management_analytics"), {"reset_filters": "1"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "AUD-IN")
-        self.assertContains(response, "Audit Cable</a> 5", html=False)
+        self.assertContains(response, "Audit Cable")
+        self.assertContains(response, "analytics-visual-value\">5", html=False)
         self.assertNotContains(
             response, "За вибраний період немає складських операцій."
         )
