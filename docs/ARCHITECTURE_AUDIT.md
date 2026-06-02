@@ -231,16 +231,16 @@ Added named helpers for commonly audited rules:
 
 The helpers live in `core/permissions.py`. Safe Python call sites for audit access, movement cancellation, analytics access, management user access, directory-management dashboard flags, and warehouse-data dashboard flags now use the helpers where behavior was clearly equivalent. Broad template migration remains intentionally out of scope.
 
-### PR 7: Clean active translation catalogs and remove/disable unused legacy locales if present
+### PR 7: Clean active translation catalogs and document planned future locales
 
-Clean fuzzy entries in active catalogs and review old wording. If unused legacy locales are present, remove or disable them only after confirming product requirements. Keep this PR isolated because translation diffs are noisy.
+Clean fuzzy entries in active catalogs and review old wording. Keep inactive locale directories as planned future locales unless product requirements change. Keep this PR isolated because translation diffs are noisy.
 
 #### Translation catalog audit — completed
 
 - Locale settings currently use `LANGUAGE_CODE = os.getenv("DJANGO_LANGUAGE_CODE", "uk")`, `LANGUAGES = [("uk", "Українська"), ("en", "English"), ("ru", "Русский"), ("it", "Italiano"), ("pl", "Polski")]`, and `LOCALE_PATHS = [BASE_DIR / "locale"]`.
 - Locale directories found under `locale/`: `de`, `en`, `es`, `fr`, `it`, `pl`, `pt`, `ru`, `tr`, and `uk`.
 - Active locale directories according to `LANGUAGES`: `uk`, `en`, `ru`, `it`, and `pl`.
-- Legacy/inactive locale directories currently present but not listed in `LANGUAGES`: `de`, `es`, `fr`, `pt`, and `tr`.
+- Planned future locale directories currently present but not listed in `LANGUAGES`: `de`, `es`, `fr`, `pt`, and `tr`. These inactive locale directories should not be deleted unless product requirements change; future implementation should clean and complete them in dedicated PRs.
 - Fuzzy entry counts in active catalogs, counted as lines containing `#, fuzzy`:
   - `locale/uk/LC_MESSAGES/django.po`: 215
   - `locale/en/LC_MESSAGES/django.po`: 198
@@ -255,8 +255,8 @@ Clean fuzzy entries in active catalogs and review old wording. If unused legacy 
 - No translation strings or fuzzy markers were changed in this audit. Actual cleanup should be done in follow-up PRs per locale.
 - Russian role/root wording cleanup completed for the active Russian catalog: visible role labels remain `Владелец`, `Администратор`, and `Пользователь`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad Russian catalog cleanup was done. Follow-up cleanup remains for the `uk`, `en`, and `it` active catalogs.
 - Ukrainian role/root wording cleanup completed for the active Ukrainian catalog: visible role labels remain `Власник`, `Адміністратор`, and `Користувач`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad Ukrainian catalog cleanup was done. Follow-up cleanup remains for the `en`, `it`, and `pl` active catalogs.
-- English role/root wording cleanup completed for the active English catalog: visible role labels remain `Owner`, `Administrator`, and `User`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad English catalog cleanup was done. Follow-up decisions remain for the `it` and `pl` active catalogs and inactive legacy locales.
-- Italian and Polish role/root wording review completed for the active Italian and Polish catalogs: visible role labels are `Proprietario`, `Amministratore`, and `Utente` for Italian and `Właściciel`, `Administrator`, and `Użytkownik` for Polish. The reviewed user-facing system-administrator notices were changed to avoid visible `superuser` wording; fuzzy marker changes were `it`: 0 and `pl`: 0. No broad catalog cleanup was done. Follow-up decisions remain for inactive legacy locales: `de`, `es`, `fr`, `pt`, and `tr`.
+- English role/root wording cleanup completed for the active English catalog: visible role labels remain `Owner`, `Administrator`, and `User`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad English catalog cleanup was done. Follow-up decisions remain for the `it` and `pl` active catalogs and planned future locales.
+- Italian and Polish role/root wording review completed for the active Italian and Polish catalogs: visible role labels are `Proprietario`, `Amministratore`, and `Utente` for Italian and `Właściciel`, `Administrator`, and `Użytkownik` for Polish. The reviewed user-facing system-administrator notices were changed to avoid visible `superuser` wording; fuzzy marker changes were `it`: 0 and `pl`: 0. No broad catalog cleanup was done. Follow-up implementation remains for planned future locales: `de`, `es`, `fr`, `pt`, and `tr`.
 
 ### PR 8: Split large tests into focused test modules by feature
 
