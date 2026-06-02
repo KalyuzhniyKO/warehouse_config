@@ -235,6 +235,25 @@ The helpers live in `core/permissions.py`. Safe Python call sites for audit acce
 
 Clean fuzzy entries in active catalogs and review old wording. If unused legacy locales are present, remove or disable them only after confirming product requirements. Keep this PR isolated because translation diffs are noisy.
 
+#### Translation catalog audit — completed
+
+- Locale settings currently use `LANGUAGE_CODE = os.getenv("DJANGO_LANGUAGE_CODE", "uk")`, `LANGUAGES = [("uk", "Українська"), ("en", "English"), ("ru", "Русский"), ("it", "Italiano"), ("pl", "Polski")]`, and `LOCALE_PATHS = [BASE_DIR / "locale"]`.
+- Locale directories found under `locale/`: `de`, `en`, `es`, `fr`, `it`, `pl`, `pt`, `ru`, `tr`, and `uk`.
+- Active locale directories according to `LANGUAGES`: `uk`, `en`, `ru`, `it`, and `pl`.
+- Legacy/inactive locale directories currently present but not listed in `LANGUAGES`: `de`, `es`, `fr`, `pt`, and `tr`.
+- Fuzzy entry counts in active catalogs, counted as lines containing `#, fuzzy`:
+  - `locale/uk/LC_MESSAGES/django.po`: 215
+  - `locale/en/LC_MESSAGES/django.po`: 198
+  - `locale/ru/LC_MESSAGES/django.po`: 118
+  - `locale/it/LC_MESSAGES/django.po`: 212
+  - `locale/pl/LC_MESSAGES/django.po`: 0
+- Root/superuser wording search summary for active catalogs:
+  - The exact lowercase term `root` was not found in any active catalog.
+  - The term `superuser` was found in every active catalog.
+  - The terms `суперкористувач` and `суперпользователь` were not found in any active catalog.
+  - Owner/admin/user wording is present in the active catalogs through source `msgid` entries and/or translated `msgstr` entries: `Власник`, `Owner`, `Владелец`, `Адміністратор`, `Administrator`, `Администратор`, `Користувач`, `User`, and `Пользователь` were found where applicable for the current Ukrainian source catalog and English/Russian translations.
+- No translation strings or fuzzy markers were changed in this audit. Actual cleanup should be done in follow-up PRs per locale.
+
 ### PR 8: Split large tests into focused test modules by feature
 
 Split the largest test modules into focused modules such as stock operation forms, stock operation views, self-service UI, cancellation, movement lists, management users, localization roles, analytics filters, and analytics exports. Keep assertions intact and avoid weakening tests.
