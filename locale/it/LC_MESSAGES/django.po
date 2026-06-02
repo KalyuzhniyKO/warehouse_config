@@ -3147,8 +3147,8 @@ msgstr "Torna agli utenti"
 msgid ""
 "Це superuser. Групи та технічні права краще змінювати тільки в Django Admin."
 msgstr ""
-"Questo è un superuser. È meglio modificare gruppi e permessi tecnici solo in "
-"Django Admin."
+"Questo è un amministratore di sistema. È meglio modificare gruppi e "
+"permessi tecnici solo in Django Admin."
 
 #: templates/core/management/user_password_form.html:3
 #: templates/core/management/user_password_form.html:8
@@ -3485,6 +3485,19 @@ msgstr "Utente"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Accedi"
+
+#: templates/core/includes/user_menu.html:6
+msgid "Власник"
+msgstr "Proprietario"
+
+#: core/permissions.py:10 core/templatetags/core_extras.py:35
+#: templates/core/includes/user_menu.html:6
+msgid "Адміністратор"
+msgstr "Amministratore"
+
+#: core/permissions.py:11 templates/core/includes/user_menu.html:6
+msgid "Користувач"
+msgstr "Utente"
 
 #, fuzzy
 #~| msgid "Немає залишків за вибраними фільтрами."
