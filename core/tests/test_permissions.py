@@ -15,6 +15,7 @@ from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
 from .warehouse_access_utils import grant_warehouse_access
 from ..permissions import (
+    ANALYTICS_GROUPS,
     STOREKEEPER_GROUP,
     USER_MANAGEMENT_GROUPS,
     WAREHOUSE_ADMIN_GROUP,
@@ -204,11 +205,44 @@ class PermissionHelperTests(TestCase):
         self.assertTrue(can_cancel_movement(self.superuser, movement=movement))
         self.assertFalse(can_cancel_movement(self.plain_user, movement=movement))
 
-    def test_can_view_analytics_matches_current_analytics_access(self):
+    def test_anonymous_user_cannot_view_analytics(self):
+        self.assertFalse(can_view_analytics(AnonymousUser()))
+
+    def test_regular_user_cannot_view_analytics(self):
+        self.assertFalse(can_view_analytics(self.plain_user))
+
+    def test_superuser_can_view_analytics(self):
         self.assertTrue(can_view_analytics(self.superuser))
-        self.assertTrue(can_view_analytics(self.admin))
-        for user in [self.storekeeper, self.auditor, self.plain_user]:
-            self.assertFalse(can_view_analytics(user))
+
+    def test_warehouse_admin_can_view_analytics_if_analytics_allows_it(self):
+        self.assertEqual(
+            can_view_analytics(self.admin),
+            WAREHOUSE_ADMIN_GROUP in ANALYTICS_GROUPS,
+        )
+
+    def test_storekeeper_can_view_analytics_if_analytics_allows_it(self):
+        self.assertEqual(
+            can_view_analytics(self.storekeeper),
+            STOREKEEPER_GROUP in ANALYTICS_GROUPS,
+        )
+
+    def test_user_with_no_groups_cannot_view_analytics(self):
+        user = get_user_model().objects.create_user(
+            username="analytics-nogroups", password="pw"
+        )
+
+        self.assertFalse(can_view_analytics(user))
+
+    def test_user_in_existing_analytics_group_can_view_analytics(self):
+        user_model = get_user_model()
+        for index, group_name in enumerate(sorted(ANALYTICS_GROUPS)):
+            with self.subTest(group_name=group_name):
+                user = user_model.objects.create_user(
+                    username=f"analytics-{index}", password="pw"
+                )
+                user.groups.add(Group.objects.get(name=group_name))
+
+                self.assertTrue(can_view_analytics(user))
 
     def test_anonymous_user_cannot_manage_users(self):
         self.assertFalse(can_manage_users(AnonymousUser()))
