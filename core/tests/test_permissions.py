@@ -15,6 +15,9 @@ from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
 from .warehouse_access_utils import grant_warehouse_access
 from ..permissions import (
+    STOREKEEPER_GROUP,
+    USER_MANAGEMENT_GROUPS,
+    WAREHOUSE_ADMIN_GROUP,
     can_assign_warehouse_access,
     can_cancel_movement,
     can_manage_directories,
@@ -207,11 +210,42 @@ class PermissionHelperTests(TestCase):
         for user in [self.storekeeper, self.auditor, self.plain_user]:
             self.assertFalse(can_view_analytics(user))
 
-    def test_can_manage_users_matches_current_management_user_access(self):
+    def test_anonymous_user_cannot_manage_users(self):
+        self.assertFalse(can_manage_users(AnonymousUser()))
+
+    def test_regular_user_cannot_manage_users(self):
+        self.assertFalse(can_manage_users(self.plain_user))
+
+    def test_superuser_can_manage_users(self):
         self.assertTrue(can_manage_users(self.superuser))
-        self.assertTrue(can_manage_users(self.admin))
-        for user in [self.storekeeper, self.auditor, self.plain_user]:
-            self.assertFalse(can_manage_users(user))
+
+    def test_warehouse_admin_can_manage_users_if_user_management_allows_it(self):
+        if WAREHOUSE_ADMIN_GROUP in USER_MANAGEMENT_GROUPS:
+            self.assertTrue(can_manage_users(self.admin))
+        else:
+            self.assertFalse(can_manage_users(self.admin))
+
+    def test_storekeeper_cannot_manage_users_if_user_management_denies_it(self):
+        if STOREKEEPER_GROUP in USER_MANAGEMENT_GROUPS:
+            self.assertTrue(can_manage_users(self.storekeeper))
+        else:
+            self.assertFalse(can_manage_users(self.storekeeper))
+
+    def test_user_with_no_groups_cannot_manage_users(self):
+        user = get_user_model().objects.create_user(username="nogroups", password="pw")
+
+        self.assertFalse(can_manage_users(user))
+
+    def test_user_in_existing_user_management_group_can_manage_users(self):
+        user_model = get_user_model()
+        for group_name in USER_MANAGEMENT_GROUPS:
+            with self.subTest(group_name=group_name):
+                user = user_model.objects.create_user(
+                    username=f"user-management-{group_name}", password="pw"
+                )
+                user.groups.add(Group.objects.get(name=group_name))
+
+                self.assertTrue(can_manage_users(user))
 
     def test_can_view_warehouse_data_respects_user_warehouse_access(self):
         self.assertTrue(can_view_warehouse_data(self.admin, self.warehouse))
