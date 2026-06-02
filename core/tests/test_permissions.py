@@ -161,10 +161,20 @@ class PermissionHelperTests(TestCase):
             },
         )
 
-    def test_can_view_audit_is_superuser_only(self):
+    def test_anonymous_user_cannot_view_audit(self):
+        self.assertFalse(can_view_audit(AnonymousUser()))
+
+    def test_regular_user_cannot_view_audit(self):
+        self.assertFalse(can_view_audit(self.plain_user))
+
+    def test_warehouse_admin_cannot_view_audit(self):
+        self.assertFalse(can_view_audit(self.admin))
+
+    def test_storekeeper_cannot_view_audit(self):
+        self.assertFalse(can_view_audit(self.storekeeper))
+
+    def test_superuser_can_view_audit(self):
         self.assertTrue(can_view_audit(self.superuser))
-        for user in [self.admin, self.storekeeper, self.auditor, self.plain_user]:
-            self.assertFalse(can_view_audit(user))
 
     def test_can_cancel_movement_is_superuser_only(self):
         self.assertTrue(can_cancel_movement(self.superuser))
