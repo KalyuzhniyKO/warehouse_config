@@ -229,7 +229,7 @@ Added named helpers for commonly audited rules:
 - `can_print_labels(user)`;
 - `can_manage_settings(user)`.
 
-Safe Python call sites for audit access, movement cancellation, analytics access, management user access, and management dashboard flags now use the helpers. Broad template migration remains intentionally out of scope.
+The helpers live in `core/permissions.py`. Safe Python call sites for audit access, movement cancellation, analytics access, management user access, directory-management dashboard flags, and warehouse-data dashboard flags now use the helpers where behavior was clearly equivalent. Broad template migration remains intentionally out of scope.
 
 ### PR 7: Clean active translation catalogs and remove/disable unused legacy locales if present
 

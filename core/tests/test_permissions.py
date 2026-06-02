@@ -401,6 +401,54 @@ class PermissionHelperTests(TestCase):
 
                 self.assertTrue(can_manage_users(user))
 
+    def test_anonymous_user_cannot_assign_warehouse_access(self):
+        self.assertFalse(can_assign_warehouse_access(AnonymousUser(), self.warehouse))
+
+    def test_regular_user_without_delegation_cannot_assign_warehouse_access(self):
+        self.assertFalse(can_assign_warehouse_access(self.storekeeper, self.warehouse))
+
+    def test_superuser_can_assign_warehouse_access(self):
+        self.assertTrue(can_assign_warehouse_access(self.superuser, self.warehouse))
+
+    def test_warehouse_admin_with_delegation_can_assign_access_for_that_warehouse(self):
+        self.assertTrue(can_assign_warehouse_access(self.admin, self.warehouse))
+
+    def test_warehouse_admin_without_delegation_cannot_assign_access_for_other_warehouse(self):
+        self.assertFalse(can_assign_warehouse_access(self.admin, self.other_warehouse))
+
+    def test_can_assign_warehouse_access_without_warehouse_requires_delegatable_warehouse(self):
+        self.assertTrue(can_assign_warehouse_access(self.admin))
+        self.assertFalse(can_assign_warehouse_access(self.storekeeper))
+
+    def test_can_assign_warehouse_access_without_warehouse_returns_false_without_delegatable_warehouses(self):
+        self.assertFalse(can_assign_warehouse_access(self.plain_user))
+
+    def test_anonymous_user_cannot_view_warehouse_data(self):
+        self.assertFalse(can_view_warehouse_data(AnonymousUser(), self.warehouse))
+
+    def test_regular_user_without_warehouse_access_cannot_view_warehouse_data(self):
+        self.assertFalse(can_view_warehouse_data(self.plain_user, self.warehouse))
+
+    def test_superuser_can_view_warehouse_data(self):
+        self.assertTrue(can_view_warehouse_data(self.superuser, self.warehouse))
+
+    def test_user_with_access_can_view_that_warehouse_data(self):
+        self.assertTrue(can_view_warehouse_data(self.storekeeper, self.warehouse))
+
+    def test_user_without_access_cannot_view_other_warehouse_data(self):
+        self.assertFalse(can_view_warehouse_data(self.storekeeper, self.other_warehouse))
+
+    def test_can_view_warehouse_data_without_warehouse_requires_accessible_warehouse(self):
+        self.assertTrue(can_view_warehouse_data(self.storekeeper))
+        self.assertFalse(can_view_warehouse_data(self.plain_user))
+
+    def test_can_view_warehouse_data_without_warehouse_returns_false_without_accessible_warehouses(self):
+        no_access_user = get_user_model().objects.create_user(
+            username="warehouse-data-nogroups", password="pw"
+        )
+
+        self.assertFalse(can_view_warehouse_data(no_access_user))
+
     def test_can_view_warehouse_data_respects_user_warehouse_access(self):
         self.assertTrue(can_view_warehouse_data(self.admin, self.warehouse))
         self.assertTrue(can_view_warehouse_data(self.storekeeper, self.warehouse))

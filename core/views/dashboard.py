@@ -62,6 +62,8 @@ from ..permissions import (
     STOCK_VIEW_GROUPS,
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
+    can_manage_directories,
+    can_view_warehouse_data,
     user_in_groups,
 )
 from ..services import analytics as analytics_service
@@ -107,9 +109,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["hide_sidebar"] = not context["is_storekeeper_workplace"]
         context["show_sidebar"] = False
         context["accessible_warehouses"] = accessible_warehouses
-        context["has_warehouse_access"] = (
-            self.request.user.is_superuser or accessible_warehouses.exists()
-        )
+        context["has_warehouse_access"] = can_view_warehouse_data(self.request.user)
         context["no_warehouse_access_message"] = _(
             "У вас немає доступу до жодного складу. Зверніться до адміністратора."
         )
@@ -119,7 +119,5 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["can_view_stock"] = self.request.user.is_superuser or user_in_groups(
             self.request.user, STOCK_VIEW_GROUPS
         )
-        context["can_edit_directories"] = self.request.user.is_superuser or user_in_groups(
-            self.request.user, DIRECTORY_EDIT_GROUPS
-        )
+        context["can_edit_directories"] = can_manage_directories(self.request.user)
         return context
