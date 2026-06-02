@@ -16,6 +16,7 @@ from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm
 from .warehouse_access_utils import grant_warehouse_access
 from ..permissions import (
     ANALYTICS_GROUPS,
+    DIRECTORY_EDIT_GROUPS,
     STOREKEEPER_GROUP,
     USER_MANAGEMENT_GROUPS,
     WAREHOUSE_ADMIN_GROUP,
@@ -204,6 +205,45 @@ class PermissionHelperTests(TestCase):
 
         self.assertTrue(can_cancel_movement(self.superuser, movement=movement))
         self.assertFalse(can_cancel_movement(self.plain_user, movement=movement))
+
+    def test_anonymous_user_cannot_manage_directories(self):
+        self.assertFalse(can_manage_directories(AnonymousUser()))
+
+    def test_regular_user_cannot_manage_directories(self):
+        self.assertFalse(can_manage_directories(self.plain_user))
+
+    def test_superuser_can_manage_directories(self):
+        self.assertTrue(can_manage_directories(self.superuser))
+
+    def test_warehouse_admin_can_manage_directories_if_directory_edit_allows_it(self):
+        self.assertEqual(
+            can_manage_directories(self.admin),
+            WAREHOUSE_ADMIN_GROUP in DIRECTORY_EDIT_GROUPS,
+        )
+
+    def test_storekeeper_can_manage_directories_if_directory_edit_allows_it(self):
+        self.assertEqual(
+            can_manage_directories(self.storekeeper),
+            STOREKEEPER_GROUP in DIRECTORY_EDIT_GROUPS,
+        )
+
+    def test_user_with_no_groups_cannot_manage_directories(self):
+        user = get_user_model().objects.create_user(
+            username="directory-nogroups", password="pw"
+        )
+
+        self.assertFalse(can_manage_directories(user))
+
+    def test_user_in_existing_directory_edit_group_can_manage_directories(self):
+        user_model = get_user_model()
+        for index, group_name in enumerate(sorted(DIRECTORY_EDIT_GROUPS)):
+            with self.subTest(group_name=group_name):
+                user = user_model.objects.create_user(
+                    username=f"directory-edit-{index}", password="pw"
+                )
+                user.groups.add(Group.objects.get(name=group_name))
+
+                self.assertTrue(can_manage_directories(user))
 
     def test_anonymous_user_cannot_view_analytics(self):
         self.assertFalse(can_view_analytics(AnonymousUser()))
