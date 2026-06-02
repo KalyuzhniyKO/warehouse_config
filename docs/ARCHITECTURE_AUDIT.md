@@ -254,6 +254,7 @@ Clean fuzzy entries in active catalogs and review old wording. If unused legacy 
   - Owner/admin/user wording is present in the active catalogs through source `msgid` entries and/or translated `msgstr` entries: `Власник`, `Owner`, `Владелец`, `Адміністратор`, `Administrator`, `Администратор`, `Користувач`, `User`, and `Пользователь` were found where applicable for the current Ukrainian source catalog and English/Russian translations.
 - No translation strings or fuzzy markers were changed in this audit. Actual cleanup should be done in follow-up PRs per locale.
 - Russian role/root wording cleanup completed for the active Russian catalog: visible role labels remain `Владелец`, `Администратор`, and `Пользователь`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad Russian catalog cleanup was done. Follow-up cleanup remains for the `uk`, `en`, and `it` active catalogs.
+- Ukrainian role/root wording cleanup completed for the active Ukrainian catalog: visible role labels remain `Власник`, `Адміністратор`, and `Користувач`, while old `superuser` wording was removed from the reviewed user-facing system-administrator notice. No broad Ukrainian catalog cleanup was done. Follow-up cleanup remains for the `en`, `it`, and `pl` active catalogs.
 
 ### PR 8: Split large tests into focused test modules by feature
 
