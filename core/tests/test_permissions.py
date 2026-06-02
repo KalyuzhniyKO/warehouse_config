@@ -17,6 +17,8 @@ from .warehouse_access_utils import grant_warehouse_access
 from ..permissions import (
     ANALYTICS_GROUPS,
     DIRECTORY_EDIT_GROUPS,
+    PRINT_GROUPS,
+    SETTINGS_GROUPS,
     STOREKEEPER_GROUP,
     USER_MANAGEMENT_GROUPS,
     WAREHOUSE_ADMIN_GROUP,
@@ -244,6 +246,84 @@ class PermissionHelperTests(TestCase):
                 user.groups.add(Group.objects.get(name=group_name))
 
                 self.assertTrue(can_manage_directories(user))
+
+    def test_anonymous_user_cannot_print_labels(self):
+        self.assertFalse(can_print_labels(AnonymousUser()))
+
+    def test_regular_user_cannot_print_labels(self):
+        self.assertFalse(can_print_labels(self.plain_user))
+
+    def test_superuser_can_print_labels(self):
+        self.assertTrue(can_print_labels(self.superuser))
+
+    def test_warehouse_admin_can_print_labels_if_print_groups_allow_it(self):
+        self.assertEqual(
+            can_print_labels(self.admin),
+            WAREHOUSE_ADMIN_GROUP in PRINT_GROUPS,
+        )
+
+    def test_storekeeper_can_print_labels_if_print_groups_allow_it(self):
+        self.assertEqual(
+            can_print_labels(self.storekeeper),
+            STOREKEEPER_GROUP in PRINT_GROUPS,
+        )
+
+    def test_user_with_no_groups_cannot_print_labels(self):
+        user = get_user_model().objects.create_user(
+            username="print-labels-nogroups", password="pw"
+        )
+
+        self.assertFalse(can_print_labels(user))
+
+    def test_user_in_existing_print_group_can_print_labels(self):
+        user_model = get_user_model()
+        for index, group_name in enumerate(sorted(PRINT_GROUPS)):
+            with self.subTest(group_name=group_name):
+                user = user_model.objects.create_user(
+                    username=f"print-labels-{index}", password="pw"
+                )
+                user.groups.add(Group.objects.get(name=group_name))
+
+                self.assertTrue(can_print_labels(user))
+
+    def test_anonymous_user_cannot_manage_settings(self):
+        self.assertFalse(can_manage_settings(AnonymousUser()))
+
+    def test_regular_user_cannot_manage_settings(self):
+        self.assertFalse(can_manage_settings(self.plain_user))
+
+    def test_superuser_can_manage_settings(self):
+        self.assertTrue(can_manage_settings(self.superuser))
+
+    def test_warehouse_admin_can_manage_settings_if_settings_groups_allow_it(self):
+        self.assertEqual(
+            can_manage_settings(self.admin),
+            WAREHOUSE_ADMIN_GROUP in SETTINGS_GROUPS,
+        )
+
+    def test_storekeeper_can_manage_settings_if_settings_groups_allow_it(self):
+        self.assertEqual(
+            can_manage_settings(self.storekeeper),
+            STOREKEEPER_GROUP in SETTINGS_GROUPS,
+        )
+
+    def test_user_with_no_groups_cannot_manage_settings(self):
+        user = get_user_model().objects.create_user(
+            username="settings-nogroups", password="pw"
+        )
+
+        self.assertFalse(can_manage_settings(user))
+
+    def test_user_in_existing_settings_group_can_manage_settings(self):
+        user_model = get_user_model()
+        for index, group_name in enumerate(sorted(SETTINGS_GROUPS)):
+            with self.subTest(group_name=group_name):
+                user = user_model.objects.create_user(
+                    username=f"settings-{index}", password="pw"
+                )
+                user.groups.add(Group.objects.get(name=group_name))
+
+                self.assertTrue(can_manage_settings(user))
 
     def test_anonymous_user_cannot_view_analytics(self):
         self.assertFalse(can_view_analytics(AnonymousUser()))
