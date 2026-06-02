@@ -2125,7 +2125,7 @@ msgstr "Wstecz do użytkowników"
 #: templates/core/management/user_form.html:13
 msgid ""
 "Це superuser. Групи та технічні права краще змінювати тільки в Django Admin."
-msgstr "To jest superuser. Grupy i uprawnienia techniczne najlepiej zmieniać tylko w Django Admin."
+msgstr "To jest administrator systemu. Grupy i uprawnienia techniczne najlepiej zmieniać tylko w Django Admin."
 
 #: templates/core/management/user_password_form.html:3
 #: templates/core/management/user_password_form.html:8
@@ -2362,6 +2362,19 @@ msgstr "Nazwa użytkownika"
 #: templates/registration/login.html:134
 msgid "Увійти"
 msgstr "Zaloguj"
+
+#: templates/core/includes/user_menu.html:6
+msgid "Власник"
+msgstr "Właściciel"
+
+#: core/permissions.py:10 core/templatetags/core_extras.py:35
+#: templates/core/includes/user_menu.html:6
+msgid "Адміністратор"
+msgstr "Administrator"
+
+#: core/permissions.py:11 templates/core/includes/user_menu.html:6
+msgid "Користувач"
+msgstr "Użytkownik"
 
 #~ msgid "Створити номенклатуру"
 #~ msgstr "Utwórz nomenklaturę"
