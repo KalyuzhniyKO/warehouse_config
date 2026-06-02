@@ -3319,7 +3319,6 @@ msgid "Назад до користувачів"
 msgstr "Back to users"
 
 #: templates/core/management/user_form.html:13
-#, fuzzy
 #| msgid ""
 #| "Це superuser. Групи та технічні права краще змінювати тільки в Django "
 #| "Admin."
@@ -3327,8 +3326,8 @@ msgid ""
 "Це системний адміністратор. Групи та технічні права краще змінювати тільки в "
 "Django Admin."
 msgstr ""
-"This is a superuser. Groups and technical permissions are best changed only "
-"in Django Admin."
+"This is a system administrator. Groups and technical permissions are best "
+"changed only in Django Admin."
 
 #: templates/core/management/user_form.html:52
 #: templates/core/management/users.html:18
