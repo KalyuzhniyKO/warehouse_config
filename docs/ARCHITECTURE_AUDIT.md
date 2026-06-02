@@ -265,6 +265,7 @@ Split the largest test modules into focused modules such as stock operation form
 - First large test split completed: `core/tests/test_stock_operations_ui.py` was split into focused stock operation receive, issue, return/write-off, transfer/initial balance, and self-service UI modules. No assertions were intentionally weakened.
 - Localization test split completed: `core/tests/test_localization.py` was split into focused localized web interface, i18n readiness, language switcher, translation catalog quality, and dashboard localization modules. No assertions were intentionally weakened; application code and translation catalogs were not changed.
 - Management test split completed: `core/tests/test_management.py` was split into focused dashboard, users, help, and settings modules. No assertions were intentionally weakened; application code was not changed.
+- Analytics test split completed: `core/tests/test_analytics.py` was split into focused interface, summary, warehouse-scope, and cancellation-scope modules. No assertions were intentionally weakened; analytics calculations and application code were not changed.
 
 ## 6. Risk control rules
 
