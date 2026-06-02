@@ -263,6 +263,7 @@ Clean fuzzy entries in active catalogs and review old wording. Keep inactive loc
 Split the largest test modules into focused modules such as stock operation forms, stock operation views, self-service UI, cancellation, movement lists, management users, localization roles, analytics filters, and analytics exports. Keep assertions intact and avoid weakening tests.
 
 - First large test split completed: `core/tests/test_stock_operations_ui.py` was split into focused stock operation receive, issue, return/write-off, transfer/initial balance, and self-service UI modules. No assertions were intentionally weakened.
+- Localization test split completed: `core/tests/test_localization.py` was split into focused localized web interface, i18n readiness, language switcher, translation catalog quality, and dashboard localization modules. No assertions were intentionally weakened; application code and translation catalogs were not changed.
 
 ## 6. Risk control rules
 
