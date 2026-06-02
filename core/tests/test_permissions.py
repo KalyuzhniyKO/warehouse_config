@@ -176,10 +176,30 @@ class PermissionHelperTests(TestCase):
     def test_superuser_can_view_audit(self):
         self.assertTrue(can_view_audit(self.superuser))
 
-    def test_can_cancel_movement_is_superuser_only(self):
+    def test_anonymous_user_cannot_cancel_movement(self):
+        self.assertFalse(can_cancel_movement(AnonymousUser()))
+
+    def test_regular_user_cannot_cancel_movement(self):
+        self.assertFalse(can_cancel_movement(self.plain_user))
+
+    def test_warehouse_admin_cannot_cancel_movement(self):
+        self.assertFalse(can_cancel_movement(self.admin))
+
+    def test_storekeeper_cannot_cancel_movement(self):
+        self.assertFalse(can_cancel_movement(self.storekeeper))
+
+    def test_superuser_can_cancel_movement(self):
         self.assertTrue(can_cancel_movement(self.superuser))
-        for user in [self.admin, self.storekeeper, self.auditor, self.plain_user]:
-            self.assertFalse(can_cancel_movement(user))
+
+    def test_can_cancel_movement_accepts_none_movement(self):
+        self.assertTrue(can_cancel_movement(self.superuser, movement=None))
+        self.assertFalse(can_cancel_movement(self.plain_user, movement=None))
+
+    def test_can_cancel_movement_ignores_movement_object(self):
+        movement = object()
+
+        self.assertTrue(can_cancel_movement(self.superuser, movement=movement))
+        self.assertFalse(can_cancel_movement(self.plain_user, movement=movement))
 
     def test_can_view_analytics_matches_current_analytics_access(self):
         self.assertTrue(can_view_analytics(self.superuser))
