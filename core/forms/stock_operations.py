@@ -48,9 +48,7 @@ class LocationsModeMixin:
         if not self.use_locations or location_field not in self.fields:
             warehouse = cleaned_data.get(warehouse_field)
             if warehouse:
-                cleaned_data[location_field] = get_default_location_for_warehouse(
-                    warehouse
-                )
+                cleaned_data[location_field] = get_default_location_for_warehouse(warehouse)
         return cleaned_data
 
     def set_best_stock_location_when_disabled(
@@ -60,24 +58,26 @@ class LocationsModeMixin:
             return cleaned_data
         item = cleaned_data.get("item")
         warehouse = cleaned_data.get(warehouse_field)
-        if not item or not warehouse:
+        if not warehouse:
             return cleaned_data
-        balance = (
-            StockBalance.objects.filter(
-                item=item,
-                is_active=True,
-                qty__gt=0,
-                location__is_active=True,
-                location__warehouse=warehouse,
+        balance = None
+        if item is not None:
+            balance = (
+                StockBalance.objects.filter(
+                    item=item,
+                    warehouse=warehouse,
+                    is_active=True,
+                    qty__gt=0,
+                )
+                .select_related("location", "warehouse")
+                .order_by("-qty", "pk")
+                .first()
             )
-            .select_related("location", "location__warehouse")
-            .order_by("-qty", "location__name", "location__pk")
-            .first()
+        cleaned_data[location_field] = (
+            balance.location
+            if balance is not None and balance.location_id
+            else get_default_location_for_warehouse(warehouse)
         )
-        if balance is not None:
-            cleaned_data[location_field] = balance.location
-        else:
-            cleaned_data[location_field] = get_default_location_for_warehouse(warehouse)
         return cleaned_data
 
     def setup_single_warehouse_mode(
@@ -109,7 +109,7 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
         label=_("Склад"), queryset=Warehouse.objects.none()
     )
     location = forms.ModelChoiceField(
-        label=_("Локація"), queryset=Location.objects.none()
+        label=_("Локація"), queryset=Location.objects.none(), required=False
     )
     qty = forms.DecimalField(
         label=_("Кількість"), min_value=0, max_digits=18, decimal_places=3
@@ -160,6 +160,9 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
         self.set_default_location_when_disabled(cleaned_data)
         warehouse = cleaned_data.get("warehouse")
         location = cleaned_data.get("location")
+        if warehouse and location is None:
+            location = get_default_location_for_warehouse(warehouse)
+            cleaned_data["location"] = location
         if warehouse and location and location.warehouse_id != warehouse.pk:
             self.add_error("location", _("Локація має належати вибраному складу."))
         return cleaned_data
@@ -203,6 +206,13 @@ class StockReceiveForm(StockOperationForm):
 
 
 class StockReturnForm(StockOperationForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        warehouse = cleaned_data.get("warehouse")
+        if warehouse:
+            cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
+        return cleaned_data
+
     recipient = forms.ModelChoiceField(
         label=_("Хто повертає"),
         queryset=Recipient.objects.none(),
@@ -241,6 +251,15 @@ class StockReturnForm(StockOperationForm):
     def clean_department(self):
         usage_place = self.cleaned_data.get("department")
         return usage_place.name if usage_place else ""
+
+
+class StockReceiveForm(StockReceiveForm):
+    def clean(self):
+        cleaned_data = super().clean()
+        warehouse = cleaned_data.get("warehouse")
+        if warehouse:
+            cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
+        return cleaned_data
 
 
 class StockIssueForm(StockOperationForm):
@@ -380,13 +399,13 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
         label=_("Склад-відправник"), queryset=Warehouse.objects.none()
     )
     source_location = forms.ModelChoiceField(
-        label=_("Локація-відправник"), queryset=Location.objects.none()
+        label=_("Локація-відправник"), queryset=Location.objects.none(), required=False
     )
     destination_warehouse = forms.ModelChoiceField(
         label=_("Склад-отримувач"), queryset=Warehouse.objects.none()
     )
     destination_location = forms.ModelChoiceField(
-        label=_("Локація-отримувач"), queryset=Location.objects.none()
+        label=_("Локація-отримувач"), queryset=Location.objects.none(), required=False
     )
     qty = forms.DecimalField(
         label=_("Кількість"),
@@ -433,43 +452,46 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
         cleaned_data = super().clean()
         source_warehouse = cleaned_data.get("source_warehouse")
         destination_warehouse = cleaned_data.get("destination_warehouse")
-        if not self.use_locations:
-            if (
-                source_warehouse
-                and destination_warehouse
-                and source_warehouse == destination_warehouse
-            ):
-                raise forms.ValidationError(
-                    _("Неможливо перемістити товар у той самий склад.")
-                )
-            if source_warehouse:
-                item = cleaned_data.get("item")
-                balance = None
-                if item is not None:
-                    balance = (
-                        StockBalance.objects.filter(
-                            item=item,
-                            is_active=True,
-                            qty__gt=0,
-                            location__is_active=True,
-                            location__warehouse=source_warehouse,
-                        )
-                        .select_related("location", "location__warehouse")
-                        .order_by("-qty", "location__name", "location__pk")
-                        .first()
-                    )
-                cleaned_data["source_location"] = (
-                    balance.location
-                    if balance is not None
-                    else get_default_location_for_warehouse(source_warehouse)
-                )
-            if destination_warehouse:
-                cleaned_data["destination_location"] = (
-                    get_default_location_for_warehouse(destination_warehouse)
-                )
-
         source_location = cleaned_data.get("source_location")
         destination_location = cleaned_data.get("destination_location")
+
+        if (
+            not self.use_locations
+            and source_warehouse
+            and destination_warehouse
+            and source_warehouse == destination_warehouse
+        ):
+            raise forms.ValidationError(_("Неможливо перемістити товар у той самий склад."))
+        if source_warehouse and source_location is None:
+            item = cleaned_data.get("item")
+            balance = None
+            if item is not None:
+                balance = (
+                    StockBalance.objects.filter(
+                        item=item, warehouse=source_warehouse, is_active=True, qty__gt=0
+                    )
+                    .select_related("location")
+                    .order_by("-qty", "pk")
+                    .first()
+                )
+            cleaned_data["source_location"] = (
+                balance.location
+                if balance is not None and balance.location_id
+                else get_default_location_for_warehouse(source_warehouse)
+            )
+        if destination_warehouse and destination_location is None:
+            cleaned_data["destination_location"] = get_default_location_for_warehouse(destination_warehouse)
+        source_location = cleaned_data.get("source_location")
+        destination_location = cleaned_data.get("destination_location")
+
+        if (
+            source_warehouse
+            and destination_warehouse
+            and source_warehouse == destination_warehouse
+            and not (source_location and destination_location)
+        ):
+            raise forms.ValidationError(_("Неможливо перемістити товар у той самий склад."))
+
 
         if (
             source_warehouse
@@ -488,12 +510,20 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
                 "destination_location", _("Локація має належати вибраному складу.")
             )
         if (
+            "source_location" not in self.fields
+            and "destination_location" not in self.fields
+            and source_warehouse
+            and destination_warehouse
+            and source_warehouse == destination_warehouse
+        ):
+            raise forms.ValidationError(_("Неможливо перемістити товар у той самий склад."))
+        if (
             source_location
             and destination_location
             and source_location == destination_location
         ):
             self.add_error(
-                "destination_location",
+                "destination_location" if "destination_location" in self.fields else None,
                 _("Неможливо перемістити товар у ту саму локацію."),
             )
         return cleaned_data

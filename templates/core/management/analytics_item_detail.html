@@ -1,6 +1,6 @@
 {% extends "base.html" %}{% load i18n %}{% block content %}
 <a href="{% url 'management_analytics' %}?{{ filter_query }}">{% trans "До аналітики" %}</a>
 <h1>{{ item.name }}</h1><p>{{ item.internal_code }} / {{ item.barcode.barcode|default:'—' }}</p>
-{% for row in data.stock_by_location %}<div>{{ row.location__warehouse__name }} / {{ row.location__name }}: {{ row.total_qty }}</div>{% endfor %}
+{% for row in data.stock_by_location %}<div>{{ row.warehouse__name }}{% if row.location__name %} / {{ row.location__name }}{% endif %}: {{ row.total_qty }}</div>{% endfor %}
 <table>{% for m in data.recent_movements %}<tr><td>{{ m.document_number }}</td></tr>{% endfor %}</table>
 {% endblock %}

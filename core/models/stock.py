@@ -13,27 +13,41 @@ class StockBalance(ActiveModel):
         on_delete=models.PROTECT,
         related_name="stock_balances",
     )
+    warehouse = models.ForeignKey(
+        "core.Warehouse",
+        verbose_name=_("Склад"),
+        on_delete=models.PROTECT,
+        related_name="stock_balances",
+    )
     location = models.ForeignKey(
         "core.Location",
         verbose_name=_("Локація"),
         on_delete=models.PROTECT,
         related_name="stock_balances",
+        blank=True,
+        null=True,
     )
     qty = models.DecimalField(_("quantity"), max_digits=18, decimal_places=3, default=0)
 
     class Meta:
         verbose_name = _("Залишок")
         verbose_name_plural = _("Залишки")
-        ordering = ["item__name", "location__name"]
+        ordering = ["item__name", "warehouse__name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["item", "location"],
-                name="core_stock_balance_unique_item_location",
+                fields=["item", "warehouse"],
+                condition=models.Q(is_active=True),
+                name="core_stock_balance_unique_active_item_warehouse",
             )
         ]
 
+    def save(self, *args, **kwargs):
+        if self.warehouse_id is None and self.location_id is not None:
+            self.warehouse = self.location.warehouse
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.item} @ {self.location}: {self.qty}"
+        return f"{self.item} @ {self.warehouse}: {self.qty}"
 
 
 class StockMovement(ActiveModel):
@@ -62,6 +76,22 @@ class StockMovement(ActiveModel):
         related_name="stock_movements",
     )
     qty = models.DecimalField(_("quantity"), max_digits=18, decimal_places=3)
+    source_warehouse = models.ForeignKey(
+        "core.Warehouse",
+        verbose_name=_("Склад-відправник"),
+        on_delete=models.PROTECT,
+        related_name="outgoing_stock_movements",
+        blank=True,
+        null=True,
+    )
+    destination_warehouse = models.ForeignKey(
+        "core.Warehouse",
+        verbose_name=_("Склад-отримувач"),
+        on_delete=models.PROTECT,
+        related_name="incoming_stock_movements",
+        blank=True,
+        null=True,
+    )
     source_location = models.ForeignKey(
         "core.Location",
         verbose_name=_("source location"),
@@ -162,6 +192,22 @@ class StockMovement(ActiveModel):
         verbose_name = _("Рух товарів")
         verbose_name_plural = _("Рухи товарів")
         ordering = ["-occurred_at", "-id"]
+
+    @property
+    def resolved_source_warehouse(self):
+        if self.source_warehouse_id:
+            return self.source_warehouse
+        if self.source_location_id:
+            return self.source_location.warehouse
+        return None
+
+    @property
+    def resolved_destination_warehouse(self):
+        if self.destination_warehouse_id:
+            return self.destination_warehouse
+        if self.destination_location_id:
+            return self.destination_location.warehouse
+        return None
 
     def __str__(self):
         return f"{self.get_movement_type_display()} {self.item}: {self.qty}"

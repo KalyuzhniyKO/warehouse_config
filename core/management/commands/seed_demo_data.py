@@ -256,14 +256,14 @@ class Command(BaseCommand):
             )
 
             location = locations[(warehouse_name, location_name)]
-            if StockBalance.objects.filter(item=item, location=location).exists():
+            if StockBalance.objects.filter(item=item, warehouse=location.warehouse, is_active=True).exists():
                 self.stdout.write(
-                    f"Залишок: {item.internal_code} @ {location} — вже існував."
+                    f"Залишок: {item.internal_code} @ {location.warehouse} — вже існував."
                 )
                 continue
 
             create_initial_balance(
-                item=item, location=location, qty=qty, comment=DEMO_COMMENT
+                item=item, warehouse=location.warehouse, location=location, qty=qty, comment=DEMO_COMMENT
             )
             self.stdout.write(
                 f"Залишок: {item.internal_code} @ {location} — створено {qty}."

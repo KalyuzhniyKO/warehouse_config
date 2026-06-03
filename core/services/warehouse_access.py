@@ -94,7 +94,9 @@ def restrict_stock_movement_queryset_for_user(user, queryset=None):
         return queryset
     accessible_warehouses = get_accessible_warehouses(user)
     return queryset.filter(
-        Q(source_location__warehouse__in=accessible_warehouses)
+        Q(source_warehouse__in=accessible_warehouses)
+        | Q(destination_warehouse__in=accessible_warehouses)
+        | Q(source_location__warehouse__in=accessible_warehouses)
         | Q(destination_location__warehouse__in=accessible_warehouses)
     )
 
@@ -104,14 +106,8 @@ def user_can_access_stock_movement(user, movement):
         return False
     if user.is_superuser:
         return True
-    source_warehouse = (
-        movement.source_location.warehouse if movement.source_location_id else None
-    )
-    destination_warehouse = (
-        movement.destination_location.warehouse
-        if movement.destination_location_id
-        else None
-    )
+    source_warehouse = movement.resolved_source_warehouse
+    destination_warehouse = movement.resolved_destination_warehouse
     return any(
         user_can_access_warehouse(user, warehouse)
         for warehouse in (source_warehouse, destination_warehouse)

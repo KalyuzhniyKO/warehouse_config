@@ -50,8 +50,10 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
                 "item",
                 "item__barcode",
                 "source_location",
+                "source_warehouse",
                 "source_location__warehouse",
                 "destination_location",
+                "destination_warehouse",
                 "destination_location__warehouse",
                 "recipient",
                 "inventory_count",
@@ -76,7 +78,7 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             queryset = queryset.filter(recipient_id=cd["recipient_id"])
         if cd.get("warehouse"):
             queryset = queryset.filter(
-                Q(source_location__warehouse=cd["warehouse"]) | Q(destination_location__warehouse=cd["warehouse"])
+                Q(source_warehouse=cd["warehouse"]) | Q(destination_warehouse=cd["warehouse"]) | Q(source_location__warehouse=cd["warehouse"]) | Q(destination_location__warehouse=cd["warehouse"])
             )
         if cd.get("location"):
             queryset = queryset.filter(
@@ -133,7 +135,8 @@ class StockReceiveResultView(
                     "item",
                     "item__barcode",
                     "destination_location",
-                    "destination_location__warehouse",
+                    "destination_warehouse",
+                "destination_location__warehouse",
                     "recipient",
                     "performed_by",
                     "cancelled_by",
@@ -155,8 +158,10 @@ class StockMovementCancelView(LoginRequiredMixin, FormView):
             StockMovement.objects.select_related(
                 "item",
                 "source_location",
+                "source_warehouse",
                 "source_location__warehouse",
                 "destination_location",
+                "destination_warehouse",
                 "destination_location__warehouse",
                 "recipient",
                 "performed_by",
@@ -205,9 +210,11 @@ class StockMovementPrintView(
                     "item",
                     "item__barcode",
                     "source_location",
-                    "source_location__warehouse",
+                    "source_warehouse",
+                "source_location__warehouse",
                     "destination_location",
-                    "destination_location__warehouse",
+                    "destination_warehouse",
+                "destination_location__warehouse",
                     "recipient",
                     "performed_by",
                     "cancelled_by",
@@ -257,7 +264,7 @@ class StockMovementPrintView(
                 "movement": movement,
                 "operation_type": operation_type,
                 "location": location,
-                "warehouse": location.warehouse if location else None,
+                "warehouse": movement.resolved_source_warehouse or movement.resolved_destination_warehouse,
                 "is_self_service_movement": is_self_service_movement,
             }
         )
@@ -278,7 +285,8 @@ class StockIssueResultView(
                 StockMovement.objects.select_related(
                     "item",
                     "source_location",
-                    "source_location__warehouse",
+                    "source_warehouse",
+                "source_location__warehouse",
                     "recipient",
                     "performed_by",
                     "cancelled_by",
@@ -290,7 +298,7 @@ class StockIssueResultView(
         )
         context["movement"] = movement
         context["balance_after"] = get_object_or_404(
-            StockBalance, item=movement.item, location=movement.source_location
+            StockBalance, item=movement.item, warehouse=movement.resolved_source_warehouse, is_active=True
         ).qty
         return context
 
@@ -305,7 +313,8 @@ class StockWriteOffResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
             restrict_stock_movement_queryset_for_user(
                 self.request.user,
                 StockMovement.objects.select_related(
-                    "item", "source_location", "source_location__warehouse", "performed_by"
+                    "item", "source_location", "source_warehouse",
+                "source_location__warehouse", "performed_by"
                 ),
             ),
             pk=self.kwargs["pk"],
@@ -326,9 +335,11 @@ class StockTransferResultView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 StockMovement.objects.select_related(
                     "item",
                     "source_location",
-                    "source_location__warehouse",
+                    "source_warehouse",
+                "source_location__warehouse",
                     "destination_location",
-                    "destination_location__warehouse",
+                    "destination_warehouse",
+                "destination_location__warehouse",
                     "performed_by",
                     "cancelled_by",
                     "reversal_of",

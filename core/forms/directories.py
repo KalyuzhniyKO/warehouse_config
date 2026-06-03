@@ -237,7 +237,7 @@ class LocationForm(BootstrapModelForm):
             "location_type": _("Тип локації"),
             "is_active": _("Активний"),
         }
-        help_texts = {"name": _("Наприклад: A-01, Ряд 2, Комірка 5.")}
+        help_texts = {"name": _("Локація — необов’язкове місце зберігання всередині складу: стелаж, полиця, шафа або зона.")}
 
     def __init__(self, *args, include_current_relations=False, **kwargs):
         self.request_user = kwargs.pop("user", kwargs.pop("request_user", None))
@@ -300,17 +300,24 @@ class StockBalanceAdminForm(BootstrapModelForm):
             if include_current_relations
             else None
         )
+        warehouse = (
+            current_related(self.instance, "warehouse")
+            if include_current_relations
+            else None
+        )
         location = (
             current_related(self.instance, "location")
             if include_current_relations
             else None
         )
         set_active_model_choice(self, "item", active_queryset(Item, include=item))
+        set_active_model_choice(self, "warehouse", active_queryset(Warehouse, include=warehouse))
         set_active_model_choice(
             self,
             "location",
             active_queryset(Location, include=location, warehouse__is_active=True),
         )
+        self.fields["location"].required = False
 
 
 class StockMovementAdminForm(BootstrapModelForm):
@@ -341,8 +348,12 @@ class StockMovementAdminForm(BootstrapModelForm):
             if include_current_relations
             else None
         )
+        source_warehouse = current_related(self.instance, "source_warehouse") if include_current_relations else None
+        destination_warehouse = current_related(self.instance, "destination_warehouse") if include_current_relations else None
         active_locations = active_queryset(Location, warehouse__is_active=True)
         set_active_model_choice(self, "item", active_queryset(Item, include=item))
+        set_active_model_choice(self, "source_warehouse", active_queryset(Warehouse, include=source_warehouse))
+        set_active_model_choice(self, "destination_warehouse", active_queryset(Warehouse, include=destination_warehouse))
         set_active_model_choice(
             self,
             "source_location",

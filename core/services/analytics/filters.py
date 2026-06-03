@@ -53,15 +53,19 @@ def filter_movements(filters):
     qs = StockMovement.objects.select_related(
         "item",
         "source_location",
-        "source_location__warehouse",
+        "source_warehouse",
+                "source_location__warehouse",
         "destination_location",
-        "destination_location__warehouse",
+        "destination_warehouse",
+                "destination_location__warehouse",
         "recipient",
     ).filter(is_cancelled=False, reversal_of__isnull=True)
     accessible_warehouses = filters.get("accessible_warehouses")
     if accessible_warehouses is not None:
         qs = qs.filter(
-            Q(source_location__warehouse__in=accessible_warehouses)
+            Q(source_warehouse__in=accessible_warehouses)
+            | Q(destination_warehouse__in=accessible_warehouses)
+            | Q(source_location__warehouse__in=accessible_warehouses)
             | Q(destination_location__warehouse__in=accessible_warehouses)
         )
     if filters.get("date_from"):
@@ -70,7 +74,9 @@ def filter_movements(filters):
         qs = qs.filter(occurred_at__date__lte=filters["date_to"])
     if filters.get("warehouse"):
         qs = qs.filter(
-            Q(source_location__warehouse=filters["warehouse"])
+            Q(source_warehouse=filters["warehouse"])
+            | Q(destination_warehouse=filters["warehouse"])
+            | Q(source_location__warehouse=filters["warehouse"])
             | Q(destination_location__warehouse=filters["warehouse"])
         )
     if filters.get("location"):
@@ -84,12 +90,12 @@ def filter_movements(filters):
 
 
 def filter_balances(filters):
-    qs = StockBalance.objects.select_related("item", "location", "location__warehouse")
+    qs = StockBalance.objects.select_related("item", "warehouse", "location")
     accessible_warehouses = filters.get("accessible_warehouses")
     if accessible_warehouses is not None:
-        qs = qs.filter(location__warehouse__in=accessible_warehouses)
+        qs = qs.filter(warehouse__in=accessible_warehouses)
     if filters.get("warehouse"):
-        qs = qs.filter(location__warehouse=filters["warehouse"])
+        qs = qs.filter(warehouse=filters["warehouse"])
     if filters.get("location"):
         qs = qs.filter(location=filters["location"])
     return qs

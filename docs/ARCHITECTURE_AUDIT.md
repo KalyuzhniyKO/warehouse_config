@@ -78,7 +78,7 @@ The dashboard and navbar define the first user experience for warehouse administ
 - **Warehouse access exists as a first-class concept.** User-to-warehouse access and delegation are modeled explicitly and supported by service helpers.
 - **Cancellation is auditable and reversible.** Stock movements are not hard-deleted; cancellation creates an explicit reversal and stores cancellation metadata.
 - **Analytics is covered by tests.** Analytics behavior is tested at both service/view levels, including warehouse-scoped behavior and dashboard expectations.
-- **Default technical locations exist.** Warehouse-only operation mode can rely on default locations without deleting the underlying location model or movement history.
+- **Stock is warehouse-based.** `StockBalance` is now primarily keyed by item and warehouse; locations are optional address-storage details inside a warehouse for future rack/shelf accounting. The legacy “Основна локація” fallback may remain for old records, but the scan workflow records stock against a warehouse and does not require users to choose a location.
 - **Roles and common permissions have helpers.** Role display names/descriptions and named permission helpers are centralized enough to support warehouse-only UI language and safer permission audits.
 
 ## 3. Weak points / risks
@@ -99,7 +99,7 @@ The following files are the largest current maintenance hotspots:
 The service layer is present, but some decision logic still lives outside services:
 
 - self-service storekeeper detection appears in view/template logic;
-- form constructors and cleaners coordinate warehouse access, active querysets, default locations, and recipient requirements;
+- form constructors and cleaners coordinate warehouse access, active querysets, optional locations, and recipient requirements;
 - management forms enforce important user/warehouse/superuser safety rules;
 - analytics views normalize filters before calling analytics services;
 - templates still check `user.is_superuser` and group membership directly for some actions.
@@ -289,3 +289,10 @@ The first real refactor should be: **Extract dashboard cards and user menu inclu
 Suggested Codex task for that PR:
 
 > Create `templates/core/includes/dashboard_card.html` and `templates/core/includes/user_menu.html`. Replace repeated dashboard card markup in the main dashboard and management dashboard, and replace the authenticated user dropdown markup in `templates/base.html`. Preserve all existing translated strings, URL names, permissions, CSS classes, ARIA attributes, and visual behavior. Do not change Python business logic. Run `python manage.py check` and `python manage.py test`; no migrations should be created.
+
+
+## Warehouse-level stock and optional locations
+
+The primary scan workflow is warehouse-based: users scan an item barcode, enter quantity and recipient/department/comment details, and save the operation against a warehouse. `StockBalance` totals are therefore maintained by `item + warehouse`; `Location` is optional metadata for a physical place inside that warehouse, such as a rack, shelf, cabinet, or zone.
+
+Legacy `Основна локація` records are compatibility artifacts from the older location-required model. They must not be treated as separate warehouses, and new stock calculations should not depend on them as the balance identity. Existing movement history is preserved: movements can still display old source/destination locations and can derive the warehouse from those locations when explicit movement warehouse fields are absent.
