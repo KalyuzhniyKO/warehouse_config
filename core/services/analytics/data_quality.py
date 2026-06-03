@@ -26,7 +26,7 @@ def get_movements_missing_required_fields(filters):
         "movement_without_item": filter_movements(filters).filter(item__isnull=True),
         "non_positive_qty": filter_movements(filters).filter(qty__lte=0),
         "receive_without_destination": filter_movements(filters).filter(
-            movement_type__in=IN_TYPES, destination_location__isnull=True
+            movement_type__in=IN_TYPES, destination_warehouse__isnull=True
         ),
     }
 

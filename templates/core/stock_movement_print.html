@@ -46,7 +46,7 @@
         <tr><th>{% trans "Штрихкод" %}</th><td>{% if movement.item.barcode %}{{ movement.item.barcode.barcode }}{% else %}—{% endif %}</td></tr>
         <tr><th>{% trans "Кількість" %}</th><td>{{ movement.qty }}</td></tr>
         <tr><th>{% trans "Одиниця виміру" %}</th><td>{{ movement.item.unit|default:"—" }}</td></tr>
-        <tr><th>{% trans "Склад / локація" %}</th><td>{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% elif movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</td></tr>
+        <tr><th>{% trans "Склад / локація" %}</th><td>{% if movement.resolved_source_warehouse %}{{ movement.resolved_source_warehouse }}{% if movement.source_location %} / {{ movement.source_location }}{% endif %}{% elif movement.resolved_destination_warehouse %}{{ movement.resolved_destination_warehouse }}{% if movement.destination_location %} / {{ movement.destination_location }}{% endif %}{% else %}—{% endif %}</td></tr>
 
         {% if movement.movement_type == movement.MovementType.OUT %}
             <tr><th>{% trans "Хто взяв товар" %}</th><td>{{ movement.recipient|default:"—" }}</td></tr>

@@ -35,12 +35,24 @@ def _format_location(location):
     return str(location)
 
 
-def _apply_cancellation_delta(*, item, location, qty_delta):
+def _apply_cancellation_delta(*, item, warehouse, location, qty_delta):
     stock_service = _stock_service()
 
-    if location is None or qty_delta == 0:
+    if warehouse is None or qty_delta == 0:
         return None
-    balance = stock_service.get_or_create_balance_locked(item, location)
+    if location is not None:
+        try:
+            balance = stock_service.StockBalance.objects.select_for_update().get(
+                item=item, location=location
+            )
+        except stock_service.StockBalance.DoesNotExist:
+            balance = stock_service.get_or_create_balance_locked(
+                item, warehouse=warehouse, location=location
+            )
+    else:
+        balance = stock_service.get_or_create_balance_locked(
+            item, warehouse=warehouse, location=location
+        )
     if qty_delta > 0:
         return stock_service._increase_balance(balance, qty_delta)
     try:
@@ -61,45 +73,62 @@ def _cancellation_deltas(movement):
         StockMovement.MovementType.INITIAL_BALANCE,
         StockMovement.MovementType.RETURN,
     }:
-        return [(movement.destination_location, -qty)]
+        return [(movement.resolved_destination_warehouse, movement.destination_location, -qty)]
     if movement_type in {
         StockMovement.MovementType.OUT,
         StockMovement.MovementType.WRITEOFF,
     }:
-        return [(movement.source_location, qty)]
+        return [(movement.resolved_source_warehouse, movement.source_location, qty)]
     if movement_type == StockMovement.MovementType.TRANSFER:
-        return [(movement.source_location, qty), (movement.destination_location, -qty)]
+        return [(movement.resolved_source_warehouse, movement.source_location, qty), (movement.resolved_destination_warehouse, movement.destination_location, -qty)]
     if movement_type == StockMovement.MovementType.ADJUSTMENT:
         deltas = []
-        if movement.source_location_id:
-            deltas.append((movement.source_location, qty))
-        if movement.destination_location_id:
-            deltas.append((movement.destination_location, -qty))
+        if movement.source_location_id or movement.source_warehouse_id:
+            deltas.append((movement.resolved_source_warehouse, movement.source_location, qty))
+        if movement.destination_location_id or movement.destination_warehouse_id:
+            deltas.append((movement.resolved_destination_warehouse, movement.destination_location, -qty))
         return deltas
     raise stock_service.StockServiceError(_("Неможливо анулювати рух"))
 
 
 def _cancellation_locations(deltas, movement):
+    cancellation_source_warehouse = None
+    cancellation_destination_warehouse = None
     cancellation_source = None
     cancellation_destination = None
-    for location, qty_delta in deltas:
-        if qty_delta < 0 and cancellation_source is None:
+    for warehouse, location, qty_delta in deltas:
+        if qty_delta < 0 and cancellation_source_warehouse is None:
+            cancellation_source_warehouse = warehouse
             cancellation_source = location
-        elif qty_delta > 0 and cancellation_destination is None:
+        elif qty_delta > 0 and cancellation_destination_warehouse is None:
+            cancellation_destination_warehouse = warehouse
             cancellation_destination = location
-    if cancellation_source is None and cancellation_destination is None:
+    if cancellation_source_warehouse is None and cancellation_destination_warehouse is None:
+        cancellation_destination_warehouse = (
+            movement.resolved_destination_warehouse or movement.resolved_source_warehouse
+        )
         cancellation_destination = movement.destination_location or movement.source_location
-    return cancellation_source, cancellation_destination
+    return (
+        cancellation_source_warehouse,
+        cancellation_source,
+        cancellation_destination_warehouse,
+        cancellation_destination,
+    )
 
 
 def _create_cancellation_movement(*, movement, deltas, cancelled_by, reason):
-    cancellation_source, cancellation_destination = _cancellation_locations(
-        deltas, movement
-    )
+    (
+        cancellation_source_warehouse,
+        cancellation_source,
+        cancellation_destination_warehouse,
+        cancellation_destination,
+    ) = _cancellation_locations(deltas, movement)
     return StockMovement.objects.create(
         movement_type=StockMovement.MovementType.ADJUSTMENT,
         item=movement.item,
         qty=movement.qty,
+        source_warehouse=cancellation_source_warehouse,
+        destination_warehouse=cancellation_destination_warehouse,
         source_location=cancellation_source,
         destination_location=cancellation_destination,
         recipient=movement.recipient,
@@ -149,9 +178,9 @@ def cancel_stock_movement(*, movement, cancelled_by, reason, request=None):
             raise stock_service.StockServiceError(_("Неможливо анулювати рух"))
 
         # Apply balance changes with row-level locks before creating the audit/history rows.
-        for location, qty_delta in deltas:
+        for warehouse, location, qty_delta in deltas:
             _apply_cancellation_delta(
-                item=movement.item, location=location, qty_delta=qty_delta
+                item=movement.item, warehouse=warehouse, location=location, qty_delta=qty_delta
             )
 
         cancellation_movement = _create_cancellation_movement(

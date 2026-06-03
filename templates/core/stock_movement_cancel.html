@@ -19,8 +19,8 @@
                 <dt class="col-sm-4">{% trans "Товар / матеріал" %}</dt><dd class="col-sm-8">{{ movement.item }}</dd>
                 <dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty }}</dd>
                 <dt class="col-sm-4">{% trans "Тип операції" %}</dt><dd class="col-sm-8">{{ movement.get_movement_type_display }}</dd>
-                <dt class="col-sm-4">{% trans "Звідки" %}</dt><dd class="col-sm-8">{% if movement.source_location %}{{ movement.source_location.warehouse }} / {{ movement.source_location }}{% else %}—{% endif %}</dd>
-                <dt class="col-sm-4">{% trans "Куди" %}</dt><dd class="col-sm-8">{% if movement.destination_location %}{{ movement.destination_location.warehouse }} / {{ movement.destination_location }}{% else %}—{% endif %}</dd>
+                <dt class="col-sm-4">{% trans "Звідки" %}</dt><dd class="col-sm-8">{% if movement.resolved_source_warehouse %}{{ movement.resolved_source_warehouse }}{% if movement.source_location %} / {{ movement.source_location }}{% endif %}{% else %}—{% endif %}</dd>
+                <dt class="col-sm-4">{% trans "Куди" %}</dt><dd class="col-sm-8">{% if movement.resolved_destination_warehouse %}{{ movement.resolved_destination_warehouse }}{% if movement.destination_location %} / {{ movement.destination_location }}{% endif %}{% else %}—{% endif %}</dd>
                 <dt class="col-sm-4">{% trans "Виконав" %}</dt><dd class="col-sm-8">{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</dd>
                 <dt class="col-sm-4">{% trans "Дата і час операції" %}</dt><dd class="col-sm-8">{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</dd>
             </dl>

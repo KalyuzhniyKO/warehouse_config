@@ -217,9 +217,9 @@ class StockBalanceAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin
     actions = [make_active, make_inactive]
     form = StockBalanceAdminForm
     list_per_page = 30
-    list_select_related = ("item", "location")
-    list_display = ("item", "location", "qty", "active_badge")
-    list_filter = ("location", "location__warehouse", "is_active")
+    list_select_related = ("item", "warehouse", "location")
+    list_display = ("item", "warehouse", "location", "qty", "active_badge")
+    list_filter = ("warehouse", "location", "is_active")
     search_fields = ("item__name", "item__internal_code", "item__barcode__barcode")
     ordering = ("item__name",)
 
@@ -229,13 +229,15 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
     actions = [make_active, make_inactive]
     form = StockMovementAdminForm
     list_per_page = 30
-    list_select_related = ("item", "source_location", "destination_location", "recipient", "performed_by")
+    list_select_related = ("item", "source_warehouse", "destination_warehouse", "source_location", "destination_location", "recipient", "performed_by")
     list_display = (
         "id",
         "movement_type_badge",
         "item",
         "qty",
+        "source_warehouse",
         "source_location",
+        "destination_warehouse",
         "destination_location",
         "recipient",
         "performed_by",
@@ -244,7 +246,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         "created_at",
         "active_badge",
     )
-    list_filter = ("movement_type", "source_location", "destination_location", "performed_by", "occurred_at", "is_active")
+    list_filter = ("movement_type", "source_warehouse", "destination_warehouse", "source_location", "destination_location", "performed_by", "occurred_at", "is_active")
     search_fields = (
         "item__name",
         "item__internal_code",
@@ -265,7 +267,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
     fieldsets = (
         ("Операція", {"fields": ("movement_type", "occurred_at", "is_active")}),
         ("Товар і кількість", {"fields": ("item", "qty", "unit")}),
-        ("Локації", {"fields": ("source_location", "destination_location")}),
+        ("Склади і локації", {"fields": ("source_warehouse", "source_location", "destination_warehouse", "destination_location")}),
         ("Отримувач / місце використання", {"fields": ("recipient", "usage_place", "issue_reason", "department")}),
         ("Авторство", {"fields": ("performed_by", "created_by", "updated_by")}),
         ("Службове", {"fields": ("document_number", "inventory_count", "comment", "created_at", "updated_at")}),

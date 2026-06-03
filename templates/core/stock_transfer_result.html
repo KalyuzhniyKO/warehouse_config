@@ -7,10 +7,10 @@
 <dl class="row">
 <dt class="col-sm-3">{% trans "Товар" %}</dt><dd class="col-sm-9">{{ movement.item }}</dd>
 <dt class="col-sm-3">{% trans "Кількість" %}</dt><dd class="col-sm-9">{{ movement.qty }}</dd>
-<dt class="col-sm-3">{% trans "Склад-відправник" %}</dt><dd class="col-sm-9">{{ movement.source_location.warehouse }}</dd>
-<dt class="col-sm-3">{% trans "Локація-відправник" %}</dt><dd class="col-sm-9">{{ movement.source_location }}</dd>
-<dt class="col-sm-3">{% trans "Склад-отримувач" %}</dt><dd class="col-sm-9">{{ movement.destination_location.warehouse }}</dd>
-<dt class="col-sm-3">{% trans "Локація-отримувач" %}</dt><dd class="col-sm-9">{{ movement.destination_location }}</dd>
+<dt class="col-sm-3">{% trans "Склад-відправник" %}</dt><dd class="col-sm-9">{{ movement.resolved_source_warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація-відправник" %}</dt><dd class="col-sm-9">{{ movement.source_location|default:"—" }}</dd>
+<dt class="col-sm-3">{% trans "Склад-отримувач" %}</dt><dd class="col-sm-9">{{ movement.resolved_destination_warehouse }}</dd>
+<dt class="col-sm-3">{% trans "Локація-отримувач" %}</dt><dd class="col-sm-9">{{ movement.destination_location|default:"—" }}</dd>
 <dt class="col-sm-3">{% trans "Виконав" %}</dt><dd class="col-sm-9">{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</dd>
 <dt class="col-sm-3">{% trans "Дата операції" %}</dt><dd class="col-sm-9">{{ movement.occurred_at|date:"Y-m-d H:i" }}</dd>
 <dt class="col-sm-3">{% trans "Коментар" %}</dt><dd class="col-sm-9">{{ movement.comment|default:"—" }}</dd>

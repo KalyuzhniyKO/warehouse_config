@@ -40,7 +40,7 @@
             </thead>
             <tbody>
             {% for balance in balances %}
-                <tr><td class="fw-semibold">{{ balance.item.name }}</td><td>{{ balance.item.internal_code|default:"—" }}</td><td>{{ balance.item.barcode.barcode|default:"—" }}</td><td>{{ balance.location.warehouse.name }}</td><td>{{ balance.location.name }}</td><td class="text-end">{{ balance.qty }}</td><td>{{ balance.item.unit }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary table-action" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк етикетки" %}</a></td></tr>
+                <tr><td class="fw-semibold">{{ balance.item.name }}</td><td>{{ balance.item.internal_code|default:"—" }}</td><td>{{ balance.item.barcode.barcode|default:"—" }}</td><td>{{ balance.warehouse.name }}</td><td>{{ balance.location.name|default:"—" }}</td><td class="text-end">{{ balance.qty }}</td><td>{{ balance.item.unit }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary table-action" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк етикетки" %}</a></td></tr>
             {% empty %}
                 <tr><td colspan="8" class="text-center py-5"><div class="empty-state"><div class="fs-1 mb-2">📭</div>{% trans "Немає залишків за вибраними фільтрами." %}</div></td></tr>
             {% endfor %}

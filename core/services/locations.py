@@ -1,4 +1,4 @@
-"""Helpers for warehouse locations."""
+"""Helpers for optional warehouse locations."""
 
 from django.utils.translation import gettext_lazy as _
 
@@ -16,7 +16,11 @@ DEFAULT_LOCATION_EN_LABEL = _("Main location")
 
 
 def get_default_location_for_warehouse(warehouse):
-    """Return the service default location for *warehouse*, creating it if needed."""
+    """Return/create the legacy default location for explicit legacy callers.
+
+    Normal stock operations no longer call this helper, so default locations are
+    not created during receive/issue/return/write-off/transfer workflows.
+    """
     existing_location = (
         Location.objects.filter(
             warehouse=warehouse,
@@ -28,7 +32,6 @@ def get_default_location_for_warehouse(warehouse):
     )
     if existing_location is not None:
         return existing_location
-
     return Location.objects.create(
         warehouse=warehouse,
         name=DEFAULT_LOCATION_NAME,
@@ -38,8 +41,5 @@ def get_default_location_for_warehouse(warehouse):
 
 
 def ensure_default_locations_for_warehouses():
-    """Ensure every active warehouse has an active default technical location."""
-    ensured_locations = []
-    for warehouse in Warehouse.objects.filter(is_active=True).order_by("name", "id"):
-        ensured_locations.append(get_default_location_for_warehouse(warehouse))
-    return ensured_locations
+    """Legacy no-op: default technical locations are no longer created."""
+    return []

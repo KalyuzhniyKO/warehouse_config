@@ -9,7 +9,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from django.db import IntegrityError, transaction
 from django.utils.translation import gettext_lazy as _
 
-from core.models import Location, StockBalance, StockMovement
+from core.models import StockBalance, StockMovement, Warehouse
 from core.services.audit import log_action
 from core.services.barcodes import ensure_item_barcode
 from core.services.warehouse_access import get_accessible_warehouses
@@ -17,49 +17,49 @@ from core.services.warehouse_access import get_accessible_warehouses
 QTY_QUANT = Decimal("0.001")
 
 
+def _warehouse_from_location(location):
+    return location.warehouse if location is not None else None
+
+
+def resolve_warehouse(*, warehouse=None, location=None, field_name="warehouse"):
+    """Return the explicit warehouse or derive it from a legacy location."""
+    if warehouse is None:
+        warehouse = _warehouse_from_location(location)
+    if warehouse is None:
+        raise StockServiceError(f"{field_name} is required.")
+    if location is not None and location.warehouse_id != warehouse.pk:
+        raise StockServiceError("Location does not belong to the selected warehouse.")
+    return warehouse
+
+
 def find_best_stock_balance_for_issue(item, user=None):
-    """Return the active positive balance with the largest quantity for *item*."""
+    """Return the active positive warehouse balance with the largest quantity."""
     if item is None:
         return None
     queryset = StockBalance.objects.filter(item=item, is_active=True, qty__gt=0)
     if user is not None:
-        queryset = queryset.filter(location__warehouse__in=get_accessible_warehouses(user))
+        queryset = queryset.filter(warehouse__in=get_accessible_warehouses(user))
     return (
-        queryset.select_related("location", "location__warehouse")
-        .order_by("-qty", "location__warehouse__name", "location__name", "pk")
+        queryset.select_related("warehouse", "location")
+        .order_by("-qty", "warehouse__name", "pk")
         .first()
     )
 
 
-def find_default_stock_return_location(user=None):
-    """Return the default active stock location for self-service returns."""
-    locations = Location.objects.filter(
-        is_active=True, warehouse__is_active=True
-    ).select_related("warehouse")
+def find_default_stock_return_warehouse(user=None):
+    """Return the default active warehouse for self-service returns."""
+    warehouses = Warehouse.objects.filter(is_active=True)
     if user is not None:
-        locations = locations.filter(warehouse__in=get_accessible_warehouses(user))
-    preferred_names = {
-        "основна локація",
-        "основная локация",
-        "main location",
-        "default location",
-    }
-    preferred_location = (
-        locations.filter(name__in=preferred_names)
-        .order_by("warehouse__name", "name", "pk")
-        .first()
-    )
-    if preferred_location is not None:
-        return preferred_location
-    for preferred_name in preferred_names:
-        preferred_location = (
-            locations.filter(name__iexact=preferred_name)
-            .order_by("warehouse__name", "name", "pk")
-            .first()
-        )
-        if preferred_location is not None:
-            return preferred_location
-    return locations.order_by("warehouse__name", "name", "pk").first()
+        warehouses = warehouses.filter(pk__in=get_accessible_warehouses(user).values("pk"))
+    return warehouses.order_by("name", "pk").first()
+
+
+# Backwards-compatible name for callers that still ask for a return location.
+def find_default_stock_return_location(user=None):
+    warehouse = find_default_stock_return_warehouse(user)
+    if warehouse is None:
+        return None
+    return warehouse.locations.filter(is_active=True).order_by("name", "pk").first()
 
 
 class StockServiceError(ValueError):
@@ -76,6 +76,10 @@ class InsufficientStockError(StockServiceError):
 
 class SameLocationTransferError(StockServiceError):
     """Raised when a transfer uses the same source and target location."""
+
+
+class SameWarehouseTransferError(StockServiceError):
+    """Raised when a warehouse-level transfer uses the same warehouse."""
 
 
 class MissingRecipientError(StockServiceError):
@@ -103,25 +107,26 @@ def validate_positive_qty(qty):
     return decimal_qty
 
 
-def get_or_create_balance_locked(item, location):
-    """Return a StockBalance row locked for update, creating it when needed.
+def get_or_create_balance_locked(item, warehouse=None, location=None):
+    """Return a warehouse-level StockBalance row locked for update.
 
-    This helper must be called inside ``transaction.atomic()`` so the
-    ``select_for_update()`` lock is held until the operation commits.
+    ``location`` is accepted for compatibility and optional display, but the
+    locked balance identity is always item + warehouse.
     """
     if not transaction.get_connection().in_atomic_block:
         raise StockServiceError("Stock balance locks require an active transaction.")
 
-    queryset = StockBalance.objects.select_for_update()
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
+    queryset = StockBalance.objects.select_for_update().filter(is_active=True)
     try:
-        return queryset.get(item=item, location=location)
+        return queryset.get(item=item, warehouse=warehouse)
     except StockBalance.DoesNotExist:
         try:
             return StockBalance.objects.create(
-                item=item, location=location, qty=Decimal("0.000")
+                item=item, warehouse=warehouse, location=location, qty=Decimal("0.000")
             )
         except IntegrityError:
-            return queryset.get(item=item, location=location)
+            return queryset.get(item=item, warehouse=warehouse)
 
 
 def _create_movement(
@@ -129,6 +134,8 @@ def _create_movement(
     movement_type,
     item,
     qty,
+    source_warehouse=None,
+    destination_warehouse=None,
     source_location=None,
     destination_location=None,
     recipient=None,
@@ -141,6 +148,14 @@ def _create_movement(
     performed_by=None,
     request=None,
 ):
+    source_warehouse = resolve_warehouse(
+        warehouse=source_warehouse, location=source_location, field_name="source_warehouse"
+    ) if source_warehouse is not None or source_location is not None else None
+    destination_warehouse = resolve_warehouse(
+        warehouse=destination_warehouse,
+        location=destination_location,
+        field_name="destination_warehouse",
+    ) if destination_warehouse is not None or destination_location is not None else None
     kwargs = {}
     if occurred_at is not None:
         kwargs["occurred_at"] = occurred_at
@@ -148,6 +163,8 @@ def _create_movement(
         movement_type=movement_type,
         item=item,
         qty=qty,
+        source_warehouse=source_warehouse,
+        destination_warehouse=destination_warehouse,
         source_location=source_location,
         destination_location=destination_location,
         recipient=recipient,
@@ -183,7 +200,7 @@ def _increase_balance(balance, qty):
 def _decrease_balance(balance, qty):
     if balance.qty < qty:
         raise InsufficientStockError(
-            f"Insufficient stock for {balance.item} at {balance.location}: "
+            f"Insufficient stock for {balance.item} at {balance.warehouse}: "
             f"available {balance.qty}, requested {qty}."
         )
     balance.qty = normalize_decimal_qty(balance.qty - qty)
@@ -194,18 +211,20 @@ def _decrease_balance(balance, qty):
 
 
 def create_initial_balance(
-    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+    *, item, warehouse=None, location=None, qty, comment="", occurred_at=None, performed_by=None, request=None
 ):
-    """Create an initial balance movement and increase stock at a location."""
+    """Create an initial balance movement and increase stock in a warehouse."""
     qty = validate_positive_qty(qty)
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     with transaction.atomic():
         ensure_item_barcode(item)
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.INITIAL_BALANCE,
             item=item,
             qty=qty,
+            destination_warehouse=warehouse,
             destination_location=location,
             comment=comment,
             occurred_at=occurred_at,
@@ -216,18 +235,20 @@ def create_initial_balance(
 
 
 def receive_stock(
-    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+    *, item, warehouse=None, location=None, qty, comment="", occurred_at=None, performed_by=None, request=None
 ):
-    """Receive stock into a location."""
+    """Receive stock into a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     with transaction.atomic():
         ensure_item_barcode(item)
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.IN,
             item=item,
             qty=qty,
+            destination_warehouse=warehouse,
             destination_location=location,
             comment=comment,
             occurred_at=occurred_at,
@@ -240,7 +261,8 @@ def receive_stock(
 def issue_stock(
     *,
     item,
-    location,
+    warehouse=None,
+    location=None,
     qty,
     recipient=None,
     issue_reason=StockMovement.IssueReason.OTHER,
@@ -251,19 +273,19 @@ def issue_stock(
     performed_by=None,
     request=None,
 ):
-    """Issue stock from a location and record the business reason."""
+    """Issue stock from a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     if recipient is None:
-        raise MissingRecipientError(
-            _("Для видачі товару потрібно вказати отримувача.")
-        )
+        raise MissingRecipientError(_("Для видачі товару потрібно вказати отримувача."))
     with transaction.atomic():
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _decrease_balance(balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.OUT,
             item=item,
             qty=qty,
+            source_warehouse=warehouse,
             source_location=location,
             recipient=recipient,
             comment=comment,
@@ -278,26 +300,19 @@ def issue_stock(
 
 
 def return_stock(
-    *,
-    item,
-    location,
-    qty,
-    recipient=None,
-    department="",
-    comment="",
-    occurred_at=None,
-    performed_by=None,
-    request=None,
+    *, item, warehouse=None, location=None, qty, recipient=None, department="", comment="", occurred_at=None, performed_by=None, request=None
 ):
-    """Return stock back into a location."""
+    """Return stock back into a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     with transaction.atomic():
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.RETURN,
             item=item,
             qty=qty,
+            destination_warehouse=warehouse,
             destination_location=location,
             recipient=recipient,
             department=(department or "").strip(),
@@ -310,17 +325,19 @@ def return_stock(
 
 
 def writeoff_stock(
-    *, item, location, qty, comment="", occurred_at=None, performed_by=None, request=None
+    *, item, warehouse=None, location=None, qty, comment="", occurred_at=None, performed_by=None, request=None
 ):
-    """Write off stock from a location."""
+    """Write off stock from a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     with transaction.atomic():
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _decrease_balance(balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.WRITEOFF,
             item=item,
             qty=qty,
+            source_warehouse=warehouse,
             source_location=location,
             comment=comment,
             occurred_at=occurred_at,
@@ -333,31 +350,60 @@ def writeoff_stock(
 def transfer_stock(
     *,
     item,
-    source_location,
-    target_location,
+    source_warehouse=None,
+    destination_warehouse=None,
+    source_location=None,
+    target_location=None,
+    destination_location=None,
     qty,
     comment="",
     occurred_at=None,
     performed_by=None,
     request=None,
 ):
-    """Transfer stock between two different locations in a single transaction."""
-    if source_location == target_location:
-        raise SameLocationTransferError(
-            "Source and target locations must be different."
-        )
+    """Transfer stock between warehouses; locations are optional."""
+    if destination_location is None:
+        destination_location = target_location
+    source_warehouse = resolve_warehouse(
+        warehouse=source_warehouse, location=source_location, field_name="source_warehouse"
+    )
+    destination_warehouse = resolve_warehouse(
+        warehouse=destination_warehouse,
+        location=destination_location,
+        field_name="destination_warehouse",
+    )
+    same_warehouse_location_transfer = False
+    if source_warehouse == destination_warehouse:
+        if source_location is not None and destination_location is not None and source_location == destination_location:
+            raise SameLocationTransferError("Source and target locations must be different.")
+        if source_location is not None and destination_location is not None:
+            same_warehouse_location_transfer = True
+        else:
+            raise SameWarehouseTransferError("Source and target warehouses must be different.")
     qty = validate_positive_qty(qty)
     with transaction.atomic():
-        source_balance = get_or_create_balance_locked(item, source_location)
-        target_balance = get_or_create_balance_locked(item, target_location)
-        _decrease_balance(source_balance, qty)
-        _increase_balance(target_balance, qty)
+        source_balance = get_or_create_balance_locked(item, warehouse=source_warehouse, location=source_location)
+        if same_warehouse_location_transfer:
+            _decrease_balance(source_balance, qty)
+            target_balance, _ = StockBalance.objects.get_or_create(
+                item=item,
+                warehouse=destination_warehouse,
+                location=destination_location,
+                defaults={"qty": Decimal("0.000"), "is_active": False},
+            )
+            _increase_balance(target_balance, qty)
+        else:
+            target_balance = get_or_create_balance_locked(item, warehouse=destination_warehouse, location=destination_location)
+            _decrease_balance(source_balance, qty)
+            _increase_balance(target_balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.TRANSFER,
             item=item,
             qty=qty,
+            source_warehouse=source_warehouse,
+            destination_warehouse=destination_warehouse,
             source_location=source_location,
-            destination_location=target_location,
+            destination_location=destination_location,
             comment=comment,
             occurred_at=occurred_at,
             performed_by=performed_by,
@@ -369,9 +415,9 @@ def transfer_stock(
 def adjust_stock(
     *,
     item,
-    location,
-    quantity_delta=None,
     warehouse=None,
+    location=None,
+    quantity_delta=None,
     user=None,
     comment="",
     occurred_at=None,
@@ -380,17 +426,11 @@ def adjust_stock(
     performed_by=None,
     request=None,
 ):
-    """Adjust a stock balance by delta and create an adjustment movement.
-
-    ``target_qty`` is kept as a compatibility path for existing callers. New
-    code should pass ``quantity_delta`` so the movement quantity represents the
-    absolute adjustment amount.
-    """
-    if warehouse is not None and location.warehouse_id != warehouse.pk:
-        raise StockServiceError("Location does not belong to the selected warehouse.")
+    """Adjust a warehouse stock balance by delta and create a movement."""
+    warehouse = resolve_warehouse(warehouse=warehouse, location=location)
 
     with transaction.atomic():
-        balance = get_or_create_balance_locked(item, location)
+        balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         if target_qty is not None:
             target_qty = normalize_decimal_qty(target_qty)
             if target_qty < 0:
@@ -409,6 +449,8 @@ def adjust_stock(
             movement_type=StockMovement.MovementType.ADJUSTMENT,
             item=item,
             qty=abs(quantity_delta),
+            source_warehouse=warehouse if quantity_delta < 0 else None,
+            destination_warehouse=warehouse if quantity_delta >= 0 else None,
             source_location=location if quantity_delta < 0 else None,
             destination_location=location if quantity_delta >= 0 else None,
             comment=comment,
@@ -420,9 +462,6 @@ def adjust_stock(
     return movement
 
 
-# Compatibility re-exports for callers that still import cancellation helpers
-# from core.services.stock. New code should import these from
-# core.services.stock_cancellation directly.
 from core.services.stock_cancellation import (  # noqa: E402
     can_cancel_stock_movement,
     cancel_stock_movement,

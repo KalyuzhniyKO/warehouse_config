@@ -121,7 +121,7 @@ def stock_operation_barcode_context(item, user=None):
     if user is not None and not user.is_superuser:
         from ..services.warehouse_access import get_accessible_warehouses
 
-        queryset = queryset.filter(location__warehouse__in=get_accessible_warehouses(user))
+        queryset = queryset.filter(warehouse__in=get_accessible_warehouses(user))
     available_qty = queryset.aggregate(total=Sum("qty"))["total"] or 0
     return {"item": item, "available_qty": available_qty}
 
@@ -193,7 +193,8 @@ class StockReceiveView(
         try:
             movement = receive_stock(
                 item=form.cleaned_data["item"],
-                location=form.cleaned_data["location"],
+                warehouse=form.cleaned_data["warehouse"],
+                location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data.get("comment", ""),
                 occurred_at=form.cleaned_data.get("occurred_at"),
@@ -225,13 +226,13 @@ class StockReturnView(
     template_name = "core/stock_return_form.html"
     form_class = StockReturnForm
     auto_selected_message = _("Дані для повернення визначено автоматично.")
-    no_return_location_message = _("Товар знайдено, але локацію для повернення не налаштовано.")
+    no_return_warehouse_message = _("Товар знайдено, але локацію для повернення не налаштовано.")
     result_url_name = "stock_receive_result"
 
-    def get_return_location(self):
-        if not hasattr(self, "return_location"):
-            self.return_location = find_default_stock_return_location(self.request.user)
-        return self.return_location
+    def get_return_warehouse(self):
+        if not hasattr(self, "return_warehouse"):
+            self.return_warehouse = find_default_stock_return_location(self.request.user)
+        return self.return_warehouse
 
     def get_initial(self):
         initial = super().get_initial()
@@ -239,25 +240,25 @@ class StockReturnView(
             "%Y-%m-%dT%H:%M"
         )
         initial["comment"] = ""
-        return_location = self.get_return_location()
-        if self.scanned_item is not None and return_location is not None:
-            initial["warehouse"] = return_location.warehouse
-            initial["location"] = return_location
+        return_warehouse = self.get_return_warehouse()
+        if self.scanned_item is not None and return_warehouse is not None:
+            initial["warehouse"] = return_warehouse.warehouse
+            initial["location"] = return_warehouse
         return initial
 
     def get(self, request, *args, **kwargs):
         if self.scanned_item is not None:
-            if self.get_return_location() is not None:
+            if self.get_return_warehouse() is not None:
                 messages.success(request, self.auto_selected_message)
             else:
-                messages.error(request, self.no_return_location_message)
+                messages.error(request, self.no_return_warehouse_message)
         return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["return_location"] = self.get_return_location()
+        context["return_warehouse"] = self.get_return_warehouse()
         context["can_submit_receive"] = (
-            self.scanned_item is not None and self.get_return_location() is not None
+            self.scanned_item is not None and self.get_return_warehouse() is not None
         )
         context["operation_token"] = self.get_operation_token_for_context(
             context["can_submit_receive"]
@@ -272,7 +273,8 @@ class StockReturnView(
         try:
             movement = return_stock(
                 item=form.cleaned_data["item"],
-                location=form.cleaned_data["location"],
+                warehouse=form.cleaned_data["warehouse"],
+                location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 recipient=form.cleaned_data["recipient"],
                 department=form.cleaned_data["department"],
@@ -325,7 +327,7 @@ class StockIssueView(
         initial["comment"] = ""
         best_balance = self.get_best_stock_balance()
         if best_balance is not None:
-            initial["warehouse"] = best_balance.location.warehouse
+            initial["warehouse"] = best_balance.warehouse
             initial["location"] = best_balance.location
         return initial
 
@@ -360,7 +362,8 @@ class StockIssueView(
         try:
             movement = issue_stock(
                 item=form.cleaned_data["item"],
-                location=form.cleaned_data["location"],
+                warehouse=form.cleaned_data["warehouse"],
+                location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 recipient=form.cleaned_data["recipient"],
                 issue_reason=(
@@ -422,7 +425,8 @@ class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
         try:
             movement = writeoff_stock(
                 item=form.cleaned_data["item"],
-                location=form.cleaned_data["location"],
+                warehouse=form.cleaned_data["warehouse"],
+                location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 comment=comment,
                 occurred_at=form.cleaned_data["occurred_at"],
@@ -460,8 +464,10 @@ class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
         try:
             movement = transfer_stock(
                 item=form.cleaned_data["item"],
-                source_location=form.cleaned_data["source_location"],
-                target_location=form.cleaned_data["destination_location"],
+                source_warehouse=form.cleaned_data["source_warehouse"],
+                destination_warehouse=form.cleaned_data["destination_warehouse"],
+                source_location=form.cleaned_data.get("source_location"),
+                destination_location=form.cleaned_data.get("destination_location"),
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data["comment"],
                 occurred_at=form.cleaned_data["occurred_at"],
@@ -506,7 +512,8 @@ class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRe
         try:
             create_initial_balance(
                 item=form.cleaned_data["item"],
-                location=form.cleaned_data["location"],
+                warehouse=form.cleaned_data["warehouse"],
+                location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 comment=form.cleaned_data["comment"],
                 occurred_at=form.cleaned_data["occurred_at"],

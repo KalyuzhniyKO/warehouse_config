@@ -67,8 +67,8 @@ def create_inventory_count(*, warehouse, location=None, user=None, comment=""):
             user=user,
             comment=comment,
         )
-        balances = StockBalance.objects.filter(location__warehouse=warehouse).select_related(
-            "item__barcode", "location"
+        balances = StockBalance.objects.filter(warehouse=warehouse, is_active=True).select_related(
+            "item__barcode", "warehouse", "location"
         )
         if location is not None:
             balances = balances.filter(location=location)

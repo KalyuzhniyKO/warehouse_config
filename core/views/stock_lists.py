@@ -25,15 +25,14 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
                 "item__unit",
                 "item__barcode",
                 "location",
-                "location__warehouse",
+                "warehouse",
             )
             .filter(
                 item__is_active=True,
-                location__is_active=True,
-                location__warehouse__is_active=True,
-                location__warehouse__in=get_accessible_warehouses(self.request.user),
+                warehouse__is_active=True,
+                warehouse__in=get_accessible_warehouses(self.request.user),
             )
-            .order_by("item__name", "location__warehouse__name", "location__name")
+            .order_by("item__name", "warehouse__name", "location__name")
         )
         form = self.get_filter_form()
         if not form.is_valid():
@@ -45,7 +44,7 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         query = form.cleaned_data.get("q")
 
         if warehouse:
-            queryset = queryset.filter(location__warehouse=warehouse)
+            queryset = queryset.filter(warehouse=warehouse)
         if location:
             queryset = queryset.filter(location=location)
         if item:

@@ -171,10 +171,10 @@ def get_operation_mix(filters):
 def get_stock_by_location_for_item(item):
     return list(
         StockBalance.objects.filter(item=item, qty__gt=0)
-        .select_related("location", "location__warehouse")
-        .values("location__warehouse__name", "location__name")
+        .select_related("warehouse", "location")
+        .values("warehouse__name", "location__name")
         .annotate(total_qty=Sum("qty"))
-        .order_by("location__warehouse__name", "location__name")
+        .order_by("warehouse__name", "location__name")
     )
 
 
