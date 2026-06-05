@@ -19,6 +19,7 @@ from ..forms import (
     StockIssueForm,
     StockTransferForm,
 )
+from .i18n_test_utils import compile_test_messages
 from ..models import (
     AuditLog,
     BarcodeRegistry,
@@ -39,22 +40,8 @@ from ..models import (
 )
 
 
-_MESSAGES_COMPILED = None
-
-
 def _messages_compiled():
-    """True if locale catalogs were built; False if gettext msgfmt is missing."""
-    global _MESSAGES_COMPILED
-    if _MESSAGES_COMPILED is not None:
-        return _MESSAGES_COMPILED
-    from django.core.management.base import CommandError
-
-    try:
-        call_command("compilemessages", verbosity=0)
-        _MESSAGES_COMPILED = True
-    except CommandError:
-        _MESSAGES_COMPILED = False
-    return _MESSAGES_COMPILED
+    return compile_test_messages()
 
 
 class StockServiceTests(TestCase):

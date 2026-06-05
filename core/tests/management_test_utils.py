@@ -17,6 +17,7 @@ from ..models import (
     Unit,
     Warehouse,
 )
+from .i18n_test_utils import compile_test_messages
 from .warehouse_access_utils import grant_warehouse_access
 
 
@@ -24,7 +25,7 @@ class ManagementTestBase(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        call_command("compilemessages", verbosity=0)
+        compile_test_messages()
 
     def setUp(self):
         from django.utils import translation

@@ -16,7 +16,7 @@ class TranslationCatalogQualityTests(SimpleTestCase):
         state = None
         start_line = 0
 
-        for line_number, line in enumerate(path.read_text().splitlines() + [""], 1):
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines() + [""], 1):
             if line.startswith("#,"):
                 flags.extend(flag.strip() for flag in line[2:].split(","))
             elif line.startswith("msgid "):

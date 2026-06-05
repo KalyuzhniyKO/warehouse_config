@@ -22,6 +22,7 @@ from ..forms import (
     StockReturnForm,
     StockTransferForm,
 )
+from .i18n_test_utils import compile_test_messages
 from .warehouse_access_utils import grant_warehouse_access
 from ..services.locations import (
     DEFAULT_LOCATION_NAME,
@@ -203,7 +204,7 @@ class StockOperationWorkflowTestBase(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        call_command("compilemessages", locale=["en", "uk"], verbosity=0)
+        compile_test_messages(locales=["en", "uk"])
 
     def setUp(self):
         translation.activate("uk")

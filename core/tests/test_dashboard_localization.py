@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils import translation
 
 from ..models import Warehouse
+from .i18n_test_utils import compile_test_messages
 from .warehouse_access_utils import grant_warehouse_access
 
 
@@ -17,7 +18,7 @@ class DashboardLocalizationTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        call_command("compilemessages", verbosity=0)
+        compile_test_messages()
 
     def setUp(self):
         call_command("init_roles", stdout=StringIO())
