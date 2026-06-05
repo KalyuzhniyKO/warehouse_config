@@ -1,5 +1,6 @@
 import csv
 import json
+from collections import OrderedDict
 from urllib.parse import urlencode
 
 from django.contrib import messages
@@ -17,7 +18,6 @@ from django.utils import timezone
 from django.utils.html import format_html, linebreaks, urlize
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-from itertools import groupby
 from django.views.generic import CreateView, FormView, ListView, TemplateView, UpdateView, View
 
 from ..forms import (
@@ -111,10 +111,20 @@ class ManagementReportsView(LoginRequiredMixin, AnalyticsPermissionMixin, Templa
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         presets = get_analytics_report_presets()
-        grouped = []
-        for _, items in groupby(presets, key=lambda x: x["category"]):
-            items = list(items)
-            grouped.append({"title": items[0]["category_title"], "presets": items})
+        grouped_by_category = OrderedDict()
+        for preset in presets:
+            category = preset["category"]
+            group = grouped_by_category.setdefault(
+                category,
+                {
+                    "key": category,
+                    "title": preset["category_title"],
+                    "description": preset["category_description"],
+                    "presets": [],
+                },
+            )
+            group["presets"].append(preset)
+        grouped = list(grouped_by_category.values())
         context["preset_groups"] = grouped
         return context
 class AnalyticsRedirectView(LoginRequiredMixin, AnalyticsPermissionMixin, View):

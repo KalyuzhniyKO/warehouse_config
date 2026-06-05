@@ -1,31 +1,52 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}{% trans "Звіти складу" %} · {% trans "Складський облік" %}{% endblock %}
-{% block extra_css %}
-<style>
-.report-category-heading{font-size:1.1rem;font-weight:600;margin:1rem 0 .5rem;}
-.report-preset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.75rem;}
-.report-preset-card{border:1px solid rgba(17,24,39,.12);border-radius:.75rem;padding:.75rem;background:#fff;}
-.report-preset-actions{display:flex;gap:.5rem;flex-wrap:wrap;}
-</style>
-{% endblock %}
+
+{% block title %}{% trans "Готові звіти" %} · {% trans "Складський облік" %}{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-3">{% trans "Звіти складу" %}</h1>
-{% for group in preset_groups %}
-<h2 class="report-category-heading">{{ group.title }}</h2>
-<div class="report-preset-grid">
-{% for preset in group.presets %}
-<article class="report-preset-card" data-preset-key="{{ preset.key }}">
-<div class="mb-1"><span class="badge text-bg-light">{{ group.title }}</span></div>
-<h3 class="h6">{{ preset.title }}</h3>
-<p class="small text-muted">{{ preset.description }}</p>
-<p class="small"><code>{{ preset.url }}</code></p>
-<div class="report-preset-actions">
-<a class="btn btn-sm btn-primary" href="{{ preset.url }}">{% trans "Відкрити" %}</a>
-{% if preset.xlsx_url %}<a class="btn btn-sm btn-outline-secondary" href="{{ preset.xlsx_url }}">XLSX</a>{% endif %}
+<div class="report-catalog-page">
+    <header class="analytics-hero report-catalog-hero">
+        <div class="analytics-hero-copy">
+            <h1>{% trans "Готові звіти" %}</h1>
+            <p>{% trans "Швидкий доступ до типових складських звітів, контролю якості даних та експорту." %}</p>
+        </div>
+        <nav class="analytics-actions" aria-label="{% trans "Навігація звітів" %}">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics' %}">{% trans "Аналітика складу" %}</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
+        </nav>
+    </header>
+
+    <div class="report-category-list">
+        {% for group in preset_groups %}
+            <section class="report-category-section" aria-labelledby="report-category-{{ group.key }}">
+                <div class="report-category-header">
+                    <h2 id="report-category-{{ group.key }}">{{ group.title }}</h2>
+                    <p>{{ group.description }}</p>
+                </div>
+
+                <div class="report-preset-grid">
+                    {% for preset in group.presets %}
+                        <article class="report-preset-card report-preset-card--{{ group.key }}" data-preset-key="{{ preset.key }}">
+                            <div class="report-preset-body">
+                                <span class="report-category-badge">{{ group.title }}</span>
+                                <h3>{{ preset.title }}</h3>
+                                <p class="report-preset-description">{{ preset.description }}</p>
+                                {% if preset.hint %}
+                                    <p class="report-preset-hint">{{ preset.hint }}</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="report-preset-actions">
+                                <a class="btn btn-primary btn-sm" href="{{ preset.url }}">{{ preset.primary_action_label }}</a>
+                                {% if preset.xlsx_url %}
+                                    <a class="btn btn-outline-secondary btn-sm" href="{{ preset.xlsx_url }}">{{ preset.export_label }}</a>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
 </div>
-</article>
-{% endfor %}
-</div>
-{% endfor %}
 {% endblock %}
