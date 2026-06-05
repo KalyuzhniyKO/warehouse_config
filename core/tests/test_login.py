@@ -1,15 +1,14 @@
-from io import StringIO
-
 from django.contrib.auth import get_user_model
-from django.core.management import call_command
 from django.test import TestCase
+
+from .i18n_test_utils import compile_test_messages
 
 
 class TabletLoginScreenTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        call_command("compilemessages", stdout=StringIO(), verbosity=0)
+        compile_test_messages()
 
     def setUp(self):
         self.user = get_user_model().objects.create_user(

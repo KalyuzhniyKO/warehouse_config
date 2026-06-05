@@ -32,6 +32,7 @@ from ..permissions import (
     can_view_audit,
     can_view_warehouse_data,
 )
+from .i18n_test_utils import compile_test_messages
 from ..models import (
     BarcodeRegistry,
     BarcodeSequence,
@@ -613,7 +614,7 @@ class DashboardPermissionTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        call_command("compilemessages", verbosity=0)
+        compile_test_messages()
 
     def setUp(self):
         call_command("init_roles", stdout=StringIO())
