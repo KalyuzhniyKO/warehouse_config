@@ -44,17 +44,38 @@ class AnalyticsDashboardTests(TestCase):
         self.client.force_login(self.superuser)
         self.assertEqual(self.client.get(reverse("management_analytics")).status_code, 200)
 
-    def test_dashboard_markers_and_drilldown(self):
+    def test_dashboard_structure_and_export_labels(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
-        self.assertContains(r, "data-analytics-daily-chart")
-        self.assertContains(r, "data-analytics-operation-mix")
-        self.assertContains(r, "data-analytics-top-items-chart")
-        self.assertContains(r, "movement_type=out")
+        self.assertContains(r, "Аналітика складу")
+        self.assertContains(r, "Огляд рухів, залишків, видачі та якості складських даних.")
+        self.assertContains(r, "analytics-kpi-grid")
+        self.assertContains(r, "analytics-filter-panel")
+        self.assertContains(r, "Експорт Excel")
+        self.assertContains(r, "Експорт CSV")
+        self.assertNotContains(r, "Експорт PDF")
+        self.assertNotContains(r, ">movement_type=out<", html=True)
+        self.assertNotContains(r, "data-analytics-daily-chart")
+        self.assertNotContains(r, "data-analytics-operation-mix")
+        self.assertNotContains(r, "data-analytics-top-items-chart")
+
+    def test_kpi_cards_filter_panel_and_advanced_location_render(self):
+        self.client.force_login(self.admin)
+        r = self.client.get(reverse("management_analytics"))
+        for label in ["Операції", "Критичні залишки", "Видано", "Надійшло", "Без руху"]:
+            self.assertContains(r, label)
+        for label in ["Фільтри", "Період", "Дата від", "Дата до", "Склад", "Тип операції"]:
+            self.assertContains(r, label)
+        self.assertContains(r, "analyticsAdvancedFilters")
+        self.assertContains(r, "Необов'язкова адресна деталізація всередині складу.")
 
     def test_analytics_visual_blocks_render_existing_data(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
+        self.assertContains(r, "Топ товарів по видачі")
+        self.assertContains(r, "Структура операцій")
+        self.assertContains(r, "Куди видавали")
+        self.assertContains(r, "Кому видавали")
         self.assertContains(r, "analytics-visual-list")
         self.assertContains(r, "analytics-visual-bar-fill")
         self.assertContains(r, "Кабель")
@@ -103,6 +124,10 @@ class AnalyticsDashboardTests(TestCase):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
         self.assertContains(r, "DOC-OUT")
+        self.assertContains(r, "Останні операції")
+        self.assertContains(r, "<table", html=False)
+        for header in ["Дата", "Документ", "Номенклатура", "Тип", "Кількість", "Склад"]:
+            self.assertContains(r, header)
         StockMovement.objects.all().delete()
         r2 = self.client.get(reverse("management_analytics"))
         self.assertContains(r2, "За вибраний період немає складських операцій.")
@@ -132,7 +157,8 @@ class AnalyticsDashboardTests(TestCase):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics"))
         self.assertContains(r, "data-analytics-quality-card")
-        self.assertContains(r, "Переглянути деталі якості даних")
+        self.assertContains(r, "Контроль даних")
+        self.assertContains(r, "Переглянути деталі")
 
     def test_data_quality_page_access(self):
         url = reverse("management_analytics_data_quality")
