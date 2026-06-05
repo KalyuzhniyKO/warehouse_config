@@ -32,6 +32,17 @@ class AnalyticsInterfaceTests(AnalyticsInterfaceTestBase):
         self.assertEqual(response["Content-Type"], "text/csv; charset=utf-8")
         self.assertContains(response, "Кабель ВВГ")
 
+    def test_analytics_page_exposes_dashboard_controls(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_analytics"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "analytics-kpi-grid")
+        self.assertContains(response, "analytics-filter-panel")
+        self.assertContains(response, "Експорт Excel")
+        self.assertContains(response, "Експорт CSV")
+        self.assertNotContains(response, "Експорт PDF")
+        self.assertNotContains(response, ">movement_type=out<", html=True)
+
 
 class WarehouseAnalyticsInterfaceTests(WarehouseAnalyticsAuditTestBase):
     def test_analytics_page_renders_non_zero_values_when_data_exists(self):
@@ -68,3 +79,7 @@ class WarehouseAnalyticsInterfaceTests(WarehouseAnalyticsAuditTestBase):
 
         form = AnalyticsFilterForm(request_user=self.admin)
         self.assertEqual(str(form.fields["location"].label), "Локація")
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_analytics"))
+        self.assertContains(response, "analyticsAdvancedFilters")
+        self.assertContains(response, "Необов'язкова адресна деталізація всередині складу.")

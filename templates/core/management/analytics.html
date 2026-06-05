@@ -5,121 +5,245 @@
 
 {% block content %}
 <div class="analytics-page">
-    <div class="analytics-header">
-        <h1 class="h3 mb-0">{% trans "Аналітика складу" %}</h1>
-        <div class="analytics-header-actions">
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_reports' %}">{% trans "Готові звіти" %}</a>
+    <header class="analytics-hero">
+        <div class="analytics-hero-copy">
+            <h1>{% trans "Аналітика складу" %}</h1>
+            <p>{% trans "Огляд рухів, залишків, видачі та якості складських даних." %}</p>
         </div>
-    </div>
+        <div class="analytics-actions">
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_reports' %}">{% trans "Готові звіти" %}</a>
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт Excel" %}</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'management_analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт CSV" %}</a>
+        </div>
+    </header>
 
-    <div class="analytics-kpi-grid">
-        <div class="analytics-kpi-card"><div class="analytics-kpi-label">{% trans "Загальна кількість операцій" %}</div><div class="analytics-kpi-value">{{ summary.operations_count }}</div></div>
-        <div class="analytics-kpi-card"><div class="analytics-kpi-label">{% trans "Критичні залишки" %}</div><div class="analytics-kpi-value">{{ data_quality.reconciliation.negative_stock }}</div></div>
-        <div class="analytics-kpi-card"><div class="analytics-kpi-label">{% trans "Видано за період" %}</div><div class="analytics-kpi-value">{{ summary.issue_qty }}</div></div>
-        <div class="analytics-kpi-card"><div class="analytics-kpi-label">{% trans "Надійшло за період" %}</div><div class="analytics-kpi-value">{{ summary.receive_qty }}</div></div>
-        <div class="analytics-kpi-card"><div class="analytics-kpi-label">{% trans "Позиції без руху" %}</div><div class="analytics-kpi-value">{{ inactive_stock_items|length }}</div></div>
-    </div>
+    <section class="analytics-kpi-grid" aria-label="{% trans 'Ключові показники' %}">
+        <article class="analytics-kpi-card analytics-kpi-card--operations">
+            <div class="analytics-kpi-label">{% trans "Операції" %}</div>
+            <div class="analytics-kpi-value">{{ summary.operations_count }}</div>
+            <p>{% trans "Кількість рухів за вибраний період" %}</p>
+        </article>
+        <article class="analytics-kpi-card analytics-kpi-card--warning">
+            <div class="analytics-kpi-label">{% trans "Критичні залишки" %}</div>
+            <div class="analytics-kpi-value">{{ data_quality.reconciliation.negative_stock }}</div>
+            <p>{% trans "Позиції, які потребують перевірки" %}</p>
+        </article>
+        <article class="analytics-kpi-card analytics-kpi-card--issue">
+            <div class="analytics-kpi-label">{% trans "Видано" %}</div>
+            <div class="analytics-kpi-value">{{ summary.issue_qty }}</div>
+            <p>{% trans "Сумарно видано за період" %}</p>
+        </article>
+        <article class="analytics-kpi-card analytics-kpi-card--receive">
+            <div class="analytics-kpi-label">{% trans "Надійшло" %}</div>
+            <div class="analytics-kpi-value">{{ summary.receive_qty }}</div>
+            <p>{% trans "Сумарно прийнято за період" %}</p>
+        </article>
+        <article class="analytics-kpi-card analytics-kpi-card--inactive">
+            <div class="analytics-kpi-label">{% trans "Без руху" %}</div>
+            <div class="analytics-kpi-value">{{ inactive_stock_items|length }}</div>
+            <p>{% trans "Позиції без руху" %}</p>
+        </article>
+    </section>
 
-    <form method="get" class="card content-card filter-panel filter-panel--compact">
-        <div class="card-body">
-            <p class="small text-muted mb-2">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>
-            {% if used_remembered_filters %}<p class="small text-success mb-2">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}
-            <div class="filter-grid filter-grid--main">
+    <form method="get" class="analytics-panel analytics-filter-panel">
+        <div class="analytics-panel-header">
+            <div>
+                <h2>{% trans "Фільтри" %}</h2>
+                <p>{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>
+            </div>
+            {% if used_remembered_filters %}
+                <span class="analytics-status-chip analytics-status-chip--ok">{% trans "Застосовано збережені фільтри" %}</span>
+            {% endif %}
+        </div>
+
+        <div class="analytics-filter-grid">
+            {% for field in filter_form %}
+                {% if field.name == 'period' or field.name == 'date_from' or field.name == 'date_to' or field.name == 'warehouse' or field.name == 'movement_type' %}
+                    <div class="analytics-field">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <div class="analytics-filter-actions">
+                <button class="btn btn-primary btn-sm" type="submit">{% trans "Оновити" %}</button>
+                <a class="btn btn-outline-secondary btn-sm" href="?reset_filters=1">{% trans "Скинути" %}</a>
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsAdvancedFilters" aria-expanded="false" aria-controls="analyticsAdvancedFilters">{% trans "Розширені фільтри" %}</button>
+            </div>
+        </div>
+
+        <div class="collapse" id="analyticsAdvancedFilters">
+            <div class="analytics-advanced-filter">
                 {% for field in filter_form %}
-                    {% if field.name == 'period' or field.name == 'date_from' or field.name == 'date_to' or field.name == 'warehouse' or field.name == 'movement_type' %}
-                        <div>
-                            <label class="form-label">{{ field.label }}</label>
+                    {% if field.name == 'location' %}
+                        <div class="analytics-field">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {{ field }}
+                            <div class="form-text">{% trans "Необов'язкова адресна деталізація всередині складу." %}</div>
                         </div>
                     {% endif %}
                 {% endfor %}
-                <div class="filter-action-group">
-                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Оновити" %}</button>
-                    <a class="btn btn-outline-secondary btn-sm" href="?reset_filters=1">{% trans "Скинути" %}</a>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsAdvancedFilters" aria-expanded="false" aria-controls="analyticsAdvancedFilters">{% trans "Розширені фільтри" %}</button>
-                </div>
             </div>
+        </div>
 
-            <div class="collapse mt-2" id="analyticsAdvancedFilters">
-                <div class="filter-grid filter-grid--advanced">
-                    {% for field in filter_form %}
-                        {% if field.name == 'location' %}
-                            <div>
-                                <label class="form-label">{{ field.label }}</label>
-                                {{ field }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="analytics-toolbar mt-2">
-                {% for period, label in quick_periods %}
-                    <a class="btn btn-outline-secondary btn-sm" href="?period={{ period }}">{{ label }}</a>
-                {% endfor %}
-                <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт Excel" %}</a>
-                <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт PDF" %}</a>
-            </div>
+        <div class="analytics-quick-periods" aria-label="{% trans 'Швидкі періоди' %}">
+            {% for period, label in quick_periods %}
+                <a class="btn btn-outline-secondary btn-sm" href="?period={{ period }}">{{ label }}</a>
+            {% endfor %}
         </div>
     </form>
 
-    <div class="card content-card analytics-quality-card {% if data_quality.status == 'ok' %}analytics-quality-ok{% else %}analytics-quality-warning{% endif %}" data-analytics-quality-card>
-        <div class="card-body py-2">
-            <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 mb-0">{% trans "Контроль даних" %}</h2><span class="badge analytics-quality-status {% if data_quality.status == 'ok' %}analytics-quality-ok{% else %}analytics-quality-warning{% endif %}">{% if data_quality.status == 'ok' %}{% trans "Дані виглядають узгодженими" %}{% else %}{% trans "Є попередження" %}{% endif %}</span></div>
-            <div><span class="analytics-count-badge">{% trans "Рухи без документа" %}: {{ data_quality.checks.missing_documents.count }}</span> <span class="analytics-count-badge">{% trans "Неповні рухи" %}: {{ data_quality.reconciliation.incomplete_movements }}</span> <span class="analytics-count-badge">{% trans "Негативні залишки" %}: {{ data_quality.reconciliation.negative_stock }}</span></div>
-            <a href="{{ data_quality_url }}">{% trans "Переглянути деталі якості даних" %}</a>
+    <section class="analytics-panel analytics-quality-card {% if data_quality.status == 'ok' %}analytics-quality-card--ok{% else %}analytics-quality-card--warning{% endif %}" data-analytics-quality-card>
+        <div class="analytics-panel-header analytics-quality-header">
+            <div>
+                <h2>{% trans "Контроль даних" %}</h2>
+                <p>{% trans "Швидка перевірка документів, повноти рухів і залишків." %}</p>
+            </div>
+            <span class="analytics-status-chip {% if data_quality.status == 'ok' %}analytics-status-chip--ok{% else %}analytics-status-chip--warning{% endif %}">
+                {% if data_quality.status == 'ok' %}{% trans "Дані узгоджені" %}{% else %}{% trans "Є попередження" %}{% endif %}
+            </span>
         </div>
-    </div>
+        <div class="analytics-quality-counters">
+            <div>
+                <span>{% trans "Рухи без документа" %}</span>
+                <strong>{{ data_quality.checks.missing_documents.count }}</strong>
+            </div>
+            <div>
+                <span>{% trans "Неповні рухи" %}</span>
+                <strong>{{ data_quality.reconciliation.incomplete_movements }}</strong>
+            </div>
+            <div>
+                <span>{% trans "Негативні залишки" %}</span>
+                <strong>{{ data_quality.reconciliation.negative_stock }}</strong>
+            </div>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm analytics-panel-link" href="{{ data_quality_url }}">{% trans "Переглянути деталі" %}</a>
+    </section>
 
-    <div class="card content-card mb-3">
-        <div class="card-body">
-            <h2 class="h5">{% trans "Топ товарів по видачі" %}</h2>
+    <section class="analytics-section-grid">
+        <article class="analytics-panel">
+            <div class="analytics-panel-header">
+                <h2>{% trans "Топ товарів по видачі" %}</h2>
+            </div>
             {% if top_issued_items_visual %}
                 <div class="analytics-visual-list">
                     {% for row in top_issued_items_visual %}
                         <div class="analytics-visual-row">
-                            <div class="analytics-visual-label"><a href="{% url 'management_analytics_item_detail' row.item_id %}?{{ filter_query }}">{{ row.item_name }}</a> <span class="analytics-visual-value">{{ row.total_qty }}</span></div>
+                            <div class="analytics-visual-label">
+                                <a href="{% url 'management_analytics_item_detail' row.item_id %}?{{ filter_query }}">{{ row.item_name|default:"—" }}</a>
+                                <span class="analytics-visual-value">{{ row.total_qty }}</span>
+                            </div>
                             <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
-                <div class="text-muted">{% trans "За вибраний період немає складських операцій." %}</div>
+                <div class="analytics-empty-state">{% trans "За вибраний період немає складських операцій." %}</div>
             {% endif %}
+        </article>
 
-            <h2 class="h5 mt-3">{% trans "Операції" %}</h2>
-            <div class="analytics-visual-list">
-                {% for row in operation_mix_visual %}
-                    <div class="analytics-visual-row">
-                        <div class="analytics-visual-label">{{ row.label }} <span class="analytics-visual-value">{{ row.total }}</span></div>
-                        <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
-                    </div>
-                {% endfor %}
+        <article class="analytics-panel">
+            <div class="analytics-panel-header">
+                <h2>{% trans "Структура операцій" %}</h2>
             </div>
+            {% if summary.operations_count %}
+                <div class="analytics-visual-list">
+                    {% for row in operation_mix_visual %}
+                        <div class="analytics-visual-row">
+                            <div class="analytics-visual-label">
+                                <span>{{ row.label }}</span>
+                                <span class="analytics-visual-value">{{ row.total }}</span>
+                            </div>
+                            <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="analytics-empty-state">{% trans "За вибраний період немає складських операцій." %}</div>
+            {% endif %}
+        </article>
 
-            <h2 class="h5 mt-3">{% trans "Топ цехів / місць використання" %}</h2>
-            {% for row in top_usage_places %}
-                <div><a href="{% url 'management_analytics_usage_place_detail' row.department|default:'-' %}?{{ filter_query }}">{{ row.department|default:"—" }}</a> {{ row.total_qty }}</div>
-            {% endfor %}
+        <article class="analytics-panel">
+            <div class="analytics-panel-header">
+                <h2>{% trans "Куди видавали" %}</h2>
+            </div>
+            {% if top_usage_places %}
+                <div class="table-responsive">
+                    <table class="table table-sm analytics-table">
+                        <thead><tr><th>{% trans "Цех / місце використання" %}</th><th class="text-end">{% trans "Кількість" %}</th></tr></thead>
+                        <tbody>
+                            {% for row in top_usage_places %}
+                                <tr>
+                                    <td><a href="{% url 'management_analytics_usage_place_detail' row.department|default:'-' %}?{{ filter_query }}">{{ row.department|default:"—" }}</a></td>
+                                    <td class="text-end">{{ row.total_qty }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="analytics-empty-state">{% trans "За вибраний період немає складських операцій." %}</div>
+            {% endif %}
+        </article>
 
-            <h2 class="h5 mt-3">{% trans "Топ отримувачів" %}</h2>
-            {% for row in top_recipients %}
-                <div><a href="{% url 'management_analytics_recipient_detail' row.recipient__id %}?{{ filter_query }}">{{ row.recipient__name }}</a> {{ row.total_qty }}</div>
-            {% endfor %}
+        <article class="analytics-panel">
+            <div class="analytics-panel-header">
+                <h2>{% trans "Кому видавали" %}</h2>
+            </div>
+            {% if top_recipients %}
+                <div class="table-responsive">
+                    <table class="table table-sm analytics-table">
+                        <thead><tr><th>{% trans "Отримувач" %}</th><th class="text-end">{% trans "Кількість" %}</th></tr></thead>
+                        <tbody>
+                            {% for row in top_recipients %}
+                                <tr>
+                                    <td><a href="{% url 'management_analytics_recipient_detail' row.recipient__id %}?{{ filter_query }}">{{ row.recipient__name|default:"—" }}</a></td>
+                                    <td class="text-end">{{ row.total_qty }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="analytics-empty-state">{% trans "За вибраний період немає складських операцій." %}</div>
+            {% endif %}
+        </article>
 
-            <a href="{{ movement_list_base_url }}?{{ movement_query }}&movement_type=out">movement_type=out</a>
-
-            <h2 class="h5 mt-3">{% trans "Останні операції" %}</h2>
-            {% for movement in recent_movements %}
-                <div>{{ movement.document_number|default:"—" }}</div>
-            {% empty %}
-                <div class="text-muted">{% trans "За вибраний період немає складських операцій." %}</div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div data-analytics-daily-chart></div>
-    <div data-analytics-operation-mix></div>
-    <div data-analytics-top-items-chart></div>
+        <article class="analytics-panel analytics-panel--wide">
+            <div class="analytics-panel-header">
+                <h2>{% trans "Останні операції" %}</h2>
+            </div>
+            {% if recent_movements %}
+                <div class="table-responsive">
+                    <table class="table table-sm analytics-table analytics-table--recent">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Дата" %}</th>
+                                <th>{% trans "Документ" %}</th>
+                                <th>{% trans "Номенклатура" %}</th>
+                                <th>{% trans "Тип" %}</th>
+                                <th class="text-end">{% trans "Кількість" %}</th>
+                                <th>{% trans "Склад" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for movement in recent_movements %}
+                                <tr>
+                                    <td>{{ movement.occurred_at|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ movement.document_number|default:"—" }}</td>
+                                    <td>{{ movement.item|default:"—" }}</td>
+                                    <td>{{ movement.get_movement_type_display|default:"—" }}</td>
+                                    <td class="text-end">{{ movement.qty|default:"—" }}</td>
+                                    <td>{{ movement.resolved_source_warehouse|default:movement.resolved_destination_warehouse|default:"—" }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="analytics-empty-state">{% trans "За вибраний період немає складських операцій." %}</div>
+            {% endif %}
+        </article>
+    </section>
 </div>
 {% endblock %}
