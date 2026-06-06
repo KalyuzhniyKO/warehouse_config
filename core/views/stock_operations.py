@@ -47,6 +47,7 @@ class SelfServiceOperationTokenMixin:
     operation_tokens_session_key = SELF_SERVICE_OPERATION_TOKENS_SESSION_KEY
     operation_token_limit = SELF_SERVICE_OPERATION_TOKEN_LIMIT
     result_url_name = None
+    result_url_uses_movement_pk = True
 
     def get_operation_tokens(self):
         return dict(self.request.session.get(self.operation_tokens_session_key, {}))
@@ -83,7 +84,9 @@ class SelfServiceOperationTokenMixin:
         movement_pk = token_data.get("movement_pk")
         if token_data.get("status") == "used" and movement_pk:
             messages.info(self.request, self.duplicate_submission_message)
-            return redirect(self.result_url_name, pk=movement_pk)
+            if self.result_url_uses_movement_pk:
+                return redirect(self.result_url_name, pk=movement_pk)
+            return redirect(self.result_url_name)
         return None
 
     def get_operation_token_for_context(self, should_create):
@@ -92,6 +95,11 @@ class SelfServiceOperationTokenMixin:
         if should_create:
             return self.create_operation_token()
         return ""
+
+    def add_operation_token_context(self, context, should_create=True):
+        context["operation_token"] = self.get_operation_token_for_context(should_create)
+        context["operation_token_field"] = self.operation_token_field
+        return context
 
 
 def is_self_service_storekeeper(user):
@@ -180,11 +188,7 @@ class StockReceiveView(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["can_submit_receive"] = self.scanned_item is not None
-        context["operation_token"] = self.get_operation_token_for_context(
-            context["can_submit_receive"]
-        )
-        context["operation_token_field"] = self.operation_token_field
-        return context
+        return self.add_operation_token_context(context, context["can_submit_receive"])
 
     def form_valid(self, form):
         duplicate_redirect = self.redirect_if_operation_token_used()
@@ -260,11 +264,7 @@ class StockReturnView(
         context["can_submit_receive"] = (
             self.scanned_item is not None and self.get_return_warehouse() is not None
         )
-        context["operation_token"] = self.get_operation_token_for_context(
-            context["can_submit_receive"]
-        )
-        context["operation_token_field"] = self.operation_token_field
-        return context
+        return self.add_operation_token_context(context, context["can_submit_receive"])
 
     def form_valid(self, form):
         duplicate_redirect = self.redirect_if_operation_token_used()
@@ -349,11 +349,7 @@ class StockIssueView(
                 and self.get_best_stock_balance() is not None
             )
         )
-        context["operation_token"] = self.get_operation_token_for_context(
-            context["show_issue_form"]
-        )
-        context["operation_token_field"] = self.operation_token_field
-        return context
+        return self.add_operation_token_context(context, context["show_issue_form"])
 
     def form_valid(self, form):
         duplicate_redirect = self.redirect_if_operation_token_used()
@@ -401,10 +397,17 @@ def _format_writeoff_comment(*, reason, document_number, comment):
     return "\n".join(lines)
 
 
-class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
+class StockWriteOffView(
+    LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
+    GroupRequiredMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_writeoff_form.html"
     form_class = StockWriteOffForm
+    result_url_name = "stock_writeoff_result"
 
     def get_initial(self):
         initial = super().get_initial()
@@ -413,7 +416,13 @@ class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
         )
         return initial
 
+    def get_context_data(self, **kwargs):
+        return self.add_operation_token_context(super().get_context_data(**kwargs))
+
     def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
         reason = dict(form.fields["writeoff_reason"].choices).get(
             form.cleaned_data["writeoff_reason"], form.cleaned_data["writeoff_reason"]
         )
@@ -445,13 +454,21 @@ class StockWriteOffView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
             messages.error(self.request, message)
             form.add_error(None, message)
             return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
         return redirect("stock_writeoff_result", pk=movement.pk)
 
 
-class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
+class StockTransferView(
+    LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
+    GroupRequiredMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/stock_transfer_form.html"
     form_class = StockTransferForm
+    result_url_name = "stock_transfer_result"
 
     def get_initial(self):
         initial = super().get_initial()
@@ -460,7 +477,13 @@ class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
         )
         return initial
 
+    def get_context_data(self, **kwargs):
+        return self.add_operation_token_context(super().get_context_data(**kwargs))
+
     def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
         try:
             movement = transfer_stock(
                 item=form.cleaned_data["item"],
@@ -493,13 +516,22 @@ class StockTransferView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupReq
             messages.error(self.request, message)
             form.add_error(None, message)
             return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
         return redirect("stock_transfer_result", pk=movement.pk)
 
 
-class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRequiredMixin, FormView):
+class InitialBalanceView(
+    LoginRequiredMixin,
+    RequestUserFormKwargsMixin,
+    GroupRequiredMixin,
+    SelfServiceOperationTokenMixin,
+    FormView,
+):
     group_names = STOCK_EDIT_GROUPS
     template_name = "core/initial_balance_form.html"
     form_class = InitialBalanceForm
+    result_url_name = "movement_list"
+    result_url_uses_movement_pk = False
 
     def get_initial(self):
         initial = super().get_initial()
@@ -508,9 +540,15 @@ class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRe
         )
         return initial
 
+    def get_context_data(self, **kwargs):
+        return self.add_operation_token_context(super().get_context_data(**kwargs))
+
     def form_valid(self, form):
+        duplicate_redirect = self.redirect_if_operation_token_used()
+        if duplicate_redirect is not None:
+            return duplicate_redirect
         try:
-            create_initial_balance(
+            movement = create_initial_balance(
                 item=form.cleaned_data["item"],
                 warehouse=form.cleaned_data["warehouse"],
                 location=form.cleaned_data.get("location"),
@@ -525,5 +563,6 @@ class InitialBalanceView(LoginRequiredMixin, RequestUserFormKwargsMixin, GroupRe
             messages.error(self.request, message)
             form.add_error(None, message)
             return self.form_invalid(form)
+        self.mark_operation_token_used(movement)
         messages.success(self.request, _("Початковий залишок збережено."))
         return redirect("movement_list")

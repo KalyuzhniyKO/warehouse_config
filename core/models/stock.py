@@ -38,7 +38,11 @@ class StockBalance(ActiveModel):
                 fields=["item", "warehouse"],
                 condition=models.Q(is_active=True),
                 name="core_stock_balance_unique_active_item_warehouse",
-            )
+            ),
+            models.CheckConstraint(
+                condition=models.Q(qty__gte=0),
+                name="core_stock_balance_qty_non_negative",
+            ),
         ]
 
     def save(self, *args, **kwargs):

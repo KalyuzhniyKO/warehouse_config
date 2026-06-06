@@ -183,11 +183,12 @@ class AnalyticsDashboardTests(TestCase):
         self.assertContains(r, "Видача без отримувача")
         self.assertNotContains(r, "issue_without_recipient")
 
-    def test_negative_stock_warning(self):
-        StockBalance.objects.create(item=Item.objects.create(name="Neg", unit=self.unit, internal_code="NEG"), location=self.loc, qty=Decimal("-1.000"))
+    def test_negative_stock_warning_is_zero_for_non_negative_balances(self):
+        StockBalance.objects.create(item=Item.objects.create(name="Zero", unit=self.unit, internal_code="ZERO"), location=self.loc, qty=Decimal("0.000"))
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_data_quality"))
         self.assertContains(r, "Негативних залишків")
+        self.assertEqual(r.context["data_quality"]["reconciliation"]["negative_stock"], 0)
 
 
     def test_data_quality_page_has_human_labels_and_table_headers(self):
