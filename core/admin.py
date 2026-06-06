@@ -40,7 +40,7 @@ def superuser_admin_has_permission(request):
 admin.site.has_permission = superuser_admin_has_permission
 admin.site.site_header = "YANTOS Warehouse Admin"
 admin.site.site_title = "YANTOS Warehouse"
-admin.site.index_title = "Панель керування складом"
+admin.site.index_title = "Панель адміністрування"
 
 
 @admin.action(description="Активувати вибрані записи")
