@@ -101,6 +101,13 @@ class StockMovementCancellationTests(TestCase):
         self.assertEqual(self.balance(self.source), Decimal("10.000"))
 
     def test_cancelling_return_decreases_destination_balance(self):
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=3,
+            source_location=self.source,
+            recipient=self.recipient,
+        )
         movement = return_stock(
             item=self.item,
             location=self.destination,

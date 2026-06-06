@@ -304,3 +304,10 @@ the migration stops with an explicit error if legacy negative balances exist; it
 does not rewrite quantities. Stock operation forms use one-time session submission
 tokens alongside Django CSRF protection to prevent duplicate movements from
 repeated form submissions.
+
+Normal return operations require a recipient and are validated against movement
+history. Available return quantity is the recipient's active `OUT` quantity for
+the item minus active `RETURN` quantity for the same item and recipient.
+Cancelled movements and cancellation adjustment rows are excluded. Legacy
+historical return movements may still have no recipient; they are preserved and
+are not rewritten.

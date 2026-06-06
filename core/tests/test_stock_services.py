@@ -477,6 +477,7 @@ class StockServiceTests(TestCase):
             qty=Decimal("2.000"),
             recipient=self.recipient,
             department="  Assembly  ",
+            allow_unmatched_return=True,
         )
 
         self.assertEqual(self.get_balance_qty(), Decimal("3.000"))
@@ -496,6 +497,7 @@ class StockServiceTests(TestCase):
             item=self.item,
             location=self.source_location,
             qty=Decimal("1.000"),
+            allow_unmatched_return=True,
         )
 
         self.assertEqual(self.get_balance_qty(), Decimal("1.000"))
@@ -513,6 +515,7 @@ class StockServiceTests(TestCase):
             location=self.source_location,
             qty=Decimal("1.000"),
             occurred_at=occurred_at,
+            allow_unmatched_return=True,
         )
 
         self.assertEqual(movement.occurred_at, occurred_at)
