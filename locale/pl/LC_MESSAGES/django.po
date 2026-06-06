@@ -67,7 +67,7 @@ msgstr "Kategoria"
 #: templates/core/inventory_line_table.html:7
 #: templates/core/item_label_print.html:7
 msgid "Номенклатура"
-msgstr "Pozycje"
+msgstr "Towar"
 
 #: core/forms/analytics.py:41 core/forms/filters.py:44
 #: core/views/analytics.py:212 core/views/stock_operations.py:499
@@ -429,7 +429,7 @@ msgstr "Wybierz miejsce użycia"
 #: core/forms/stock_operations.py:137 core/models.py:94
 #: core/views/stock_operations.py:508 templates/core/stock_issue_result.html:24
 msgid "Цех / місце використання"
-msgstr "Wydział / miejsce użycia"
+msgstr "Dział / miejsce użycia"
 
 #: core/forms/stock_operations.py:140
 msgid "Оберіть цех або місце використання"
@@ -931,7 +931,7 @@ msgstr "Aby wydać towar, trzeba wskazać odbiorcę."
 
 #: core/views/analytics.py:211 templates/core/stockmovement_list.html:13
 msgid "Дата"
-msgstr "Dane"
+msgstr "Data"
 
 #: core/views/analytics.py:246
 msgid "XLSX експорт недоступний: openpyxl не встановлено."
@@ -1455,7 +1455,7 @@ msgstr "YANTOS · Ewidencja magazynowa"
 #: templates/core/stockmovement_list.html:3
 #: templates/core/storekeeper_workplace.html:3
 msgid "Складський облік"
-msgstr "Ewidencja magazynowa"
+msgstr "Gospodarka magazynowa"
 
 #: templates/base.html:106 templates/base.html:170
 msgid "Вийти"
@@ -2614,3 +2614,139 @@ msgstr "Szybki dostęp do typowych raportów magazynowych, kontroli jakości dan
 #: templates/core/management/reports.html:12
 msgid "Навігація звітів"
 msgstr "Nawigacja raportów"
+
+
+msgid "Кому видавали"
+msgstr "Odbiorcy wydań"
+
+msgid "Контроль даних"
+msgstr "Jakość danych"
+
+msgid "Довільний"
+msgstr "Niestandardowy"
+
+msgid "Топ товарів по видачі"
+msgstr "Najczęściej wydawane towary"
+
+msgid "Застосовано збережені фільтри"
+msgstr "Zastosowano zapisane filtry"
+
+msgid "Переглянути деталі"
+msgstr "Zobacz szczegóły"
+
+msgid "Попередній місяць"
+msgstr "Poprzedni miesiąc"
+
+msgid "Операції"
+msgstr "Operacje"
+
+msgid "Повернення"
+msgstr "Zwrot"
+
+msgid "30 днів"
+msgstr "30 dni"
+
+msgid "Сумарно прийнято за період"
+msgstr "Łącznie przyjęto w okresie"
+
+msgid "Огляд рухів, залишків, видачі та якості складських даних."
+msgstr "Przegląd ruchów, stanów, wydań i jakości danych magazynowych."
+
+msgid "Швидка перевірка документів, повноти рухів і залишків."
+msgstr "Szybka kontrola dokumentów, kompletności ruchów i stanów."
+
+msgid "Поточний місяць"
+msgstr "Bieżący miesiąc"
+
+msgid "Ключові показники"
+msgstr "Kluczowe wskaźniki"
+
+msgid "Оновити"
+msgstr "Odśwież"
+
+msgid "Сумарно видано за період"
+msgstr "Łącznie wydano w okresie"
+
+msgid "Аналітика складу"
+msgstr "Analityka magazynu"
+
+msgid "7 днів"
+msgstr "7 dni"
+
+msgid "Куди видавали"
+msgstr "Miejsca wydań"
+
+msgid "Неповні рухи"
+msgstr "Niekompletne ruchy"
+
+msgid "Сьогодні"
+msgstr "Dzisiaj"
+
+msgid "Негативні залишки"
+msgstr "Ujemne stany"
+
+msgid "Є попередження"
+msgstr "Są ostrzeżenia"
+
+msgid "Експорт Excel"
+msgstr "Eksport Excel"
+
+msgid "Фільтри"
+msgstr "Filtry"
+
+msgid "Структура операцій"
+msgstr "Struktura operacji"
+
+msgid "За вибраний період немає складських операцій."
+msgstr "W wybranym okresie nie ma operacji magazynowych."
+
+msgid "Видано"
+msgstr "Wydano"
+
+msgid "Без руху"
+msgstr "Bez ruchu"
+
+msgid "Дані узгоджені"
+msgstr "Dane są spójne"
+
+msgid "Швидкі періоди"
+msgstr "Szybkie okresy"
+
+msgid "Переміщення"
+msgstr "Przeniesienie"
+
+msgid "Необов'язкова адресна деталізація всередині складу."
+msgstr "Opcjonalne szczegóły lokalizacji w magazynie."
+
+msgid "Позиції без руху"
+msgstr "Pozycje bez ruchu"
+
+msgid "Кількість рухів за вибраний період"
+msgstr "Liczba ruchów w wybranym okresie"
+
+msgid "Розширені фільтри"
+msgstr "Filtry zaawansowane"
+
+msgid "Період"
+msgstr "Okres"
+
+msgid "Надійшло"
+msgstr "Przyjęto"
+
+msgid "Готові звіти"
+msgstr "Gotowe raporty"
+
+msgid "Позиції, які потребують перевірки"
+msgstr "Pozycje wymagające sprawdzenia"
+
+msgid "Останні операції"
+msgstr "Ostatnie operacje"
+
+msgid "Фільтри запамʼятовуються для вашого користувача."
+msgstr "Filtry są zapisywane dla użytkownika."
+
+msgid "Критичні залишки"
+msgstr "Krytyczne stany"
+
+msgid "Рухи без документа"
+msgstr "Ruchy bez dokumentu"

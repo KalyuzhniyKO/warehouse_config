@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block content %}
+<div id="content-main" data-admin-landing>
 <div class="admin-dashboard-intro">
   <h1>{% trans "YANTOS Warehouse Admin" %}</h1>
   <p>{% trans "Службова адмін-панель для керування довідниками, аудитом рухів, друком етикеток і системними налаштуваннями." %}</p>
@@ -38,8 +39,5 @@
     <p>{% trans "Користувачі, групи, налаштування системи" %}</p>
   </section>
 </div>
-
-<div id="content-main">
-{% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
 </div>
 {% endblock %}

@@ -88,17 +88,49 @@ class AdminIndexPolishTests(TestCase):
         self.assertContains(response, "Друк")
         self.assertContains(response, "Система")
 
-    def test_custom_admin_css_is_loaded(self):
+    def test_only_light_admin_css_is_loaded(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin:index"))
-        self.assertContains(response, "admin/css/custom_admin.css")
         self.assertContains(response, "core/css/admin-light.css")
+        self.assertNotContains(response, "admin/css/custom_admin.css")
+        self.assertNotContains(response, 'class="theme-toggle"')
+
+    def test_admin_user_change_page_has_light_css_and_selector_widgets(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(
+            reverse("admin:auth_user_change", args=[self.superuser.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "core/css/admin-light.css")
+        self.assertNotContains(response, "admin/css/custom_admin.css")
+        self.assertNotContains(response, 'class="theme-toggle"')
+        self.assertContains(response, 'class="selectfilter"')
+        self.assertContains(response, 'id="id_groups"')
+        self.assertContains(response, 'id="id_user_permissions"')
 
     def test_standard_admin_content_still_renders(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin:index"))
         self.assertContains(response, 'id="content-main"')
+        self.assertContains(response, "data-admin-landing")
         self.assertContains(response, admin.site.site_header)
+
+    def test_admin_index_keeps_sidebar_without_duplicating_app_list(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(reverse("admin:index"))
+        item_changelist_url = reverse("admin:core_item_changelist")
+        central_content = response.content.decode().split(
+            '<div id="content-main" data-admin-landing>', 1
+        )[1]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="nav-sidebar"')
+        self.assertContains(response, f'href="{item_changelist_url}"', count=1)
+        self.assertNotIn('class="app-core module"', central_content)
+        self.assertNotIn('class="app-auth module"', central_content)
 
     def test_normal_warehouse_page_does_not_load_admin_light_css(self):
         self.client.force_login(self.superuser)

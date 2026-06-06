@@ -311,3 +311,12 @@ the item minus active `RETURN` quantity for the same item and recipient.
 Cancelled movements and cancellation adjustment rows are excluded. Legacy
 historical return movements may still have no recipient; they are preserved and
 are not rewritten.
+
+Inventory counts preserve each line's `expected_qty` as the warehouse-level
+snapshot at inventory start. Normal stock operations remain available while an
+inventory is in progress. When a physical quantity is saved, `counted_at`
+records its time; reconciliation calculates the line's expected quantity as the
+snapshot plus net warehouse movements through `counted_at`. Final posting
+creates an adjustment only for `actual_qty - expected_qty_at_count_time`, so
+movements after the physical count are not included in the variance. Locations
+remain optional metadata and are not the accounting identity.
