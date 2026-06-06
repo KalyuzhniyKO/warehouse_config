@@ -234,6 +234,14 @@ class StockOperationWorkflowTestBase(TestCase):
         self.inactive_usage_place = UsagePlace.objects.create(
             name="Archived place", is_active=False
         )
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=self.item,
+            qty=Decimal("100.000"),
+            source_warehouse=self.warehouse,
+            source_location=self.location,
+            recipient=self.recipient,
+        )
 
     def _transfer_data(self, **overrides):
         data = {
