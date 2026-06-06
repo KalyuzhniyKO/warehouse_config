@@ -88,11 +88,27 @@ class AdminIndexPolishTests(TestCase):
         self.assertContains(response, "Друк")
         self.assertContains(response, "Система")
 
-    def test_custom_admin_css_is_loaded(self):
+    def test_only_light_admin_css_is_loaded(self):
         self.client.force_login(self.superuser)
         response = self.client.get(reverse("admin:index"))
-        self.assertContains(response, "admin/css/custom_admin.css")
         self.assertContains(response, "core/css/admin-light.css")
+        self.assertNotContains(response, "admin/css/custom_admin.css")
+        self.assertNotContains(response, 'class="theme-toggle"')
+
+    def test_admin_user_change_page_has_light_css_and_selector_widgets(self):
+        self.client.force_login(self.superuser)
+
+        response = self.client.get(
+            reverse("admin:auth_user_change", args=[self.superuser.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "core/css/admin-light.css")
+        self.assertNotContains(response, "admin/css/custom_admin.css")
+        self.assertNotContains(response, 'class="theme-toggle"')
+        self.assertContains(response, 'class="selectfilter"')
+        self.assertContains(response, 'id="id_groups"')
+        self.assertContains(response, 'id="id_user_permissions"')
 
     def test_standard_admin_content_still_renders(self):
         self.client.force_login(self.superuser)

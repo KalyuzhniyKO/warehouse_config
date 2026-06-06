@@ -57,6 +57,12 @@ body,
   color: #101828;
 }
 
+.theme-toggle,
+#toggle-theme,
+[data-theme-toggle] {
+  display: none !important;
+}
+
 #header {
   background: #f3d342;
   border-bottom: 1px solid #d4ac00;
@@ -107,6 +113,59 @@ div.breadcrumbs a {
   background: #ffffff;
   border-color: #d7dee8;
   color: #101828;
+}
+
+.admin-dashboard-intro,
+.admin-map-card,
+#changelist-filter,
+.submit-row,
+.inline-group {
+  border: 1px solid #d7dee8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(16, 24, 40, 0.05);
+}
+
+.admin-dashboard-intro {
+  margin-bottom: 16px;
+  padding: 18px 20px;
+}
+
+.admin-dashboard-intro h1 {
+  margin: 0 0 6px;
+}
+
+.admin-dashboard-warning {
+  color: #854d0e;
+  font-weight: 600;
+}
+
+.admin-quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.admin-map-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.admin-map-card {
+  padding: 13px 15px;
+}
+
+.admin-map-card h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.admin-map-card p {
+  margin: 0;
+  color: #5b6777;
+  font-size: 13px;
 }
 
 .module h2,
@@ -193,6 +252,15 @@ select,
   color: #101828;
 }
 
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+textarea,
+select {
+  border-radius: 8px;
+}
+
 input:focus,
 textarea:focus,
 select:focus {
@@ -215,6 +283,16 @@ a.button,
   background: #d4ac00;
   border-color: #b89100;
   color: #101828;
+}
+
+.button,
+input[type="submit"],
+input[type="button"],
+.submit-row input,
+a.button,
+.object-tools a {
+  border-radius: 8px;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .button:hover,
@@ -263,6 +341,174 @@ form div.help,
 .quiet,
 .small {
   color: #5b6777;
+}
+
+.form-row {
+  border-bottom-color: #e8edf3;
+}
+
+.aligned label {
+  color: #344054;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-badge--active,
+.status-badge--printed {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge--archived {
+  background: #f1f5f9;
+  color: #475467;
+}
+
+.status-badge--default,
+.status-badge--pending {
+  background: #fff4ce;
+  color: #854d0e;
+}
+
+.status-badge--failed {
+  background: #fee4e2;
+  color: #b42318;
+}
+
+.status-badge--movement {
+  background: #eaf2ff;
+  color: #1e40af;
+}
+
+/* Django filter_horizontal/filter_vertical widgets. */
+body .selector {
+  max-width: 100%;
+  gap: 12px;
+  color: #101828;
+}
+
+body .selector-available,
+body .selector-chosen {
+  min-width: 0;
+  background: #ffffff;
+}
+
+body .selector-available-title,
+body .selector-chosen-title,
+body .selector-available h2,
+body .selector-chosen h2 {
+  background: #fff8d6;
+  border-color: #d7dee8;
+  color: #101828;
+}
+
+body .selector-available-title label,
+body .selector-chosen-title label,
+body .selector-available h2 label,
+body .selector-chosen h2 label {
+  color: #101828;
+}
+
+body .selector .selector-filter {
+  background: #ffffff;
+  border-color: #d7dee8;
+  color: #5b6777;
+}
+
+body .selector .selector-filter label {
+  background-color: transparent;
+}
+
+body .selector .selector-filter input,
+body .selector select {
+  min-width: 0;
+  background: #ffffff;
+  border-color: #d7dee8;
+  color: #101828;
+}
+
+body .selector select option {
+  background: #ffffff;
+  color: #101828;
+}
+
+body .selector select option:checked {
+  background: #fff8d6;
+  color: #101828;
+}
+
+body .selector ul.selector-chooser,
+body .stacked ul.selector-chooser {
+  background: #fff8d6;
+  border: 1px solid #d7dee8;
+  box-shadow: none;
+}
+
+body .selector .selector-chooser li {
+  background: transparent;
+  padding: 3px;
+}
+
+body .selector-add,
+body .selector-remove {
+  background-color: transparent;
+  border-radius: 4px;
+}
+
+body .selector-add:hover,
+body .selector-remove:hover,
+body .selector-add:focus,
+body .selector-remove:focus {
+  background-color: #ffffff;
+  outline: 2px solid rgba(212, 172, 0, 0.3);
+}
+
+body .selector-chooseall,
+body .selector-clearall,
+body .selector-chosen .list-footer-display {
+  background: #fff8d6;
+  border-color: #d7dee8;
+  color: #795f00;
+}
+
+body .selector-chooseall:hover,
+body .selector-clearall:hover,
+body .selector-chosen .list-footer-display:hover {
+  background: #fff1a8;
+  color: #92400e;
+}
+
+@media (max-width: 1024px) {
+  body .selector {
+    flex-wrap: wrap;
+  }
+
+  body .selector-available,
+  body .selector-chosen {
+    flex-basis: calc(50% - 28px);
+  }
+
+  .admin-dashboard-intro,
+  .admin-map-card {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 767px) {
+  body .selector {
+    display: block;
+  }
+
+  body .selector ul.selector-chooser {
+    margin: 8px auto;
+    transform: none;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
