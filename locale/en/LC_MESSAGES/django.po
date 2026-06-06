@@ -4521,3 +4521,12 @@ msgstr "Received"
 
 msgid "Позиції, які потребують перевірки"
 msgstr "Items that require review"
+
+msgid "Мобільна навігація"
+msgstr "Mobile navigation"
+
+msgid "Обліковий запис"
+msgstr "Account"
+
+msgid "Панель адміністратора"
+msgstr "Admin panel"

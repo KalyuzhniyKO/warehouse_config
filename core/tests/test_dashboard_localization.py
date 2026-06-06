@@ -36,6 +36,9 @@ class DashboardLocalizationTests(TestCase):
         self.storekeeper.groups.add(Group.objects.get(name="Комірник"))
         self.auditor = User.objects.create_user(username="dash-auditor", password="pw")
         self.auditor.groups.add(Group.objects.get(name="Перегляд / аудитор"))
+        self.staff = User.objects.create_user(
+            username="dash-staff", password="pw", is_staff=True
+        )
         self.warehouse = Warehouse.objects.create(name="Dashboard warehouse")
         grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
         grant_warehouse_access(self.storekeeper, self.warehouse)
@@ -44,6 +47,11 @@ class DashboardLocalizationTests(TestCase):
     def dashboard_for(self, user, path=None):
         self.client.force_login(user)
         return self.client.get(path or reverse("dashboard"))
+
+    def mobile_nav_html(self, response):
+        html = response.content.decode()
+        start = html.index('data-mobile-nav')
+        return html[start:html.index("<!-- mobile-nav-end -->", start)]
 
     def tearDown(self):
         from django.utils import translation
@@ -257,6 +265,61 @@ class DashboardLocalizationTests(TestCase):
         self.assertLess(language_index, user_index)
         self.assertIn('href="/uk/management/analytics/"', html)
         self.assertIn('Аналітика', html)
+
+    def test_mobile_menu_mirrors_admin_analytics_reports_and_account_actions(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        mobile_nav = self.mobile_nav_html(response)
+
+        self.assertIn(f'href="{reverse("dashboard")}"', mobile_nav)
+        self.assertIn(f'href="{reverse("management_analytics")}"', mobile_nav)
+        self.assertIn(f'href="{reverse("management_reports")}"', mobile_nav)
+        self.assertIn("Обліковий запис", mobile_nav)
+        self.assertIn("Тарас Технолог", mobile_nav)
+        self.assertIn("data-mobile-language", mobile_nav)
+        self.assertIn("Мова", mobile_nav)
+
+    def test_mobile_logout_is_a_post_form_with_csrf(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        mobile_nav = self.mobile_nav_html(response)
+
+        self.assertIn('method="post"', mobile_nav)
+        self.assertIn(f'action="{reverse("logout")}"', mobile_nav)
+        self.assertIn("csrfmiddlewaretoken", mobile_nav)
+        self.assertIn("data-mobile-logout-form", mobile_nav)
+        self.assertNotIn(f'<a class="nav-link" href="{reverse("logout")}"', mobile_nav)
+
+    def test_mobile_admin_panel_link_requires_staff_status(self):
+        staff_mobile_nav = self.mobile_nav_html(self.dashboard_for(self.staff, "/uk/"))
+        non_staff_mobile_nav = self.mobile_nav_html(self.dashboard_for(self.admin, "/uk/"))
+
+        self.assertIn(f'href="{reverse("admin:index")}"', staff_mobile_nav)
+        self.assertIn("Панель адміністратора", staff_mobile_nav)
+        self.assertNotIn(f'href="{reverse("admin:index")}"', non_staff_mobile_nav)
+
+    def test_mobile_menu_keeps_analytics_permission_condition(self):
+        admin_mobile_nav = self.mobile_nav_html(self.dashboard_for(self.admin, "/uk/"))
+        auditor_mobile_nav = self.mobile_nav_html(self.dashboard_for(self.auditor, "/uk/"))
+
+        self.assertIn(f'href="{reverse("management_analytics")}"', admin_mobile_nav)
+        self.assertNotIn(f'href="{reverse("management_analytics")}"', auditor_mobile_nav)
+        self.assertNotIn(f'href="{reverse("management_reports")}"', auditor_mobile_nav)
+
+    def test_mobile_account_labels_are_localized(self):
+        expected = {
+            "uk": ["Обліковий запис", "Мова", "Вийти"],
+            "en": ["Account", "Language", "Log out"],
+            "ru": ["Учётная запись", "Язык", "Выйти"],
+            "it": ["Account", "Lingua", "Esci"],
+            "pl": ["Konto", "Język", "Wyloguj"],
+        }
+
+        for language, labels in expected.items():
+            with self.subTest(language=language):
+                mobile_nav = self.mobile_nav_html(
+                    self.dashboard_for(self.admin, f"/{language}/")
+                )
+                for label in labels:
+                    self.assertIn(label, mobile_nav)
 
     def test_settings_include_russian_language(self):
         from django.conf import settings

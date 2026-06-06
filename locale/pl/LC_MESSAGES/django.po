@@ -2750,3 +2750,12 @@ msgstr "Krytyczne stany"
 
 msgid "Рухи без документа"
 msgstr "Ruchy bez dokumentu"
+
+msgid "Мобільна навігація"
+msgstr "Nawigacja mobilna"
+
+msgid "Обліковий запис"
+msgstr "Konto"
+
+msgid "Панель адміністратора"
+msgstr "Panel administratora"

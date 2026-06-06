@@ -2,11 +2,11 @@
 {% get_current_language as CURRENT_LANGUAGE %}
 {% get_available_languages as LANGUAGES %}
 
-<div class="dropdown language-switcher">
+<div class="dropdown language-switcher{% if mobile %} mobile-language-switcher{% endif %}">
   <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
     {% language_flag CURRENT_LANGUAGE as current_flag %}
     <span class="me-1">{{ current_flag }}</span>
-    <span class="d-none d-sm-inline">{% trans "Мова" %}</span>
+    <span class="{% if not mobile %}d-none d-sm-inline{% endif %}">{% trans "Мова" %}</span>
   </button>
   <ul class="dropdown-menu dropdown-menu-end shadow">
     {% for language_code, language_name in LANGUAGES %}
