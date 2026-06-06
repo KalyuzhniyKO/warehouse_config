@@ -5,6 +5,7 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.html import strip_tags
 
 
 class ManagementReportsTests(TestCase):
@@ -30,12 +31,21 @@ class ManagementReportsTests(TestCase):
     def test_page_content_and_presets(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_reports"))
-        self.assertContains(r, "Звіти складу")
+        self.assertContains(r, "Готові звіти")
+        self.assertContains(r, "Швидкий доступ до типових складських звітів")
+        self.assertContains(r, "Операційні звіти")
+        self.assertContains(r, "Аналітичні звіти")
+        self.assertContains(r, "Контроль якості даних")
+        self.assertContains(r, "Експорт")
         self.assertContains(r, "report-preset-card")
+        self.assertContains(r, "Видача за 7 днів")
+        self.assertContains(r, "Топ товарів за місяць")
         self.assertContains(r, "missing_documents")
         self.assertContains(r, "data_quality")
+        self.assertContains(r, "Відкрити")
+        self.assertContains(r, "Excel")
 
-    def test_preset_urls(self):
+    def test_preset_links_work_without_debug_url_display(self):
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_reports"))
         self.assertContains(r, "period=7d")
@@ -43,9 +53,18 @@ class ManagementReportsTests(TestCase):
         self.assertContains(r, "no_document=1")
         self.assertContains(r, reverse("management_analytics_data_quality"))
         self.assertContains(r, reverse("management_analytics_export_xlsx"))
+        self.assertNotContains(r, "<code")
+
+        visible_text = strip_tags(r.content.decode())
+        self.assertNotIn("period=7d", visible_text)
+        self.assertNotIn("movement_type=out", visible_text)
+        self.assertNotIn("no_document=1", visible_text)
 
     def test_navigation_links(self):
         self.client.force_login(self.admin)
+        reports_response = self.client.get(reverse("management_reports"))
+        self.assertContains(reports_response, reverse("management_analytics"))
+        self.assertContains(reports_response, reverse("management_dashboard"))
         self.assertContains(self.client.get(reverse("management_analytics")), reverse("management_reports"))
         self.assertContains(self.client.get(reverse("management_dashboard")), reverse("management_reports"))
 

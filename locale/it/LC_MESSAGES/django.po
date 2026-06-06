@@ -3962,3 +3962,103 @@ msgstr "Utente"
 
 #~ msgid "Підрозділи та контакти для видач."
 #~ msgstr "Departments and contacts for issues."
+
+#: core/services/analytics_presets.py:10
+msgid "Щоденні рухи складу: видача, прихід, повернення та переміщення."
+msgstr "Movimenti giornalieri di magazzino: uscite, entrate, resi e trasferimenti."
+
+#: core/services/analytics_presets.py:14
+msgid "Підсумки по товарах, цехах, отримувачах та активності."
+msgstr "Riepiloghi per articoli, reparti, destinatari e attività."
+
+#: core/services/analytics_presets.py:18
+msgid "Перевірки документів, неповних рухів та проблемних залишків."
+msgstr "Controlli su documenti, movimenti incompleti e giacenze problematiche."
+
+#: core/services/analytics_presets.py:22
+msgid "Швидке відкриття журналів та вивантаження даних."
+msgstr "Accesso rapido ai registri e alle esportazioni dati."
+
+#: core/services/analytics_presets.py:29
+msgid "Відкриває аналітику видачі зі складу за останні 7 днів."
+msgstr "Apre l'analisi delle uscite di magazzino degli ultimi 7 giorni."
+
+#: core/services/analytics_presets.py:29
+msgid "Швидко перевірити короткий період активних відвантажень."
+msgstr "Controlla rapidamente un breve periodo di uscite attive."
+
+#: core/services/analytics_presets.py:30
+msgid "Відкриває аналітику видачі зі складу за останні 30 днів."
+msgstr "Apre l'analisi delle uscite di magazzino degli ultimi 30 giorni."
+
+#: core/services/analytics_presets.py:30
+msgid "Зручно для місячного огляду складських витрат."
+msgstr "Utile per una panoramica mensile dei consumi di magazzino."
+
+#: core/services/analytics_presets.py:31
+msgid "Відкриває аналітику поточного місяця з фокусом на найбільшу видачу товарів."
+msgstr "Apre l'analisi del mese corrente con focus sulle maggiori uscite di articoli."
+
+#: core/services/analytics_presets.py:31
+msgid "Показує, які позиції найчастіше виходять зі складу."
+msgstr "Mostra quali articoli escono più spesso dal magazzino."
+
+#: core/services/analytics_presets.py:32
+msgid "Відкриває аналітику поточного місяця по цехах і місцях використання."
+msgstr "Apre l'analisi del mese corrente per reparti e luoghi di utilizzo."
+
+#: core/services/analytics_presets.py:32
+msgid "Допомагає побачити основних споживачів матеріалів."
+msgstr "Aiuta a vedere i principali consumatori di materiali."
+
+#: core/services/analytics_presets.py:33
+msgid "Відкриває журнал рухів, відфільтрований за відсутнім номером документа."
+msgstr "Apre il registro movimenti filtrato per numero documento mancante."
+
+#: core/services/analytics_presets.py:33
+msgid "Корисно для швидкого виправлення неповних операцій."
+msgstr "Utile per correggere rapidamente operazioni incomplete."
+
+#: core/services/analytics_presets.py:34
+msgid "Відкриває огляд перевірок цілісності даних та узгодженості рухів."
+msgstr "Apre una panoramica dei controlli di integrità dati e coerenza dei movimenti."
+
+#: core/services/analytics_presets.py:34
+msgid "Зібраний контроль документів, отримувачів, кількості та залишків."
+msgstr "Controlli raccolti su documenti, destinatari, quantità e giacenze."
+
+#: core/services/analytics_presets.py:35
+msgid "Відкриває секцію контролю якості з перевіркою від’ємних залишків."
+msgstr "Apre la sezione qualità dati con controlli sulle giacenze negative."
+
+#: core/services/analytics_presets.py:35
+msgid "Підсвічує позиції, які потребують звірки рухів."
+msgstr "Evidenzia gli articoli che richiedono riconciliazione dei movimenti."
+
+#: core/services/analytics_presets.py:36
+msgid "Відкриває аналітику залишків по неактивних товарах."
+msgstr "Apre l'analisi delle giacenze per articoli inattivi."
+
+#: core/services/analytics_presets.py:36
+msgid "Допомагає знайти залишки, які не рухалися в останній період."
+msgstr "Aiuta a trovare giacenze senza movimenti nell'ultimo periodo."
+
+#: core/services/analytics_presets.py:37
+msgid "Відкриває журнал складських операцій за останні 7 днів."
+msgstr "Apre il registro delle operazioni di magazzino degli ultimi 7 giorni."
+
+#: core/services/analytics_presets.py:37
+msgid "Швидкий перехід до актуального журналу рухів."
+msgstr "Accesso rapido al registro movimenti attuale."
+
+#: core/services/analytics_presets.py:45
+msgid "Excel"
+msgstr "Excel"
+
+#: templates/core/management/reports.html:10
+msgid "Швидкий доступ до типових складських звітів, контролю якості даних та експорту."
+msgstr "Accesso rapido ai report di magazzino comuni, ai controlli qualità dati e all'esportazione."
+
+#: templates/core/management/reports.html:12
+msgid "Навігація звітів"
+msgstr "Navigazione report"
