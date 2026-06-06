@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import timedelta
 from pathlib import Path
 from unittest import mock
 from django.core.exceptions import ValidationError
@@ -297,6 +298,234 @@ class InventoryServiceTests(TestCase):
         )
 
         self.assertEqual(line.difference_qty, Decimal("0"))
+
+
+class InventoryLiveMovementReconciliationTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            username="inventory-live-user", password="test-password"
+        )
+        self.unit = Unit.objects.create(name="Live piece", symbol="lp")
+        self.warehouse = Warehouse.objects.create(name="Live inventory warehouse")
+        self.other_warehouse = Warehouse.objects.create(name="Live other warehouse")
+        self.location = Location.objects.create(warehouse=self.warehouse, name="LIVE-A")
+        self.other_location = Location.objects.create(
+            warehouse=self.other_warehouse, name="LIVE-B"
+        )
+        self.item = Item.objects.create(name="Live counted item", unit=self.unit)
+        self.recipient = Recipient.objects.create(name="Live recipient")
+        StockBalance.objects.create(
+            item=self.item,
+            warehouse=self.warehouse,
+            location=self.location,
+            qty=Decimal("10.000"),
+        )
+        StockBalance.objects.create(
+            item=self.item,
+            warehouse=self.other_warehouse,
+            location=self.other_location,
+            qty=Decimal("5.000"),
+        )
+        self.started_at = timezone.now() - timedelta(hours=2)
+
+    def create_inventory_line(self, *, counted_at=None, actual_qty=None):
+        from ..services.inventory import create_inventory_count
+
+        inventory_count = create_inventory_count(warehouse=self.warehouse, user=self.user)
+        inventory_count.started_at = self.started_at
+        inventory_count.save(update_fields=["started_at", "updated_at"])
+        line = inventory_count.lines.get()
+        line.counted_at = counted_at or self.started_at + timedelta(hours=1)
+        line.actual_qty = actual_qty
+        line.save(update_fields=["counted_at", "actual_qty", "updated_at"])
+        return inventory_count, line
+
+    def movement(self, *, movement_type, qty, occurred_at, source=None, destination=None):
+        return StockMovement.objects.create(
+            movement_type=movement_type,
+            item=self.item,
+            qty=Decimal(qty),
+            source_warehouse=source,
+            destination_warehouse=destination,
+            occurred_at=occurred_at,
+        )
+
+    def test_inventory_start_quantity_remains_snapshot(self):
+        _, line = self.create_inventory_line()
+        self.movement(
+            movement_type=StockMovement.MovementType.IN,
+            qty="2.000",
+            occurred_at=self.started_at + timedelta(minutes=15),
+            destination=self.warehouse,
+        )
+
+        from ..services.inventory import get_inventory_line_expected_qty
+
+        self.assertEqual(line.expected_qty, Decimal("10.000"))
+        self.assertEqual(get_inventory_line_expected_qty(line), Decimal("12.000"))
+
+    def test_issue_and_receive_before_count_are_included(self):
+        _, line = self.create_inventory_line()
+        self.movement(
+            movement_type=StockMovement.MovementType.OUT,
+            qty="3.000",
+            occurred_at=self.started_at + timedelta(minutes=10),
+            source=self.warehouse,
+        )
+        self.movement(
+            movement_type=StockMovement.MovementType.IN,
+            qty="1.500",
+            occurred_at=self.started_at + timedelta(minutes=20),
+            destination=self.warehouse,
+        )
+
+        from ..services.inventory import get_inventory_line_expected_qty
+
+        self.assertEqual(get_inventory_line_expected_qty(line), Decimal("8.500"))
+
+    def test_movement_after_counted_at_is_not_included(self):
+        _, line = self.create_inventory_line()
+        self.movement(
+            movement_type=StockMovement.MovementType.IN,
+            qty="4.000",
+            occurred_at=line.counted_at + timedelta(minutes=1),
+            destination=self.warehouse,
+        )
+
+        from ..services.inventory import get_inventory_line_expected_qty
+
+        self.assertEqual(get_inventory_line_expected_qty(line), Decimal("10.000"))
+
+    def test_transfer_out_and_in_before_count_update_expected_quantity(self):
+        _, line = self.create_inventory_line()
+        self.movement(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            qty="3.000",
+            occurred_at=self.started_at + timedelta(minutes=10),
+            source=self.warehouse,
+            destination=self.other_warehouse,
+        )
+        self.movement(
+            movement_type=StockMovement.MovementType.TRANSFER,
+            qty="1.000",
+            occurred_at=self.started_at + timedelta(minutes=20),
+            source=self.other_warehouse,
+            destination=self.warehouse,
+        )
+
+        from ..services.inventory import get_inventory_line_expected_qty
+
+        self.assertEqual(get_inventory_line_expected_qty(line), Decimal("8.000"))
+
+    def test_cancelled_movement_during_count_is_ignored(self):
+        from ..services.stock import cancel_stock_movement, receive_stock
+        from ..services.inventory import get_inventory_line_expected_qty
+
+        inventory_count, line = self.create_inventory_line()
+        movement = receive_stock(
+            item=self.item,
+            warehouse=self.warehouse,
+            qty=Decimal("2.000"),
+            occurred_at=self.started_at + timedelta(minutes=10),
+        )
+        cancel_stock_movement(
+            movement=movement, cancelled_by=self.user, reason="Count cancellation"
+        )
+        line.counted_at = timezone.now() + timedelta(minutes=1)
+        line.save(update_fields=["counted_at", "updated_at"])
+
+        self.assertEqual(get_inventory_line_expected_qty(line), Decimal("10.000"))
+        self.assertEqual(inventory_count.stock_movements.count(), 0)
+
+    def test_variance_uses_expected_quantity_at_count_time(self):
+        from ..services.inventory import reconcile_inventory_line
+
+        _, line = self.create_inventory_line(actual_qty=Decimal("9.000"))
+        self.movement(
+            movement_type=StockMovement.MovementType.OUT,
+            qty="2.000",
+            occurred_at=self.started_at + timedelta(minutes=10),
+            source=self.warehouse,
+        )
+
+        reconcile_inventory_line(line)
+
+        self.assertEqual(line.expected_qty_at_count_time, Decimal("8.000"))
+        self.assertEqual(line.variance_qty, Decimal("1.000"))
+
+    def test_posting_adjusts_only_variance_and_ignores_movement_after_count(self):
+        from ..services.inventory import complete_inventory_count
+        from ..services.stock import receive_stock
+
+        inventory_count, line = self.create_inventory_line(actual_qty=Decimal("11.000"))
+        receive_stock(
+            item=self.item,
+            warehouse=self.warehouse,
+            qty=Decimal("2.000"),
+            occurred_at=self.started_at + timedelta(minutes=10),
+        )
+        receive_stock(
+            item=self.item,
+            warehouse=self.warehouse,
+            qty=Decimal("3.000"),
+            occurred_at=line.counted_at + timedelta(minutes=10),
+        )
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        adjustment = inventory_count.stock_movements.get()
+        self.assertEqual(adjustment.qty, Decimal("1.000"))
+        self.assertEqual(adjustment.source_warehouse, self.warehouse)
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, warehouse=self.warehouse).qty,
+            Decimal("14.000"),
+        )
+
+    def test_posting_zero_variance_creates_no_adjustment(self):
+        from ..services.inventory import complete_inventory_count
+
+        inventory_count, _ = self.create_inventory_line(actual_qty=Decimal("10.000"))
+
+        complete_inventory_count(inventory_count=inventory_count, user=self.user)
+
+        self.assertFalse(inventory_count.stock_movements.exists())
+
+    def test_normal_stock_operations_are_not_blocked_by_active_inventory(self):
+        from ..services.inventory import create_inventory_count
+        from ..services.stock import (
+            issue_stock,
+            receive_stock,
+            return_stock,
+            transfer_stock,
+            writeoff_stock,
+        )
+
+        create_inventory_count(warehouse=self.warehouse, user=self.user)
+        receive_stock(item=self.item, warehouse=self.warehouse, qty=Decimal("5.000"))
+        issue_stock(
+            item=self.item,
+            warehouse=self.warehouse,
+            qty=Decimal("2.000"),
+            recipient=self.recipient,
+        )
+        return_stock(
+            item=self.item,
+            warehouse=self.warehouse,
+            qty=Decimal("1.000"),
+            recipient=self.recipient,
+        )
+        writeoff_stock(item=self.item, warehouse=self.warehouse, qty=Decimal("1.000"))
+        transfer_stock(
+            item=self.item,
+            source_warehouse=self.warehouse,
+            destination_warehouse=self.other_warehouse,
+            qty=Decimal("1.000"),
+        )
+
+        self.assertEqual(
+            StockBalance.objects.get(item=self.item, warehouse=self.warehouse).qty,
+            Decimal("12.000"),
+        )
 
 
 class InventoryInterfaceTests(TestCase):

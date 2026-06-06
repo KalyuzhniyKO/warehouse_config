@@ -3,10 +3,11 @@
 from decimal import Decimal
 
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from core.models import InventoryCount, InventoryCountLine, StockBalance
+from core.models import InventoryCount, InventoryCountLine, StockBalance, StockMovement
 from core.services.stock import adjust_stock, normalize_decimal_qty
 
 INVENTORY_NUMBER_PREFIX = "INV-"
@@ -89,12 +90,105 @@ def create_inventory_count(*, warehouse, location=None, user=None, comment=""):
     return inventory_count
 
 
+def _movement_warehouse_delta(movement, warehouse):
+    qty = normalize_decimal_qty(movement.qty)
+    delta = Decimal("0.000")
+    if movement.resolved_source_warehouse == warehouse:
+        delta -= qty
+    if movement.resolved_destination_warehouse == warehouse:
+        delta += qty
+    return normalize_decimal_qty(delta)
+
+
+def _get_inventory_line_movements(line):
+    if line.counted_at is None:
+        return []
+    inventory_count = line.inventory_count
+    started_at = inventory_count.started_at
+    counted_at = line.counted_at
+    warehouse = inventory_count.warehouse
+    return list(
+        StockMovement.objects.filter(
+            item=line.item,
+            reversal_of__isnull=True,
+        )
+        .filter(
+            Q(source_warehouse=warehouse)
+            | Q(destination_warehouse=warehouse)
+            | Q(source_location__warehouse=warehouse)
+            | Q(destination_location__warehouse=warehouse)
+        )
+        .filter(
+            Q(occurred_at__gte=started_at, occurred_at__lte=counted_at)
+            | Q(cancelled_at__gte=started_at, cancelled_at__lte=counted_at)
+        )
+        .select_related(
+            "source_warehouse",
+            "destination_warehouse",
+            "source_location__warehouse",
+            "destination_location__warehouse",
+        )
+    )
+
+
+def _calculate_inventory_line_movement_delta(line, movements):
+    inventory_count = line.inventory_count
+    started_at = inventory_count.started_at
+    counted_at = line.counted_at
+    warehouse = inventory_count.warehouse
+    movement_delta = Decimal("0.000")
+    for movement in movements:
+        delta = _movement_warehouse_delta(movement, warehouse)
+        occurred_during_count = started_at <= movement.occurred_at <= counted_at
+        cancelled_during_count = (
+            movement.cancelled_at is not None
+            and started_at <= movement.cancelled_at <= counted_at
+        )
+        if occurred_during_count and not cancelled_during_count:
+            movement_delta += delta
+        elif cancelled_during_count and movement.occurred_at < started_at:
+            movement_delta -= delta
+    return normalize_decimal_qty(movement_delta)
+
+
+def get_inventory_line_movement_delta(line):
+    """Return the net warehouse movement from inventory start until counting."""
+    return _calculate_inventory_line_movement_delta(
+        line, _get_inventory_line_movements(line)
+    )
+
+
+def get_inventory_line_expected_qty(line):
+    """Return snapshot quantity plus live warehouse movements until counted_at."""
+    return normalize_decimal_qty(
+        line.expected_qty + get_inventory_line_movement_delta(line)
+    )
+
+
+def reconcile_inventory_line(line):
+    """Attach reconciliation values used by inventory UI and exports."""
+    movements = _get_inventory_line_movements(line)
+    line.snapshot_qty = line.expected_qty
+    line.movement_delta = _calculate_inventory_line_movement_delta(line, movements)
+    line.expected_qty_at_count_time = normalize_decimal_qty(
+        line.snapshot_qty + line.movement_delta
+    )
+    line.variance_qty = (
+        normalize_decimal_qty(line.actual_qty - line.expected_qty_at_count_time)
+        if line.actual_qty is not None
+        else Decimal("0.000")
+    )
+    line.has_movements_during_count = bool(movements)
+    return line
+
+
 def update_inventory_line_actual_qty(*, line, actual_qty, user=None, comment=None):
     """Update a count line's actual quantity without mutating stock balances."""
     line.actual_qty = normalize_decimal_qty(actual_qty)
-    line.difference_qty = line.actual_qty - line.expected_qty
     line.counted_at = timezone.now()
     line.counted_by = user
+    reconcile_inventory_line(line)
+    line.difference_qty = line.variance_qty
     update_fields = [
         "actual_qty",
         "difference_qty",
@@ -133,13 +227,16 @@ def complete_inventory_count(*, inventory_count, user=None):
             _raise_for_non_completable_status(locked_inventory_count)
 
         lines = locked_inventory_count.lines.select_related(
-            "item", "location", "location__warehouse"
+            "inventory_count__warehouse", "item", "location", "location__warehouse"
         ).order_by("pk")
         for line in lines:
-            actual_qty = line.actual_qty
-            if actual_qty is None:
-                actual_qty = line.expected_qty
-            difference_qty = normalize_decimal_qty(actual_qty - line.expected_qty)
+            if line.actual_qty is None:
+                continue
+            reconcile_inventory_line(line)
+            difference_qty = line.variance_qty
+            if line.difference_qty != difference_qty:
+                line.difference_qty = difference_qty
+                line.save(update_fields=["difference_qty", "updated_at"])
             if difference_qty == 0:
                 continue
             adjust_stock(
