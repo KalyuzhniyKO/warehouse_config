@@ -15,6 +15,10 @@ from core.models import (
     Warehouse,
 )
 from core.services.locations import get_default_location_for_warehouse
+from core.services.stock import (
+    RETURN_QUANTITY_EXCEEDED_ERROR,
+    get_available_return_qty,
+)
 from core.services.warehouse_access import get_accessible_warehouses
 
 
@@ -211,6 +215,16 @@ class StockReturnForm(StockOperationForm):
         warehouse = cleaned_data.get("warehouse")
         if warehouse:
             cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
+        item = cleaned_data.get("item")
+        recipient = cleaned_data.get("recipient")
+        qty = cleaned_data.get("qty")
+        if item and recipient:
+            available_qty = get_available_return_qty(item, recipient)
+            self.fields["qty"].help_text = _("Доступно до повернення: %(qty)s") % {
+                "qty": available_qty
+            }
+            if qty is not None and (available_qty <= 0 or qty > available_qty):
+                self.add_error("qty", RETURN_QUANTITY_EXCEEDED_ERROR)
         return cleaned_data
 
     recipient = forms.ModelChoiceField(

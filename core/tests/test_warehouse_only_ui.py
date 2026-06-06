@@ -21,6 +21,7 @@ from core.models import (
     Location,
     Recipient,
     StockBalance,
+    StockMovement,
     SystemSettings,
     Unit,
     UsagePlace,
@@ -103,6 +104,13 @@ class WarehouseOnlyOperationFormTests(TestCase):
 
     def test_default_location_is_assigned_automatically_for_stock_operation_forms(self):
         grant_warehouse_access(self.user, [self.warehouse, self.second_warehouse])
+        StockMovement.objects.create(
+            item=self.item,
+            source_warehouse=self.warehouse,
+            movement_type=StockMovement.MovementType.OUT,
+            qty=Decimal("1.000"),
+            recipient=self.recipient,
+        )
         form_classes = [
             StockReceiveForm,
             StockIssueForm,
