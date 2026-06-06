@@ -8,7 +8,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.forms.models import model_to_dict
-from django.db.models import Count, Q, Sum
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
@@ -69,6 +69,7 @@ from ..services.inventory import (
     InventoryServiceError,
     complete_inventory_count,
     create_inventory_count,
+    reconcile_inventory_line,
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
@@ -87,11 +88,16 @@ from ..services.stock import (
 
 def get_inventory_export_queryset(inventory_count):
     return inventory_count.lines.select_related(
-        "item", "item__barcode", "location", "location__warehouse"
+        "inventory_count__warehouse",
+        "item",
+        "item__barcode",
+        "location",
+        "location__warehouse",
     ).order_by("item__name", "location__name", "id")
 
 
 def inventory_line_export_row(inventory_count, line):
+    reconcile_inventory_line(line)
     return [
         inventory_count.number,
         inventory_count.get_status_display(),
@@ -101,9 +107,12 @@ def inventory_line_export_row(inventory_count, line):
         line.item.internal_code,
         line.barcode or (line.item.barcode.barcode if line.item.barcode_id else ""),
         line.location.name,
-        line.expected_qty,
+        line.snapshot_qty,
+        line.movement_delta,
+        line.expected_qty_at_count_time,
+        line.counted_at or "",
         line.actual_qty if line.actual_qty is not None else "",
-        line.difference_qty,
+        line.variance_qty,
         line.comment,
     ]
 
@@ -117,9 +126,12 @@ INVENTORY_EXPORT_HEADERS = [
     _("Internal code"),
     _("Barcode"),
     _("Локація"),
-    _("Облікова кількість"),
+    _("Знімок на початок"),
+    _("Рухи під час інвентаризації"),
+    _("Очікувана кількість на час підрахунку"),
+    _("Час підрахунку"),
     _("Фактична кількість"),
-    _("Різниця"),
+    _("Відхилення"),
     _("Коментар рядка"),
 ]
 
@@ -171,12 +183,15 @@ class InventoryXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 
         for line in get_inventory_export_queryset(inventory_count):
             row = inventory_line_export_row(inventory_count, line)
-            row[8] = float(line.expected_qty)
-            row[9] = float(line.actual_qty) if line.actual_qty is not None else None
-            row[10] = float(line.difference_qty)
+            row[8] = float(line.snapshot_qty)
+            row[9] = float(line.movement_delta)
+            row[10] = float(line.expected_qty_at_count_time)
+            row[11] = line.counted_at.isoformat() if line.counted_at else None
+            row[12] = float(line.actual_qty) if line.actual_qty is not None else None
+            row[13] = float(line.variance_qty)
             sheet.append(row)
 
-        widths = [22, 14, 24, 24, 32, 18, 18, 24, 18, 18, 14, 32]
+        widths = [22, 14, 24, 24, 32, 18, 18, 24, 18, 18, 22, 22, 18, 14, 32]
         for index, width in enumerate(widths, start=1):
             column_letter = sheet.cell(row=1, column=index).column_letter
             sheet.column_dimensions[column_letter].width = width
@@ -248,21 +263,28 @@ class InventoryDetailView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         inventory_count = self.get_inventory_count()
         context["inventory_count"] = inventory_count
-        lines = inventory_count.lines.select_related(
-            "item", "item__barcode", "location", "location__warehouse"
+        lines = list(
+            inventory_count.lines.select_related(
+                "inventory_count__warehouse",
+                "item",
+                "item__barcode",
+                "location",
+                "location__warehouse",
+            )
         )
-        summary = inventory_count.lines.aggregate(
-            total_lines=Count("id"),
-            difference_lines=Count("id", filter=~Q(difference_qty=0)),
-            total_surplus=Sum("difference_qty", filter=Q(difference_qty__gt=0)),
-            total_shortage=Sum("difference_qty", filter=Q(difference_qty__lt=0)),
-        )
+        for line in lines:
+            reconcile_inventory_line(line)
+        variances = [line.variance_qty for line in lines]
         context["lines"] = lines
         context["inventory_summary"] = {
-            "total_lines": summary["total_lines"] or 0,
-            "difference_lines": summary["difference_lines"] or 0,
-            "total_surplus": summary["total_surplus"] or 0,
-            "total_shortage": abs(summary["total_shortage"] or 0),
+            "total_lines": len(lines),
+            "difference_lines": sum(variance != 0 for variance in variances),
+            "total_surplus": sum(
+                (variance for variance in variances if variance > 0), start=0
+            ),
+            "total_shortage": abs(
+                sum((variance for variance in variances if variance < 0), start=0)
+            ),
         }
         context["can_export_inventory"] = user_in_groups(
             self.request.user, STOCK_VIEW_GROUPS
@@ -313,7 +335,11 @@ class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
 
     def get_lines(self, inventory_count):
         queryset = inventory_count.lines.select_related(
-            "item", "item__barcode", "location", "location__warehouse"
+            "inventory_count__warehouse",
+            "item",
+            "item__barcode",
+            "location",
+            "location__warehouse",
         )
         query = self.request.GET.get("q", "").strip()
         if query:
@@ -337,6 +363,8 @@ class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         inventory_count = kwargs.get("inventory_count") or self.get_inventory_count()
         lines = list(kwargs.get("lines") or self.get_lines(inventory_count))
+        for line in lines:
+            reconcile_inventory_line(line)
         context["inventory_count"] = inventory_count
         context["lines"] = lines
         context["line_forms"] = kwargs.get("line_forms") or self.build_line_forms(lines)
