@@ -4126,3 +4126,12 @@ msgstr "Articoli da verificare"
 
 msgid "Критичні залишки"
 msgstr "Giacenze critiche"
+
+msgid "Мобільна навігація"
+msgstr "Navigazione mobile"
+
+msgid "Обліковий запис"
+msgstr "Account"
+
+msgid "Панель адміністратора"
+msgstr "Pannello di amministrazione"
