@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase, override_settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
@@ -566,6 +566,14 @@ class InventoryInterfaceTests(TestCase):
 
         return create_inventory_count(warehouse=self.warehouse, user=self.admin)
 
+    def complete_inventory(self, inventory_count, actual_qty=Decimal("5.000")):
+        from ..services.inventory import complete_inventory_count
+
+        for line in inventory_count.lines.all():
+            line.actual_qty = actual_qty
+            line.save(update_fields=["actual_qty", "updated_at"])
+        return complete_inventory_count(inventory_count=inventory_count, user=self.admin)
+
     def test_admin_sees_inventory_menu_item(self):
         self.login(self.admin)
 
@@ -721,21 +729,42 @@ class InventoryInterfaceTests(TestCase):
 
         self.login(self.admin)
         inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count, actual_qty=Decimal("7.000"))
+        translation.activate("uk")
 
         response = self.client.get(reverse("inventory_export_xlsx", args=[inventory_count.pk]))
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('filename="inventory_%s.xlsx"' % inventory_count.number, response["Content-Disposition"])
         workbook = load_workbook(BytesIO(response.content), data_only=True)
-        sheet = workbook.active
-        self.assertIn(sheet.title, {"Inventory", "Інвентаризація"})
-        self.assertEqual(sheet["A2"].value, inventory_count.number)
-        self.assertEqual(sheet["E2"].value, "Inventory UI item")
-        self.assertIsInstance(sheet["I2"].value, (int, float))
+        self.assertEqual(workbook.sheetnames, ["Summary", "Results"])
+        summary = workbook["Summary"]
+        results = workbook["Results"]
+        self.assertEqual(summary["B2"].value, inventory_count.number)
+        self.assertEqual(summary["B3"].value, self.warehouse.name)
+        self.assertEqual(summary["B6"].value, 1)
+        self.assertEqual(summary["B7"].value, 0)
+        self.assertEqual(summary["B8"].value, 1)
+        self.assertEqual(
+            [cell.value for cell in results[1]],
+            [
+                "Код товару",
+                "Назва товару",
+                "Очікувана кількість",
+                "Фактична кількість",
+                "Відхилення",
+            ],
+        )
+        self.assertEqual(results["B2"].value, "Inventory UI item")
+        self.assertEqual(results["C2"].value, 5)
+        self.assertEqual(results["D2"].value, 7)
+        self.assertEqual(results["E2"].value, 2)
+        self.assertEqual(results.max_row, 2)
 
     def test_xlsx_export_returns_service_unavailable_when_openpyxl_is_missing(self):
         self.login(self.admin)
         inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count)
         original_import = __import__
 
         def import_without_openpyxl(name, *args, **kwargs):
@@ -748,6 +777,89 @@ class InventoryInterfaceTests(TestCase):
 
         self.assertEqual(response.status_code, 503)
         self.assertContains(response, "openpyxl", status_code=503)
+
+    def test_excel_and_pdf_exports_are_only_available_for_completed_inventory(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+
+        detail_response = self.client.get(
+            reverse("inventory_detail", args=[inventory_count.pk])
+        )
+        xlsx_response = self.client.get(
+            reverse("inventory_export_xlsx", args=[inventory_count.pk])
+        )
+        pdf_response = self.client.get(
+            reverse("inventory_export_pdf", args=[inventory_count.pk])
+        )
+
+        self.assertNotContains(detail_response, "Експорт Excel")
+        self.assertNotContains(detail_response, "Експорт PDF")
+        self.assertEqual(xlsx_response.status_code, 404)
+        self.assertEqual(pdf_response.status_code, 404)
+
+    def test_completed_inventory_page_shows_excel_and_pdf_exports(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count)
+
+        response = self.client.get(reverse("inventory_detail", args=[inventory_count.pk]))
+
+        self.assertContains(response, "Експорт Excel")
+        self.assertContains(response, "Експорт PDF")
+        self.assertContains(response, reverse("inventory_export_xlsx", args=[inventory_count.pk]))
+        self.assertContains(response, reverse("inventory_export_pdf", args=[inventory_count.pk]))
+
+    def test_pdf_export_returns_inventory_report(self):
+        self.login(self.admin)
+        inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count, actual_qty=Decimal("4.000"))
+
+        response = self.client.get(reverse("inventory_export_pdf", args=[inventory_count.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertIn(
+            'filename="inventory_%s.pdf"' % inventory_count.number,
+            response["Content-Disposition"],
+        )
+        self.assertTrue(response.content.startswith(b"%PDF"))
+        self.assertIn(b"/MediaBox [ 0 0 595", response.content)
+
+    def test_user_without_stock_view_permission_cannot_export_inventory(self):
+        inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count)
+        self.login(self.no_access)
+
+        xlsx_response = self.client.get(
+            reverse("inventory_export_xlsx", args=[inventory_count.pk])
+        )
+        pdf_response = self.client.get(
+            reverse("inventory_export_pdf", args=[inventory_count.pk])
+        )
+
+        self.assertEqual(xlsx_response.status_code, 403)
+        self.assertEqual(pdf_response.status_code, 403)
+
+    def test_inventory_excel_headers_are_localized(self):
+        from openpyxl import load_workbook
+
+        inventory_count = self.create_inventory()
+        self.complete_inventory(inventory_count)
+        self.login(self.admin)
+        expectations = {
+            "uk": "Код товару",
+            "en": "Item code",
+            "ru": "Код товара",
+            "pl": "Kod towaru",
+            "it": "Codice articolo",
+        }
+
+        for language_code, expected_header in expectations.items():
+            url = reverse("inventory_export_xlsx", args=[inventory_count.pk])
+            response = self.client.get(f"/{language_code}{url[3:]}")
+            workbook = load_workbook(BytesIO(response.content), data_only=True)
+            with self.subTest(language_code=language_code):
+                self.assertEqual(workbook["Results"]["A1"].value, expected_header)
 
     def test_auditor_can_export_inventory_but_cannot_create_or_edit_it(self):
         inventory_count = self.create_inventory()

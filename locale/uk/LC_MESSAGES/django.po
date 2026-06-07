@@ -4646,3 +4646,27 @@ msgstr "Підсумки за типом операції"
 
 msgid "Підсумки за складом"
 msgstr "Підсумки за складом"
+
+msgid "Очікувана кількість"
+msgstr "Очікувана кількість"
+
+msgid "Підсумок інвентаризації"
+msgstr "Підсумок інвентаризації"
+
+msgid "Всього підраховано"
+msgstr "Всього підраховано"
+
+msgid "Кількість нестач"
+msgstr "Кількість нестач"
+
+msgid "Кількість надлишків"
+msgstr "Кількість надлишків"
+
+msgid "PDF export requires reportlab."
+msgstr "Для експорту PDF потрібен reportlab."
+
+msgid "Unicode PDF font is not available."
+msgstr "Unicode-шрифт для PDF недоступний."
+
+msgid "Відхилення"
+msgstr "Відхилення"

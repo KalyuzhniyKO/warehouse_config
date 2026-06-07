@@ -4235,3 +4235,27 @@ msgstr "Totali per tipo di operazione"
 
 msgid "Підсумки за складом"
 msgstr "Totali per magazzino"
+
+msgid "Очікувана кількість"
+msgstr "Quantità prevista"
+
+msgid "Підсумок інвентаризації"
+msgstr "Riepilogo inventario"
+
+msgid "Всього підраховано"
+msgstr "Totale articoli conteggiati"
+
+msgid "Кількість нестач"
+msgstr "Numero carenze"
+
+msgid "Кількість надлишків"
+msgstr "Numero eccedenze"
+
+msgid "PDF export requires reportlab."
+msgstr "L'esportazione PDF richiede reportlab."
+
+msgid "Unicode PDF font is not available."
+msgstr "Il carattere Unicode per PDF non è disponibile."
+
+msgid "Відхилення"
+msgstr "Scostamento"

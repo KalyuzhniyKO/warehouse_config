@@ -4623,3 +4623,27 @@ msgstr "Totals by operation type"
 
 msgid "Підсумки за складом"
 msgstr "Totals by warehouse"
+
+msgid "Очікувана кількість"
+msgstr "Expected quantity"
+
+msgid "Підсумок інвентаризації"
+msgstr "Inventory summary"
+
+msgid "Всього підраховано"
+msgstr "Total items counted"
+
+msgid "Кількість нестач"
+msgstr "Shortage count"
+
+msgid "Кількість надлишків"
+msgstr "Surplus count"
+
+msgid "PDF export requires reportlab."
+msgstr "PDF export requires reportlab."
+
+msgid "Unicode PDF font is not available."
+msgstr "Unicode PDF font is not available."
+
+msgid "Відхилення"
+msgstr "Variance"

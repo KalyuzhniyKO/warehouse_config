@@ -7,7 +7,10 @@
     <div class="d-flex flex-wrap gap-2">
         {% if can_export_inventory %}
             <a class="btn btn-outline-success" href="{% url 'inventory_export_csv' inventory_count.pk %}">{% trans "Експорт CSV" %}</a>
-            <a class="btn btn-outline-success" href="{% url 'inventory_export_xlsx' inventory_count.pk %}">{% trans "Експорт XLSX" %}</a>
+            {% if inventory_count.status == "completed" %}
+                <a class="btn btn-outline-success" href="{% url 'inventory_export_xlsx' inventory_count.pk %}">{% trans "Експорт Excel" %}</a>
+                <a class="btn btn-outline-danger" href="{% url 'inventory_export_pdf' inventory_count.pk %}">{% trans "Експорт PDF" %}</a>
+            {% endif %}
         {% endif %}
         {% if can_edit_inventory and inventory_count.status == "in_progress" %}<a class="btn btn-primary" href="{% url 'inventory_count' inventory_count.pk %}">{% trans "Підрахунок" %}</a>{% endif %}
         {% if can_complete_inventory and inventory_count.status == "in_progress" %}
