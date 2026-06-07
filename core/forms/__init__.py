@@ -20,7 +20,11 @@ from core.forms.directories import (
     UnitForm,
     WarehouseForm,
 )
-from core.forms.filters import StockBalanceFilterForm, StockMovementFilterForm
+from core.forms.filters import (
+    StockBalanceFilterForm,
+    StockMovementFilterForm,
+    StockOperationAuditFilterForm,
+)
 from core.forms.inventory import InventoryCountCreateForm, InventoryCountLineForm
 from core.forms.labels import DEFAULT_LABEL_TEMPLATE_ELEMENTS, LabelTemplateElementFormSet, LabelTemplateForm, PrintLabelForm, PrinterForm
 from core.forms.management import (
@@ -67,6 +71,7 @@ __all__ = [
     "StockMovementAdminForm",
     "StockMovementCancellationForm",
     "StockMovementFilterForm",
+    "StockOperationAuditFilterForm",
     "StockOperationForm",
     "SystemSettingsForm",
     "StockReceiveForm",

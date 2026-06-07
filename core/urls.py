@@ -235,6 +235,11 @@ urlpatterns = [
         name="management_audit",
     ),
     path(
+        "management/operation-audit/",
+        views.StockOperationAuditView.as_view(),
+        name="stock_operation_audit",
+    ),
+    path(
         "management/directories/",
         views.ManagementDirectoriesView.as_view(),
         name="management_directories",

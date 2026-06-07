@@ -3924,8 +3924,8 @@ msgstr "Sign in"
 #~ msgid "Панель швидких дій"
 #~ msgstr "Warehouse management panel."
 
-#~ msgid "Пошук товару"
-#~ msgstr "Item search"
+msgid "Пошук товару"
+msgstr "Item search"
 
 #, fuzzy
 #~| msgid "Контрольний талон складської операції"
@@ -4530,3 +4530,54 @@ msgstr "Account"
 
 msgid "Панель адміністратора"
 msgstr "Admin panel"
+
+msgid "Аудит операцій"
+msgstr "Operation audit"
+
+msgid "Бізнес-журнал створення, анулювання та зв'язків складських рухів."
+msgstr "Business log of stock movement creation, cancellation, and links."
+
+msgid "Пов'язано з інвентаризацією"
+msgstr "Inventory-related"
+
+msgid "Створено"
+msgstr "Created"
+
+msgid "Операція"
+msgstr "Operation"
+
+msgid "Товар / кількість"
+msgstr "Item / quantity"
+
+msgid "Складський маршрут"
+msgstr "Warehouse route"
+
+msgid "Документ / коментар"
+msgstr "Document / comment"
+
+msgid "Статус аудиту"
+msgstr "Audit status"
+
+msgid "Пов'язані записи"
+msgstr "Linked records"
+
+msgid "Час операції"
+msgstr "Operation time"
+
+msgid "Анулювано о"
+msgstr "Cancelled at"
+
+msgid "Зворотний рух"
+msgstr "Reversal movement"
+
+msgid "Показати деталі"
+msgstr "Show details"
+
+msgid "Записів аудиту операцій не знайдено."
+msgstr "No audit records found."
+
+msgid "Так"
+msgstr "Yes"
+
+msgid "Ні"
+msgstr "No"
