@@ -4193,3 +4193,45 @@ msgstr "Annullato da"
 
 msgid "Рух анулювання"
 msgstr "Movimento di annullamento"
+
+msgid "Дата й час операції"
+msgstr "Data/ora operazione"
+
+msgid "Дата й час створення"
+msgstr "Data/ora creazione"
+
+msgid "Код товару"
+msgstr "Codice articolo"
+
+msgid "Коментар / причина"
+msgstr "Commento / motivo"
+
+msgid "Звіт аудиту складських операцій"
+msgstr "Report audit operazioni di magazzino"
+
+msgid "Згенеровано"
+msgstr "Generato il"
+
+msgid "Згенерував"
+msgstr "Generato da"
+
+msgid "Активні фільтри"
+msgstr "Filtri attivi"
+
+msgid "Активні фільтри відсутні"
+msgstr "Nessun filtro attivo"
+
+msgid "Усього рухів"
+msgstr "Movimenti totali"
+
+msgid "Усього анульованих рухів"
+msgstr "Movimenti annullati totali"
+
+msgid "Усього рухів з інвентаризації"
+msgstr "Movimenti da inventario totali"
+
+msgid "Підсумки за типом операції"
+msgstr "Totali per tipo di operazione"
+
+msgid "Підсумки за складом"
+msgstr "Totali per magazzino"

@@ -1,10 +1,14 @@
+from collections import Counter
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
-from django.utils.translation import gettext_lazy as _
-from django.views.generic import FormView, ListView, TemplateView
+from django.utils import timezone
+from django.utils.translation import gettext, gettext_lazy as _
+from django.views.generic import FormView, ListView, TemplateView, View
 
 from ..forms import (
     StockMovementCancellationForm,
@@ -24,6 +28,88 @@ from ..services.stock import StockServiceError
 from ..services.stock_cancellation import cancel_stock_movement
 from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
 from .stock_operations import SelfServiceShellContextMixin
+
+
+def get_stock_operation_audit_filter_form(user, params):
+    return StockOperationAuditFilterForm(params or None, request_user=user)
+
+
+def get_stock_operation_audit_queryset(user, params):
+    queryset = restrict_stock_movement_queryset_for_user(
+        user,
+        StockMovement.objects.select_related(
+            "item",
+            "item__barcode",
+            "item__unit",
+            "source_location__warehouse",
+            "source_warehouse",
+            "destination_location__warehouse",
+            "destination_warehouse",
+            "recipient",
+            "created_by",
+            "performed_by",
+            "cancelled_by",
+            "inventory_count",
+            "reversal_of",
+            "cancellation_movement",
+        ),
+    )
+    form = get_stock_operation_audit_filter_form(user, params)
+    if form.is_valid():
+        cd = form.cleaned_data
+        if cd.get("date_from"):
+            queryset = queryset.filter(created_at__date__gte=cd["date_from"])
+        if cd.get("date_to"):
+            queryset = queryset.filter(created_at__date__lte=cd["date_to"])
+        if cd.get("movement_type"):
+            queryset = queryset.filter(movement_type=cd["movement_type"])
+        if cd.get("warehouse"):
+            warehouse = cd["warehouse"]
+            queryset = queryset.filter(
+                Q(source_warehouse=warehouse)
+                | Q(destination_warehouse=warehouse)
+                | Q(source_location__warehouse=warehouse)
+                | Q(destination_location__warehouse=warehouse)
+            )
+        if cd.get("q"):
+            query = cd["q"]
+            queryset = queryset.filter(
+                Q(item__name__icontains=query)
+                | Q(item__internal_code__icontains=query)
+                | Q(item__barcode__barcode__icontains=query)
+            )
+        if cd.get("recipient"):
+            queryset = queryset.filter(recipient=cd["recipient"])
+        if cd.get("user"):
+            audit_user = cd["user"]
+            queryset = queryset.filter(
+                Q(created_by=audit_user)
+                | Q(performed_by=audit_user)
+                | Q(cancelled_by=audit_user)
+            )
+        if cd.get("cancelled") == "yes":
+            queryset = queryset.filter(is_cancelled=True)
+        elif cd.get("cancelled") == "no":
+            queryset = queryset.filter(is_cancelled=False)
+        if cd.get("inventory_related") == "yes":
+            queryset = queryset.filter(inventory_count__isnull=False)
+        elif cd.get("inventory_related") == "no":
+            queryset = queryset.filter(inventory_count__isnull=True)
+    return queryset.order_by("-created_at", "-id")
+
+
+def audit_user_display_name(user):
+    if not user:
+        return ""
+    return (user.get_full_name() or user.get_username()).strip()
+
+
+def local_naive(value):
+    if not value:
+        return None
+    if timezone.is_aware(value):
+        value = timezone.localtime(value)
+    return value.replace(tzinfo=None)
 
 
 class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
@@ -133,71 +219,10 @@ class StockOperationAuditView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     paginate_by = 50
 
     def get_filter_form(self):
-        return StockOperationAuditFilterForm(
-            self.request.GET or None,
-            request_user=self.request.user,
-        )
+        return get_stock_operation_audit_filter_form(self.request.user, self.request.GET)
 
     def get_queryset(self):
-        queryset = restrict_stock_movement_queryset_for_user(
-            self.request.user,
-            StockMovement.objects.select_related(
-                "item",
-                "item__barcode",
-                "item__unit",
-                "source_location__warehouse",
-                "source_warehouse",
-                "destination_location__warehouse",
-                "destination_warehouse",
-                "recipient",
-                "created_by",
-                "performed_by",
-                "cancelled_by",
-                "inventory_count",
-                "reversal_of",
-                "cancellation_movement",
-            ),
-        )
-        form = self.get_filter_form()
-        if form.is_valid():
-            cd = form.cleaned_data
-            if cd.get("date_from"):
-                queryset = queryset.filter(created_at__date__gte=cd["date_from"])
-            if cd.get("date_to"):
-                queryset = queryset.filter(created_at__date__lte=cd["date_to"])
-            if cd.get("movement_type"):
-                queryset = queryset.filter(movement_type=cd["movement_type"])
-            if cd.get("warehouse"):
-                warehouse = cd["warehouse"]
-                queryset = queryset.filter(
-                    Q(source_warehouse=warehouse)
-                    | Q(destination_warehouse=warehouse)
-                    | Q(source_location__warehouse=warehouse)
-                    | Q(destination_location__warehouse=warehouse)
-                )
-            if cd.get("q"):
-                query = cd["q"]
-                queryset = queryset.filter(
-                    Q(item__name__icontains=query)
-                    | Q(item__internal_code__icontains=query)
-                    | Q(item__barcode__barcode__icontains=query)
-                )
-            if cd.get("recipient"):
-                queryset = queryset.filter(recipient=cd["recipient"])
-            if cd.get("user"):
-                user = cd["user"]
-                queryset = queryset.filter(
-                    Q(created_by=user) | Q(performed_by=user) | Q(cancelled_by=user)
-                )
-            if cd.get("cancelled") == "yes":
-                queryset = queryset.filter(is_cancelled=True)
-            elif cd.get("cancelled") == "no":
-                queryset = queryset.filter(is_cancelled=False)
-            if cd.get("inventory_related") == "yes":
-                queryset = queryset.filter(inventory_count__isnull=False)
-            elif cd.get("inventory_related") == "no":
-                queryset = queryset.filter(inventory_count__isnull=True)
-        return queryset.order_by("-created_at", "-id")
+        return get_stock_operation_audit_queryset(self.request.user, self.request.GET)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -206,6 +231,173 @@ class StockOperationAuditView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         context["filter_form"] = self.get_filter_form()
         context["filter_query"] = query_params.urlencode()
         return context
+
+
+class StockOperationAuditXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
+    group_names = MANAGEMENT_GROUPS
+
+    headers = [
+        _("Дата й час операції"),
+        _("Дата й час створення"),
+        _("Тип операції"),
+        _("Статус"),
+        _("Код товару"),
+        _("Назва товару"),
+        _("Кількість"),
+        _("Одиниця"),
+        _("Склад-відправник"),
+        _("Склад-отримувач"),
+        _("Локація-відправник"),
+        _("Локація-отримувач"),
+        _("Отримувач"),
+        _("Документ"),
+        _("Коментар / причина"),
+        _("Створив"),
+        _("Анулювано"),
+        _("Анулював"),
+        _("Час анулювання"),
+        _("Рух анулювання"),
+        _("Зворотний рух"),
+        _("Інвентаризація"),
+    ]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Alignment, Font, PatternFill
+        except ImportError:
+            return HttpResponse(_("XLSX export requires openpyxl."), status=503)
+
+        movements = list(get_stock_operation_audit_queryset(request.user, request.GET))
+        workbook = Workbook()
+        summary = workbook.active
+        summary.title = "Summary"
+        report = workbook.create_sheet("Audit report")
+
+        self.populate_summary(summary, movements, request)
+        report.append([str(header) for header in self.headers])
+        for movement in movements:
+            report.append(self.movement_row(movement))
+
+        header_fill = PatternFill("solid", fgColor="D4AC00")
+        cancelled_fill = PatternFill("solid", fgColor="FDECEC")
+        for cell in report[1]:
+            cell.font = Font(bold=True, color="101828")
+            cell.fill = header_fill
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+        for row_number, movement in enumerate(movements, start=2):
+            if movement.is_cancelled:
+                for cell in report[row_number]:
+                    cell.fill = cancelled_fill
+            for column in (1, 2, 19):
+                report.cell(row=row_number, column=column).number_format = "yyyy-mm-dd hh:mm:ss"
+            report.cell(row=row_number, column=7).number_format = "#,##0.000"
+
+        widths = [
+            21, 21, 19, 16, 18, 32, 14, 14, 25, 25, 25,
+            25, 24, 20, 38, 24, 14, 24, 21, 20, 20, 22,
+        ]
+        for index, width in enumerate(widths, start=1):
+            report.column_dimensions[report.cell(row=1, column=index).column_letter].width = width
+        report.freeze_panes = "A2"
+        report.auto_filter.ref = report.dimensions
+
+        for row in summary.iter_rows():
+            row[0].font = Font(bold=True, color="92400E")
+        summary["A1"].font = Font(bold=True, size=14, color="92400E")
+        summary["B2"].number_format = "yyyy-mm-dd hh:mm:ss"
+        summary.column_dimensions["A"].width = 34
+        summary.column_dimensions["B"].width = 44
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = timezone.localtime().strftime("stock-operation-audit-%Y%m%d-%H%M.xlsx")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        workbook.save(response)
+        return response
+
+    def populate_summary(self, sheet, movements, request):
+        form = get_stock_operation_audit_filter_form(request.user, request.GET)
+        cleaned_data = form.cleaned_data if form.is_bound and form.is_valid() else {}
+        active_filters = []
+        for name, field in form.fields.items():
+            value = cleaned_data.get(name)
+            if value not in (None, ""):
+                active_filters.append(f"{field.label}: {self.filter_value(field, value)}")
+
+        sheet.append([gettext("Звіт аудиту складських операцій")])
+        sheet.append([gettext("Згенеровано"), local_naive(timezone.now())])
+        sheet.append([gettext("Згенерував"), audit_user_display_name(request.user)])
+        sheet.append(
+            [
+                gettext("Активні фільтри"),
+                "; ".join(active_filters) or gettext("Активні фільтри відсутні"),
+            ]
+        )
+        sheet.append([gettext("Усього рухів"), len(movements)])
+        sheet.append(
+            [gettext("Усього анульованих рухів"), sum(m.is_cancelled for m in movements)]
+        )
+        sheet.append(
+            [
+                gettext("Усього рухів з інвентаризації"),
+                sum(bool(m.inventory_count_id) for m in movements),
+            ]
+        )
+        sheet.append([])
+        sheet.append([gettext("Підсумки за типом операції"), gettext("Кількість")])
+        for label, count in Counter(m.get_movement_type_display() for m in movements).most_common():
+            sheet.append([label, count])
+        sheet.append([])
+        sheet.append([gettext("Підсумки за складом"), gettext("Кількість")])
+        warehouses = Counter()
+        for movement in movements:
+            for warehouse in {
+                movement.resolved_source_warehouse,
+                movement.resolved_destination_warehouse,
+            }:
+                if warehouse:
+                    warehouses[str(warehouse)] += 1
+        for warehouse, count in warehouses.most_common():
+            sheet.append([warehouse, count])
+
+    @staticmethod
+    def filter_value(field, value):
+        if getattr(field, "choices", None):
+            return dict(field.choices).get(value, value)
+        return str(value)
+
+    @staticmethod
+    def movement_row(movement):
+        created_by = movement.created_by or movement.performed_by
+        comment_reason = " / ".join(
+            value for value in (movement.comment, movement.cancellation_reason) if value
+        )
+        return [
+            local_naive(movement.occurred_at),
+            local_naive(movement.created_at),
+            movement.get_movement_type_display(),
+            gettext("Анулювано") if movement.is_cancelled else gettext("Активно"),
+            movement.item.internal_code,
+            movement.item.name,
+            float(movement.qty),
+            movement.item.unit.symbol,
+            str(movement.resolved_source_warehouse or ""),
+            str(movement.resolved_destination_warehouse or ""),
+            str(movement.source_location or ""),
+            str(movement.destination_location or ""),
+            str(movement.recipient or ""),
+            movement.document_number,
+            comment_reason,
+            audit_user_display_name(created_by),
+            gettext("Так") if movement.is_cancelled else gettext("Ні"),
+            audit_user_display_name(movement.cancelled_by),
+            local_naive(movement.cancelled_at),
+            f"#{movement.cancellation_movement_id}" if movement.cancellation_movement_id else "",
+            f"#{movement.reversal_of_id}" if movement.reversal_of_id else "",
+            movement.inventory_count.number if movement.inventory_count_id else "",
+        ]
 
 
 class StockReceiveResultView(
