@@ -2759,3 +2759,66 @@ msgstr "Konto"
 
 msgid "Панель адміністратора"
 msgstr "Panel administratora"
+
+msgid "Аудит операцій"
+msgstr "Audyt operacji"
+
+msgid "Бізнес-журнал створення, анулювання та зв'язків складських рухів."
+msgstr "Biznesowy dziennik tworzenia, anulowania i powiązań ruchów magazynowych."
+
+msgid "Пов'язано з інвентаризацією"
+msgstr "Powiązane z inwentaryzacją"
+
+msgid "Створено"
+msgstr "Utworzono"
+
+msgid "Операція"
+msgstr "Operacja"
+
+msgid "Товар / кількість"
+msgstr "Towar / ilość"
+
+msgid "Складський маршрут"
+msgstr "Trasa magazynowa"
+
+msgid "Документ / коментар"
+msgstr "Dokument / komentarz"
+
+msgid "Статус аудиту"
+msgstr "Status audytu"
+
+msgid "Пов'язані записи"
+msgstr "Powiązane zapisy"
+
+msgid "Час операції"
+msgstr "Czas operacji"
+
+msgid "Анулювано о"
+msgstr "Anulowano o"
+
+msgid "Зворотний рух"
+msgstr "Ruch odwrotny"
+
+msgid "Показати деталі"
+msgstr "Pokaż szczegóły"
+
+msgid "Записів аудиту операцій не знайдено."
+msgstr "Nie znaleziono zapisów audytu operacji."
+
+msgid "Пошук товару"
+msgstr "Wyszukiwanie towaru"
+
+msgid "Так"
+msgstr "Tak"
+
+msgid "Ні"
+msgstr "Nie"
+
+msgid "Журнал аудиту"
+msgstr "Dziennik audytu"
+
+msgid "Анулював"
+msgstr "Anulowane przez"
+
+msgid "Рух анулювання"
+msgstr "Ruch anulowania"

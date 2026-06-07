@@ -6,11 +6,16 @@ from django.shortcuts import get_object_or_404, redirect
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView
 
-from ..forms import StockMovementCancellationForm, StockMovementFilterForm
+from ..forms import (
+    StockMovementCancellationForm,
+    StockMovementFilterForm,
+    StockOperationAuditFilterForm,
+)
 from ..models import StockBalance, StockMovement
 from ..permissions import (
     STOCK_EDIT_GROUPS,
     STOCK_VIEW_GROUPS,
+    MANAGEMENT_GROUPS,
     GroupRequiredMixin,
     can_cancel_movement,
 )
@@ -117,6 +122,89 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
         context["used_remembered_filters"] = getattr(self, "used_remembered_filters", False)
+        return context
+
+
+class StockOperationAuditView(LoginRequiredMixin, GroupRequiredMixin, ListView):
+    group_names = MANAGEMENT_GROUPS
+    model = StockMovement
+    template_name = "core/management/stock_operation_audit.html"
+    context_object_name = "movements"
+    paginate_by = 50
+
+    def get_filter_form(self):
+        return StockOperationAuditFilterForm(
+            self.request.GET or None,
+            request_user=self.request.user,
+        )
+
+    def get_queryset(self):
+        queryset = restrict_stock_movement_queryset_for_user(
+            self.request.user,
+            StockMovement.objects.select_related(
+                "item",
+                "item__barcode",
+                "item__unit",
+                "source_location__warehouse",
+                "source_warehouse",
+                "destination_location__warehouse",
+                "destination_warehouse",
+                "recipient",
+                "created_by",
+                "performed_by",
+                "cancelled_by",
+                "inventory_count",
+                "reversal_of",
+                "cancellation_movement",
+            ),
+        )
+        form = self.get_filter_form()
+        if form.is_valid():
+            cd = form.cleaned_data
+            if cd.get("date_from"):
+                queryset = queryset.filter(created_at__date__gte=cd["date_from"])
+            if cd.get("date_to"):
+                queryset = queryset.filter(created_at__date__lte=cd["date_to"])
+            if cd.get("movement_type"):
+                queryset = queryset.filter(movement_type=cd["movement_type"])
+            if cd.get("warehouse"):
+                warehouse = cd["warehouse"]
+                queryset = queryset.filter(
+                    Q(source_warehouse=warehouse)
+                    | Q(destination_warehouse=warehouse)
+                    | Q(source_location__warehouse=warehouse)
+                    | Q(destination_location__warehouse=warehouse)
+                )
+            if cd.get("q"):
+                query = cd["q"]
+                queryset = queryset.filter(
+                    Q(item__name__icontains=query)
+                    | Q(item__internal_code__icontains=query)
+                    | Q(item__barcode__barcode__icontains=query)
+                )
+            if cd.get("recipient"):
+                queryset = queryset.filter(recipient=cd["recipient"])
+            if cd.get("user"):
+                user = cd["user"]
+                queryset = queryset.filter(
+                    Q(created_by=user) | Q(performed_by=user) | Q(cancelled_by=user)
+                )
+            if cd.get("cancelled") == "yes":
+                queryset = queryset.filter(is_cancelled=True)
+            elif cd.get("cancelled") == "no":
+                queryset = queryset.filter(is_cancelled=False)
+            if cd.get("inventory_related") == "yes":
+                queryset = queryset.filter(inventory_count__isnull=False)
+            elif cd.get("inventory_related") == "no":
+                queryset = queryset.filter(inventory_count__isnull=True)
+        return queryset.order_by("-created_at", "-id")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query_params = self.request.GET.copy()
+        query_params.pop("page", None)
+        context["filter_form"] = self.get_filter_form()
+        context["filter_query"] = query_params.urlencode()
         return context
 
 

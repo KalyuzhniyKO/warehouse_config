@@ -3584,10 +3584,8 @@ msgstr "Utente"
 #~ msgid "Панель швидких дій"
 #~ msgstr "Warehouse management panel."
 
-#, fuzzy
-#~| msgid "Прихід товару"
-#~ msgid "Пошук товару"
-#~ msgstr "Ricevimento merce"
+msgid "Пошук товару"
+msgstr "Ricerca articolo"
 
 #, fuzzy
 #~| msgid "Контрольний талон складської операції"
@@ -4135,3 +4133,63 @@ msgstr "Account"
 
 msgid "Панель адміністратора"
 msgstr "Pannello di amministrazione"
+
+msgid "Аудит операцій"
+msgstr "Audit delle operazioni"
+
+msgid "Бізнес-журнал створення, анулювання та зв'язків складських рухів."
+msgstr "Registro aziendale di creazione, annullamento e collegamenti dei movimenti di magazzino."
+
+msgid "Пов'язано з інвентаризацією"
+msgstr "Collegato all'inventario"
+
+msgid "Створено"
+msgstr "Creato"
+
+msgid "Операція"
+msgstr "Operazione"
+
+msgid "Товар / кількість"
+msgstr "Articolo / quantità"
+
+msgid "Складський маршрут"
+msgstr "Percorso di magazzino"
+
+msgid "Документ / коментар"
+msgstr "Documento / commento"
+
+msgid "Статус аудиту"
+msgstr "Stato audit"
+
+msgid "Пов'язані записи"
+msgstr "Record collegati"
+
+msgid "Час операції"
+msgstr "Ora operazione"
+
+msgid "Анулювано о"
+msgstr "Annullato alle"
+
+msgid "Зворотний рух"
+msgstr "Movimento inverso"
+
+msgid "Показати деталі"
+msgstr "Mostra dettagli"
+
+msgid "Записів аудиту операцій не знайдено."
+msgstr "Nessun record di audit trovato."
+
+msgid "Так"
+msgstr "Sì"
+
+msgid "Ні"
+msgstr "No"
+
+msgid "Журнал аудиту"
+msgstr "Registro di audit"
+
+msgid "Анулював"
+msgstr "Annullato da"
+
+msgid "Рух анулювання"
+msgstr "Movimento di annullamento"

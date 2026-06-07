@@ -13,6 +13,7 @@
         {% if user.is_superuser or is_warehouse_admin %}
             <h6 class="user-menu-section">{% trans "Налаштування складу" %}</h6>
             <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
+            <a class="dropdown-item" href="{% url 'stock_operation_audit' %}">{% trans "Аудит операцій" %}</a>
             <a class="dropdown-item" href="{% url 'warehouse_list' %}">{% trans "Склади" %}</a>
             <a class="dropdown-item" href="{% url 'location_list' %}">{% trans "Локації" %}</a>
             <a class="dropdown-item" href="{% url 'recipient_list' %}">{% trans "Працівники / отримувачі" %}</a>
