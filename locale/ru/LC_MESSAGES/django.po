@@ -4375,3 +4375,27 @@ msgstr "Итоги по типу операции"
 
 msgid "Підсумки за складом"
 msgstr "Итоги по складу"
+
+msgid "Очікувана кількість"
+msgstr "Ожидаемое количество"
+
+msgid "Підсумок інвентаризації"
+msgstr "Итоги инвентаризации"
+
+msgid "Всього підраховано"
+msgstr "Всего подсчитано"
+
+msgid "Кількість нестач"
+msgstr "Количество недостач"
+
+msgid "Кількість надлишків"
+msgstr "Количество излишков"
+
+msgid "PDF export requires reportlab."
+msgstr "Для экспорта PDF требуется reportlab."
+
+msgid "Unicode PDF font is not available."
+msgstr "Unicode-шрифт для PDF недоступен."
+
+msgid "Відхилення"
+msgstr "Отклонение"

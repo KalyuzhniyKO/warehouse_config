@@ -190,6 +190,11 @@ urlpatterns = [
         views.InventoryXLSXExportView.as_view(),
         name="inventory_export_xlsx",
     ),
+    path(
+        "stock/inventory/<int:pk>/export/pdf/",
+        views.InventoryPDFExportView.as_view(),
+        name="inventory_export_pdf",
+    ),
     path("stock/inventory/<int:pk>/complete/", views.InventoryCompleteView.as_view(), name="inventory_complete"),
     path("stock/inventory/<int:pk>/count/", views.InventoryCountView.as_view(), name="inventory_count"),
     path("stock/receive/", views.StockReceiveView.as_view(), name="stock_receive"),
