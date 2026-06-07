@@ -1,7 +1,8 @@
 from datetime import timedelta
 from decimal import Decimal
-from io import StringIO
+from io import BytesIO, StringIO
 
+from openpyxl import load_workbook
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
@@ -128,6 +129,7 @@ class StockOperationAuditTests(TestCase):
         )
         self.old_movement.refresh_from_db()
         self.url = reverse("stock_operation_audit")
+        self.export_url = reverse("stock_operation_audit_export_xlsx")
 
     def audit_response(self, params=None, user=None):
         self.client.force_login(user or self.admin)
@@ -135,6 +137,11 @@ class StockOperationAuditTests(TestCase):
 
     def movement_ids(self, response):
         return [movement.pk for movement in response.context["movements"]]
+
+    def export_workbook(self, params=None, user=None):
+        self.client.force_login(user or self.admin)
+        response = self.client.get(self.export_url, params or {})
+        return response, load_workbook(BytesIO(response.content), data_only=True)
 
     def test_management_user_can_open_operation_audit(self):
         response = self.audit_response()
@@ -215,3 +222,112 @@ class StockOperationAuditTests(TestCase):
             response = self.client.get(f"/{language_code}{self.url[3:]}")
             with self.subTest(language_code=language_code):
                 self.assertContains(response, label)
+
+    def test_export_requires_management_permission(self):
+        self.client.force_login(self.storekeeper)
+
+        response = self.client.get(self.export_url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_export_has_business_sheets_headers_and_filename(self):
+        response, workbook = self.export_workbook()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("spreadsheetml", response["Content-Type"])
+        self.assertRegex(
+            response["Content-Disposition"],
+            r'attachment; filename="stock-operation-audit-\d{8}-\d{4}\.xlsx"',
+        )
+        self.assertEqual(workbook.sheetnames, ["Summary", "Audit report"])
+        report = workbook["Audit report"]
+        self.assertEqual(
+            [cell.value for cell in report[1]],
+            [
+                "Дата й час операції",
+                "Дата й час створення",
+                "Тип операції",
+                "Статус",
+                "Код товару",
+                "Назва товару",
+                "Кількість",
+                "Одиниця",
+                "Склад-відправник",
+                "Склад-отримувач",
+                "Локація-відправник",
+                "Локація-отримувач",
+                "Отримувач",
+                "Документ",
+                "Коментар / причина",
+                "Створив",
+                "Анулювано",
+                "Анулював",
+                "Час анулювання",
+                "Рух анулювання",
+                "Зворотний рух",
+                "Інвентаризація",
+            ],
+        )
+        self.assertEqual(report.max_row - 1, StockMovement.objects.count())
+        self.assertEqual(report.freeze_panes, "A2")
+        self.assertEqual(report.auto_filter.ref, report.dimensions)
+        summary_values = [cell.value for cell in workbook["Summary"]["A"]]
+        self.assertIn("Звіт аудиту складських операцій", summary_values)
+        self.assertIn("Усього рухів", summary_values)
+
+    def test_export_respects_operation_type_filter(self):
+        _, workbook = self.export_workbook(
+            {"movement_type": StockMovement.MovementType.OUT}
+        )
+        report = workbook["Audit report"]
+
+        self.assertEqual(report.max_row, 2)
+        self.assertEqual(report.cell(row=2, column=5).value, "AUDIT-CABLE")
+        self.assertEqual(report.cell(row=2, column=14).value, "AUDIT-DOC")
+
+    def test_export_respects_warehouse_and_cancelled_filters(self):
+        _, warehouse_workbook = self.export_workbook(
+            {"warehouse": self.other_warehouse.pk}
+        )
+        _, cancelled_workbook = self.export_workbook({"cancelled": "yes"})
+
+        warehouse_report = warehouse_workbook["Audit report"]
+        cancelled_report = cancelled_workbook["Audit report"]
+        self.assertEqual(warehouse_report.max_row, 2)
+        self.assertEqual(
+            warehouse_report.cell(row=2, column=10).value,
+            "Other audit warehouse",
+        )
+        self.assertEqual(cancelled_report.max_row, 2)
+        self.assertEqual(cancelled_report.cell(row=2, column=17).value, "Так")
+        self.assertEqual(cancelled_report.cell(row=2, column=22).value, "INV-AUDIT-0001")
+
+    def test_export_link_preserves_page_filters(self):
+        response = self.audit_response(
+            {"movement_type": StockMovement.MovementType.OUT, "cancelled": "yes"}
+        )
+
+        self.assertContains(response, self.export_url)
+        self.assertContains(response, "movement_type=out")
+        self.assertContains(response, "cancelled=yes")
+
+    def test_export_headers_are_localized(self):
+        expectations = {
+            "en": "Operation date/time",
+            "ru": "Дата и время операции",
+            "it": "Data/ora operazione",
+            "pl": "Data i czas operacji",
+        }
+        self.client.force_login(self.admin)
+
+        for language_code, expected_header in expectations.items():
+            response = self.client.get(
+                f"/{language_code}{self.export_url[3:]}",
+                {"movement_type": StockMovement.MovementType.OUT},
+            )
+            workbook = load_workbook(BytesIO(response.content), data_only=True)
+            with self.subTest(language_code=language_code):
+                self.assertEqual(
+                    workbook["Audit report"].cell(row=1, column=1).value,
+                    expected_header,
+                )

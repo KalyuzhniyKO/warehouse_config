@@ -11,6 +11,7 @@
             <p class="text-muted mb-0">{% trans "Бізнес-журнал створення, анулювання та зв'язків складських рухів." %}</p>
         </div>
         <div class="list-page-actions">
+            <a class="btn btn-outline-success" href="{% url 'stock_operation_audit_export_xlsx' %}{% if filter_query %}?{{ filter_query }}{% endif %}">{% trans "Експорт Excel" %}</a>
             <a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "Журнал операцій" %}</a>
         </div>
     </div>
