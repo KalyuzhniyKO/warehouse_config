@@ -90,6 +90,7 @@ urlpatterns = [
         views.directory_view(views.DirectoryCreateView, "item"),
         name="item_create",
     ),
+    path("items/<int:pk>/", views.ItemDetailView.as_view(), name="item_detail"),
     path(
         "items/<int:pk>/edit/",
         views.directory_view(views.DirectoryUpdateView, "item"),

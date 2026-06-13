@@ -76,6 +76,7 @@ from ..services.inventory import (
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
 from ..services.warehouse_access import (
     get_accessible_warehouses,
+    restrict_stock_movement_queryset_for_user,
     restrict_warehouse_queryset_for_user,
 )
 from ..services.stock import (
@@ -168,6 +169,61 @@ class DirectoryListView(
             status if status in {"active", "archived", "all"} else "active"
         )
         context["search_query"] = self.request.GET.get("q", "").strip()
+        return context
+
+
+class ItemDetailView(LoginRequiredMixin, TemplateView):
+    template_name = "core/item_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        item = get_object_or_404(
+            Item.objects.select_related("barcode", "category", "unit"),
+            pk=self.kwargs["pk"],
+        )
+        accessible_warehouses = get_accessible_warehouses(self.request.user)
+        balances = StockBalance.objects.filter(
+            item=item,
+            is_active=True,
+            warehouse__in=accessible_warehouses,
+        )
+        movements = (
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                StockMovement.objects.filter(
+                    item=item,
+                    is_cancelled=False,
+                    reversal_of__isnull=True,
+                ),
+            )
+            .select_related(
+                "source_warehouse",
+                "destination_warehouse",
+                "source_location__warehouse",
+                "destination_location__warehouse",
+                "recipient",
+            )
+            .order_by("-occurred_at", "-id")
+        )
+        stock_by_warehouse = list(
+            balances.values("warehouse__name")
+            .annotate(total_qty=Sum("qty"))
+            .order_by("warehouse__name")
+        )
+        context.update(
+            {
+                "item": item,
+                "total_stock": balances.aggregate(total=Sum("qty"))["total"] or 0,
+                "stock_by_warehouse": stock_by_warehouse,
+                "last_receive": movements.filter(
+                    movement_type=StockMovement.MovementType.IN
+                ).first(),
+                "last_issue": movements.filter(
+                    movement_type=StockMovement.MovementType.OUT
+                ).first(),
+                "recent_movements": movements[:20],
+            }
+        )
         return context
 
 

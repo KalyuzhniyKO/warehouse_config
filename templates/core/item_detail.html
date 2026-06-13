@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ item.name }} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="list-page">
+    <div class="list-page-header">
+        <div class="list-page-title">
+            <a href="{% url 'item_list' %}" class="small">{% trans "До списку товарів" %}</a>
+            <h1 class="mb-1">{{ item.name }}</h1>
+            <p class="text-muted mb-0">{{ item.internal_code|default:"—" }}</p>
+        </div>
+        <div class="list-page-actions">
+            <a class="btn btn-outline-secondary" href="{% url 'item_label_print' item.pk %}">{% trans "Друк етикетки" %}</a>
+            <a class="btn btn-primary" href="{% url 'item_update' item.pk %}">{% trans "Редагувати" %}</a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card content-card h-100"><div class="card-body">
+                <h2 class="h5">{% trans "Картка товару" %}</h2>
+                <dl class="row mb-0 gy-2">
+                    <dt class="col-sm-5">{% trans "Назва" %}</dt><dd class="col-sm-7">{{ item.name }}</dd>
+                    <dt class="col-sm-5">{% trans "Штрихкод" %}</dt><dd class="col-sm-7">{{ item.barcode_value|default:"—" }}</dd>
+                    <dt class="col-sm-5">{% trans "Категорія" %}</dt><dd class="col-sm-7">{{ item.category|default:"—" }}</dd>
+                    <dt class="col-sm-5">{% trans "Одиниця" %}</dt><dd class="col-sm-7">{{ item.unit }}</dd>
+                    <dt class="col-sm-5">{% trans "Загальний залишок" %}</dt><dd class="col-sm-7 fw-bold">{{ total_stock }}</dd>
+                </dl>
+            </div></div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card content-card h-100"><div class="card-body">
+                <h2 class="h5">{% trans "Останні операції" %}</h2>
+                <dl class="row mb-0 gy-2">
+                    <dt class="col-sm-5">{% trans "Останній прихід" %}</dt>
+                    <dd class="col-sm-7">{% if last_receive %}{{ last_receive.occurred_at|date:"Y-m-d H:i" }} · {{ last_receive.qty }}{% else %}—{% endif %}</dd>
+                    <dt class="col-sm-5">{% trans "Остання видача" %}</dt>
+                    <dd class="col-sm-7">{% if last_issue %}{{ last_issue.occurred_at|date:"Y-m-d H:i" }} · {{ last_issue.qty }}{% else %}—{% endif %}</dd>
+                </dl>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card content-card mb-4">
+        <div class="card-body">
+            <h2 class="h5">{% trans "Залишки по складах" %}</h2>
+            {% if stock_by_warehouse %}
+                <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>{% trans "Склад" %}</th><th class="text-end">{% trans "Кількість" %}</th></tr></thead>
+                    <tbody>{% for row in stock_by_warehouse %}<tr><td>{{ row.warehouse__name }}</td><td class="text-end">{{ row.total_qty }}</td></tr>{% endfor %}</tbody>
+                </table></div>
+            {% else %}
+                <p class="text-muted mb-0">{% trans "Залишків немає." %}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card content-card data-table-card">
+        <div class="card-body"><h2 class="h5 mb-0">{% trans "Останні 20 рухів" %}</h2></div>
+        <div class="table-responsive"><table class="table table-striped table-hover align-middle mb-0">
+            <thead><tr><th>{% trans "Дата" %}</th><th>{% trans "Тип" %}</th><th class="text-end">{% trans "Кількість" %}</th><th>{% trans "Звідки" %}</th><th>{% trans "Куди" %}</th><th>{% trans "Документ" %}</th></tr></thead>
+            <tbody>
+            {% for movement in recent_movements %}
+                <tr>
+                    <td>{{ movement.occurred_at|date:"Y-m-d H:i" }}</td>
+                    <td>{{ movement.get_movement_type_display }}</td>
+                    <td class="text-end">{{ movement.qty }}</td>
+                    <td>{{ movement.resolved_source_warehouse|default:"—" }}</td>
+                    <td>{{ movement.resolved_destination_warehouse|default:"—" }}</td>
+                    <td>{{ movement.document_number|default:"—" }}</td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">{% trans "Рухів немає." %}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table></div>
+    </div>
+</div>
+{% endblock %}
