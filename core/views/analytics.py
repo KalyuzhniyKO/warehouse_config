@@ -174,10 +174,12 @@ def build_operation_mix_visual(operation_mix):
         "write_off": _("Списання"),
         "transfer": _("Переміщення"),
     }
+    type_keys = {"write_off": "writeoff"}
     rows_by_key = {row.get("key"): row for row in operation_mix}
     return [
         {
             "key": key,
+            "type_key": type_keys.get(key, key),
             "label": label,
             "total": rows_by_key.get(key, {}).get("total", 0) or 0,
             "bar_percent": int(rows_by_key.get(key, {}).get("percent", 0) or 0),
