@@ -78,6 +78,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.barcodes import resolve_item_barcode
 from ..services.warehouse_access import get_accessible_warehouses
 from ..services.stock import (
     InsufficientStockError,
@@ -701,6 +702,19 @@ class InventoryCountView(LoginRequiredMixin, GroupRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         inventory_count = self.get_inventory_count()
         lines = list(self.get_lines(inventory_count))
+        submitted_barcode = request.POST.get("barcode", "").strip()
+        if submitted_barcode:
+            item = resolve_item_barcode(submitted_barcode)
+            if item is None:
+                messages.error(request, _("Товар за цим штрихкодом не знайдено."))
+                return self.render_to_response(
+                    self.get_context_data(inventory_count=inventory_count, lines=lines)
+                )
+            if not any(line.item_id == item.pk for line in lines):
+                messages.error(request, _("Товар не знайдено у цій інвентаризації."))
+                return self.render_to_response(
+                    self.get_context_data(inventory_count=inventory_count, lines=lines)
+                )
         line_forms = self.build_line_forms(lines, data=request.POST)
         if not all(form.is_valid() for form in line_forms):
             return self.render_to_response(

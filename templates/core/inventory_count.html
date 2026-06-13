@@ -20,6 +20,7 @@
 </div></form>
 <form method="post">
 {% csrf_token %}
+<input type="hidden" name="barcode" data-submitted-barcode>
 <div class="card content-card">
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle mb-0">

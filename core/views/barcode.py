@@ -72,7 +72,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
-from ..services.items import find_item_by_barcode
+from ..services.barcodes import resolve_item_barcode
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -92,7 +92,7 @@ def barcode_lookup(request):
     if not barcode:
         return JsonResponse(not_found)
 
-    item = find_item_by_barcode(barcode)
+    item = resolve_item_barcode(barcode)
     if item:
         return JsonResponse(
             {

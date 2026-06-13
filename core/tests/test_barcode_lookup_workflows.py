@@ -7,7 +7,16 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import Item, Location, StockBalance, Unit, Warehouse
+from core.models import (
+    Item,
+    Location,
+    Recipient,
+    StockBalance,
+    StockMovement,
+    Unit,
+    UsagePlace,
+    Warehouse,
+)
 
 from .warehouse_access_utils import grant_warehouse_access
 
@@ -22,6 +31,8 @@ class BarcodeLookupWorkflowTests(TestCase):
         self.item = Item.objects.create(name="Visible stock item", unit=self.unit)
         self.warehouse = Warehouse.objects.create(name="Visible warehouse")
         self.location = Location.objects.create(warehouse=self.warehouse, name="A1")
+        self.recipient = Recipient.objects.create(name="Barcode recipient")
+        self.usage_place = UsagePlace.objects.create(name="Barcode usage place")
         grant_warehouse_access(self.user, self.warehouse, can_delegate=True)
         StockBalance.objects.create(
             item=self.item,
@@ -40,6 +51,35 @@ class BarcodeLookupWorkflowTests(TestCase):
         self.assertEqual(response.context["scanned_item"], self.item)
         self.assertEqual(response.context["form"].initial["item"], self.item)
         self.assertNotContains(response, "Товар за цим штрихкодом не знайдено.")
+
+    def test_issue_submit_resolves_the_same_barcode_as_lookup(self):
+        lookup_response = self.client.get(
+            reverse("stock_issue"),
+            {"barcode": self.scanned_barcode},
+        )
+        form = lookup_response.context["form"]
+
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "operation_token": lookup_response.context["operation_token"],
+                "barcode": self.scanned_barcode,
+                "item": self.item.pk,
+                "warehouse": form.initial["warehouse"].pk,
+                "location": form.initial["location"].pk,
+                "qty": "1.000",
+                "issue_reason": form.initial["issue_reason"],
+                "department": self.usage_place.pk,
+                "recipient": self.recipient.pk,
+                "document_number": "",
+                "comment": "",
+                "occurred_at": form.initial["occurred_at"],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.OUT)
+        self.assertEqual(movement.item, self.item)
 
     def test_return_finds_barcode_visible_in_stock_balances(self):
         response = self.client.get(
