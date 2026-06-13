@@ -20,7 +20,7 @@ from ..forms import (
 )
 from ..models import StockBalance, StockMovement
 from ..permissions import STOCK_EDIT_GROUPS, GroupRequiredMixin
-from ..services.items import find_item_by_barcode
+from ..services.barcodes import resolve_item_barcode
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -141,8 +141,8 @@ class BarcodePrefillMixin:
     def dispatch(self, request, *args, **kwargs):
         self.scanned_barcode = request.GET.get(self.barcode_param, "").strip()
         self.scanned_item = None
-        if request.method == "GET" and self.scanned_barcode:
-            self.scanned_item = find_item_by_barcode(self.scanned_barcode)
+        if self.scanned_barcode:
+            self.scanned_item = resolve_item_barcode(self.scanned_barcode)
             if self.scanned_item is None:
                 messages.warning(request, self.barcode_not_found_message)
         return super().dispatch(request, *args, **kwargs)
@@ -151,6 +151,7 @@ class BarcodePrefillMixin:
         initial = super().get_initial()
         if self.scanned_item is not None:
             initial["item"] = self.scanned_item
+            initial["barcode"] = self.scanned_barcode
         return initial
 
     def get_context_data(self, **kwargs):

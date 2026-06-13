@@ -1,6 +1,7 @@
 """Transactional barcode generation helpers."""
 
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 
 from core.models import BarcodeRegistry, BarcodeSequence, Item, Location, Warehouse
 
@@ -10,6 +11,19 @@ BARCODE_MAX_ATTEMPTS = 1000
 
 class BarcodeGenerationError(RuntimeError):
     """Raised when a unique barcode cannot be reserved safely."""
+
+
+def resolve_item_barcode(value):
+    """Return the active item identified by a barcode or internal code."""
+    value = (value or "").strip()
+    if not value:
+        return None
+    return (
+        Item.objects.select_related("barcode", "unit")
+        .filter(is_active=True)
+        .filter(Q(barcode__barcode__iexact=value) | Q(internal_code__iexact=value))
+        .first()
+    )
 
 
 def _normalize_prefix(prefix):
