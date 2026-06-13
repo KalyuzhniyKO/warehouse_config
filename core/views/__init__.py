@@ -9,6 +9,7 @@ from .directories import (
     DirectoryListView,
     DirectoryRestoreView,
     DirectoryUpdateView,
+    ItemDetailView,
     directory_view,
 )
 from .stock_operations import (
@@ -122,6 +123,7 @@ __all__ = [
     "InventoryXLSXExportView",
     "ItemLabelDownloadView",
     "ItemLabelPrintView",
+    "ItemDetailView",
     "LabelTemplateCreateView",
     "LabelTemplateListView",
     "LabelTemplatePreviewView",
