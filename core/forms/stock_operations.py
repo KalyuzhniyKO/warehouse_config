@@ -330,6 +330,7 @@ class StockIssueForm(StockOperationForm):
         self.fields["comment"].required = False
         for field_name in [
             "item",
+            "warehouse",
             "location",
             "issue_reason",
             "document_number",
