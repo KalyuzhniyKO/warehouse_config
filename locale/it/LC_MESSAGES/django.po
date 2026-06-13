@@ -4259,3 +4259,21 @@ msgstr "Il carattere Unicode per PDF non è disponibile."
 
 msgid "Відхилення"
 msgstr "Scostamento"
+
+msgid "Знімок на початок"
+msgstr "Quantità iniziale"
+
+msgid "Рухи під час інвентаризації"
+msgstr "Delta movimenti"
+
+msgid "Очікувана кількість на час підрахунку"
+msgstr "Quantità prevista al momento del conteggio"
+
+msgid "Порахував"
+msgstr "Conteggiato da"
+
+msgid "Час підрахунку"
+msgstr "Conteggiato il"
+
+msgid "Результати"
+msgstr "Risultati"

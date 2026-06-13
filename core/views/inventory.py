@@ -96,8 +96,10 @@ def get_inventory_export_queryset(inventory_count):
         "inventory_count__warehouse",
         "item",
         "item__barcode",
+        "item__unit",
         "location",
         "location__warehouse",
+        "counted_by",
     ).order_by("item__name", "location__name", "id")
 
 
@@ -142,16 +144,25 @@ INVENTORY_EXPORT_HEADERS = [
 
 INVENTORY_RESULT_HEADERS = [
     _("Код товару"),
+    _("Штрихкод"),
     _("Назва товару"),
-    _("Очікувана кількість"),
+    _("Одиниця"),
+    _("Знімок на початок"),
+    _("Рухи під час інвентаризації"),
+    _("Очікувана кількість на час підрахунку"),
     _("Фактична кількість"),
     _("Відхилення"),
+    _("Порахував"),
+    _("Час підрахунку"),
+    _("Коментар рядка"),
 ]
 
 
 def get_completed_inventory_for_export(user, pk):
     return get_object_or_404(
-        InventoryCount.objects.select_related("warehouse", "location").filter(
+        InventoryCount.objects.select_related(
+            "warehouse", "location", "created_by"
+        ).filter(
             warehouse__in=get_accessible_warehouses(user),
             status=InventoryCount.Status.COMPLETED,
         ),
@@ -160,34 +171,58 @@ def get_completed_inventory_for_export(user, pk):
 
 
 def get_inventory_result_lines(inventory_count):
-    lines = list(
-        get_inventory_export_queryset(inventory_count).filter(actual_qty__isnull=False)
-    )
+    lines = list(get_inventory_export_queryset(inventory_count))
     for line in lines:
         reconcile_inventory_line(line)
     return lines
 
 
-def inventory_export_summary(inventory_count, lines):
-    variances = [line.variance_qty for line in lines]
+def inventory_user_display_name(user):
+    if not user:
+        return ""
+    return user.get_full_name() or user.get_username()
+
+
+def inventory_export_summary(inventory_count, lines, generated_at):
+    counted_lines = [line for line in lines if line.actual_qty is not None]
+    variances = [line.variance_qty for line in counted_lines]
     return [
         (_("Номер інвентаризації"), inventory_count.number),
         (_("Склад"), inventory_count.warehouse.name),
+        (_("Статус"), inventory_count.get_status_display()),
+        (_("Створив"), inventory_user_display_name(inventory_count.created_by)),
         (_("Дата початку"), inventory_count.started_at),
         (_("Дата завершення"), inventory_count.completed_at),
-        (_("Всього підраховано"), len(lines)),
+        (_("Всього рядків"), len(lines)),
+        (_("Всього підраховано"), len(counted_lines)),
         (_("Кількість нестач"), sum(variance < 0 for variance in variances)),
         (_("Кількість надлишків"), sum(variance > 0 for variance in variances)),
+        (
+            _("Сума нестач"),
+            abs(sum((variance for variance in variances if variance < 0), start=0)),
+        ),
+        (
+            _("Сума надлишків"),
+            sum((variance for variance in variances if variance > 0), start=0),
+        ),
+        (_("Згенеровано"), generated_at),
     ]
 
 
 def inventory_result_row(line):
     return [
         line.item.internal_code,
+        line.barcode or (line.item.barcode.barcode if line.item.barcode_id else ""),
         line.item.name,
+        line.item.unit.symbol,
+        line.snapshot_qty,
+        line.movement_delta,
         line.expected_qty_at_count_time,
-        line.actual_qty,
+        line.actual_qty if line.actual_qty is not None else "",
         line.variance_qty,
+        inventory_user_display_name(line.counted_by),
+        line.counted_at or "",
+        line.comment,
     ]
 
 
@@ -225,42 +260,61 @@ class InventoryXLSXExportView(LoginRequiredMixin, GroupRequiredMixin, View):
     def get(self, request, pk, *args, **kwargs):
         try:
             from openpyxl import Workbook
-            from openpyxl.styles import Font
+            from openpyxl.styles import Alignment, Font, PatternFill
         except ImportError:
             return HttpResponse(_("XLSX export requires openpyxl."), status=503)
 
         inventory_count = get_completed_inventory_for_export(request.user, pk)
         lines = get_inventory_result_lines(inventory_count)
+        generated_at = timezone.now()
         workbook = Workbook()
         summary = workbook.active
         summary.title = "Summary"
         summary.append([gettext("Підсумок інвентаризації")])
-        for label, value in inventory_export_summary(inventory_count, lines):
+        for label, value in inventory_export_summary(
+            inventory_count, lines, generated_at
+        ):
             summary.append([str(label), local_naive_datetime(value)])
         for cell in summary["A"]:
-            cell.font = Font(bold=True)
-        for row_number in (4, 5):
+            cell.font = Font(bold=True, color="92400E")
+        summary["A1"].font = Font(bold=True, size=14, color="92400E")
+        for row_number in (6, 7, 14):
             summary.cell(row=row_number, column=2).number_format = "yyyy-mm-dd hh:mm:ss"
-        summary.column_dimensions["A"].width = 28
-        summary.column_dimensions["B"].width = 34
+        for row_number in (12, 13):
+            summary.cell(row=row_number, column=2).number_format = "#,##0.000"
+        summary.column_dimensions["A"].width = 34
+        summary.column_dimensions["B"].width = 44
 
         results = workbook.create_sheet("Results")
         results.append([str(header) for header in INVENTORY_RESULT_HEADERS])
+        header_fill = PatternFill("solid", fgColor="D4AC00")
         for cell in results[1]:
-            cell.font = Font(bold=True)
+            cell.font = Font(bold=True, color="101828")
+            cell.fill = header_fill
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
         for line in lines:
             row = inventory_result_row(line)
-            results.append([row[0], row[1], float(row[2]), float(row[3]), float(row[4])])
+            results.append(
+                [
+                    *row[:4],
+                    *[float(value) if value != "" else "" for value in row[4:9]],
+                    row[9],
+                    local_naive_datetime(row[10]),
+                    row[11],
+                ]
+            )
 
-        widths = [20, 36, 22, 22, 18]
+        widths = [20, 22, 36, 14, 20, 22, 24, 20, 18, 24, 21, 38]
         for index, width in enumerate(widths, start=1):
             column_letter = results.cell(row=1, column=index).column_letter
             results.column_dimensions[column_letter].width = width
         results.freeze_panes = "A2"
         results.auto_filter.ref = results.dimensions
-        for row in results.iter_rows(min_row=2, min_col=3, max_col=5):
+        for row in results.iter_rows(min_row=2, min_col=5, max_col=9):
             for cell in row:
                 cell.number_format = "#,##0.000"
+        for cell in results["K"][1:]:
+            cell.number_format = "yyyy-mm-dd hh:mm:ss"
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -296,6 +350,7 @@ class InventoryPDFExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 
         inventory_count = get_completed_inventory_for_export(request.user, pk)
         lines = get_inventory_result_lines(inventory_count)
+        generated_at = timezone.now()
         try:
             regular_path, bold_path = self.pdf_font_paths()
         except FileNotFoundError:
@@ -334,6 +389,24 @@ class InventoryPDFExportView(LoginRequiredMixin, GroupRequiredMixin, View):
             parent=body_style,
             fontName="InventorySansBold",
         )
+        section_style = ParagraphStyle(
+            "InventorySection",
+            parent=header_style,
+            fontSize=10,
+            leading=13,
+            textColor=colors.HexColor("#92400E"),
+        )
+        result_style = ParagraphStyle(
+            "InventoryResult",
+            parent=body_style,
+            fontSize=5.4,
+            leading=6.4,
+        )
+        result_header_style = ParagraphStyle(
+            "InventoryResultHeader",
+            parent=result_style,
+            fontName="InventorySansBold",
+        )
 
         story = [
             Paragraph(
@@ -341,13 +414,17 @@ class InventoryPDFExportView(LoginRequiredMixin, GroupRequiredMixin, View):
                 title_style,
             ),
             Spacer(1, 5 * mm),
+            Paragraph(escape(gettext("Підсумок інвентаризації")), section_style),
+            Spacer(1, 2 * mm),
         ]
         summary_data = [
             [
                 Paragraph(escape(str(label)), header_style),
                 Paragraph(escape(self.summary_value(value)), body_style),
             ]
-            for label, value in inventory_export_summary(inventory_count, lines)
+            for label, value in inventory_export_summary(
+                inventory_count, lines, generated_at
+            )
         ]
         summary_table = Table(summary_data, colWidths=[55 * mm, 105 * mm])
         summary_table.setStyle(
@@ -361,36 +438,56 @@ class InventoryPDFExportView(LoginRequiredMixin, GroupRequiredMixin, View):
                 ]
             )
         )
-        story.extend([summary_table, Spacer(1, 7 * mm)])
+        story.extend(
+            [
+                summary_table,
+                Spacer(1, 7 * mm),
+                Paragraph(escape(gettext("Результати")), section_style),
+                Spacer(1, 2 * mm),
+            ]
+        )
 
         result_data = [
-            [Paragraph(escape(str(header)), header_style) for header in INVENTORY_RESULT_HEADERS]
+            [
+                Paragraph(escape(str(header)), result_header_style)
+                for header in INVENTORY_RESULT_HEADERS
+            ]
         ]
         for line in lines:
             row = inventory_result_row(line)
             result_data.append(
                 [
-                    Paragraph(escape(str(row[0] or "")), body_style),
-                    Paragraph(escape(str(row[1])), body_style),
-                    str(row[2]),
-                    str(row[3]),
-                    str(row[4]),
+                    Paragraph(escape(self.result_value(value)), result_style)
+                    for value in row
                 ]
             )
         result_table = Table(
             result_data,
             repeatRows=1,
-            colWidths=[28 * mm, 67 * mm, 28 * mm, 28 * mm, 25 * mm],
+            colWidths=[
+                13 * mm,
+                16 * mm,
+                27 * mm,
+                9 * mm,
+                13 * mm,
+                12 * mm,
+                14 * mm,
+                14 * mm,
+                12 * mm,
+                16 * mm,
+                17 * mm,
+                19 * mm,
+            ],
         )
         result_table.setStyle(
             TableStyle(
                 [
                     ("FONTNAME", (0, 0), (-1, 0), "InventorySansBold"),
                     ("FONTNAME", (0, 1), (-1, -1), "InventorySans"),
-                    ("FONTSIZE", (0, 0), (-1, -1), 7),
+                    ("FONTSIZE", (0, 0), (-1, -1), 5.4),
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#d4ac00")),
                     ("GRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#d7dee8")),
-                    ("ALIGN", (2, 1), (-1, -1), "RIGHT"),
+                    ("ALIGN", (4, 1), (8, -1), "RIGHT"),
                     ("VALIGN", (0, 0), (-1, -1), "TOP"),
                     ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
                 ]
@@ -407,9 +504,15 @@ class InventoryPDFExportView(LoginRequiredMixin, GroupRequiredMixin, View):
 
     @staticmethod
     def summary_value(value):
-        if hasattr(value, "tzinfo"):
+        if value is not None and hasattr(value, "tzinfo"):
             return date_format(timezone.localtime(value), "SHORT_DATETIME_FORMAT")
-        return str(value)
+        return "" if value is None else str(value)
+
+    @staticmethod
+    def result_value(value):
+        if value not in (None, "") and hasattr(value, "tzinfo"):
+            return date_format(timezone.localtime(value), "SHORT_DATETIME_FORMAT")
+        return "" if value is None else str(value)
 
     @staticmethod
     def pdf_font_paths():

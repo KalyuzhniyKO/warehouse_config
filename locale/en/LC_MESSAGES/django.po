@@ -4647,3 +4647,21 @@ msgstr "Unicode PDF font is not available."
 
 msgid "Відхилення"
 msgstr "Variance"
+
+msgid "Знімок на початок"
+msgstr "Snapshot quantity"
+
+msgid "Рухи під час інвентаризації"
+msgstr "Movement delta"
+
+msgid "Очікувана кількість на час підрахунку"
+msgstr "Expected quantity"
+
+msgid "Порахував"
+msgstr "Counted by"
+
+msgid "Час підрахунку"
+msgstr "Counted at"
+
+msgid "Результати"
+msgstr "Results"
