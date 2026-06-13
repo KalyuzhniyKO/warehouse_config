@@ -42,6 +42,7 @@ def get_csv_export_sections(filters):
                     ("issue_qty", _("Видача")),
                     ("return_qty", _("Повернення")),
                     ("writeoff_qty", _("Списання")),
+                    ("no_movement_count", _("Без руху")),
                 ]
             ],
         ),
@@ -85,7 +86,7 @@ def get_xlsx_summary_rows(filters):
     summary = get_analytics_summary(filters)
     return [
         [key, float(summary[key]) if hasattr(summary[key], "quantize") else summary[key]]
-        for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty"]
+        for key in ["operations_count", "receive_qty", "issue_qty", "return_qty", "writeoff_qty", "no_movement_count"]
     ]
 
 
