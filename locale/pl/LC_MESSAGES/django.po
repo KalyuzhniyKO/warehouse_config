@@ -2888,3 +2888,21 @@ msgstr "Czcionka Unicode dla PDF jest niedostępna."
 
 msgid "Відхилення"
 msgstr "Odchylenie"
+
+msgid "Знімок на початок"
+msgstr "Ilość początkowa"
+
+msgid "Рухи під час інвентаризації"
+msgstr "Zmiana ruchów"
+
+msgid "Очікувана кількість на час підрахунку"
+msgstr "Oczekiwana ilość w momencie liczenia"
+
+msgid "Порахував"
+msgstr "Policzone przez"
+
+msgid "Час підрахунку"
+msgstr "Czas liczenia"
+
+msgid "Результати"
+msgstr "Wyniki"

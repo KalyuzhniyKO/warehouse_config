@@ -742,23 +742,38 @@ class InventoryInterfaceTests(TestCase):
         results = workbook["Results"]
         self.assertEqual(summary["B2"].value, inventory_count.number)
         self.assertEqual(summary["B3"].value, self.warehouse.name)
-        self.assertEqual(summary["B6"].value, 1)
-        self.assertEqual(summary["B7"].value, 0)
         self.assertEqual(summary["B8"].value, 1)
+        self.assertEqual(summary["B9"].value, 1)
+        self.assertEqual(summary["B10"].value, 0)
+        self.assertEqual(summary["B11"].value, 1)
+        self.assertEqual(summary["B12"].value, 0)
+        self.assertEqual(summary["B13"].value, 2)
+        self.assertIsNotNone(summary["B14"].value)
         self.assertEqual(
             [cell.value for cell in results[1]],
             [
                 "Код товару",
+                "Штрихкод",
                 "Назва товару",
-                "Очікувана кількість",
+                "Одиниця",
+                "Знімок на початок",
+                "Рухи під час інвентаризації",
+                "Очікувана кількість на час підрахунку",
                 "Фактична кількість",
                 "Відхилення",
+                "Порахував",
+                "Час підрахунку",
+                "Коментар рядка",
             ],
         )
-        self.assertEqual(results["B2"].value, "Inventory UI item")
-        self.assertEqual(results["C2"].value, 5)
-        self.assertEqual(results["D2"].value, 7)
-        self.assertEqual(results["E2"].value, 2)
+        self.assertEqual(results["B2"].value, "ITM9990000001")
+        self.assertEqual(results["C2"].value, "Inventory UI item")
+        self.assertEqual(results["D2"].value, "pcs")
+        self.assertEqual(results["E2"].value, 5)
+        self.assertEqual(results["F2"].value, 0)
+        self.assertEqual(results["G2"].value, 5)
+        self.assertEqual(results["H2"].value, 7)
+        self.assertEqual(results["I2"].value, 2)
         self.assertEqual(results.max_row, 2)
 
     def test_xlsx_export_returns_service_unavailable_when_openpyxl_is_missing(self):
