@@ -13,6 +13,6 @@ def find_item_by_barcode(value):
     return (
         Item.objects.select_related("barcode", "unit")
         .filter(is_active=True)
-        .filter(Q(barcode__barcode=value) | Q(internal_code=value))
+        .filter(Q(barcode__barcode__iexact=value) | Q(internal_code__iexact=value))
         .first()
     )
