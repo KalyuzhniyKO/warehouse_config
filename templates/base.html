@@ -210,7 +210,6 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки на складі" %}</a></li>
                         <li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Журнал операцій" %}</a></li>
                         {% if user.is_superuser or is_warehouse_admin %}
-                            <li class="nav-item"><a class="nav-link" href="{% url 'management_analytics' %}">{% trans "Аналітика" %}</a></li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'management_reports' %}">{% trans "Готові звіти" %}</a></li>
                         {% endif %}
                         <li class="nav-item"><span class="nav-link disabled text-uppercase small fw-semibold">{% trans "Довідники" %}</span></li>
@@ -262,9 +261,6 @@
             <div class="ms-auto d-flex align-items-center gap-2 navbar-text app-header-meta">
                 {% if user.is_authenticated %}
                     {% with is_warehouse_admin=user|in_group:"Адміністратор складу" display_name=user|display_name %}
-                    {% if user.is_superuser or is_warehouse_admin %}
-                        <a class="btn btn-outline-light btn-sm navbar-analytics-link" href="{% url 'management_analytics' %}">{% trans "Аналітика" %}</a>
-                    {% endif %}
                     {% include "includes/language_switcher.html" %}
                     {% include "core/includes/user_menu.html" %}
                     {% endwith %}

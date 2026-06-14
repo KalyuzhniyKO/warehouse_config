@@ -2346,7 +2346,11 @@ msgstr "Analisi magazzino"
 
 #: templates/core/dashboard.html:31
 msgid "KPI та управлінський огляд за період."
-msgstr ""
+msgstr "KPI e panoramica gestionale del periodo."
+
+#: templates/core/dashboard.html
+msgid "Аналітика"
+msgstr "Analisi"
 
 #: templates/core/dashboard.html:36
 #, fuzzy
