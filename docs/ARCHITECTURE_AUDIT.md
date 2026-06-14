@@ -296,3 +296,27 @@ Suggested Codex task for that PR:
 The primary scan workflow is warehouse-based: users scan an item barcode, enter quantity and recipient/department/comment details, and save the operation against a warehouse. `StockBalance` totals are therefore maintained by `item + warehouse`; `Location` is optional metadata for a physical place inside that warehouse, such as a rack, shelf, cabinet, or zone.
 
 Legacy `Основна локація` records are compatibility artifacts from the older location-required model. They must not be treated as separate warehouses, and new stock calculations should not depend on them as the balance identity. Existing movement history is preserved: movements can still display old source/destination locations and can derive the warehouse from those locations when explicit movement warehouse fields are absent.
+
+All stock mutations remain transactional and use row-level locks through
+`core/services/stock.py`. `StockBalance.qty` is also protected by the database
+constraint `core_stock_balance_qty_non_negative`. Before applying the constraint,
+the migration stops with an explicit error if legacy negative balances exist; it
+does not rewrite quantities. Stock operation forms use one-time session submission
+tokens alongside Django CSRF protection to prevent duplicate movements from
+repeated form submissions.
+
+Normal return operations require a recipient and are validated against movement
+history. Available return quantity is the recipient's active `OUT` quantity for
+the item minus active `RETURN` quantity for the same item and recipient.
+Cancelled movements and cancellation adjustment rows are excluded. Legacy
+historical return movements may still have no recipient; they are preserved and
+are not rewritten.
+
+Inventory counts preserve each line's `expected_qty` as the warehouse-level
+snapshot at inventory start. Normal stock operations remain available while an
+inventory is in progress. When a physical quantity is saved, `counted_at`
+records its time; reconciliation calculates the line's expected quantity as the
+snapshot plus net warehouse movements through `counted_at`. Final posting
+creates an adjustment only for `actual_qty - expected_qty_at_count_time`, so
+movements after the physical count are not included in the variance. Locations
+remain optional metadata and are not the accounting identity.

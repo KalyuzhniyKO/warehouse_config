@@ -31,6 +31,7 @@
                                 <span class="report-category-badge">{{ group.title }}</span>
                                 <h3>{{ preset.title }}</h3>
                                 <p class="report-preset-description">{{ preset.description }}</p>
+                                <p class="report-preset-rule"><strong>{% trans "Розрахунок" %}:</strong> {{ preset.calculation_rule }}</p>
                                 {% if preset.hint %}
                                     <p class="report-preset-hint">{{ preset.hint }}</p>
                                 {% endif %}

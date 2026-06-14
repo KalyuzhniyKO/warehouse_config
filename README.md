@@ -55,18 +55,52 @@
 cd /path/to/warehouse_config
 python -m venv venv
 source venv/bin/activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-python manage.py migrate
-python manage.py init_roles
-python manage.py compilemessages
-python manage.py runserver 0.0.0.0:8000
 ```
+
+Для локальних інструментів розробки опціонально встановіть dev-залежності:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+Підготуйте та запустіть застосунок:
+
+```bash
+python manage.py migrate
+python manage.py compilemessages
+python manage.py init_roles
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+Якщо `compilemessages` завершується помилкою, встановіть GNU gettext / `msgfmt`.
+На сервері/Linux gettext має бути доступний або встановлений через системні пакети.
 
 Локальні URL:
 - <http://127.0.0.1:8000/uk/>
 - <http://127.0.0.1:8000/ru/>
 - <http://127.0.0.1:8000/it/>
 - <http://127.0.0.1:8000/admin/>
+
+## Перевірки та тести
+
+Тести розташовані в `core/tests` і запускаються стандартним Django test runner:
+
+```bash
+python manage.py check
+python manage.py test core.tests
+python manage.py test
+```
+
+Black і Ruff доступні після встановлення `requirements-dev.txt`, але поки не є
+обов'язковими CI-перевірками для всієї legacy-кодової бази:
+
+```bash
+black --check .
+ruff check .
+```
 
 ## Налаштування CUPS-принтера для етикеток
 

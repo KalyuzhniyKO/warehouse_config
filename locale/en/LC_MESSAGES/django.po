@@ -27,11 +27,11 @@ msgstr "Today"
 
 #: core/forms/analytics.py:22 core/views/analytics.py:194
 msgid "7 днів"
-msgstr ""
+msgstr "7 days"
 
 #: core/forms/analytics.py:23 core/views/analytics.py:194
 msgid "30 днів"
-msgstr ""
+msgstr "30 days"
 
 #: core/forms/analytics.py:24 core/views/analytics.py:194
 msgid "Поточний місяць"
@@ -244,7 +244,7 @@ msgstr "For example: A-01, Row 2, Cell 5."
 #: templates/core/item_label_print.html:7
 #: templates/core/management/dashboard.html:54
 msgid "Номенклатура"
-msgstr "Items"
+msgstr "Item"
 
 #: core/forms/filters.py:36 core/forms/filters.py:98
 #: templates/core/inventory_count.html:14
@@ -1397,10 +1397,9 @@ msgstr "Specify the department or place where the item will be used."
 
 #: core/services/analytics_presets.py:13 core/views/analytics.py:96
 #: templates/core/management/analytics.html:69
-#, fuzzy
 #| msgid "Номер документа"
 msgid "Рухи без документа"
-msgstr "Document number"
+msgstr "Movements without document"
 
 #: core/services/analytics_presets.py:13
 msgid "Журнал рухів з порожнім номером документа."
@@ -1425,10 +1424,9 @@ msgstr ""
 
 #: core/services/analytics_presets.py:15
 #: templates/core/management/analytics.html:69
-#, fuzzy
 #| msgid "Початкові залишки"
 msgid "Негативні залишки"
-msgstr "Initial balances"
+msgstr "Negative balances"
 
 #: core/services/analytics_presets.py:15
 #, fuzzy
@@ -1448,10 +1446,9 @@ msgstr ""
 
 #: core/services/analytics_presets.py:17 core/views/analytics.py:258
 #: templates/core/management/analytics.html:95
-#, fuzzy
 #| msgid "Усі операції"
 msgid "Останні операції"
-msgstr "All operations"
+msgstr "Recent operations"
 
 #: core/services/analytics_presets.py:17
 #, fuzzy
@@ -1626,10 +1623,9 @@ msgid "Операції приходу без складу або локації
 msgstr "Receive goods into a warehouse or location."
 
 #: core/views/analytics.py:194
-#, fuzzy
 #| msgid "Попередня"
 msgid "Попередній місяць"
-msgstr "Previous"
+msgstr "Previous month"
 
 #: core/views/analytics.py:238
 #, fuzzy
@@ -1657,22 +1653,21 @@ msgstr "Warehouse operations"
 
 #: core/views/analytics.py:239 core/views/analytics.py:242
 msgid "Прихід"
-msgstr "Receipts"
+msgstr "Receipt"
 
 #: core/views/analytics.py:239 core/views/analytics.py:242
 msgid "Видача"
-msgstr "Issues"
+msgstr "Issue"
 
 #: core/views/analytics.py:239 core/views/analytics.py:242
-#, fuzzy
 #| msgid "Повернення товару"
 msgid "Повернення"
-msgstr "Return item"
+msgstr "Return"
 
 #: core/views/analytics.py:239 core/views/analytics.py:242
 #: templates/core/management/dashboard.html:38
 msgid "Списання"
-msgstr "Write-offs"
+msgstr "Write-off"
 
 #: core/views/analytics.py:240
 #, fuzzy
@@ -1695,10 +1690,9 @@ msgstr "Date"
 
 #: core/views/analytics.py:242 core/views/analytics.py:246
 #: core/views/analytics.py:250 core/views/analytics.py:254
-#, fuzzy
 #| msgid "ID операції"
 msgid "Операції"
-msgstr "Operation ID"
+msgstr "Operations"
 
 #: core/views/analytics.py:246
 #, fuzzy
@@ -2987,16 +2981,14 @@ msgstr "Label templates"
 
 #: templates/core/management/analytics.html:4
 #: templates/core/management/analytics.html:9
-#, fuzzy
 #| msgid "Аналітика"
 msgid "Аналітика складу"
-msgstr "Analytics"
+msgstr "Warehouse analytics"
 
 #: templates/core/management/analytics.html:11
-#, fuzzy
 #| msgid "Контроль і звіти"
 msgid "Готові звіти"
-msgstr "Control and reports"
+msgstr "Ready reports"
 
 #: templates/core/management/analytics.html:16
 #, fuzzy
@@ -3005,10 +2997,9 @@ msgid "Загальна кількість операцій"
 msgstr "Actual quantity"
 
 #: templates/core/management/analytics.html:17
-#, fuzzy
 #| msgid "Початкові залишки"
 msgid "Критичні залишки"
-msgstr "Initial balances"
+msgstr "Critical balances"
 
 #: templates/core/management/analytics.html:18
 #, fuzzy
@@ -3023,16 +3014,15 @@ msgid "Надійшло за період"
 msgstr "Warehouse operations"
 
 #: templates/core/management/analytics.html:20
-#, fuzzy
 #| msgid "Товари / матеріали"
 msgid "Позиції без руху"
-msgstr "Items / materials"
+msgstr "Items without movement"
 
 #: templates/core/management/analytics.html:25
 #: templates/core/management/analytics_data_quality.html:16
 #: templates/core/stockmovement_list.html:20
 msgid "Фільтри запамʼятовуються для вашого користувача."
-msgstr ""
+msgstr "Filters are saved for your user."
 
 #: templates/core/management/analytics.html:26
 #: templates/core/management/analytics_data_quality.html:17
@@ -3043,23 +3033,20 @@ msgid "Застосовано збережені фільтри."
 msgstr "Settings saved."
 
 #: templates/core/management/analytics.html:37
-#, fuzzy
 #| msgid "Відновити"
 msgid "Оновити"
-msgstr "Restore"
+msgstr "Update"
 
 #: templates/core/management/analytics.html:39
 #: templates/core/stockmovement_list.html:34
-#, fuzzy
 #| msgid "Застосувати фільтр"
 msgid "Розширені фільтри"
-msgstr "Apply filter"
+msgstr "Advanced filters"
 
 #: templates/core/management/analytics.html:60
-#, fuzzy
 #| msgid "Експорт CSV"
 msgid "Експорт Excel"
-msgstr "Export CSV"
+msgstr "Export Excel"
 
 #: templates/core/management/analytics.html:61
 #, fuzzy
@@ -3068,10 +3055,9 @@ msgid "Експорт PDF"
 msgstr "Export CSV"
 
 #: templates/core/management/analytics.html:68
-#, fuzzy
 #| msgid "Контакт"
 msgid "Контроль даних"
-msgstr "Contact"
+msgstr "Data quality"
 
 #: templates/core/management/analytics.html:68
 #: templates/core/management/analytics_data_quality.html:9
@@ -3080,16 +3066,14 @@ msgstr ""
 
 #: templates/core/management/analytics.html:68
 #: templates/core/management/analytics_data_quality.html:9
-#, fuzzy
 #| msgid "Попередня"
 msgid "Є попередження"
-msgstr "Previous"
+msgstr "Has warnings"
 
 #: templates/core/management/analytics.html:69
-#, fuzzy
 #| msgid "Ремонтні роботи"
 msgid "Неповні рухи"
-msgstr "Repair works"
+msgstr "Incomplete movements"
 
 #: templates/core/management/analytics.html:70
 #, fuzzy
@@ -3098,10 +3082,9 @@ msgid "Переглянути деталі якості даних"
 msgstr "Print label"
 
 #: templates/core/management/analytics.html:76
-#, fuzzy
 #| msgid "Топ-10 товарів за видачею"
 msgid "Топ товарів по видачі"
-msgstr "Top 10 items by issues"
+msgstr "Top issued items"
 
 #: templates/core/management/analytics.html:80
 #: templates/core/management/analytics.html:99
@@ -3221,7 +3204,7 @@ msgstr "Daily warehouse actions and movement journal."
 
 #: templates/core/management/dashboard.html:37
 msgid "Переміщення"
-msgstr "Transfers"
+msgstr "Transfer"
 
 #: templates/core/management/dashboard.html:43
 msgid "Залишки та контроль"
@@ -3941,8 +3924,8 @@ msgstr "Sign in"
 #~ msgid "Панель швидких дій"
 #~ msgstr "Warehouse management panel."
 
-#~ msgid "Пошук товару"
-#~ msgstr "Item search"
+msgid "Пошук товару"
+msgstr "Item search"
 
 #, fuzzy
 #~| msgid "Контрольний талон складської операції"
@@ -4480,3 +4463,205 @@ msgstr "Quick access to common warehouse reports, data quality checks, and expor
 #: templates/core/management/reports.html:12
 msgid "Навігація звітів"
 msgstr "Reports navigation"
+
+
+msgid "Кому видавали"
+msgstr "Issued to recipients"
+
+msgid "Застосовано збережені фільтри"
+msgstr "Saved filters applied"
+
+msgid "Переглянути деталі"
+msgstr "View details"
+
+msgid "Сумарно прийнято за період"
+msgstr "Total received in the period"
+
+msgid "Огляд рухів, залишків, видачі та якості складських даних."
+msgstr "Overview of movements, stock balances, issues, and warehouse data quality."
+
+msgid "Швидка перевірка документів, повноти рухів і залишків."
+msgstr "Quick check of documents, movement completeness, and balances."
+
+msgid "Ключові показники"
+msgstr "Key metrics"
+
+msgid "Сумарно видано за період"
+msgstr "Total issued in the period"
+
+msgid "Куди видавали"
+msgstr "Issued to locations"
+
+msgid "Фільтри"
+msgstr "Filters"
+
+msgid "Структура операцій"
+msgstr "Operation breakdown"
+
+msgid "Видано"
+msgstr "Issued"
+
+msgid "Без руху"
+msgstr "No movement"
+
+msgid "Дані узгоджені"
+msgstr "Data is consistent"
+
+msgid "Швидкі періоди"
+msgstr "Quick periods"
+
+msgid "Необов'язкова адресна деталізація всередині складу."
+msgstr "Optional location detail within the warehouse."
+
+msgid "Кількість рухів за вибраний період"
+msgstr "Number of movements in the selected period"
+
+msgid "Надійшло"
+msgstr "Received"
+
+msgid "Позиції, які потребують перевірки"
+msgstr "Items that require review"
+
+msgid "Мобільна навігація"
+msgstr "Mobile navigation"
+
+msgid "Обліковий запис"
+msgstr "Account"
+
+msgid "Панель адміністратора"
+msgstr "Admin panel"
+
+msgid "Аудит операцій"
+msgstr "Operation audit"
+
+msgid "Бізнес-журнал створення, анулювання та зв'язків складських рухів."
+msgstr "Business log of stock movement creation, cancellation, and links."
+
+msgid "Пов'язано з інвентаризацією"
+msgstr "Inventory-related"
+
+msgid "Створено"
+msgstr "Created"
+
+msgid "Операція"
+msgstr "Operation"
+
+msgid "Товар / кількість"
+msgstr "Item / quantity"
+
+msgid "Складський маршрут"
+msgstr "Warehouse route"
+
+msgid "Документ / коментар"
+msgstr "Document / comment"
+
+msgid "Статус аудиту"
+msgstr "Audit status"
+
+msgid "Пов'язані записи"
+msgstr "Linked records"
+
+msgid "Час операції"
+msgstr "Operation time"
+
+msgid "Анулювано о"
+msgstr "Cancelled at"
+
+msgid "Зворотний рух"
+msgstr "Reversal movement"
+
+msgid "Показати деталі"
+msgstr "Show details"
+
+msgid "Записів аудиту операцій не знайдено."
+msgstr "No audit records found."
+
+msgid "Так"
+msgstr "Yes"
+
+msgid "Ні"
+msgstr "No"
+
+msgid "Дата й час операції"
+msgstr "Operation date/time"
+
+msgid "Дата й час створення"
+msgstr "Created date/time"
+
+msgid "Код товару"
+msgstr "Item code"
+
+msgid "Коментар / причина"
+msgstr "Comment / reason"
+
+msgid "Звіт аудиту складських операцій"
+msgstr "Stock operation audit report"
+
+msgid "Згенеровано"
+msgstr "Generated at"
+
+msgid "Згенерував"
+msgstr "Generated by"
+
+msgid "Активні фільтри"
+msgstr "Active filters"
+
+msgid "Активні фільтри відсутні"
+msgstr "No active filters"
+
+msgid "Усього рухів"
+msgstr "Total movements"
+
+msgid "Усього анульованих рухів"
+msgstr "Total cancelled movements"
+
+msgid "Усього рухів з інвентаризації"
+msgstr "Total inventory-related movements"
+
+msgid "Підсумки за типом операції"
+msgstr "Totals by operation type"
+
+msgid "Підсумки за складом"
+msgstr "Totals by warehouse"
+
+msgid "Очікувана кількість"
+msgstr "Expected quantity"
+
+msgid "Підсумок інвентаризації"
+msgstr "Inventory summary"
+
+msgid "Всього підраховано"
+msgstr "Total items counted"
+
+msgid "Кількість нестач"
+msgstr "Shortage count"
+
+msgid "Кількість надлишків"
+msgstr "Surplus count"
+
+msgid "PDF export requires reportlab."
+msgstr "PDF export requires reportlab."
+
+msgid "Unicode PDF font is not available."
+msgstr "Unicode PDF font is not available."
+
+msgid "Відхилення"
+msgstr "Variance"
+
+msgid "Знімок на початок"
+msgstr "Snapshot quantity"
+
+msgid "Рухи під час інвентаризації"
+msgstr "Movement delta"
+
+msgid "Очікувана кількість на час підрахунку"
+msgstr "Expected quantity"
+
+msgid "Порахував"
+msgstr "Counted by"
+
+msgid "Час підрахунку"
+msgstr "Counted at"
+
+msgid "Результати"
+msgstr "Results"

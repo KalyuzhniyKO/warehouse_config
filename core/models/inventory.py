@@ -109,8 +109,9 @@ class InventoryCountLine(ActiveModel):
         ordering = ["inventory_count", "item__name", "location__name", "id"]
 
     def save(self, *args, **kwargs):
+        expected_qty = getattr(self, "expected_qty_at_count_time", self.expected_qty)
         self.difference_qty = (
-            self.actual_qty - self.expected_qty if self.actual_qty is not None else 0
+            self.actual_qty - expected_qty if self.actual_qty is not None else 0
         )
         update_fields = kwargs.get("update_fields")
         if update_fields is not None and "actual_qty" in update_fields:

@@ -90,6 +90,7 @@ urlpatterns = [
         views.directory_view(views.DirectoryCreateView, "item"),
         name="item_create",
     ),
+    path("items/<int:pk>/", views.ItemDetailView.as_view(), name="item_detail"),
     path(
         "items/<int:pk>/edit/",
         views.directory_view(views.DirectoryUpdateView, "item"),
@@ -190,6 +191,11 @@ urlpatterns = [
         views.InventoryXLSXExportView.as_view(),
         name="inventory_export_xlsx",
     ),
+    path(
+        "stock/inventory/<int:pk>/export/pdf/",
+        views.InventoryPDFExportView.as_view(),
+        name="inventory_export_pdf",
+    ),
     path("stock/inventory/<int:pk>/complete/", views.InventoryCompleteView.as_view(), name="inventory_complete"),
     path("stock/inventory/<int:pk>/count/", views.InventoryCountView.as_view(), name="inventory_count"),
     path("stock/receive/", views.StockReceiveView.as_view(), name="stock_receive"),
@@ -233,6 +239,16 @@ urlpatterns = [
         "management/audit/",
         views.AuditLogView.as_view(),
         name="management_audit",
+    ),
+    path(
+        "management/operation-audit/",
+        views.StockOperationAuditView.as_view(),
+        name="stock_operation_audit",
+    ),
+    path(
+        "management/operation-audit/export.xlsx",
+        views.StockOperationAuditXLSXExportView.as_view(),
+        name="stock_operation_audit_export_xlsx",
     ),
     path(
         "management/directories/",

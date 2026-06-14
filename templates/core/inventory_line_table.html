@@ -7,9 +7,12 @@
                 <th scope="col">{% trans "Номенклатура" %}</th>
                 <th scope="col">{% trans "Штрихкод" %}</th>
                 <th scope="col">{% trans "Локація" %}</th>
-                <th scope="col" class="text-end">{% trans "Облікова кількість" %}</th>
+                <th scope="col" class="text-end">{% trans "Знімок на початок" %}</th>
+                <th scope="col" class="text-end">{% trans "Рухи" %}</th>
+                <th scope="col" class="text-end">{% trans "Очікується на час підрахунку" %}</th>
+                <th scope="col">{% trans "Час підрахунку" %}</th>
                 <th scope="col" class="text-end">{% trans "Фактична кількість" %}</th>
-                <th scope="col" class="text-end">{% trans "Різниця" %}</th>
+                <th scope="col" class="text-end">{% trans "Відхилення" %}</th>
                 <th scope="col">{% trans "Коментар" %}</th>
             </tr>
             </thead>
@@ -19,17 +22,23 @@
                     <td class="fw-semibold">{{ line.item.name }}</td>
                     <td>{{ line.barcode|default:"—" }}</td>
                     <td>{{ line.location.name }}</td>
-                    <td class="text-end">{{ line.expected_qty }}</td>
+                    <td class="text-end">{{ line.snapshot_qty }}</td>
+                    <td class="text-end">
+                        {{ line.movement_delta }}
+                        {% if line.has_movements_during_count %}<div class="small text-warning">{% trans "Були рухи під час підрахунку" %}</div>{% endif %}
+                    </td>
+                    <td class="text-end">{{ line.expected_qty_at_count_time }}</td>
+                    <td>{{ line.counted_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</td>
                     <td class="text-end">{{ line.actual_qty|default:"—" }}</td>
                     <td class="text-end">
-                        {% if line.difference_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.difference_qty }}</span>
-                        {% elif line.difference_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.difference_qty }}</span>
-                        {% else %}<span class="badge text-bg-secondary">{{ line.difference_qty }}</span>{% endif %}
+                        {% if line.variance_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.variance_qty }}</span>
+                        {% elif line.variance_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.variance_qty }}</span>
+                        {% else %}<span class="badge text-bg-secondary">{{ line.variance_qty }}</span>{% endif %}
                     </td>
                     <td>{{ line.comment|default:"—" }}</td>
                 </tr>
             {% empty %}
-                <tr><td colspan="7" class="text-center text-muted py-5"><div class="fs-1 mb-2">📭</div>{% trans "Записів поки немає" %}</td></tr>
+                <tr><td colspan="10" class="text-center text-muted py-5"><div class="fs-1 mb-2">📭</div>{% trans "Записів поки немає" %}</td></tr>
             {% endfor %}
             </tbody>
         </table>

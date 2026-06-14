@@ -14,7 +14,12 @@ from core.models import (
     UsagePlace,
     Warehouse,
 )
+from core.services.barcodes import resolve_item_barcode
 from core.services.locations import get_default_location_for_warehouse
+from core.services.stock import (
+    RETURN_QUANTITY_EXCEEDED_ERROR,
+    get_available_return_qty,
+)
 from core.services.warehouse_access import get_accessible_warehouses
 
 
@@ -22,6 +27,17 @@ def active_warehouses_for_form_user(user):
     if user is None:
         return Warehouse.objects.filter(is_active=True)
     return get_accessible_warehouses(user)
+
+
+def resolve_submitted_item_barcode(form, cleaned_data):
+    barcode = cleaned_data.get("barcode")
+    if not barcode:
+        return
+    item = resolve_item_barcode(barcode)
+    if item is None:
+        form.add_error("barcode", _("Товар за цим штрихкодом не знайдено."))
+        return
+    cleaned_data["item"] = item
 
 
 class LocationsModeMixin:
@@ -104,6 +120,9 @@ class LocationsModeMixin:
 
 
 class StockOperationForm(LocationsModeMixin, forms.Form):
+    barcode = forms.CharField(
+        required=False, widget=forms.HiddenInput(attrs={"data-submitted-barcode": ""})
+    )
     item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.none())
     warehouse = forms.ModelChoiceField(
         label=_("Склад"), queryset=Warehouse.objects.none()
@@ -156,6 +175,7 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        resolve_submitted_item_barcode(self, cleaned_data)
         self.set_single_warehouse_when_hidden(cleaned_data)
         self.set_default_location_when_disabled(cleaned_data)
         warehouse = cleaned_data.get("warehouse")
@@ -211,6 +231,16 @@ class StockReturnForm(StockOperationForm):
         warehouse = cleaned_data.get("warehouse")
         if warehouse:
             cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
+        item = cleaned_data.get("item")
+        recipient = cleaned_data.get("recipient")
+        qty = cleaned_data.get("qty")
+        if item and recipient:
+            available_qty = get_available_return_qty(item, recipient)
+            self.fields["qty"].help_text = _("Доступно до повернення: %(qty)s") % {
+                "qty": available_qty
+            }
+            if qty is not None and (available_qty <= 0 or qty > available_qty):
+                self.add_error("qty", RETURN_QUANTITY_EXCEEDED_ERROR)
         return cleaned_data
 
     recipient = forms.ModelChoiceField(
@@ -300,6 +330,7 @@ class StockIssueForm(StockOperationForm):
         self.fields["comment"].required = False
         for field_name in [
             "item",
+            "warehouse",
             "location",
             "issue_reason",
             "document_number",
@@ -394,6 +425,9 @@ class StockWriteOffForm(StockOperationForm):
 
 
 class StockTransferForm(LocationsModeMixin, forms.Form):
+    barcode = forms.CharField(
+        required=False, widget=forms.HiddenInput(attrs={"data-submitted-barcode": ""})
+    )
     item = forms.ModelChoiceField(label=_("Номенклатура"), queryset=Item.objects.none())
     source_warehouse = forms.ModelChoiceField(
         label=_("Склад-відправник"), queryset=Warehouse.objects.none()
@@ -450,6 +484,7 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        resolve_submitted_item_barcode(self, cleaned_data)
         source_warehouse = cleaned_data.get("source_warehouse")
         destination_warehouse = cleaned_data.get("destination_warehouse")
         source_location = cleaned_data.get("source_location")

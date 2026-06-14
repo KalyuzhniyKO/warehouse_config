@@ -49,6 +49,7 @@ def get_analytics_summary(filters):
         "active_items": items.filter(is_active=True).count(),
         "positions_with_stock": balances.filter(qty__gt=0).count(),
         "zero_stock_items": balances.filter(qty=0).values("item_id").distinct().count(),
+        "no_movement_count": get_no_movement_count(filters),
         "operations_count": agg["operations_count"] or 0,
         "receive_qty": decimal_zero(agg["receive_qty"]),
         "issue_qty": decimal_zero(agg["issue_qty"]),
@@ -105,7 +106,7 @@ def get_top_recipients(filters):
 
 
 def get_inactive_stock_items(filters):
-    movement_item_ids = filter_movements(filters).values_list("item_id", flat=True).distinct()
+    movement_item_ids = _any_movement_item_ids(filters)
     return list(
         filter_balances(filters)
         .filter(qty__gt=0)
@@ -113,6 +114,25 @@ def get_inactive_stock_items(filters):
         .values("item__name", "item__internal_code", "qty")
         .order_by("item__name")[:20]
     )
+
+
+def get_no_movement_count(filters):
+    movement_item_ids = _any_movement_item_ids(filters)
+    return (
+        filter_balances(filters)
+        .filter(qty__gt=0)
+        .exclude(item_id__in=movement_item_ids)
+        .values("item_id")
+        .distinct()
+        .count()
+    )
+
+
+def _any_movement_item_ids(filters):
+    movement_filters = dict(filters)
+    # "No movement" means no movement of any type within the remaining scope.
+    movement_filters.pop("movement_type", None)
+    return filter_movements(movement_filters).values_list("item_id", flat=True).distinct()
 
 
 def get_recent_movements(filters):

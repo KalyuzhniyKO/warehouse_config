@@ -72,6 +72,7 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
+from ..services.barcodes import resolve_item_barcode
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -91,11 +92,7 @@ def barcode_lookup(request):
     if not barcode:
         return JsonResponse(not_found)
 
-    item = (
-        Item.objects.select_related("barcode")
-        .filter(is_active=True, barcode__barcode=barcode)
-        .first()
-    )
+    item = resolve_item_barcode(barcode)
     if item:
         return JsonResponse(
             {
@@ -110,7 +107,7 @@ def barcode_lookup(request):
 
     warehouse = (
         Warehouse.objects.select_related("barcode")
-        .filter(is_active=True, barcode__barcode=barcode)
+        .filter(is_active=True, barcode__barcode__iexact=barcode)
         .first()
     )
     if warehouse:
@@ -126,7 +123,11 @@ def barcode_lookup(request):
 
     location = (
         Location.objects.select_related("barcode", "warehouse")
-        .filter(is_active=True, warehouse__is_active=True, barcode__barcode=barcode)
+        .filter(
+            is_active=True,
+            warehouse__is_active=True,
+            barcode__barcode__iexact=barcode,
+        )
         .first()
     )
     if location:

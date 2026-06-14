@@ -40,7 +40,7 @@
         </article>
         <article class="analytics-kpi-card analytics-kpi-card--inactive">
             <div class="analytics-kpi-label">{% trans "Без руху" %}</div>
-            <div class="analytics-kpi-value">{{ inactive_stock_items|length }}</div>
+            <div class="analytics-kpi-value">{{ summary.no_movement_count }}</div>
             <p>{% trans "Позиції без руху" %}</p>
         </article>
     </section>
@@ -154,7 +154,7 @@
                                 <span>{{ row.label }}</span>
                                 <span class="analytics-visual-value">{{ row.total }}</span>
                             </div>
-                            <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
+                            <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill analytics-visual-bar-fill--{{ row.type_key }}" style="width: {{ row.bar_percent }}%;"></div></div>
                         </div>
                     {% endfor %}
                 </div>

@@ -47,7 +47,7 @@
             <tbody>
             {% for object in objects %}
                 <tr class="{% if not object.is_active %}table-secondary{% endif %}">
-                    {% for field_name, label in columns %}<td>{{ object|attr:field_name|default:"—" }}</td>{% endfor %}
+                    {% for field_name, label in columns %}<td>{% if list_url_name == 'item_list' and field_name == 'name' %}<a href="{% url 'item_detail' object.pk %}">{{ object|attr:field_name|default:"—" }}</a>{% else %}{{ object|attr:field_name|default:"—" }}{% endif %}</td>{% endfor %}
                     <td>{% if object.is_active %}<span class="badge text-bg-success status-badge">{% trans "Активний" %}</span>{% else %}<span class="badge text-bg-secondary status-badge">{% trans "Архівний" %}</span>{% endif %}</td>
                     <td class="text-end">
                         <div class="d-inline-flex flex-wrap gap-2 justify-content-end">

@@ -84,6 +84,27 @@ class AnalyticsDashboardTests(TestCase):
         for label in ["Прихід", "Видача", "Повернення", "Списання", "Переміщення"]:
             self.assertContains(r, label)
 
+    def test_operation_structure_uses_movement_type_color_classes(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_analytics"))
+
+        for type_key in ["receive", "issue", "return", "writeoff", "transfer"]:
+            self.assertContains(
+                response, f"analytics-visual-bar-fill--{type_key}"
+            )
+
+    def test_operation_structure_colors_do_not_change_analytics_numbers(self):
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("management_analytics"))
+        rows = {row["key"]: row for row in response.context["operation_mix_visual"]}
+
+        self.assertEqual(rows["receive"]["total"], 1)
+        self.assertEqual(rows["issue"]["total"], 2)
+        self.assertEqual(rows["return"]["total"], 0)
+        self.assertEqual(rows["write_off"]["total"], 0)
+        self.assertEqual(rows["transfer"]["total"], 0)
+        self.assertEqual(rows["write_off"]["type_key"], "writeoff")
+
     def test_summary_and_top(self):
         summary = get_analytics_summary({})
         self.assertEqual(summary["operations_count"], 3)
@@ -183,11 +204,12 @@ class AnalyticsDashboardTests(TestCase):
         self.assertContains(r, "Видача без отримувача")
         self.assertNotContains(r, "issue_without_recipient")
 
-    def test_negative_stock_warning(self):
-        StockBalance.objects.create(item=Item.objects.create(name="Neg", unit=self.unit, internal_code="NEG"), location=self.loc, qty=Decimal("-1.000"))
+    def test_negative_stock_warning_is_zero_for_non_negative_balances(self):
+        StockBalance.objects.create(item=Item.objects.create(name="Zero", unit=self.unit, internal_code="ZERO"), location=self.loc, qty=Decimal("0.000"))
         self.client.force_login(self.admin)
         r = self.client.get(reverse("management_analytics_data_quality"))
         self.assertContains(r, "Негативних залишків")
+        self.assertEqual(r.context["data_quality"]["reconciliation"]["negative_stock"], 0)
 
 
     def test_data_quality_page_has_human_labels_and_table_headers(self):

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load i18n core_extras %}
+
+{% block title %}{% trans "Аудит операцій" %} · {% trans "Складський облік" %}{% endblock %}
+
+{% block content %}
+<div class="list-page operation-audit-page">
+    <div class="list-page-header">
+        <div class="list-page-title">
+            <h1 class="mb-1">{% trans "Аудит операцій" %}</h1>
+            <p class="text-muted mb-0">{% trans "Бізнес-журнал створення, анулювання та зв'язків складських рухів." %}</p>
+        </div>
+        <div class="list-page-actions">
+            <a class="btn btn-outline-success" href="{% url 'stock_operation_audit_export_xlsx' %}{% if filter_query %}?{{ filter_query }}{% endif %}">{% trans "Експорт Excel" %}</a>
+            <a class="btn btn-outline-secondary" href="{% url 'movement_list' %}">{% trans "Журнал операцій" %}</a>
+        </div>
+    </div>
+
+    <form method="get" class="card content-card filter-panel mb-3">
+        <div class="card-body">
+            <div class="operation-audit-filter-grid">
+                {% for field in filter_form %}
+                    <div>
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <div class="filter-action-group">
+                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card content-card data-table-card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 data-table operation-audit-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>{% trans "Створено" %}</th>
+                        <th>{% trans "Операція" %}</th>
+                        <th>{% trans "Товар / кількість" %}</th>
+                        <th>{% trans "Складський маршрут" %}</th>
+                        <th>{% trans "Отримувач" %}</th>
+                        <th>{% trans "Документ / коментар" %}</th>
+                        <th>{% trans "Створив" %}</th>
+                        <th>{% trans "Статус аудиту" %}</th>
+                        <th>{% trans "Пов'язані записи" %}</th>
+                        <th>{% trans "Дії" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in movements %}
+                        <tr class="{% if movement.is_cancelled %}table-secondary{% elif movement.inventory_count_id %}table-warning{% endif %}">
+                            <td class="movement-date-cell">
+                                <div class="movement-date">{{ movement.created_at|date:"d.m.Y" }}</div>
+                                <div class="movement-time">{{ movement.created_at|date:"H:i:s" }}</div>
+                                <div class="small text-muted">{% trans "Час операції" %}: {{ movement.occurred_at|date:"d.m.Y H:i" }}</div>
+                            </td>
+                            <td>
+                                <span class="status-badge">{{ movement.get_movement_type_display }}</span>
+                                <div class="small text-muted">#{{ movement.pk }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ movement.item }}</div>
+                                <div>{{ movement.qty }} {{ movement.item.unit.symbol }}</div>
+                            </td>
+                            <td>
+                                <div><span class="text-muted">{% trans "Звідки" %}:</span> {{ movement.resolved_source_warehouse|default:"—" }}</div>
+                                <div><span class="text-muted">{% trans "Куди" %}:</span> {{ movement.resolved_destination_warehouse|default:"—" }}</div>
+                            </td>
+                            <td>{{ movement.recipient|default:"—" }}</td>
+                            <td>
+                                <div><span class="text-muted">{% trans "Документ" %}:</span> {{ movement.document_number|default:"—" }}</div>
+                                <div><span class="text-muted">{% trans "Коментар" %}:</span> {{ movement.comment|default:"—" }}</div>
+                                {% if movement.cancellation_reason %}<div class="text-danger"><span class="fw-semibold">{% trans "Причина анулювання" %}:</span> {{ movement.cancellation_reason }}</div>{% endif %}
+                            </td>
+                            <td>
+                                {% if movement.created_by %}{{ movement.created_by|display_name }}
+                                {% elif movement.performed_by %}{{ movement.performed_by|display_name }}
+                                {% else %}—{% endif %}
+                            </td>
+                            <td>
+                                {% if movement.is_cancelled %}
+                                    <span class="badge text-bg-danger">{% trans "Анулювано" %}</span>
+                                    <div class="small">{% trans "Анулював" %}: {% if movement.cancelled_by %}{{ movement.cancelled_by|display_name }}{% else %}—{% endif %}</div>
+                                    <div class="small">{% trans "Анулювано о" %}: {{ movement.cancelled_at|date:"d.m.Y H:i:s"|default:"—" }}</div>
+                                {% else %}
+                                    <span class="badge text-bg-success">{% trans "Активно" %}</span>
+                                {% endif %}
+                                {% if movement.inventory_count_id %}<div class="mt-1"><span class="badge text-bg-warning">{% trans "Пов'язано з інвентаризацією" %}</span></div>{% endif %}
+                            </td>
+                            <td>
+                                {% if movement.inventory_count_id %}
+                                    <div><a href="{% url 'inventory_detail' movement.inventory_count_id %}">{% trans "Інвентаризація" %} {{ movement.inventory_count.number }}</a></div>
+                                {% endif %}
+                                {% if movement.reversal_of_id %}
+                                    <div><a href="{% url 'stock_movement_print' movement.reversal_of_id %}">{% trans "Зворотний рух" %} #{{ movement.reversal_of_id }}</a></div>
+                                {% endif %}
+                                {% if movement.cancellation_movement_id %}
+                                    <div><a href="{% url 'stock_movement_print' movement.cancellation_movement_id %}">{% trans "Рух анулювання" %} #{{ movement.cancellation_movement_id }}</a></div>
+                                {% endif %}
+                                {% if not movement.inventory_count_id and not movement.reversal_of_id and not movement.cancellation_movement_id %}—{% endif %}
+                            </td>
+                            <td><a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Показати деталі" %}</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="10" class="text-center py-5"><div class="empty-state">{% trans "Записів аудиту операцій не знайдено." %}</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-4" aria-label="{% trans 'Навігація сторінками' %}">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">{% trans "Попередня" %}</a></li>{% endif %}
+            <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">{% trans "Наступна" %}</a></li>{% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

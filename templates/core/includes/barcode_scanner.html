@@ -23,9 +23,16 @@
         return field.value === String(value);
     }
 
+    function setSubmittedBarcode(value) {
+        document.querySelectorAll("[data-submitted-barcode]").forEach(function (field) {
+            field.value = value;
+        });
+    }
+
     function handleOperationResult(container, data) {
         if (data.type === "item") {
             setSelectValue("item", data.id);
+            setSubmittedBarcode(data.barcode);
             showAlert(container, container.dataset.itemFoundMessage + " " + data.name, "success");
             return;
         }
@@ -51,6 +58,7 @@
             showAlert(container, container.dataset.inventoryItemMissingMessage, "warning");
             return;
         }
+        setSubmittedBarcode(data.barcode);
         row.scrollIntoView({ behavior: "smooth", block: "center" });
         row.classList.add("table-warning");
         window.setTimeout(function () { row.classList.remove("table-warning"); }, 2500);

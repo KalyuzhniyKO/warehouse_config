@@ -1,4 +1,34 @@
+from html.parser import HTMLParser
+
 from .stock_operations_ui_utils import *  # noqa: F403
+
+
+class IssueHiddenInputParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_issue_form = False
+        self.hidden_inputs = {}
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        form_classes = attrs.get("class", "").split()
+        if (
+            tag == "form"
+            and attrs.get("method", "").lower() == "post"
+            and "operation-form-card" in form_classes
+        ):
+            self.in_issue_form = True
+        if (
+            self.in_issue_form
+            and tag == "input"
+            and attrs.get("type", "").lower() == "hidden"
+            and attrs.get("name")
+        ):
+            self.hidden_inputs[attrs["name"]] = attrs.get("value", "")
+
+    def handle_endtag(self, tag):
+        if tag == "form" and self.in_issue_form:
+            self.in_issue_form = False
 
 
 class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
@@ -33,6 +63,57 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         self.assertEqual(self.balance.qty, Decimal("5.000"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
         self.assertEqual(movement.issue_reason, StockMovement.IssueReason.SALE)
+
+    def test_rendered_issue_form_submits_auto_selected_warehouse(self):
+        self.client.force_login(self.superuser)
+        response = self.client.get(
+            reverse("stock_issue"),
+            {"barcode": self.item.barcode.barcode},
+        )
+        parser = IssueHiddenInputParser()
+        parser.feed(response.content.decode())
+
+        self.assertIn("warehouse", parser.hidden_inputs)
+        self.assertEqual(parser.hidden_inputs["warehouse"], str(self.warehouse.pk))
+
+        post_data = {
+            **parser.hidden_inputs,
+            "qty": "2.000",
+            "recipient": self.recipient.pk,
+            "department": self.usage_place.pk,
+        }
+        issue_response = self.client.post(reverse("stock_issue"), post_data)
+
+        self.assertRedirects(
+            issue_response,
+            reverse("stock_issue_result", args=[StockMovement.objects.latest("id").pk]),
+            fetch_redirect_response=False,
+        )
+        self.balance.refresh_from_db()
+        movement = StockMovement.objects.latest("id")
+        self.assertEqual(self.balance.qty, Decimal("5.000"))
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.OUT)
+        self.assertEqual(movement.source_warehouse, self.warehouse)
+        self.assertEqual(movement.source_location, self.location)
+
+    def test_issue_hidden_field_validation_errors_are_visible(self):
+        self.client.force_login(self.superuser)
+        response = self.client.post(
+            reverse("stock_issue"),
+            {
+                "item": self.item.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "issue_reason": StockMovement.IssueReason.OTHER,
+                "recipient": self.recipient.pk,
+                "department": self.usage_place.pk,
+                "occurred_at": "2026-01-15T10:00",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Склад:")
+        self.assertContains(response, "Це поле обов")
 
     def test_stock_issue_result_page_is_simple_and_links_autoprint_control_slip(self):
         self.client.force_login(self.storekeeper)

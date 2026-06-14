@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
 from core.models import Item, Location, Recipient, StockMovement, Warehouse
@@ -64,6 +65,12 @@ class StockBalanceFilterForm(forms.Form):
 
 
 class StockMovementFilterForm(forms.Form):
+    report_scope = forms.ChoiceField(
+        choices=[("", ""), ("business", _("Господарські операції"))],
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+    quality_check = forms.CharField(required=False, widget=forms.HiddenInput())
     movement_type = forms.ChoiceField(
         label=_("Тип операції"),
         choices=[("", _("Усі операції"))] + list(StockMovement.MovementType.choices),
@@ -116,6 +123,80 @@ class StockMovementFilterForm(forms.Form):
             )
             if single_warehouse is not None:
                 self.initial["warehouse"] = single_warehouse
+        for field in self.fields.values():
+            if isinstance(field.widget, forms.Select):
+                field.widget.attrs.setdefault("class", "form-select")
+            else:
+                field.widget.attrs.setdefault("class", "form-control")
+
+
+class StockOperationAuditFilterForm(forms.Form):
+    ALL_YES_NO_CHOICES = [
+        ("", _("Усі")),
+        ("yes", _("Так")),
+        ("no", _("Ні")),
+    ]
+
+    date_from = forms.DateField(
+        label=_("Дата від"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    date_to = forms.DateField(
+        label=_("Дата до"),
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    movement_type = forms.ChoiceField(
+        label=_("Тип операції"),
+        choices=[("", _("Усі операції"))] + list(StockMovement.MovementType.choices),
+        required=False,
+    )
+    warehouse = forms.ModelChoiceField(
+        label=_("Склад"),
+        queryset=Warehouse.objects.filter(is_active=True),
+        required=False,
+    )
+    q = forms.CharField(
+        label=_("Пошук товару"),
+        required=False,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("Назва, internal_code або barcode")}
+        ),
+    )
+    recipient = forms.ModelChoiceField(
+        label=_("Отримувач"),
+        queryset=Recipient.objects.filter(is_active=True),
+        required=False,
+    )
+    user = forms.ModelChoiceField(
+        label=_("Користувач"),
+        queryset=get_user_model().objects.none(),
+        required=False,
+    )
+    cancelled = forms.ChoiceField(
+        label=_("Анулювано"),
+        choices=ALL_YES_NO_CHOICES,
+        required=False,
+    )
+    inventory_related = forms.ChoiceField(
+        label=_("Пов'язано з інвентаризацією"),
+        choices=ALL_YES_NO_CHOICES,
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop("user", kwargs.pop("request_user", None))
+        super().__init__(*args, **kwargs)
+        self.fields["warehouse"].queryset = active_warehouses_for_form_user(
+            self.request_user
+        )
+        self.fields["recipient"].queryset = Recipient.objects.filter(
+            is_active=True
+        ).order_by("name")
+        self.fields["user"].queryset = get_user_model().objects.filter(
+            is_active=True
+        ).order_by("last_name", "first_name", "username")
         for field in self.fields.values():
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")

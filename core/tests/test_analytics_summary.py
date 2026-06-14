@@ -1,6 +1,10 @@
 from decimal import Decimal
 
+from django.test import TestCase
 from django.utils import timezone
+
+from core.models import Item, Location, StockBalance, StockMovement, Unit, Warehouse
+from core.services.analytics import get_analytics_summary
 
 from .analytics_test_utils import (
     AnalyticsInterfaceTestBase,
@@ -66,3 +70,108 @@ class WarehouseAnalyticsSummaryTests(WarehouseAnalyticsAuditTestBase):
         self.assertEqual(first["operations_count"], 6)
         self.assertEqual(second["operations_count"], 2)
         self.assertEqual(second["receive_qty"], Decimal("7.000"))
+
+
+class NoMovementAnalyticsTests(TestCase):
+    def setUp(self):
+        self.today = timezone.localdate()
+        self.now = timezone.now()
+        self.unit = Unit.objects.create(name="Piece", symbol="pc")
+        self.warehouse = Warehouse.objects.create(name="Warehouse A")
+        self.other_warehouse = Warehouse.objects.create(name="Warehouse B")
+        self.location = Location.objects.create(warehouse=self.warehouse, name="A1")
+        self.other_location = Location.objects.create(warehouse=self.other_warehouse, name="B1")
+
+    def create_stocked_item(self, code, location=None):
+        location = location or self.location
+        item = Item.objects.create(name=code, internal_code=code, unit=self.unit)
+        StockBalance.objects.create(item=item, location=location, qty=Decimal("1.000"))
+        return item
+
+    def period_filters(self, **extra):
+        return {
+            "date_from": self.today,
+            "date_to": self.today,
+            **extra,
+        }
+
+    def test_receive_movement_inside_period_is_not_counted_as_no_movement(self):
+        item = self.create_stocked_item("RECEIVE")
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            occurred_at=self.now,
+        )
+
+        summary = get_analytics_summary(self.period_filters())
+
+        self.assertEqual(summary["no_movement_count"], 0)
+
+    def test_issue_movement_inside_period_is_not_counted_as_no_movement(self):
+        item = self.create_stocked_item("ISSUE")
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.OUT,
+            item=item,
+            qty=Decimal("1.000"),
+            source_location=self.location,
+            occurred_at=self.now,
+        )
+
+        summary = get_analytics_summary(self.period_filters())
+
+        self.assertEqual(summary["no_movement_count"], 0)
+
+    def test_item_without_movement_inside_period_is_counted_as_no_movement(self):
+        item = self.create_stocked_item("OLD-MOVEMENT")
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            occurred_at=self.now - timezone.timedelta(days=1),
+        )
+
+        summary = get_analytics_summary(self.period_filters())
+
+        self.assertEqual(summary["no_movement_count"], 1)
+
+    def test_warehouse_filter_only_uses_movements_from_selected_warehouse(self):
+        moved_here = self.create_stocked_item("MOVED-HERE")
+        moved_elsewhere = self.create_stocked_item("MOVED-ELSEWHERE")
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=moved_here,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            occurred_at=self.now,
+        )
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=moved_elsewhere,
+            qty=Decimal("1.000"),
+            destination_location=self.other_location,
+            occurred_at=self.now,
+        )
+
+        summary = get_analytics_summary(self.period_filters(warehouse=self.warehouse))
+
+        self.assertEqual(summary["no_movement_count"], 1)
+
+    def test_operation_type_filter_does_not_hide_other_movement_types(self):
+        item = self.create_stocked_item("RECEIVE-WITH-ISSUE-FILTER")
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            occurred_at=self.now,
+        )
+
+        summary = get_analytics_summary(
+            self.period_filters(movement_type=StockMovement.MovementType.OUT)
+        )
+
+        self.assertEqual(summary["operations_count"], 0)
+        self.assertEqual(summary["no_movement_count"], 0)

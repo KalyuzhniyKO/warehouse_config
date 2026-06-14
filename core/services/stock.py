@@ -7,6 +7,7 @@ row-level locks and every change is represented by a StockMovement record.
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.db import IntegrityError, transaction
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from core.models import StockBalance, StockMovement, Warehouse
@@ -86,6 +87,20 @@ class MissingRecipientError(StockServiceError):
     """Raised when an issue operation does not specify a recipient."""
 
 
+class MissingReturnRecipientError(StockServiceError):
+    """Raised when a validated return does not specify a recipient."""
+
+
+class ReturnQuantityExceededError(StockServiceError):
+    """Raised when a return exceeds the recipient's issued-not-returned quantity."""
+
+
+RETURN_RECIPIENT_REQUIRED_ERROR = _("Для повернення товару потрібно вказати отримувача.")
+RETURN_QUANTITY_EXCEEDED_ERROR = _(
+    "Неможливо повернути більше, ніж було видано цьому отримувачу."
+)
+
+
 def normalize_decimal_qty(qty):
     """Return *qty* as a Decimal rounded to the model's 3 decimal places."""
     try:
@@ -105,6 +120,43 @@ def validate_positive_qty(qty):
     if decimal_qty <= 0:
         raise InvalidQuantityError("Quantity must be greater than zero.")
     return decimal_qty
+
+
+def _return_eligibility_movements(item, recipient, *, lock=False):
+    queryset = StockMovement.objects.filter(
+        item=item,
+        recipient=recipient,
+        is_cancelled=False,
+        reversal_of__isnull=True,
+    ).filter(
+        Q(movement_type=StockMovement.MovementType.OUT)
+        | Q(movement_type=StockMovement.MovementType.RETURN)
+    )
+    if lock:
+        queryset = queryset.select_for_update()
+    return queryset
+
+
+def get_available_return_qty(item, recipient, *, lock=False):
+    """Return active issued quantity minus active returned quantity."""
+    if item is None or recipient is None:
+        return Decimal("0.000")
+    if lock:
+        if not transaction.get_connection().in_atomic_block:
+            raise StockServiceError("Return eligibility locks require an active transaction.")
+        list(
+            _return_eligibility_movements(item, recipient, lock=True).values_list(
+                "pk", flat=True
+            )
+        )
+    issued_qty = Decimal("0.000")
+    returned_qty = Decimal("0.000")
+    for movement in _return_eligibility_movements(item, recipient):
+        if movement.movement_type == StockMovement.MovementType.OUT:
+            issued_qty += movement.qty
+        else:
+            returned_qty += movement.qty
+    return normalize_decimal_qty(issued_qty - returned_qty)
 
 
 def get_or_create_balance_locked(item, warehouse=None, location=None):
@@ -300,12 +352,29 @@ def issue_stock(
 
 
 def return_stock(
-    *, item, warehouse=None, location=None, qty, recipient=None, department="", comment="", occurred_at=None, performed_by=None, request=None
+    *,
+    item,
+    warehouse=None,
+    location=None,
+    qty,
+    recipient=None,
+    department="",
+    comment="",
+    occurred_at=None,
+    performed_by=None,
+    request=None,
+    allow_unmatched_return=False,
 ):
     """Return stock back into a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
     warehouse = resolve_warehouse(warehouse=warehouse, location=location)
+    if recipient is None and not allow_unmatched_return:
+        raise MissingReturnRecipientError(RETURN_RECIPIENT_REQUIRED_ERROR)
     with transaction.atomic():
+        if not allow_unmatched_return:
+            available_qty = get_available_return_qty(item, recipient, lock=True)
+            if available_qty <= 0 or qty > available_qty:
+                raise ReturnQuantityExceededError(RETURN_QUANTITY_EXCEEDED_ERROR)
         balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
         movement = _create_movement(
