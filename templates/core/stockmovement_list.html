@@ -17,8 +17,11 @@
 
     <form method="get" class="card content-card filter-panel filter-panel--compact mb-3">
         <div class="card-body">
+            {{ filter_form.report_scope }}
+            {{ filter_form.quality_check }}
             <p class="small text-muted mb-2">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>
             {% if used_remembered_filters %}<p class="small text-success mb-2">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}
+            {% if business_report_scope %}<p class="small text-success mb-2">{% trans "Звіт враховує лише господарські операції: анульовані рухи та рухи анулювання виключено." %}</p>{% endif %}
             <div class="filter-grid filter-grid--main">
                 {% for field in filter_form %}
                     {% if field.name == 'q' or field.name == 'department' or field.name == 'warehouse' or field.name == 'date_from' or field.name == 'date_to' or field.name == 'movement_type' %}
@@ -37,7 +40,7 @@
             <div class="collapse mt-2" id="advancedMovementFilters">
                 <div class="filter-grid filter-grid--advanced">
                     {% for field in filter_form %}
-                        {% if field.name != 'q' and field.name != 'department' and field.name != 'warehouse' and field.name != 'date_from' and field.name != 'date_to' and field.name != 'movement_type' and field.name != 'item_id' and field.name != 'recipient_id' %}
+                        {% if field.name != 'report_scope' and field.name != 'quality_check' and field.name != 'q' and field.name != 'department' and field.name != 'warehouse' and field.name != 'date_from' and field.name != 'date_to' and field.name != 'movement_type' and field.name != 'item_id' and field.name != 'recipient_id' %}
                             <div>
                                 <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
@@ -54,7 +57,7 @@
 
     <div class="mb-3 d-flex flex-wrap gap-2">
         {% for key, value in request.GET.items %}
-            {% if value %}<span class="badge rounded-pill text-bg-light border active-filter-badge">{{ key }}: {{ value }}</span>{% endif %}
+            {% if value and key != 'report_scope' and key != 'quality_check' %}<span class="badge rounded-pill text-bg-light border active-filter-badge">{{ key }}: {{ value }}</span>{% endif %}
         {% endfor %}
     </div>
 

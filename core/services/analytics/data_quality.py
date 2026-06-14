@@ -7,6 +7,43 @@ from .filters import IN_TYPES, ISSUE_TYPES, filter_balances, filter_movements
 from .summaries import get_daily_movement
 
 
+QUALITY_CHECK_TOKENS = {
+    "missing_documents": "docs",
+    "issue_without_recipient": "recipient",
+    "issue_without_usage_place": "usage",
+    "movement_without_item": "item",
+    "non_positive_qty": "qty",
+    "receive_without_destination": "destination",
+}
+QUALITY_CHECK_KEYS_BY_TOKEN = {
+    token: key for key, token in QUALITY_CHECK_TOKENS.items()
+}
+
+
+def filter_quality_check(queryset, check_key):
+    """Apply the same row-level rule used by data-quality report drill-downs."""
+    check_key = QUALITY_CHECK_KEYS_BY_TOKEN.get(check_key, check_key)
+    if check_key == "missing_documents":
+        return queryset.filter(Q(document_number__isnull=True) | Q(document_number=""))
+    if check_key == "issue_without_recipient":
+        return queryset.filter(movement_type__in=ISSUE_TYPES, recipient__isnull=True)
+    if check_key == "issue_without_usage_place":
+        return queryset.filter(movement_type__in=ISSUE_TYPES).filter(
+            Q(department__isnull=True) | Q(department="")
+        )
+    if check_key == "movement_without_item":
+        return queryset.filter(item__isnull=True)
+    if check_key == "non_positive_qty":
+        return queryset.filter(qty__lte=0)
+    if check_key == "receive_without_destination":
+        return queryset.filter(
+            movement_type__in=IN_TYPES,
+            destination_warehouse__isnull=True,
+            destination_location__isnull=True,
+        )
+    return queryset
+
+
 def _limited_examples(qs, limit=10):
     return list(
         qs.select_related("item", "recipient", "source_location", "destination_location")
@@ -15,19 +52,20 @@ def _limited_examples(qs, limit=10):
 
 
 def get_missing_document_movements(filters):
-    return filter_movements(filters).filter(Q(document_number__isnull=True) | Q(document_number=""))
+    return filter_quality_check(filter_movements(filters), "missing_documents")
 
 
 def get_movements_missing_required_fields(filters):
-    issue = filter_movements(filters).filter(movement_type__in=ISSUE_TYPES)
+    movements = filter_movements(filters)
     return {
-        "issue_without_recipient": issue.filter(recipient__isnull=True),
-        "issue_without_usage_place": issue.filter(Q(department__isnull=True) | Q(department="")),
-        "movement_without_item": filter_movements(filters).filter(item__isnull=True),
-        "non_positive_qty": filter_movements(filters).filter(qty__lte=0),
-        "receive_without_destination": filter_movements(filters).filter(
-            movement_type__in=IN_TYPES, destination_warehouse__isnull=True
-        ),
+        key: filter_quality_check(movements, key)
+        for key in [
+            "issue_without_recipient",
+            "issue_without_usage_place",
+            "movement_without_item",
+            "non_positive_qty",
+            "receive_without_destination",
+        ]
     }
 
 
