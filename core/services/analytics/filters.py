@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from core.models import Item, StockBalance, StockMovement
+from core.services.movements import trusted_business_movements
 
 IN_TYPES = {StockMovement.MovementType.IN, StockMovement.MovementType.INITIAL_BALANCE}
 ISSUE_TYPES = {StockMovement.MovementType.OUT}
@@ -50,16 +51,18 @@ def build_analytics_filter_query(filters):
 
 
 def filter_movements(filters):
-    qs = StockMovement.objects.select_related(
-        "item",
-        "source_location",
-        "source_warehouse",
-                "source_location__warehouse",
-        "destination_location",
-        "destination_warehouse",
-                "destination_location__warehouse",
-        "recipient",
-    ).filter(is_cancelled=False, reversal_of__isnull=True)
+    qs = trusted_business_movements(
+        StockMovement.objects.select_related(
+            "item",
+            "source_location",
+            "source_warehouse",
+            "source_location__warehouse",
+            "destination_location",
+            "destination_warehouse",
+            "destination_location__warehouse",
+            "recipient",
+        )
+    )
     accessible_warehouses = filters.get("accessible_warehouses")
     if accessible_warehouses is not None:
         qs = qs.filter(

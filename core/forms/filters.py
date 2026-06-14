@@ -65,6 +65,12 @@ class StockBalanceFilterForm(forms.Form):
 
 
 class StockMovementFilterForm(forms.Form):
+    report_scope = forms.ChoiceField(
+        choices=[("", ""), ("business", _("Господарські операції"))],
+        required=False,
+        widget=forms.HiddenInput(),
+    )
+    quality_check = forms.CharField(required=False, widget=forms.HiddenInput())
     movement_type = forms.ChoiceField(
         label=_("Тип операції"),
         choices=[("", _("Усі операції"))] + list(StockMovement.MovementType.choices),

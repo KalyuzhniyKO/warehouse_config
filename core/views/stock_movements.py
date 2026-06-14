@@ -24,6 +24,8 @@ from ..permissions import (
     can_cancel_movement,
 )
 from ..services.filter_memory import apply_remembered_filters, build_redirect_url, querydict_from_params
+from ..services.analytics.data_quality import filter_quality_check
+from ..services.movements import trusted_business_movements
 from ..services.stock import StockServiceError
 from ..services.stock_cancellation import cancel_stock_movement
 from ..services.warehouse_access import restrict_stock_movement_queryset_for_user
@@ -157,6 +159,8 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         if not form.is_valid():
             return queryset
         cd = form.cleaned_data
+        if cd.get("report_scope") == "business":
+            queryset = trusted_business_movements(queryset)
         if cd.get("movement_type"):
             queryset = queryset.filter(movement_type=cd["movement_type"])
         if cd.get("item"):
@@ -202,12 +206,18 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
             queryset = queryset.filter(
                 Q(item__name__icontains=q) | Q(item__internal_code__icontains=q) | Q(item__barcode__barcode__icontains=q)
             )
+        if cd.get("quality_check"):
+            queryset = filter_quality_check(queryset, cd["quality_check"])
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
         context["used_remembered_filters"] = getattr(self, "used_remembered_filters", False)
+        context["business_report_scope"] = (
+            context["filter_form"].is_valid()
+            and context["filter_form"].cleaned_data.get("report_scope") == "business"
+        )
         return context
 
 

@@ -96,12 +96,12 @@ class AnalyticsPermissionMixin(GroupRequiredMixin):
 
 
 DATA_QUALITY_CHECK_META = [
-    {"key": "missing_documents", "label": _("Рухи без документа"), "description": _("Рухи, у яких відсутній номер документа."), "journal_param": "no_document=1"},
-    {"key": "issue_without_recipient", "label": _("Видача без отримувача"), "description": _("Операції видачі без вказаного отримувача."), "journal_param": "missing_recipient=1"},
-    {"key": "issue_without_usage_place", "label": _("Видача без цеху / місця використання"), "description": _("Операції видачі без заповненого цеху або місця використання."), "journal_param": "missing_usage_place=1"},
-    {"key": "movement_without_item", "label": _("Рухи без товару"), "description": _("Операції, у яких не вказано товар."), "journal_param": "missing_item=1"},
-    {"key": "non_positive_qty", "label": _("Некоректна кількість"), "description": _("Операції з нульовою або від’ємною кількістю."), "journal_param": "non_positive_qty=1"},
-    {"key": "receive_without_destination", "label": _("Прихід без складу призначення"), "description": _("Операції приходу без складу або локації призначення."), "journal_param": "missing_destination=1"},
+    {"key": "missing_documents", "label": _("Рухи без документа"), "description": _("Рухи, у яких відсутній номер документа.")},
+    {"key": "issue_without_recipient", "label": _("Видача без отримувача"), "description": _("Операції видачі без вказаного отримувача.")},
+    {"key": "issue_without_usage_place", "label": _("Видача без цеху / місця використання"), "description": _("Операції видачі без заповненого цеху або місця використання.")},
+    {"key": "movement_without_item", "label": _("Рухи без товару"), "description": _("Операції, у яких не вказано товар.")},
+    {"key": "non_positive_qty", "label": _("Некоректна кількість"), "description": _("Операції з нульовою або від’ємною кількістю.")},
+    {"key": "receive_without_destination", "label": _("Прихід без складу призначення"), "description": _("Операції приходу без складу або локації призначення.")},
 ]
 
 class ManagementReportsView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
@@ -221,7 +221,11 @@ class AnalyticsView(LoginRequiredMixin, AnalyticsPermissionMixin, TemplateView):
         request_get = getattr(self, "effective_get", self.request.GET)
         query_base = {k: v for k, v in request_get.items() if v}
         date_params = {"date_from": filters.get("date_from"), "date_to": filters.get("date_to")}
-        movement_query = {**{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location", "movement_type"}}, **{k: str(v) for k, v in date_params.items() if v}}
+        movement_query = {
+            "report_scope": "business",
+            **{k: str(v) for k, v in query_base.items() if k in {"warehouse", "location", "movement_type"}},
+            **{k: str(v) for k, v in date_params.items() if v},
+        }
         filter_query = analytics_service.build_analytics_filter_query(filters)
         daily_movement = analytics_service.get_daily_movement(filters)
         top_issued_items = analytics_service.get_top_issued_items(filters)
@@ -344,6 +348,12 @@ class AnalyticsDataQualityView(LoginRequiredMixin, AnalyticsPermissionMixin, Tem
         )
         filters = clean_analytics_filters(form, self.request.user)
         filter_query = urlencode(analytics_service.build_analytics_filter_query(filters))
+        journal_filter_query = urlencode(
+            {
+                "report_scope": "business",
+                **analytics_service.build_analytics_filter_query(filters),
+            }
+        )
         data_quality = analytics_service.get_analytics_data_quality(filters)
         quality_checks = []
         for meta in DATA_QUALITY_CHECK_META:
@@ -351,13 +361,14 @@ class AnalyticsDataQualityView(LoginRequiredMixin, AnalyticsPermissionMixin, Tem
             quality_checks.append({
                 "key": meta["key"], "label": meta["label"], "description": meta["description"],
                 "count": check["count"], "examples": check["examples"],
-                "journal_url": f"{reverse('movement_list')}?{filter_query}&{meta['journal_param']}",
+                "journal_url": f"{reverse('movement_list')}?{journal_filter_query}&quality_check={analytics_service.QUALITY_CHECK_TOKENS[meta['key']]}",
             })
         context.update({
             "filter_form": form,
             "data_quality": data_quality,
             "quality_checks": quality_checks,
             "filter_query": filter_query,
+            "journal_filter_query": journal_filter_query,
             "movement_list_base_url": reverse("movement_list"),
             "stock_checked_note": _("Залишки перевіряються на поточний момент."),
             "used_remembered_filters": getattr(self, "used_remembered_filters", False),

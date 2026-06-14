@@ -9,6 +9,8 @@ PAGE_ALLOWED_PARAMS = {
     "management_analytics": ["period", "date_from", "date_to", "warehouse", "location", "movement_type"],
     "management_analytics_data_quality": ["period", "date_from", "date_to", "warehouse", "location", "movement_type"],
     "movement_list": [
+        "report_scope",
+        "quality_check",
         "date_from",
         "date_to",
         "movement_type",
