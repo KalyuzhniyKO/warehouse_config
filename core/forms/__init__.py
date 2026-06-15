@@ -34,6 +34,7 @@ from core.forms.management import (
     SystemSettingsForm,
     warehouse_role_queryset,
 )
+from core.forms.purchase_requests import PurchaseRequestFilterForm, PurchaseRequestForm
 from core.forms.stock_operations import (
     InitialBalanceForm,
     StockIssueForm,
@@ -64,6 +65,8 @@ __all__ = [
     "ManagementUserUpdateForm",
     "PrintLabelForm",
     "PrinterForm",
+    "PurchaseRequestFilterForm",
+    "PurchaseRequestForm",
     "RecipientForm",
     "StockBalanceAdminForm",
     "StockBalanceFilterForm",

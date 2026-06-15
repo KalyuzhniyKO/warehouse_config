@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n core_extras %}
+{% block title %}{% trans "Закупки" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="list-page">
+    <div class="list-page-header">
+        <div class="list-page-title">
+            <h1 class="mb-1">{% trans "Закупки" %}</h1>
+            <p class="text-muted mb-0">{% trans "Планування та погодження майбутніх закупівель без рухів товару." %}</p>
+        </div>
+        {% if can_create_purchase_request %}
+            <div class="list-page-actions"><a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Нова заявка" %}</a></div>
+        {% endif %}
+    </div>
+
+    <form method="get" class="card content-card filter-panel filter-panel--compact mb-3">
+        <div class="card-body">
+            <div class="filter-grid filter-grid--main">
+                {% for field in filter_form %}
+                    <div>
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <div class="filter-action-group">
+                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card content-card data-table-card">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 data-table">
+                <thead class="table-light"><tr>
+                    <th>{% trans "Назва / товар" %}</th>
+                    <th>{% trans "Кількість" %}</th>
+                    <th>{% trans "Постачальник" %}</th>
+                    <th>{% trans "Заявник" %}</th>
+                    <th>{% trans "Статус" %}</th>
+                    <th>{% trans "Створено" %}</th>
+                    <th class="text-end">{% trans "Дії" %}</th>
+                </tr></thead>
+                <tbody>
+                    {% for purchase_request in purchase_requests %}
+                        <tr>
+                            <td class="fw-semibold">{{ purchase_request.title }}</td>
+                            <td>{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</td>
+                            <td>{{ purchase_request.supplier_name }}</td>
+                            <td>{{ purchase_request.requested_by|display_name }}</td>
+                            <td><span class="badge text-bg-light border">{{ purchase_request.get_status_display }}</span></td>
+                            <td>{{ purchase_request.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+                            <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{% url 'purchase_request_detail' purchase_request.pk %}">{% trans "Перегляд" %}</a></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% include "core/includes/pagination.html" %}
+</div>
+{% endblock %}

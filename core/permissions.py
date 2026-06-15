@@ -76,6 +76,18 @@ def can_view_analytics(user):
     return user_in_groups(user, ANALYTICS_GROUPS)
 
 
+def can_manage_purchase_requests(user):
+    return user_in_groups(user, MANAGEMENT_GROUPS)
+
+
+def can_create_purchase_requests(user):
+    return can_manage_purchase_requests(user) or can_view_warehouse_data(user)
+
+
+def can_view_purchase_requests(user):
+    return can_manage_purchase_requests(user) or can_create_purchase_requests(user)
+
+
 def can_manage_directories(user):
     return user_in_groups(user, DIRECTORY_EDIT_GROUPS)
 

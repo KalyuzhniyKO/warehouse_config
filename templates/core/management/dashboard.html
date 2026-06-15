@@ -48,6 +48,7 @@
                 {% if can_view_analytics %}<a class="mgmt-link" href="{% url 'management_analytics' %}">{% trans "Аналітика / звіти" %}</a>{% endif %}
                 {% if can_view_analytics %}<a class="mgmt-link" href="{% url 'analytics_export_csv' %}">{% trans "Експорт CSV" %}</a>{% endif %}
                 {% if can_view_analytics %}<a class="mgmt-link" href="{% url 'management_reports' %}">{% trans "Звіти складу" %}</a>{% endif %}
+                {% if can_view_purchase_requests %}<a class="mgmt-link" href="{% url 'purchase_request_list' %}">{% trans "Закупки" %}</a>{% endif %}
             </div>
         </section>
 

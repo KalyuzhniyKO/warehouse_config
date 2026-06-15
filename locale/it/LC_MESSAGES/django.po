@@ -4281,3 +4281,140 @@ msgstr "Conteggiato il"
 
 msgid "Результати"
 msgstr "Risultati"
+msgid "Усі статуси"
+msgstr "Tutti gli stati"
+
+msgid "Заявник"
+msgstr "Richiedente"
+
+msgid "Назва, товар або постачальник"
+msgstr "Titolo, articolo o fornitore"
+
+msgid "Чернетка"
+msgstr "Bozza"
+
+msgid "Очікує погодження"
+msgstr "In attesa di approvazione"
+
+msgid "Погоджено"
+msgstr "Approvato"
+
+msgid "Відхилено"
+msgstr "Rifiutato"
+
+msgid "Замовлено"
+msgstr "Ordinato"
+
+msgid "Скасовано"
+msgstr "Annullato"
+
+msgid "Назва / товар"
+msgstr "Titolo / articolo"
+
+msgid "Запитана кількість"
+msgstr "Quantità richiesta"
+
+msgid "Орієнтовна ціна за одиницю"
+msgstr "Prezzo unitario stimato"
+
+msgid "Валюта"
+msgstr "Valuta"
+
+msgid "Постачальник"
+msgstr "Fornitore"
+
+msgid "Посилання постачальника"
+msgstr "Link del fornitore"
+
+msgid "Дата погодження"
+msgstr "Data di approvazione"
+
+msgid "Відхилив"
+msgstr "Rifiutato da"
+
+msgid "Дата відхилення"
+msgstr "Data di rifiuto"
+
+msgid "Оновлено"
+msgstr "Aggiornato"
+
+msgid "Заявка на закупівлю"
+msgstr "Richiesta di acquisto"
+
+msgid "Заявки на закупівлю"
+msgstr "Richieste di acquisto"
+
+msgid "У вас немає прав для створення заявки на закупівлю."
+msgstr "Non hai il permesso di creare una richiesta di acquisto."
+
+msgid "Заявку на закупівлю створено."
+msgstr "Richiesta di acquisto creata."
+
+msgid "Нова заявка на закупівлю"
+msgstr "Nuova richiesta di acquisto"
+
+msgid "Чернетку заявки оновлено."
+msgstr "Bozza della richiesta aggiornata."
+
+msgid "Редагувати заявку на закупівлю"
+msgstr "Modifica richiesta di acquisto"
+
+msgid "Заявку надіслано на погодження."
+msgstr "Richiesta inviata per approvazione."
+
+msgid "Заявку погоджено."
+msgstr "Richiesta approvata."
+
+msgid "Заявку відхилено."
+msgstr "Richiesta rifiutata."
+
+msgid "Заявку позначено як замовлену."
+msgstr "Richiesta contrassegnata come ordinata."
+
+msgid "Заявку скасовано."
+msgstr "Richiesta annullata."
+
+msgid "Лише адміністратор може змінити цей статус."
+msgstr "Solo un amministratore può modificare questo stato."
+
+msgid "Недоступний перехід статусу."
+msgstr "Questa transizione di stato non è disponibile."
+
+msgid "Закупки"
+msgstr "Acquisti"
+
+msgid "Планування та погодження майбутніх закупівель."
+msgstr "Pianifica e approva gli acquisti futuri."
+
+msgid "До списку закупок"
+msgstr "Torna agli acquisti"
+
+msgid "Орієнтовна сума"
+msgstr "Totale stimato"
+
+msgid "Відкрити посилання"
+msgstr "Apri link"
+
+msgid "Надіслати на погодження"
+msgstr "Invia per approvazione"
+
+msgid "Погодити"
+msgstr "Approva"
+
+msgid "Відхилити"
+msgstr "Rifiuta"
+
+msgid "Позначити як замовлену"
+msgstr "Contrassegna come ordinata"
+
+msgid "Скасувати заявку"
+msgstr "Annulla richiesta"
+
+msgid "Планування та погодження майбутніх закупівель без рухів товару."
+msgstr "Pianifica e approva gli acquisti futuri senza movimenti di magazzino."
+
+msgid "Нова заявка"
+msgstr "Nuova richiesta"
+
+msgid "Заявок на закупівлю не знайдено."
+msgstr "Nessuna richiesta di acquisto trovata."

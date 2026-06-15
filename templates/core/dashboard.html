@@ -47,6 +47,9 @@
             {% if can_view_analytics %}
                 {% url 'management_analytics' as card_url %}{% trans "Аналітика" as card_title %}{% trans "KPI та управлінський огляд за період." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📈" css_classes="report-card report-card--analytics" %}
             {% endif %}
+            {% if can_view_purchase_requests %}
+                {% url 'purchase_request_list' as card_url %}{% trans "Закупки" as card_title %}{% trans "Планування та погодження майбутніх закупівель." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🛒" css_classes="report-card report-card--purchases" %}
+            {% endif %}
         </div>
     </section>
 

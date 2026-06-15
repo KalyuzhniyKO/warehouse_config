@@ -178,6 +178,51 @@ urlpatterns = [
         name="analytics_export_xlsx",
     ),
     path("help/", views.HelpView.as_view(), name="help"),
+    path(
+        "purchases/",
+        views.PurchaseRequestListView.as_view(),
+        name="purchase_request_list",
+    ),
+    path(
+        "purchases/create/",
+        views.PurchaseRequestCreateView.as_view(),
+        name="purchase_request_create",
+    ),
+    path(
+        "purchases/<int:pk>/",
+        views.PurchaseRequestDetailView.as_view(),
+        name="purchase_request_detail",
+    ),
+    path(
+        "purchases/<int:pk>/edit/",
+        views.PurchaseRequestUpdateView.as_view(),
+        name="purchase_request_update",
+    ),
+    path(
+        "purchases/<int:pk>/send/",
+        views.PurchaseRequestStatusActionView.as_view(action="send"),
+        name="purchase_request_send",
+    ),
+    path(
+        "purchases/<int:pk>/approve/",
+        views.PurchaseRequestStatusActionView.as_view(action="approve"),
+        name="purchase_request_approve",
+    ),
+    path(
+        "purchases/<int:pk>/reject/",
+        views.PurchaseRequestStatusActionView.as_view(action="reject"),
+        name="purchase_request_reject",
+    ),
+    path(
+        "purchases/<int:pk>/order/",
+        views.PurchaseRequestStatusActionView.as_view(action="order"),
+        name="purchase_request_order",
+    ),
+    path(
+        "purchases/<int:pk>/cancel/",
+        views.PurchaseRequestStatusActionView.as_view(action="cancel"),
+        name="purchase_request_cancel",
+    ),
     path("stock/inventory/", views.InventoryListView.as_view(), name="inventory_list"),
     path("stock/inventory/create/", views.InventoryCreateView.as_view(), name="inventory_create"),
     path("stock/inventory/<int:pk>/", views.InventoryDetailView.as_view(), name="inventory_detail"),

@@ -67,6 +67,7 @@ from ..permissions import (
     can_manage_users,
     can_print_labels,
     can_view_analytics,
+    can_view_purchase_requests,
     can_view_audit,
 )
 from ..services import analytics as analytics_service
@@ -131,6 +132,9 @@ class ManagementDashboardView(LoginRequiredMixin, GroupRequiredMixin, TemplateVi
                 "can_manage_users": can_manage_users(self.request.user),
                 "can_manage_directories": can_manage_directories(self.request.user),
                 "can_view_analytics": can_view_analytics(self.request.user),
+                "can_view_purchase_requests": can_view_purchase_requests(
+                    self.request.user
+                ),
                 "can_manage_print": can_print_labels(self.request.user),
                 "can_manage_settings": can_manage_settings(self.request.user),
                 "show_technical_admin": self.request.user.is_superuser,

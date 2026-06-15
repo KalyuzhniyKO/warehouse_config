@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n core_extras %}
+{% block title %}{{ purchase_request.title }} · {% trans "Закупки" %}{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <div class="text-muted small">{% trans "Заявка на закупівлю" %} #{{ purchase_request.pk }}</div>
+        <h1 class="h3 mb-1">{{ purchase_request.title }}</h1>
+        <span class="badge text-bg-light border">{{ purchase_request.get_status_display }}</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку закупок" %}</a>
+        {% if can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
+    </div>
+</div>
+
+<div class="card content-card mb-4"><div class="card-body">
+    <dl class="row mb-0">
+        <dt class="col-sm-4">{% trans "Опис" %}</dt><dd class="col-sm-8">{{ purchase_request.description|default:"—"|linebreaksbr }}</dd>
+        <dt class="col-sm-4">{% trans "Запитана кількість" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Орієнтовна ціна за одиницю" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_unit_price }} {{ purchase_request.currency }}</dd>
+        <dt class="col-sm-4">{% trans "Орієнтовна сума" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_total }} {{ purchase_request.currency }}</dd>
+        <dt class="col-sm-4">{% trans "Постачальник" %}</dt><dd class="col-sm-8">{{ purchase_request.supplier_name }}{% if purchase_request.supplier_url %} · <a href="{{ purchase_request.supplier_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a>{% endif %}</dd>
+        <dt class="col-sm-4">{% trans "Заявник" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_by|display_name }}</dd>
+        <dt class="col-sm-4">{% trans "Погодив" %}</dt><dd class="col-sm-8">{{ purchase_request.approved_by|display_name|default:"—" }}{% if purchase_request.approved_at %} · {{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>
+        <dt class="col-sm-4">{% trans "Відхилив" %}</dt><dd class="col-sm-8">{{ purchase_request.rejected_by|display_name|default:"—" }}{% if purchase_request.rejected_at %} · {{ purchase_request.rejected_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>
+        <dt class="col-sm-4">{% trans "Коментар" %}</dt><dd class="col-sm-8">{{ purchase_request.comment|default:"—"|linebreaksbr }}</dd>
+        <dt class="col-sm-4">{% trans "Створено" %}</dt><dd class="col-sm-8">{{ purchase_request.created_at|date:"SHORT_DATETIME_FORMAT" }}</dd>
+    </dl>
+</div></div>
+
+<div class="d-flex flex-wrap gap-2">
+    {% if can_send %}
+        <form method="post" action="{% url 'purchase_request_send' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">{% trans "Надіслати на погодження" %}</button></form>
+    {% endif %}
+    {% if can_manage and purchase_request.status == "pending_approval" %}
+        <form method="post" action="{% url 'purchase_request_approve' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit">{% trans "Погодити" %}</button></form>
+        <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">{% trans "Відхилити" %}</button></form>
+    {% endif %}
+    {% if can_manage and purchase_request.status == "approved" %}
+        <form method="post" action="{% url 'purchase_request_order' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">{% trans "Позначити як замовлену" %}</button></form>
+    {% endif %}
+    {% if can_manage and purchase_request.status != "cancelled" %}
+        <form method="post" action="{% url 'purchase_request_cancel' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">{% trans "Скасувати заявку" %}</button></form>
+    {% endif %}
+</div>
+{% endblock %}

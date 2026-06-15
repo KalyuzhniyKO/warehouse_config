@@ -4665,3 +4665,140 @@ msgstr "Counted at"
 
 msgid "Результати"
 msgstr "Results"
+msgid "Усі статуси"
+msgstr "All statuses"
+
+msgid "Заявник"
+msgstr "Requester"
+
+msgid "Назва, товар або постачальник"
+msgstr "Title, item, or supplier"
+
+msgid "Чернетка"
+msgstr "Draft"
+
+msgid "Очікує погодження"
+msgstr "Pending approval"
+
+msgid "Погоджено"
+msgstr "Approved"
+
+msgid "Відхилено"
+msgstr "Rejected"
+
+msgid "Замовлено"
+msgstr "Ordered"
+
+msgid "Скасовано"
+msgstr "Cancelled"
+
+msgid "Назва / товар"
+msgstr "Title / item"
+
+msgid "Запитана кількість"
+msgstr "Requested quantity"
+
+msgid "Орієнтовна ціна за одиницю"
+msgstr "Estimated unit price"
+
+msgid "Валюта"
+msgstr "Currency"
+
+msgid "Постачальник"
+msgstr "Supplier"
+
+msgid "Посилання постачальника"
+msgstr "Supplier URL"
+
+msgid "Дата погодження"
+msgstr "Approval date"
+
+msgid "Відхилив"
+msgstr "Rejected by"
+
+msgid "Дата відхилення"
+msgstr "Rejection date"
+
+msgid "Оновлено"
+msgstr "Updated"
+
+msgid "Заявка на закупівлю"
+msgstr "Purchase request"
+
+msgid "Заявки на закупівлю"
+msgstr "Purchase requests"
+
+msgid "У вас немає прав для створення заявки на закупівлю."
+msgstr "You do not have permission to create a purchase request."
+
+msgid "Заявку на закупівлю створено."
+msgstr "Purchase request created."
+
+msgid "Нова заявка на закупівлю"
+msgstr "New purchase request"
+
+msgid "Чернетку заявки оновлено."
+msgstr "Purchase request draft updated."
+
+msgid "Редагувати заявку на закупівлю"
+msgstr "Edit purchase request"
+
+msgid "Заявку надіслано на погодження."
+msgstr "Purchase request sent for approval."
+
+msgid "Заявку погоджено."
+msgstr "Purchase request approved."
+
+msgid "Заявку відхилено."
+msgstr "Purchase request rejected."
+
+msgid "Заявку позначено як замовлену."
+msgstr "Purchase request marked as ordered."
+
+msgid "Заявку скасовано."
+msgstr "Purchase request cancelled."
+
+msgid "Лише адміністратор може змінити цей статус."
+msgstr "Only an administrator can change this status."
+
+msgid "Недоступний перехід статусу."
+msgstr "This status transition is not available."
+
+msgid "Закупки"
+msgstr "Purchases"
+
+msgid "Планування та погодження майбутніх закупівель."
+msgstr "Plan and approve future purchases."
+
+msgid "До списку закупок"
+msgstr "Back to purchases"
+
+msgid "Орієнтовна сума"
+msgstr "Estimated total"
+
+msgid "Відкрити посилання"
+msgstr "Open link"
+
+msgid "Надіслати на погодження"
+msgstr "Send for approval"
+
+msgid "Погодити"
+msgstr "Approve"
+
+msgid "Відхилити"
+msgstr "Reject"
+
+msgid "Позначити як замовлену"
+msgstr "Mark as ordered"
+
+msgid "Скасувати заявку"
+msgstr "Cancel request"
+
+msgid "Планування та погодження майбутніх закупівель без рухів товару."
+msgstr "Plan and approve future purchases without creating stock movements."
+
+msgid "Нова заявка"
+msgstr "New request"
+
+msgid "Заявок на закупівлю не знайдено."
+msgstr "No purchase requests found."
