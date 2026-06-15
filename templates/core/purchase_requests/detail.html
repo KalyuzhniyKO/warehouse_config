@@ -10,6 +10,7 @@
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку закупок" %}</a>
+        {% if can_receive %}<a class="btn btn-success" href="{% url 'stock_receive' %}?purchase_request={{ purchase_request.pk }}">{% trans "Прийняти на склад" %}</a>{% endif %}
         {% if can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
     </div>
 </div>
@@ -18,6 +19,8 @@
     <dl class="row mb-0">
         <dt class="col-sm-4">{% trans "Опис" %}</dt><dd class="col-sm-8">{{ purchase_request.description|default:"—"|linebreaksbr }}</dd>
         <dt class="col-sm-4">{% trans "Запитана кількість" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Вже отримано" %}</dt><dd class="col-sm-8">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Залишилось отримати" %}</dt><dd class="col-sm-8">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</dd>
         <dt class="col-sm-4">{% trans "Орієнтовна ціна за одиницю" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_unit_price }} {{ purchase_request.currency }}</dd>
         <dt class="col-sm-4">{% trans "Орієнтовна сума" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_total }} {{ purchase_request.currency }}</dd>
         <dt class="col-sm-4">{% trans "Постачальник" %}</dt><dd class="col-sm-8">{{ purchase_request.supplier_name }}{% if purchase_request.supplier_url %} · <a href="{{ purchase_request.supplier_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a>{% endif %}</dd>
@@ -44,4 +47,18 @@
         <form method="post" action="{% url 'purchase_request_cancel' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">{% trans "Скасувати заявку" %}</button></form>
     {% endif %}
 </div>
+
+<div class="card content-card mt-4"><div class="card-body">
+    <h2 class="h5">{% trans "Пов’язані приходи" %}</h2>
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>{% trans "Дата" %}</th><th>{% trans "Товари / матеріали" %}</th><th>{% trans "Кількість" %}</th><th>{% trans "Склад" %}</th><th>{% trans "Виконав" %}</th></tr></thead>
+        <tbody>
+        {% for movement in linked_receive_movements %}
+            <tr><td>{{ movement.occurred_at|date:"SHORT_DATETIME_FORMAT" }}</td><td>{{ movement.item }}</td><td>{{ movement.qty }}</td><td>{{ movement.resolved_destination_warehouse|default:"—" }}</td><td>{{ movement.performed_by|display_name|default:"—" }}</td></tr>
+        {% empty %}
+            <tr><td colspan="5" class="text-muted">{% trans "Пов’язаних приходів ще немає." %}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table></div>
+</div></div>
 {% endblock %}

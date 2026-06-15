@@ -18,6 +18,8 @@ from core.permissions import (
     can_manage_purchase_requests,
     can_view_purchase_requests,
 )
+from core.services.purchase_requests import can_receive_against_purchase_request
+from core.services.warehouse_access import restrict_stock_movement_queryset_for_user
 
 
 def purchase_requests_for_user(user):
@@ -129,6 +131,26 @@ class PurchaseRequestDetailView(
         context["can_edit"] = purchase_request.status == PurchaseRequest.Status.DRAFT
         context["can_send"] = purchase_request.status == PurchaseRequest.Status.DRAFT
         context["can_manage"] = can_manage_purchase_requests(self.request.user)
+        context["can_receive"] = can_receive_against_purchase_request(
+            self.request.user, purchase_request
+        )
+        context["linked_receive_movements"] = (
+            restrict_stock_movement_queryset_for_user(
+                self.request.user,
+                purchase_request.linked_receive_movements.filter(
+                    movement_type="in",
+                    is_cancelled=False,
+                    reversal_of__isnull=True,
+                ),
+            )
+            .select_related(
+                "item",
+                "destination_warehouse",
+                "destination_location",
+                "performed_by",
+            )
+            .order_by("-occurred_at", "-id")
+        )
         return context
 
 
@@ -193,6 +215,8 @@ class PurchaseRequestStatusActionView(
                 PurchaseRequest.Status.APPROVED,
                 PurchaseRequest.Status.REJECTED,
                 PurchaseRequest.Status.ORDERED,
+                PurchaseRequest.Status.PARTIALLY_RECEIVED,
+                PurchaseRequest.Status.RECEIVED,
             },
             "to": PurchaseRequest.Status.CANCELLED,
             "message": _("Заявку скасовано."),

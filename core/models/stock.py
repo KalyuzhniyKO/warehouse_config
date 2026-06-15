@@ -128,6 +128,14 @@ class StockMovement(ActiveModel):
         blank=True,
         null=True,
     )
+    purchase_request = models.ForeignKey(
+        "core.PurchaseRequest",
+        verbose_name=_("Заявка на закупівлю"),
+        on_delete=models.SET_NULL,
+        related_name="linked_receive_movements",
+        blank=True,
+        null=True,
+    )
     issue_reason = models.CharField(
         _("Тип видачі"),
         max_length=20,

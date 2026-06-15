@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Sum
 from django.utils.translation import gettext_lazy as _
 
 
@@ -11,6 +14,8 @@ class PurchaseRequest(models.Model):
         APPROVED = "approved", _("Погоджено")
         REJECTED = "rejected", _("Відхилено")
         ORDERED = "ordered", _("Замовлено")
+        PARTIALLY_RECEIVED = "partially_received", _("Частково отримано")
+        RECEIVED = "received", _("Отримано")
         CANCELLED = "cancelled", _("Скасовано")
 
     title = models.CharField(_("Назва / товар"), max_length=255)
@@ -61,6 +66,14 @@ class PurchaseRequest(models.Model):
         choices=Status.choices,
         default=Status.DRAFT,
     )
+    receiving_base_status = models.CharField(
+        max_length=24,
+        choices=[
+            (Status.APPROVED, Status.APPROVED.label),
+            (Status.ORDERED, Status.ORDERED.label),
+        ],
+        blank=True,
+    )
     comment = models.TextField(_("Коментар"), blank=True)
     created_at = models.DateTimeField(_("Створено"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Оновлено"), auto_now=True)
@@ -83,6 +96,18 @@ class PurchaseRequest(models.Model):
     @property
     def estimated_total(self):
         return self.requested_qty * self.estimated_unit_price
+
+    @property
+    def received_qty(self):
+        return self.linked_receive_movements.filter(
+            movement_type="in",
+            is_cancelled=False,
+            reversal_of__isnull=True,
+        ).aggregate(total=Sum("qty"))["total"] or Decimal("0")
+
+    @property
+    def remaining_qty(self):
+        return max(self.requested_qty - self.received_qty, Decimal("0"))
 
     def __str__(self):
         return self.title

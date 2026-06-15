@@ -205,6 +205,16 @@ def cancel_stock_movement(*, movement, cancelled_by, reason, request=None):
                 "updated_at",
             ]
         )
+        if movement.purchase_request_id:
+            from core.models import PurchaseRequest  # noqa: PLC0415
+            from core.services.purchase_requests import (  # noqa: PLC0415
+                sync_purchase_request_receiving_status,
+            )
+
+            purchase_request = PurchaseRequest.objects.select_for_update().get(
+                pk=movement.purchase_request_id
+            )
+            sync_purchase_request_receiving_status(purchase_request)
 
         log_action(
             cancelled_by,

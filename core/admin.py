@@ -211,6 +211,7 @@ class PurchaseRequestAdmin(admin.ModelAdmin):
         "unit",
         "supplier_name",
         "status",
+        "received_qty",
         "requested_by",
         "created_at",
     )
@@ -255,7 +256,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
     actions = [make_active, make_inactive]
     form = StockMovementAdminForm
     list_per_page = 30
-    list_select_related = ("item", "source_warehouse", "destination_warehouse", "source_location", "destination_location", "recipient", "performed_by")
+    list_select_related = ("item", "source_warehouse", "destination_warehouse", "source_location", "destination_location", "recipient", "performed_by", "purchase_request")
     list_display = (
         "id",
         "movement_type_badge",
@@ -267,6 +268,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         "destination_location",
         "recipient",
         "performed_by",
+        "purchase_request",
         "department",
         "occurred_at",
         "created_at",
@@ -296,7 +298,7 @@ class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixi
         ("Склади і локації", {"fields": ("source_warehouse", "source_location", "destination_warehouse", "destination_location")}),
         ("Отримувач / місце використання", {"fields": ("recipient", "usage_place", "issue_reason", "department")}),
         ("Авторство", {"fields": ("performed_by", "created_by", "updated_by")}),
-        ("Службове", {"fields": ("document_number", "inventory_count", "comment", "created_at", "updated_at")}),
+        ("Службове", {"fields": ("document_number", "inventory_count", "purchase_request", "comment", "created_at", "updated_at")}),
     )
 
     @admin.display(description="Тип руху", ordering="movement_type")

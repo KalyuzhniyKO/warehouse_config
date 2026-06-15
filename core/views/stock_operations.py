@@ -20,6 +20,7 @@ from ..forms import (
 )
 from ..models import StockBalance, StockMovement
 from ..permissions import STOCK_EDIT_GROUPS, GroupRequiredMixin
+from ..services.purchase_requests import purchase_requests_available_for_receiving
 from ..services.barcodes import resolve_item_barcode
 from ..services.stock import (
     InsufficientStockError,
@@ -184,11 +185,31 @@ class StockReceiveView(
             "%Y-%m-%dT%H:%M"
         )
         initial["comment"] = ""
+        purchase_request_id = self.request.GET.get("purchase_request")
+        if purchase_request_id:
+            purchase_request = purchase_requests_available_for_receiving(
+                self.request.user
+            ).filter(pk=purchase_request_id).first()
+            if purchase_request is not None:
+                initial["purchase_request"] = purchase_request
         return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["can_submit_receive"] = self.scanned_item is not None
+        form = context["form"]
+        purchase_request_id = (
+            form.data.get("purchase_request")
+            if form.is_bound
+            else getattr(form.initial.get("purchase_request"), "pk", None)
+        )
+        context["selected_purchase_request"] = (
+            purchase_requests_available_for_receiving(self.request.user)
+            .filter(pk=purchase_request_id)
+            .first()
+            if purchase_request_id
+            else None
+        )
         return self.add_operation_token_context(context, context["can_submit_receive"])
 
     def form_valid(self, form):
@@ -205,6 +226,7 @@ class StockReceiveView(
                 occurred_at=form.cleaned_data.get("occurred_at"),
                 performed_by=self.request.user,
                 request=self.request,
+                purchase_request=form.cleaned_data.get("purchase_request"),
             )
         except StockServiceError as exc:
             message = str(exc)

@@ -3043,3 +3043,32 @@ msgstr "Nowy wniosek"
 
 msgid "Заявок на закупівлю не знайдено."
 msgstr "Nie znaleziono wniosków zakupowych."
+msgid "Частково отримано"
+msgstr "Częściowo przyjęto"
+
+msgid "Отримано"
+msgstr "Przyjęto"
+
+msgid "Без заявки на закупівлю"
+msgstr "Bez wniosku zakupowego"
+
+msgid "Вибрана заявка на закупівлю недоступна для оприбуткування."
+msgstr "Wybrany wniosek zakupowy nie jest dostępny do przyjęcia."
+
+msgid "Кількість перевищує залишок за заявкою на закупівлю."
+msgstr "Ilość przekracza pozostałą ilość z wniosku zakupowego."
+
+msgid "Вже отримано"
+msgstr "Już przyjęto"
+
+msgid "Залишилось отримати"
+msgstr "Pozostało do przyjęcia"
+
+msgid "Прийняти на склад"
+msgstr "Przyjąć na magazyn"
+
+msgid "Пов’язані приходи"
+msgstr "Powiązane przyjęcia"
+
+msgid "Пов’язаних приходів ще немає."
+msgstr "Nie ma jeszcze powiązanych przyjęć."
