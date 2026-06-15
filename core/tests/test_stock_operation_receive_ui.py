@@ -1,4 +1,34 @@
+from html.parser import HTMLParser
+
 from .stock_operations_ui_utils import *  # noqa: F403
+
+
+class ReturnHiddenInputParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.in_return_form = False
+        self.hidden_inputs = {}
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        form_classes = attrs.get("class", "").split()
+        if (
+            tag == "form"
+            and attrs.get("method", "").lower() == "post"
+            and "operation-form-card" in form_classes
+        ):
+            self.in_return_form = True
+        if (
+            self.in_return_form
+            and tag == "input"
+            and attrs.get("type", "").lower() == "hidden"
+            and attrs.get("name")
+        ):
+            self.hidden_inputs[attrs["name"]] = attrs.get("value", "")
+
+    def handle_endtag(self, tag):
+        if tag == "form" and self.in_return_form:
+            self.in_return_form = False
 
 
 class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
@@ -174,6 +204,54 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertContains(response, self.item.barcode.barcode)
         self.assertContains(response, "Дані для повернення визначено автоматично.")
 
+    def test_return_page_renders_auto_selected_warehouse_as_hidden_input(self):
+        response = self.client.get(
+            reverse("stock_return"), {"barcode": self.item.barcode.barcode}
+        )
+        parser = ReturnHiddenInputParser()
+        parser.feed(response.content.decode())
+        expected_warehouse = response.context["form"].initial["warehouse"]
+
+        self.assertIn("warehouse", parser.hidden_inputs)
+        self.assertEqual(parser.hidden_inputs["warehouse"], str(expected_warehouse.pk))
+
+    def test_rendered_return_form_submits_auto_selected_destination(self):
+        response = self.client.get(
+            reverse("stock_return"), {"barcode": self.item.barcode.barcode}
+        )
+        parser = ReturnHiddenInputParser()
+        parser.feed(response.content.decode())
+        expected_warehouse = response.context["form"].initial["warehouse"]
+        expected_location = get_default_location_for_warehouse(expected_warehouse)
+
+        post_data = {
+            **parser.hidden_inputs,
+            "qty": "2.000",
+            "recipient": self.recipient.pk,
+            "department": self.usage_place.pk,
+        }
+        return_response = self.client.post(reverse("stock_return"), post_data)
+
+        movement = StockMovement.objects.latest("id")
+        self.assertRedirects(
+            return_response,
+            reverse("stock_receive_result", args=[movement.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
+        self.assertEqual(movement.destination_warehouse, expected_warehouse)
+        self.assertEqual(movement.destination_location, expected_location)
+        self.assertEqual(
+            StockBalance.objects.get(
+                item=self.item,
+                location=expected_location,
+            ).qty,
+            Decimal("2.000"),
+        )
+
+        journal_response = self.client.get(reverse("movement_list"))
+        self.assertIn(movement, journal_response.context["movements"])
+
     def test_receive_get_barcode_contains_operation_token_and_disable_submit_attrs(self):
         response = self.client.get(
             f'{reverse("stock_return")}?barcode={self.item.barcode.barcode}'
@@ -278,6 +356,25 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         )
         self.assertFalse(response.context["can_submit_receive"])
         self.assertNotContains(response, "Повернути товар")
+
+    def test_return_without_configured_warehouse_shows_submit_error(self):
+        Warehouse.objects.update(is_active=False)
+
+        response = self.client.post(
+            reverse("stock_return"),
+            {
+                "item": self.item.pk,
+                "qty": "1.000",
+                "recipient": self.recipient.pk,
+                "department": self.usage_place.pk,
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("warehouse", response.context["form"].errors)
+        self.assertContains(response, "Склад:")
+        self.assertContains(response, "Це поле обов")
 
     def test_receive_result_page_is_simple_for_tablet(self):
         movement = StockMovement.objects.create(

@@ -281,7 +281,7 @@ class StockReturnForm(StockOperationForm):
         self.fields["recipient"].queryset = Recipient.objects.filter(
             is_active=True
         ).order_by("name")
-        for field_name in ["item", "location", "comment", "occurred_at"]:
+        for field_name in ["item", "warehouse", "location", "comment", "occurred_at"]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
         self.fields["qty"].widget.attrs.update(
