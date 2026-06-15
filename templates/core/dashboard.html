@@ -48,7 +48,10 @@
                 {% url 'management_analytics' as card_url %}{% trans "Аналітика" as card_title %}{% trans "KPI та управлінський огляд за період." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📈" css_classes="report-card report-card--analytics" %}
             {% endif %}
             {% if can_view_purchase_requests %}
-                {% url 'purchase_request_list' as card_url %}{% trans "Закупки" as card_title %}{% trans "Планування та погодження майбутніх закупівель." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🛒" css_classes="report-card report-card--purchases" %}
+                {% url 'purchase_request_list' as card_url %}{% trans "Заявки на закупівлю" as card_title %}{% trans "Таблиця заявок, погодження, оплати та доставки." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🛒" css_classes="report-card report-card--purchases" %}
+            {% endif %}
+            {% if can_create_purchase_requests %}
+                {% url 'purchase_request_create' as card_url %}{% trans "Створити заявку на закупівлю" as card_title %}{% trans "Подати просту заявку на потрібний товар." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="➕" css_classes="report-card report-card--purchases" %}
             {% endif %}
         </div>
     </section>

@@ -3,10 +3,54 @@ from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
-from core.models import PurchaseRequest
+from core.forms.base import normalize_text
+from core.models import Item, PurchaseRequest, Unit
 
 
 class PurchaseRequestForm(BootstrapModelForm):
+    requested_item = forms.CharField(label=_("Назва товару"))
+
+    class Meta:
+        model = PurchaseRequest
+        fields = [
+            "requested_item",
+            "requested_qty",
+            "unit",
+            "need_description",
+            "product_url",
+            "order_type",
+        ]
+        widgets = {
+            "requested_qty": forms.NumberInput(attrs={"min": "0.001", "step": "0.001"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["requested_item"].widget.attrs["list"] = "purchase-item-options"
+        self.fields["unit"].widget.attrs["list"] = "purchase-unit-options"
+
+    def clean_requested_item(self):
+        return normalize_text(self.cleaned_data.get("requested_item"))
+
+    def clean_unit(self):
+        return normalize_text(self.cleaned_data.get("unit"))
+
+    def save(self, commit=True):
+        purchase_request = super().save(commit=False)
+        purchase_request.title = self.cleaned_data["requested_item"]
+        purchase_request.item = (
+            Item.objects.filter(
+                is_active=True,
+                name__iexact=purchase_request.title,
+            ).first()
+        )
+        if commit:
+            purchase_request.save()
+            self.save_m2m()
+        return purchase_request
+
+
+class PurchaseRequestEditForm(BootstrapModelForm):
     class Meta:
         model = PurchaseRequest
         fields = [
@@ -27,11 +71,10 @@ class PurchaseRequestForm(BootstrapModelForm):
         }
 
 
-class PurchaseRequestManagerForm(PurchaseRequestForm):
-    class Meta(PurchaseRequestForm.Meta):
+class PurchaseRequestManagerForm(PurchaseRequestEditForm):
+    class Meta(PurchaseRequestEditForm.Meta):
         fields = [
-            *PurchaseRequestForm.Meta.fields,
-            "approval_status",
+            *PurchaseRequestEditForm.Meta.fields,
             "payment_status",
             "delivery_status",
         ]

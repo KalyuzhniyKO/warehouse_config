@@ -12,11 +12,12 @@ from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
 from core.forms import (
+    PurchaseRequestEditForm,
     PurchaseRequestFilterForm,
     PurchaseRequestForm,
     PurchaseRequestManagerForm,
 )
-from core.models import PurchaseRequest
+from core.models import Item, PurchaseRequest, Unit
 from core.permissions import (
     can_create_purchase_requests,
     can_manage_purchase_requests,
@@ -112,6 +113,11 @@ class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateV
 
     def form_valid(self, form):
         form.instance.requested_by = self.request.user
+        form.instance.request_date = timezone.localdate()
+        form.instance.status = PurchaseRequest.Status.PENDING_APPROVAL
+        form.instance.approval_status = PurchaseRequest.ApprovalStatus.PENDING
+        form.instance.payment_status = PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED
+        form.instance.delivery_status = PurchaseRequest.DeliveryStatus.NOT_SHIPPED
         response = super().form_valid(form)
         messages.success(self.request, _("Заявку на закупівлю створено."))
         return response
@@ -122,6 +128,13 @@ class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateV
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["page_title"] = _("Нова заявка на закупівлю")
+        context["purchase_item_options"] = Item.objects.filter(is_active=True).order_by(
+            "name"
+        )
+        context["purchase_unit_options"] = Unit.objects.filter(is_active=True).order_by(
+            "name"
+        )
+        context["is_create"] = True
         return context
 
 
@@ -176,7 +189,7 @@ class PurchaseRequestUpdateView(
     def get_form_class(self):
         if can_manage_purchase_requests(self.request.user):
             return PurchaseRequestManagerForm
-        return PurchaseRequestForm
+        return PurchaseRequestEditForm
 
     def get_queryset(self):
         queryset = purchase_requests_for_user(self.request.user)
@@ -188,33 +201,8 @@ class PurchaseRequestUpdateView(
         return reverse("purchase_request_detail", args=[self.object.pk])
 
     def form_valid(self, form):
-        purchase_request = form.instance
-        if can_manage_purchase_requests(self.request.user):
-            if purchase_request.approval_status == PurchaseRequest.ApprovalStatus.APPROVED:
-                if purchase_request.approved_by_id is None:
-                    purchase_request.approved_by = self.request.user
-                    purchase_request.approved_at = timezone.now()
-                if purchase_request.status in {
-                    PurchaseRequest.Status.DRAFT,
-                    PurchaseRequest.Status.PENDING_APPROVAL,
-                    PurchaseRequest.Status.REJECTED,
-                }:
-                    purchase_request.status = PurchaseRequest.Status.APPROVED
-            elif purchase_request.approval_status == PurchaseRequest.ApprovalStatus.REJECTED:
-                if purchase_request.rejected_by_id is None:
-                    purchase_request.rejected_by = self.request.user
-                    purchase_request.rejected_at = timezone.now()
-                if purchase_request.status not in {
-                    PurchaseRequest.Status.PARTIALLY_RECEIVED,
-                    PurchaseRequest.Status.RECEIVED,
-                }:
-                    purchase_request.status = PurchaseRequest.Status.REJECTED
-            elif purchase_request.status in {
-                PurchaseRequest.Status.APPROVED,
-                PurchaseRequest.Status.ORDERED,
-                PurchaseRequest.Status.REJECTED,
-            }:
-                purchase_request.status = PurchaseRequest.Status.PENDING_APPROVAL
+        # Requester and approval audit fields are not part of normal edit forms.
+        # They are assigned only on create and approve/reject actions.
         messages.success(self.request, _("Заявку на закупівлю оновлено."))
         return super().form_valid(form)
 
@@ -294,7 +282,15 @@ class PurchaseRequestStatusActionView(
                 purchase_request.approval_status = PurchaseRequest.ApprovalStatus.REJECTED
                 purchase_request.rejected_by = request.user
                 purchase_request.rejected_at = now
-                update_fields += ["approval_status", "rejected_by", "rejected_at"]
+                purchase_request.rejection_comment = request.POST.get(
+                    "rejection_comment", ""
+                ).strip()
+                update_fields += [
+                    "approval_status",
+                    "rejected_by",
+                    "rejected_at",
+                    "rejection_comment",
+                ]
             purchase_request.save(update_fields=update_fields)
 
         messages.success(request, transition["message"])

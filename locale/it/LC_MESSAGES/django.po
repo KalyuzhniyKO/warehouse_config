@@ -4353,6 +4353,18 @@ msgstr "Richiesta di acquisto creata."
 msgid "Нова заявка на закупівлю"
 msgstr "Nuova richiesta di acquisto"
 
+msgid "Створити заявку на закупівлю"
+msgstr "Crea richiesta di acquisto"
+
+msgid "До списку заявок"
+msgstr "Torna alle richieste"
+
+msgid "Таблиця заявок, погодження, оплати та доставки."
+msgstr "Tabella richieste, approvazioni, pagamenti e consegne."
+
+msgid "Подати просту заявку на потрібний товар."
+msgstr "Invia una semplice richiesta per un articolo necessario."
+
 msgid "Чернетку заявки оновлено."
 msgstr "Bozza della richiesta aggiornata."
 

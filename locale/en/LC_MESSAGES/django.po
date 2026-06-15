@@ -4737,6 +4737,18 @@ msgstr "Purchase request created."
 msgid "Нова заявка на закупівлю"
 msgstr "New purchase request"
 
+msgid "Створити заявку на закупівлю"
+msgstr "Create purchase request"
+
+msgid "До списку заявок"
+msgstr "Back to requests"
+
+msgid "Таблиця заявок, погодження, оплати та доставки."
+msgstr "Request table, approvals, payments, and delivery tracking."
+
+msgid "Подати просту заявку на потрібний товар."
+msgstr "Submit a simple request for a needed item."
+
 msgid "Чернетку заявки оновлено."
 msgstr "Purchase request draft updated."
 
