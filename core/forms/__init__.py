@@ -37,6 +37,7 @@ from core.forms.management import (
 from core.forms.purchase_requests import (
     PurchaseRequestFilterForm,
     PurchaseRequestForm,
+    PurchaseRequestEditForm,
     PurchaseRequestManagerForm,
 )
 from core.forms.stock_operations import (
@@ -71,6 +72,7 @@ __all__ = [
     "PrinterForm",
     "PurchaseRequestFilterForm",
     "PurchaseRequestForm",
+    "PurchaseRequestEditForm",
     "PurchaseRequestManagerForm",
     "RecipientForm",
     "StockBalanceAdminForm",

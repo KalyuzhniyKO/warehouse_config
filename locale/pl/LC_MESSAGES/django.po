@@ -2978,6 +2978,18 @@ msgstr "Utworzono wniosek zakupowy."
 msgid "Нова заявка на закупівлю"
 msgstr "Nowy wniosek zakupowy"
 
+msgid "Створити заявку на закупівлю"
+msgstr "Utwórz wniosek zakupowy"
+
+msgid "До списку заявок"
+msgstr "Do listy wniosków"
+
+msgid "Таблиця заявок, погодження, оплати та доставки."
+msgstr "Tabela wniosków, zatwierdzeń, płatności i dostaw."
+
+msgid "Подати просту заявку на потрібний товар."
+msgstr "Złóż prosty wniosek na potrzebny towar."
+
 msgid "Чернетку заявки оновлено."
 msgstr "Zaktualizowano szkic wniosku."
 

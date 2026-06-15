@@ -43,6 +43,14 @@ class PurchaseRequest(models.Model):
         CANCELLED = "cancelled", _("Скасовано")
 
     request_date = models.DateField(_("Дата"), default=timezone.localdate)
+    item = models.ForeignKey(
+        "core.Item",
+        verbose_name=_("Номенклатура"),
+        on_delete=models.SET_NULL,
+        related_name="purchase_requests",
+        blank=True,
+        null=True,
+    )
     title = models.CharField(_("Назва товару"), max_length=255)
     need_description = models.TextField(_("Опис потреби"), blank=True)
     requested_qty = models.DecimalField(
@@ -111,6 +119,7 @@ class PurchaseRequest(models.Model):
         null=True,
     )
     rejected_at = models.DateTimeField(_("Дата відхилення"), blank=True, null=True)
+    rejection_comment = models.TextField(_("Коментар відхилення"), blank=True)
     status = models.CharField(
         _("Статус"),
         max_length=24,

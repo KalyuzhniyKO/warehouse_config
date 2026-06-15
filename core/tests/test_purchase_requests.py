@@ -6,8 +6,9 @@ from django.contrib.auth.models import Group
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
+from django.utils import timezone
 
-from core.models import PurchaseRequest, StockBalance, StockMovement, Warehouse
+from core.models import Item, PurchaseRequest, StockBalance, StockMovement, Unit, Warehouse
 from core.tests.i18n_test_utils import compile_test_messages
 from core.tests.warehouse_access_utils import grant_warehouse_access
 
@@ -29,6 +30,8 @@ class PurchaseRequestTests(TestCase):
         self.other_requester = User.objects.create_user("purchase-other", password="pw")
         self.no_access_user = User.objects.create_user("purchase-no-access", password="pw")
         self.warehouse = Warehouse.objects.create(name="Purchase warehouse")
+        self.unit = Unit.objects.create(name="Pair", symbol="pairs")
+        self.item = Item.objects.create(name="Safety gloves", unit=self.unit)
         grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
         grant_warehouse_access(self.requester, self.warehouse)
         grant_warehouse_access(self.other_requester, self.warehouse)
@@ -36,6 +39,7 @@ class PurchaseRequestTests(TestCase):
     def request_data(self, **overrides):
         data = {
             "request_date": "2026-06-15",
+            "requested_item": "Safety gloves",
             "title": "Safety gloves",
             "need_description": "Planned purchase",
             "requested_qty": "12.000",
@@ -49,10 +53,12 @@ class PurchaseRequestTests(TestCase):
         return data
 
     def create_request(self, user=None, status=PurchaseRequest.Status.DRAFT, **overrides):
+        data = self.request_data(**overrides)
+        data.pop("requested_item", None)
         purchase_request = PurchaseRequest.objects.create(
             requested_by=user or self.requester,
             status=status,
-            **self.request_data(**overrides),
+            **data,
         )
         purchase_request.refresh_from_db()
         return purchase_request
@@ -74,7 +80,19 @@ class PurchaseRequestTests(TestCase):
             response, reverse("purchase_request_detail", args=[purchase_request.pk])
         )
         self.assertEqual(purchase_request.requested_by, self.requester)
-        self.assertEqual(purchase_request.status, PurchaseRequest.Status.DRAFT)
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.PENDING_APPROVAL)
+        self.assertEqual(
+            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.PENDING
+        )
+        self.assertEqual(
+            purchase_request.payment_status,
+            PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+        )
+        self.assertEqual(
+            purchase_request.delivery_status, PurchaseRequest.DeliveryStatus.NOT_SHIPPED
+        )
+        self.assertEqual(purchase_request.request_date, timezone.localdate())
+        self.assertEqual(purchase_request.item, self.item)
 
     def test_warehouse_admin_can_create_without_assigned_warehouse(self):
         self.admin.warehouse_accesses.all().delete()
@@ -94,6 +112,55 @@ class PurchaseRequestTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PurchaseRequest.objects.get().product_url, "")
+
+    def test_create_form_is_minimal_and_hides_tracking_and_audit_fields(self):
+        self.login(self.requester)
+
+        response = self.client.get(reverse("purchase_request_create"))
+
+        fields = list(response.context["form"].fields)
+        self.assertEqual(
+            fields,
+            [
+                "requested_item",
+                "requested_qty",
+                "unit",
+                "need_description",
+                "product_url",
+                "order_type",
+            ],
+        )
+        for field in [
+            "request_date",
+            "title",
+            "unit_price_uah",
+            "approval_status",
+            "payment_status",
+            "delivery_status",
+            "requested_by",
+            "approved_by",
+            "approved_at",
+            "rejected_by",
+            "rejected_at",
+            "received_qty",
+        ]:
+            self.assertNotIn(field, response.context["form"].fields)
+            self.assertNotContains(response, f'name="{field}"')
+        self.assertNotContains(response, "<table", html=False)
+
+    def test_new_requested_item_text_does_not_create_item(self):
+        self.login(self.requester)
+        item_count = Item.objects.count()
+
+        response = self.client.post(
+            reverse("purchase_request_create"),
+            self.request_data(requested_item="Custom bearing", title="Ignored title"),
+        )
+
+        purchase_request = PurchaseRequest.objects.get(title="Custom bearing")
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(purchase_request.item)
+        self.assertEqual(Item.objects.count(), item_count)
 
     def test_unit_price_is_optional_and_total_is_empty_without_it(self):
         self.login(self.requester)
@@ -140,6 +207,17 @@ class PurchaseRequestTests(TestCase):
         admin_response = self.client.get(reverse("purchase_request_list"))
         self.assertContains(admin_response, own.title)
         self.assertContains(admin_response, other.title)
+
+    def test_list_shows_requester_name(self):
+        self.requester.first_name = "Ivan"
+        self.requester.last_name = "Petrenko"
+        self.requester.save(update_fields=["first_name", "last_name"])
+        self.create_request()
+        self.login(self.admin)
+
+        response = self.client.get(reverse("purchase_request_list"))
+
+        self.assertContains(response, "Ivan Petrenko")
 
     def test_list_filters_by_tracking_fields_requester_date_and_search(self):
         matching = self.create_request(
@@ -220,6 +298,25 @@ class PurchaseRequestTests(TestCase):
         self.login(self.other_requester)
         self.assertEqual(self.client.get(url).status_code, 404)
 
+    def test_detail_page_shows_audit_fields(self):
+        purchase_request = self.create_request(
+            status=PurchaseRequest.Status.REJECTED,
+            approved_by=self.admin,
+            approved_at=timezone.now(),
+            rejected_by=self.admin,
+            rejected_at=timezone.now(),
+            rejection_comment="Budget refused",
+        )
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+
+        self.assertContains(response, self.requester.username)
+        self.assertContains(response, self.admin.username)
+        self.assertContains(response, "Budget refused")
+
     def test_owner_can_edit_draft_but_not_submitted_request(self):
         draft = self.create_request()
         self.login(self.requester)
@@ -265,7 +362,11 @@ class PurchaseRequestTests(TestCase):
     def test_admin_can_reject_pending_request(self):
         purchase_request = self.create_request(status=PurchaseRequest.Status.PENDING_APPROVAL)
 
-        self.post_action(purchase_request, "reject")
+        self.login(self.admin)
+        self.client.post(
+            reverse("purchase_request_reject", args=[purchase_request.pk]),
+            {"rejection_comment": "Too expensive"},
+        )
 
         purchase_request.refresh_from_db()
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.REJECTED)
@@ -275,6 +376,7 @@ class PurchaseRequestTests(TestCase):
         )
         self.assertEqual(purchase_request.rejected_by, self.admin)
         self.assertIsNotNone(purchase_request.rejected_at)
+        self.assertEqual(purchase_request.rejection_comment, "Too expensive")
 
     def test_admin_can_mark_approved_request_as_ordered(self):
         purchase_request = self.create_request(status=PurchaseRequest.Status.APPROVED)
@@ -387,27 +489,48 @@ class PurchaseRequestTests(TestCase):
         self.assertEqual(StockMovement.objects.count(), movement_count)
         self.assertEqual(StockBalance.objects.count(), balance_count)
 
-    def test_admin_can_update_approval_status_from_edit_page(self):
-        purchase_request = self.create_request()
+    def test_edit_page_cannot_update_approval_status_or_audit_fields(self):
+        purchase_request = self.create_request(
+            approved_by=self.requester,
+            approved_at=timezone.now(),
+            rejected_by=self.other_requester,
+            rejected_at=timezone.now(),
+            rejection_comment="Original rejection",
+        )
+        original_requested_by = purchase_request.requested_by
+        original_approved_by = purchase_request.approved_by
+        original_approved_at = purchase_request.approved_at
+        original_rejected_by = purchase_request.rejected_by
+        original_rejected_at = purchase_request.rejected_at
         self.login(self.admin)
 
         response = self.client.post(
             reverse("purchase_request_update", args=[purchase_request.pk]),
             self.request_data(
+                requested_by=self.other_requester.pk,
                 approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
                 payment_status=PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
                 delivery_status=PurchaseRequest.DeliveryStatus.NOT_SHIPPED,
+                approved_by=self.admin.pk,
+                approved_at=timezone.now().isoformat(),
+                rejected_by=self.admin.pk,
+                rejected_at=timezone.now().isoformat(),
+                rejection_comment="Tampered",
             ),
         )
 
         purchase_request.refresh_from_db()
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
-            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.APPROVED
+            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.PENDING
         )
-        self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
-        self.assertEqual(purchase_request.approved_by, self.admin)
-        self.assertIsNotNone(purchase_request.approved_at)
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.DRAFT)
+        self.assertEqual(purchase_request.requested_by, original_requested_by)
+        self.assertEqual(purchase_request.approved_by, original_approved_by)
+        self.assertEqual(purchase_request.approved_at, original_approved_at)
+        self.assertEqual(purchase_request.rejected_by, original_rejected_by)
+        self.assertEqual(purchase_request.rejected_at, original_rejected_at)
+        self.assertEqual(purchase_request.rejection_comment, "Original rejection")
 
     def test_sheet_fields_do_not_include_code_or_invoice_fields(self):
         self.login(self.requester)
@@ -422,11 +545,11 @@ class PurchaseRequestTests(TestCase):
 
     def test_purchase_list_title_is_localized(self):
         expected_titles = {
-            "uk": "Закупки",
-            "ru": "Закупки",
-            "en": "Purchases",
-            "pl": "Zakupy",
-            "it": "Acquisti",
+            "uk": "Заявки на закупівлю",
+            "ru": "Заявки на закупку",
+            "en": "Purchase requests",
+            "pl": "Wnioski zakupowe",
+            "it": "Richieste di acquisto",
         }
         self.login(self.admin)
 

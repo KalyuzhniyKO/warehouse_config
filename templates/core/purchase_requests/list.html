@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
-{% block title %}{% trans "Закупки" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{% trans "Заявки на закупівлю" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="list-page">
     <div class="list-page-header">
         <div class="list-page-title">
-            <h1 class="mb-1">{% trans "Закупки" %}</h1>
+            <h1 class="mb-1">{% trans "Заявки на закупівлю" %}</h1>
             <p class="text-muted mb-0">{% trans "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару." %}</p>
         </div>
         {% if can_create_purchase_request %}
-            <div class="list-page-actions"><a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Нова заявка" %}</a></div>
+            <div class="list-page-actions"><a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Створити заявку на закупівлю" %}</a></div>
         {% endif %}
     </div>
 
@@ -45,6 +45,7 @@
                     <th>{% trans "Статус погодження" %}</th>
                     <th>{% trans "Статус оплати" %}</th>
                     <th>{% trans "Статус доставки" %}</th>
+                    <th>{% trans "Заявник" %}</th>
                     <th>{% trans "Посилання на товар" %}</th>
                     <th class="text-end">{% trans "Дії" %}</th>
                 </tr></thead>
@@ -62,11 +63,12 @@
                             <td><span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span></td>
                             <td>{{ purchase_request.get_payment_status_display }}</td>
                             <td>{{ purchase_request.get_delivery_status_display }}</td>
+                            <td>{{ purchase_request.requested_by|display_name }}</td>
                             <td>{% if purchase_request.product_url %}<a href="{{ purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити" %}</a>{% else %}—{% endif %}</td>
                             <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{% url 'purchase_request_detail' purchase_request.pk %}">{% trans "Перегляд" %}</a></td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="13" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
+                        <tr><td colspan="14" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

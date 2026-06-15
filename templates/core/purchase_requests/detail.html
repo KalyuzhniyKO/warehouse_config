@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
-{% block title %}{{ purchase_request.title }} · {% trans "Закупки" %}{% endblock %}
+{% block title %}{{ purchase_request.title }} · {% trans "Заявки на закупівлю" %}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
@@ -9,7 +9,7 @@
         <span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку закупок" %}</a>
+        <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку заявок" %}</a>
         {% if can_receive %}<a class="btn btn-success" href="{% url 'stock_receive' %}?purchase_request={{ purchase_request.pk }}">{% trans "Прийняти на склад" %}</a>{% endif %}
         {% if can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
     </div>
@@ -30,10 +30,13 @@
         <dt class="col-sm-4">{% trans "Статус доставки" %}</dt><dd class="col-sm-8">{{ purchase_request.get_delivery_status_display }}</dd>
         <dt class="col-sm-4">{% trans "Посилання на товар" %}</dt><dd class="col-sm-8">{% if purchase_request.product_url %}<a href="{{ purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a>{% else %}—{% endif %}</dd>
         <dt class="col-sm-4">{% trans "Заявник" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_by|display_name }}</dd>
-        <dt class="col-sm-4">{% trans "Погодив" %}</dt><dd class="col-sm-8">{{ purchase_request.approved_by|display_name|default:"—" }}{% if purchase_request.approved_at %} · {{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>
-        <dt class="col-sm-4">{% trans "Відхилив" %}</dt><dd class="col-sm-8">{{ purchase_request.rejected_by|display_name|default:"—" }}{% if purchase_request.rejected_at %} · {{ purchase_request.rejected_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>
-        <dt class="col-sm-4">{% trans "Коментар" %}</dt><dd class="col-sm-8">{{ purchase_request.comment|default:"—"|linebreaksbr }}</dd>
         <dt class="col-sm-4">{% trans "Створено" %}</dt><dd class="col-sm-8">{{ purchase_request.created_at|date:"SHORT_DATETIME_FORMAT" }}</dd>
+        <dt class="col-sm-4">{% trans "Погодив" %}</dt><dd class="col-sm-8">{{ purchase_request.approved_by|display_name|default:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Дата погодження" %}</dt><dd class="col-sm-8">{{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Відхилив" %}</dt><dd class="col-sm-8">{{ purchase_request.rejected_by|display_name|default:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Дата відхилення" %}</dt><dd class="col-sm-8">{{ purchase_request.rejected_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Коментар відхилення" %}</dt><dd class="col-sm-8">{{ purchase_request.rejection_comment|default:"—"|linebreaksbr }}</dd>
+        <dt class="col-sm-4">{% trans "Коментар" %}</dt><dd class="col-sm-8">{{ purchase_request.comment|default:"—"|linebreaksbr }}</dd>
     </dl>
 </div></div>
 
@@ -43,7 +46,7 @@
     {% endif %}
     {% if can_manage and purchase_request.status == "pending_approval" %}
         <form method="post" action="{% url 'purchase_request_approve' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-success" type="submit">{% trans "Погодити" %}</button></form>
-        <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger" type="submit">{% trans "Відхилити" %}</button></form>
+        <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}" class="d-flex gap-2">{% csrf_token %}<input class="form-control" type="text" name="rejection_comment" placeholder="{% trans 'Коментар відхилення' %}"><button class="btn btn-outline-danger" type="submit">{% trans "Відхилити" %}</button></form>
     {% endif %}
     {% if can_manage and purchase_request.status == "approved" %}
         <form method="post" action="{% url 'purchase_request_order' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">{% trans "Позначити як замовлену" %}</button></form>
