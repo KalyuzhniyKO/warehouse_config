@@ -285,7 +285,11 @@ class StockReturnView(
         context = super().get_context_data(**kwargs)
         context["return_warehouse"] = self.get_return_warehouse()
         context["can_submit_receive"] = (
-            self.scanned_item is not None and self.get_return_warehouse() is not None
+            self.request.method == "POST"
+            or (
+                self.scanned_item is not None
+                and self.get_return_warehouse() is not None
+            )
         )
         return self.add_operation_token_context(context, context["can_submit_receive"])
 
