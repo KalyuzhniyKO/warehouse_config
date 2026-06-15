@@ -6,7 +6,7 @@
     <div>
         <div class="text-muted small">{% trans "Заявка на закупівлю" %} #{{ purchase_request.pk }}</div>
         <h1 class="h3 mb-1">{{ purchase_request.title }}</h1>
-        <span class="badge text-bg-light border">{{ purchase_request.get_status_display }}</span>
+        <span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку закупок" %}</a>
@@ -17,13 +17,18 @@
 
 <div class="card content-card mb-4"><div class="card-body">
     <dl class="row mb-0">
-        <dt class="col-sm-4">{% trans "Опис" %}</dt><dd class="col-sm-8">{{ purchase_request.description|default:"—"|linebreaksbr }}</dd>
+        <dt class="col-sm-4">{% trans "Дата" %}</dt><dd class="col-sm-8">{{ purchase_request.request_date|date:"SHORT_DATE_FORMAT" }}</dd>
+        <dt class="col-sm-4">{% trans "Опис потреби" %}</dt><dd class="col-sm-8">{{ purchase_request.need_description|default:"—"|linebreaksbr }}</dd>
         <dt class="col-sm-4">{% trans "Запитана кількість" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</dd>
         <dt class="col-sm-4">{% trans "Вже отримано" %}</dt><dd class="col-sm-8">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</dd>
         <dt class="col-sm-4">{% trans "Залишилось отримати" %}</dt><dd class="col-sm-8">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</dd>
-        <dt class="col-sm-4">{% trans "Орієнтовна ціна за одиницю" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_unit_price }} {{ purchase_request.currency }}</dd>
-        <dt class="col-sm-4">{% trans "Орієнтовна сума" %}</dt><dd class="col-sm-8">{{ purchase_request.estimated_total }} {{ purchase_request.currency }}</dd>
-        <dt class="col-sm-4">{% trans "Постачальник" %}</dt><dd class="col-sm-8">{{ purchase_request.supplier_name }}{% if purchase_request.supplier_url %} · <a href="{{ purchase_request.supplier_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a>{% endif %}</dd>
+        <dt class="col-sm-4">{% trans "Вартість за одиницю (грн)" %}</dt><dd class="col-sm-8">{{ purchase_request.unit_price_uah|default_if_none:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Сума (грн)" %}</dt><dd class="col-sm-8">{{ purchase_request.total_price_uah|default_if_none:"—" }}</dd>
+        <dt class="col-sm-4">{% trans "Тип замовлення" %}</dt><dd class="col-sm-8">{{ purchase_request.get_order_type_display }}</dd>
+        <dt class="col-sm-4">{% trans "Статус погодження" %}</dt><dd class="col-sm-8">{{ purchase_request.get_approval_status_display }}</dd>
+        <dt class="col-sm-4">{% trans "Статус оплати" %}</dt><dd class="col-sm-8">{{ purchase_request.get_payment_status_display }}</dd>
+        <dt class="col-sm-4">{% trans "Статус доставки" %}</dt><dd class="col-sm-8">{{ purchase_request.get_delivery_status_display }}</dd>
+        <dt class="col-sm-4">{% trans "Посилання на товар" %}</dt><dd class="col-sm-8">{% if purchase_request.product_url %}<a href="{{ purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a>{% else %}—{% endif %}</dd>
         <dt class="col-sm-4">{% trans "Заявник" %}</dt><dd class="col-sm-8">{{ purchase_request.requested_by|display_name }}</dd>
         <dt class="col-sm-4">{% trans "Погодив" %}</dt><dd class="col-sm-8">{{ purchase_request.approved_by|display_name|default:"—" }}{% if purchase_request.approved_at %} · {{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>
         <dt class="col-sm-4">{% trans "Відхилив" %}</dt><dd class="col-sm-8">{{ purchase_request.rejected_by|display_name|default:"—" }}{% if purchase_request.rejected_at %} · {{ purchase_request.rejected_at|date:"SHORT_DATETIME_FORMAT" }}{% endif %}</dd>

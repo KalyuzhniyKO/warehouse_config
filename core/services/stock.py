@@ -317,11 +317,16 @@ def receive_stock(
             purchase_request = PurchaseRequest.objects.select_for_update().get(
                 pk=purchase_request.pk
             )
-            if purchase_request.status not in {
-                PurchaseRequest.Status.APPROVED,
-                PurchaseRequest.Status.ORDERED,
-                PurchaseRequest.Status.PARTIALLY_RECEIVED,
-            }:
+            if (
+                purchase_request.status
+                not in {
+                    PurchaseRequest.Status.APPROVED,
+                    PurchaseRequest.Status.ORDERED,
+                    PurchaseRequest.Status.PARTIALLY_RECEIVED,
+                }
+                or purchase_request.approval_status
+                != PurchaseRequest.ApprovalStatus.APPROVED
+            ):
                 raise StockServiceError(PURCHASE_REQUEST_NOT_RECEIVABLE_ERROR)
             if (
                 performed_by is not None

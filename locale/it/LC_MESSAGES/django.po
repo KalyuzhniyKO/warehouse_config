@@ -4447,3 +4447,83 @@ msgstr "Ricevimenti collegati"
 
 msgid "Пов’язаних приходів ще немає."
 msgstr "Non ci sono ancora ricevimenti collegati."
+msgid "Опис потреби"
+msgstr "Descrizione della necessità"
+
+msgid "Вартість за одиницю (грн)"
+msgstr "Prezzo unitario (UAH)"
+
+msgid "Сума (грн)"
+msgstr "Totale (UAH)"
+
+msgid "Тип замовлення"
+msgstr "Tipo di ordine"
+
+msgid "Статус погодження"
+msgstr "Stato approvazione"
+
+msgid "Статус оплати"
+msgstr "Stato pagamento"
+
+msgid "Статус доставки"
+msgstr "Stato consegna"
+
+msgid "Посилання на товар"
+msgstr "Link prodotto"
+
+msgid "Аварійний"
+msgstr "Emergenza"
+
+msgid "Терміновий"
+msgstr "Urgente"
+
+msgid "Плановий"
+msgstr "Pianificato"
+
+msgid "Очікування"
+msgstr "In attesa"
+
+msgid "Рахунок не отримано"
+msgstr "Fattura non ricevuta"
+
+msgid "Рахунок отримано"
+msgstr "Fattura ricevuta"
+
+msgid "Передано на оплату"
+msgstr "Inviato per il pagamento"
+
+msgid "Оплачено"
+msgstr "Pagato"
+
+msgid "Не потребує оплати"
+msgstr "Pagamento non richiesto"
+
+msgid "Не відправлено"
+msgstr "Non spedito"
+
+msgid "В дорозі"
+msgstr "In transito"
+
+msgid "Не актуально"
+msgstr "Non applicabile"
+
+msgid "Усі типи замовлень"
+msgstr "Tutti i tipi di ordine"
+
+msgid "Усі статуси погодження"
+msgstr "Tutti gli stati di approvazione"
+
+msgid "Усі статуси оплати"
+msgstr "Tutti gli stati di pagamento"
+
+msgid "Усі статуси доставки"
+msgstr "Tutti gli stati di consegna"
+
+msgid "Назва, опис потреби або посилання"
+msgstr "Nome, descrizione della necessità o link"
+
+msgid "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару."
+msgstr "Traccia ordini, approvazioni, pagamenti e consegne senza movimenti automatici di magazzino."
+
+msgid "Заявку на закупівлю оновлено."
+msgstr "Richiesta di acquisto aggiornata."

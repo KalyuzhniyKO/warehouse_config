@@ -45,14 +45,24 @@ class PurchaseRequestReceivingTests(TestCase):
     def create_request(self, *, user=None, status=PurchaseRequest.Status.APPROVED):
         return PurchaseRequest.objects.create(
             title="Planned cables",
-            description="",
+            need_description="",
             requested_qty=Decimal("10.000"),
             unit="pc",
-            estimated_unit_price=Decimal("2.00"),
-            currency="UAH",
-            supplier_name="Cable supplier",
+            unit_price_uah=Decimal("2.00"),
+            product_url="https://example.com/cables",
             requested_by=user or self.owner,
             status=status,
+            approval_status=(
+                PurchaseRequest.ApprovalStatus.APPROVED
+                if status
+                in {
+                    PurchaseRequest.Status.APPROVED,
+                    PurchaseRequest.Status.ORDERED,
+                    PurchaseRequest.Status.PARTIALLY_RECEIVED,
+                    PurchaseRequest.Status.RECEIVED,
+                }
+                else PurchaseRequest.ApprovalStatus.PENDING
+            ),
         )
 
     def receive_via_form(self, *, user, qty, purchase_request=None):
@@ -188,6 +198,19 @@ class PurchaseRequestReceivingTests(TestCase):
 
         self.assertFalse(StockMovement.objects.exists())
 
+    def test_pending_approval_tracking_status_cannot_be_received(self):
+        purchase_request = self.create_request()
+        purchase_request.approval_status = PurchaseRequest.ApprovalStatus.PENDING
+        purchase_request.save(update_fields=["approval_status"])
+
+        response = self.receive_via_form(
+            user=self.owner, qty="1.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("purchase_request", response.context["form"].errors)
+        self.assertFalse(StockMovement.objects.exists())
+
     def test_cancelling_linked_receive_recalculates_received_quantity(self):
         superuser = get_user_model().objects.create_superuser(
             "receive-super", "super@example.com", "pw"
@@ -290,5 +313,5 @@ class PurchaseRequestReceivingTests(TestCase):
         )
         self.assertEqual(response.context["selected_purchase_request"], purchase_request)
         self.assertContains(response, purchase_request.title)
-        self.assertContains(response, purchase_request.supplier_name)
+        self.assertContains(response, purchase_request.product_url)
         self.assertContains(response, "Залишилось отримати")

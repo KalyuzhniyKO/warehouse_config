@@ -10,26 +10,55 @@ class PurchaseRequestForm(BootstrapModelForm):
     class Meta:
         model = PurchaseRequest
         fields = [
+            "request_date",
             "title",
-            "description",
+            "need_description",
             "requested_qty",
             "unit",
-            "estimated_unit_price",
-            "currency",
-            "supplier_name",
-            "supplier_url",
+            "unit_price_uah",
+            "order_type",
+            "product_url",
             "comment",
         ]
         widgets = {
+            "request_date": forms.DateInput(attrs={"type": "date"}),
             "requested_qty": forms.NumberInput(attrs={"min": "0.001", "step": "0.001"}),
-            "estimated_unit_price": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
+            "unit_price_uah": forms.NumberInput(attrs={"min": "0", "step": "0.01"}),
         }
 
 
+class PurchaseRequestManagerForm(PurchaseRequestForm):
+    class Meta(PurchaseRequestForm.Meta):
+        fields = [
+            *PurchaseRequestForm.Meta.fields,
+            "approval_status",
+            "payment_status",
+            "delivery_status",
+        ]
+
+
 class PurchaseRequestFilterForm(forms.Form):
-    status = forms.ChoiceField(
-        label=_("Статус"),
-        choices=[("", _("Усі статуси"))] + list(PurchaseRequest.Status.choices),
+    order_type = forms.ChoiceField(
+        label=_("Тип замовлення"),
+        choices=[("", _("Усі типи замовлень"))] + list(PurchaseRequest.OrderType.choices),
+        required=False,
+    )
+    approval_status = forms.ChoiceField(
+        label=_("Статус погодження"),
+        choices=[("", _("Усі статуси погодження"))]
+        + list(PurchaseRequest.ApprovalStatus.choices),
+        required=False,
+    )
+    payment_status = forms.ChoiceField(
+        label=_("Статус оплати"),
+        choices=[("", _("Усі статуси оплати"))]
+        + list(PurchaseRequest.PaymentStatus.choices),
+        required=False,
+    )
+    delivery_status = forms.ChoiceField(
+        label=_("Статус доставки"),
+        choices=[("", _("Усі статуси доставки"))]
+        + list(PurchaseRequest.DeliveryStatus.choices),
         required=False,
     )
     requested_by = forms.ModelChoiceField(
@@ -51,7 +80,7 @@ class PurchaseRequestFilterForm(forms.Form):
         label=_("Пошук"),
         required=False,
         widget=forms.TextInput(
-            attrs={"placeholder": _("Назва, товар або постачальник")}
+            attrs={"placeholder": _("Назва, опис потреби або посилання")}
         ),
     )
 
