@@ -35,3 +35,9 @@ Other users with warehouse access can view and edit only their own draft
 requests.
 
 Actual stock balance changes only through the normal stock receive flow.
+
+Deployment after updating the application:
+
+```sh
+python manage.py migrate
+```
