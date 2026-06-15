@@ -58,7 +58,10 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
                 self.assertIn('data-qty-increment', html)
                 self.assertIn('class="form-select form-select-lg"', html)
                 self.assertIn('name="recipient"', html)
-                self.assertIn('name="department"', html)
+                if url_name == "stock_issue":
+                    self.assertIn('name="department"', html)
+                else:
+                    self.assertNotIn('name="department"', html)
                 self.assertIn('data-disable-on-submit', html)
                 self.assertIn('data-submit-button', html)
                 self.assertIn('data-saving-label="Збереження..."', html)
