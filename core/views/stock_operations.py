@@ -304,7 +304,7 @@ class StockReturnView(
                 location=form.cleaned_data.get("location"),
                 qty=form.cleaned_data["qty"],
                 recipient=form.cleaned_data["recipient"],
-                department=form.cleaned_data["department"],
+                department="",
                 comment=form.cleaned_data.get("comment", ""),
                 occurred_at=form.cleaned_data.get("occurred_at"),
                 performed_by=self.request.user,

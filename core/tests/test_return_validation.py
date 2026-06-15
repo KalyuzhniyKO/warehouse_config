@@ -69,7 +69,6 @@ class ReturnValidationTests(TestCase):
             "location": self.location.pk,
             "qty": "1.000",
             "recipient": self.recipient.pk,
-            "department": self.usage_place.pk,
             "comment": "",
             "occurred_at": "2026-01-15T10:00",
         }

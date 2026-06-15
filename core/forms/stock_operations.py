@@ -267,17 +267,8 @@ class StockReturnForm(StockOperationForm):
         required=True,
         empty_label=_("Виберіть працівника"),
     )
-    department = forms.ModelChoiceField(
-        label=_("Місце використання"),
-        queryset=UsagePlace.objects.none(),
-        required=True,
-        empty_label=_("Виберіть місце використання"),
-    )
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        usage_places = UsagePlace.objects.filter(is_active=True).order_by("name")
-        self.fields["department"].queryset = usage_places
         self.fields["recipient"].queryset = Recipient.objects.filter(
             is_active=True
         ).order_by("name")
@@ -294,11 +285,6 @@ class StockReturnForm(StockOperationForm):
             }
         )
         self.fields["recipient"].widget.attrs["class"] = "form-select form-select-lg"
-        self.fields["department"].widget.attrs["class"] = "form-select form-select-lg"
-
-    def clean_department(self):
-        usage_place = self.cleaned_data.get("department")
-        return usage_place.name if usage_place else ""
 
 
 class StockReceiveForm(StockReceiveForm):

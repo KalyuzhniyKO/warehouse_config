@@ -79,7 +79,7 @@
 {% endfor %}
 <div class="row g-3">
     {% for field in form.visible_fields %}
-        {% if field.name == 'qty' or field.name == 'recipient' or field.name == 'department' %}
+        {% if field.name == 'qty' or field.name == 'recipient' %}
             <div class="col-12 col-lg-6">
                 <label class="form-label fw-semibold" for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {% if field.name == 'qty' %}

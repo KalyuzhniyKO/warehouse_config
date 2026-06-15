@@ -12,26 +12,24 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
                 "location": self.location.pk,
                 "qty": "2.000",
                 "recipient": self.recipient.pk,
-                "department": self.usage_place.pk,
                 "comment": "",
                 "occurred_at": "2026-05-13T10:06",
             },
             follow=True,
         )
 
-        movement = StockMovement.objects.get(department=self.usage_place.name)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.RETURN)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(movement.recipient, self.recipient)
-        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.department, "")
         self.assertEqual(movement.comment, "")
         self.assertContains(response, "Повернення товару")
         self.assertContains(response, "✓")
         self.assertContains(response, "Товар повернено")
         self.assertContains(response, "Хто повертає")
         self.assertContains(response, self.recipient.name)
-        self.assertContains(response, "Місце використання")
-        self.assertContains(response, self.usage_place.name)
+        self.assertNotContains(response, "Місце використання")
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "2026")
         self.assertContains(response, "Новий прихід товару")
@@ -155,18 +153,14 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             Decimal("3.000"),
         )
 
-    def test_return_form_lists_only_active_usage_places_and_touch_fields(self):
+    def test_return_form_requires_recipient_without_department(self):
         form = StockReturnForm()
-        choices = list(form.fields["department"].queryset)
 
         self.assertIn("recipient", form.fields)
-        self.assertIn("department", form.fields)
+        self.assertNotIn("department", form.fields)
         self.assertTrue(form.fields["recipient"].required)
-        self.assertTrue(form.fields["department"].required)
-        self.assertIn(self.usage_place, choices)
-        self.assertNotIn(self.inactive_usage_place, choices)
 
-    def test_return_form_requires_recipient_and_department(self):
+    def test_return_form_requires_recipient(self):
         form = StockReturnForm(
             data={
                 "item": self.item.pk,
@@ -174,7 +168,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "location": self.location.pk,
                 "qty": "1.000",
                 "recipient": "",
-                "department": "",
                 "comment": "",
                 "occurred_at": "2026-01-15T10:00",
             }
@@ -182,9 +175,8 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
 
         self.assertFalse(form.is_valid())
         self.assertIn("recipient", form.errors)
-        self.assertIn("department", form.errors)
 
-    def test_return_form_cleans_department_to_usage_place_name(self):
+    def test_return_form_does_not_require_department(self):
         form = StockReturnForm(
             data={
                 "item": self.item.pk,
@@ -192,14 +184,13 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "location": self.location.pk,
                 "qty": "1.000",
                 "recipient": self.recipient.pk,
-                "department": self.usage_place.pk,
                 "comment": "",
                 "occurred_at": "2026-01-15T10:00",
             }
         )
 
         self.assertTrue(form.is_valid(), form.errors)
-        self.assertEqual(form.cleaned_data["department"], "Sales")
+        self.assertNotIn("department", form.cleaned_data)
 
     def test_control_slip_shows_return_recipient_and_department(self):
         movement = StockMovement.objects.create(

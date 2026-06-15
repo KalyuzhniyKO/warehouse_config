@@ -49,19 +49,18 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "location": return_location.pk,
                 "qty": "7.000",
                 "recipient": self.recipient.pk,
-                "department": self.usage_place.pk,
                 "comment": "",
                 "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
             },
         )
         self.assertEqual(response.status_code, 302)
         balance = StockBalance.objects.get(item=self.item, location=expected_location)
-        movement = StockMovement.objects.get(department=self.usage_place.name)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.RETURN)
         self.item.refresh_from_db()
         self.assertEqual(balance.qty, Decimal("7.000"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(movement.recipient, self.recipient)
-        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.department, "")
         self.assertEqual(movement.comment, "")
         self.assertIsNotNone(self.item.barcode)
 
@@ -78,7 +77,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "warehouse": self.warehouse.pk,
                 "qty": "7.000",
                 "recipient": self.recipient.pk,
-                "department": self.usage_place.pk,
                 "comment": "",
                 "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
             },
@@ -86,10 +84,10 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
 
         self.assertEqual(response.status_code, 302)
         default_location = get_default_location_for_warehouse(self.warehouse)
-        movement = StockMovement.objects.get(department=self.usage_place.name)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.RETURN)
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(movement.recipient, self.recipient)
-        self.assertEqual(movement.department, self.usage_place.name)
+        self.assertEqual(movement.department, "")
         self.assertEqual(movement.comment, "")
         self.assertEqual(movement.destination_location, default_location)
         self.assertEqual(movement.destination_location.name, DEFAULT_LOCATION_NAME)
@@ -228,7 +226,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             **parser.hidden_inputs,
             "qty": "2.000",
             "recipient": self.recipient.pk,
-            "department": self.usage_place.pk,
         }
         return_response = self.client.post(reverse("stock_return"), post_data)
 
@@ -241,6 +238,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertEqual(movement.movement_type, StockMovement.MovementType.RETURN)
         self.assertEqual(movement.destination_warehouse, expected_warehouse)
         self.assertEqual(movement.destination_location, expected_location)
+        self.assertEqual(movement.department, "")
         self.assertEqual(
             StockBalance.objects.get(
                 item=self.item,
@@ -280,7 +278,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             "location": form.initial["location"].pk,
             "qty": "2.000",
             "recipient": self.recipient.pk,
-            "department": self.usage_place.pk,
             "comment": "",
             "occurred_at": form.initial["occurred_at"],
         }
@@ -309,6 +306,9 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertNotContains(response, "Дата операції")
         self.assertNotContains(response, "Надрукувати етикетку")
         self.assertContains(response, "Кількість")
+        self.assertContains(response, "Хто повертає")
+        self.assertNotContains(response, 'name="department"')
+        self.assertNotContains(response, "Місце використання")
         self.assertNotContains(response, "Хто повертає товар")
         self.assertNotContains(response, "Цех / місце використання")
 
@@ -366,7 +366,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "item": self.item.pk,
                 "qty": "1.000",
                 "recipient": self.recipient.pk,
-                "department": self.usage_place.pk,
                 "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
             },
         )
