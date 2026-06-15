@@ -64,6 +64,7 @@ from ..permissions import (
     GroupRequiredMixin,
     can_manage_directories,
     can_view_analytics,
+    can_view_purchase_requests,
     can_view_warehouse_data,
     user_in_groups,
 )
@@ -122,4 +123,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         )
         context["can_edit_directories"] = can_manage_directories(self.request.user)
         context["can_view_analytics"] = can_view_analytics(self.request.user)
+        context["can_view_purchase_requests"] = can_view_purchase_requests(
+            self.request.user
+        )
         return context

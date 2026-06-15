@@ -75,6 +75,13 @@ from .management_users import (
     ManagementUserUpdateView,
     ManagementUsersView,
 )
+from .purchase_requests import (
+    PurchaseRequestCreateView,
+    PurchaseRequestDetailView,
+    PurchaseRequestListView,
+    PurchaseRequestStatusActionView,
+    PurchaseRequestUpdateView,
+)
 from .analytics import (
     AnalyticsCSVExportView,
     AnalyticsRedirectView,
@@ -142,6 +149,11 @@ __all__ = [
     "PrinterSyncView",
     "PrinterTestPrintView",
     "PrinterUpdateView",
+    "PurchaseRequestCreateView",
+    "PurchaseRequestDetailView",
+    "PurchaseRequestListView",
+    "PurchaseRequestStatusActionView",
+    "PurchaseRequestUpdateView",
     "StockBalanceListView",
     "StockIssueResultView",
     "StockIssueView",

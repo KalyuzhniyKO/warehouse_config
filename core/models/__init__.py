@@ -12,6 +12,7 @@ from .barcodes import BarcodeRegistry, BarcodeSequence
 from .directories import Category, Recipient, Unit, UsagePlace
 from .inventory import InventoryCount, InventoryCountLine
 from .labels import LabelTemplate, LabelTemplateElement, PrintJob, Printer
+from .purchase_requests import PurchaseRequest
 from .stock import StockBalance, StockMovement
 from .warehouse import Item, Location, Warehouse
 from .warehouse_access import UserWarehouseAccess
@@ -38,6 +39,7 @@ __all__ = [
     "LabelTemplateElement",
     "PrintJob",
     "Printer",
+    "PurchaseRequest",
     # stock
     "StockBalance",
     "StockMovement",

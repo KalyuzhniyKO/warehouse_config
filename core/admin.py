@@ -23,6 +23,7 @@ from .models import (
     Location,
     PrintJob,
     Printer,
+    PurchaseRequest,
     Recipient,
     StockBalance,
     StockMovement,
@@ -200,6 +201,31 @@ class InventoryCountAdmin(admin.ModelAdmin):
     search_fields = ("number", "warehouse__name", "location__name", "comment")
     readonly_fields = ("created_at", "updated_at")
     ordering = ("-created_at",)
+
+
+@admin.register(PurchaseRequest)
+class PurchaseRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "requested_qty",
+        "unit",
+        "supplier_name",
+        "status",
+        "requested_by",
+        "created_at",
+    )
+    list_filter = ("status", "currency", "created_at")
+    search_fields = ("title", "description", "supplier_name", "requested_by__username")
+    readonly_fields = (
+        "requested_by",
+        "approved_by",
+        "approved_at",
+        "rejected_by",
+        "rejected_at",
+        "created_at",
+        "updated_at",
+    )
+    ordering = ("-created_at", "-id")
 
 
 @admin.register(InventoryCountLine)
