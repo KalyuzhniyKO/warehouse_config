@@ -7,6 +7,7 @@ from core.forms.base import ARCHIVED_CHOICE_ERROR, normalize_text
 from core.models import (
     Item,
     Location,
+    PurchaseRequest,
     Recipient,
     StockBalance,
     StockMovement,
@@ -16,6 +17,10 @@ from core.models import (
 )
 from core.services.barcodes import resolve_item_barcode
 from core.services.locations import get_default_location_for_warehouse
+from core.services.purchase_requests import (
+    PURCHASE_REQUEST_QTY_EXCEEDED_ERROR,
+    purchase_requests_available_for_receiving,
+)
 from core.services.stock import (
     RETURN_QUANTITY_EXCEEDED_ERROR,
     get_available_return_qty,
@@ -189,12 +194,24 @@ class StockOperationForm(LocationsModeMixin, forms.Form):
 
 
 class StockReceiveForm(StockOperationForm):
+    purchase_request = forms.ModelChoiceField(
+        label=_("Заявка на закупівлю"),
+        queryset=PurchaseRequest.objects.none(),
+        required=False,
+        empty_label=_("Без заявки на закупівлю"),
+    )
     print_label = forms.BooleanField(
         label=_("Надрукувати етикетку після збереження"), required=False
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.request_user is None:
+            self.fields.pop("purchase_request", None)
+        else:
+            self.fields["purchase_request"].queryset = (
+                purchase_requests_available_for_receiving(self.request_user)
+            )
         for field_name in ["item", "comment", "occurred_at", "print_label"]:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.HiddenInput()
@@ -215,6 +232,7 @@ class StockReceiveForm(StockOperationForm):
         self.order_fields(
             [
                 "item",
+                "purchase_request",
                 "warehouse",
                 "location",
                 "qty",
@@ -289,6 +307,11 @@ class StockReceiveForm(StockReceiveForm):
         warehouse = cleaned_data.get("warehouse")
         if warehouse:
             cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
+        purchase_request = cleaned_data.get("purchase_request")
+        qty = cleaned_data.get("qty")
+        if purchase_request is not None and qty is not None:
+            if qty > purchase_request.remaining_qty:
+                self.add_error("qty", PURCHASE_REQUEST_QTY_EXCEEDED_ERROR)
         return cleaned_data
 
 

@@ -199,6 +199,7 @@ def _create_movement(
     inventory_count=None,
     performed_by=None,
     request=None,
+    purchase_request=None,
 ):
     source_warehouse = resolve_warehouse(
         warehouse=source_warehouse, location=source_location, field_name="source_warehouse"
@@ -225,6 +226,7 @@ def _create_movement(
         department=department,
         document_number=document_number,
         inventory_count=inventory_count,
+        purchase_request=purchase_request,
         performed_by=performed_by,
         created_by=performed_by,
         **kwargs,
@@ -287,12 +289,53 @@ def create_initial_balance(
 
 
 def receive_stock(
-    *, item, warehouse=None, location=None, qty, comment="", occurred_at=None, performed_by=None, request=None
+    *,
+    item,
+    warehouse=None,
+    location=None,
+    qty,
+    comment="",
+    occurred_at=None,
+    performed_by=None,
+    request=None,
+    purchase_request=None,
 ):
     """Receive stock into a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
     warehouse = resolve_warehouse(warehouse=warehouse, location=location)
     with transaction.atomic():
+        if purchase_request is not None:
+            from core.models import PurchaseRequest  # noqa: PLC0415
+            from core.services.purchase_requests import (  # noqa: PLC0415
+                PURCHASE_REQUEST_NOT_RECEIVABLE_ERROR,
+                PURCHASE_REQUEST_QTY_EXCEEDED_ERROR,
+                can_receive_against_purchase_request,
+                get_received_purchase_request_qty,
+                sync_purchase_request_receiving_status,
+            )
+
+            purchase_request = PurchaseRequest.objects.select_for_update().get(
+                pk=purchase_request.pk
+            )
+            if purchase_request.status not in {
+                PurchaseRequest.Status.APPROVED,
+                PurchaseRequest.Status.ORDERED,
+                PurchaseRequest.Status.PARTIALLY_RECEIVED,
+            }:
+                raise StockServiceError(PURCHASE_REQUEST_NOT_RECEIVABLE_ERROR)
+            if (
+                performed_by is not None
+                and not can_receive_against_purchase_request(
+                    performed_by, purchase_request
+                )
+            ):
+                raise StockServiceError(PURCHASE_REQUEST_NOT_RECEIVABLE_ERROR)
+            remaining_qty = (
+                purchase_request.requested_qty
+                - get_received_purchase_request_qty(purchase_request)
+            )
+            if qty > remaining_qty:
+                raise StockServiceError(PURCHASE_REQUEST_QTY_EXCEEDED_ERROR)
         ensure_item_barcode(item)
         balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
@@ -306,7 +349,10 @@ def receive_stock(
             occurred_at=occurred_at,
             performed_by=performed_by,
             request=request,
+            purchase_request=purchase_request,
         )
+        if purchase_request is not None:
+            sync_purchase_request_receiving_status(purchase_request)
     return movement
 
 

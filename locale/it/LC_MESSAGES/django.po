@@ -4418,3 +4418,32 @@ msgstr "Nuova richiesta"
 
 msgid "Заявок на закупівлю не знайдено."
 msgstr "Nessuna richiesta di acquisto trovata."
+msgid "Частково отримано"
+msgstr "Ricevuto parzialmente"
+
+msgid "Отримано"
+msgstr "Ricevuto"
+
+msgid "Без заявки на закупівлю"
+msgstr "Senza richiesta di acquisto"
+
+msgid "Вибрана заявка на закупівлю недоступна для оприбуткування."
+msgstr "La richiesta di acquisto selezionata non è disponibile per il ricevimento."
+
+msgid "Кількість перевищує залишок за заявкою на закупівлю."
+msgstr "La quantità supera la quantità residua della richiesta di acquisto."
+
+msgid "Вже отримано"
+msgstr "Già ricevuto"
+
+msgid "Залишилось отримати"
+msgstr "Rimanente da ricevere"
+
+msgid "Прийняти на склад"
+msgstr "Ricevi a magazzino"
+
+msgid "Пов’язані приходи"
+msgstr "Ricevimenti collegati"
+
+msgid "Пов’язаних приходів ще немає."
+msgstr "Non ci sono ancora ricevimenti collegati."

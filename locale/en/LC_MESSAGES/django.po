@@ -4802,3 +4802,32 @@ msgstr "New request"
 
 msgid "Заявок на закупівлю не знайдено."
 msgstr "No purchase requests found."
+msgid "Частково отримано"
+msgstr "Partially received"
+
+msgid "Отримано"
+msgstr "Received"
+
+msgid "Без заявки на закупівлю"
+msgstr "Without purchase request"
+
+msgid "Вибрана заявка на закупівлю недоступна для оприбуткування."
+msgstr "The selected purchase request is not available for receiving."
+
+msgid "Кількість перевищує залишок за заявкою на закупівлю."
+msgstr "Quantity exceeds the remaining purchase request quantity."
+
+msgid "Вже отримано"
+msgstr "Already received"
+
+msgid "Залишилось отримати"
+msgstr "Remaining to receive"
+
+msgid "Прийняти на склад"
+msgstr "Receive into stock"
+
+msgid "Пов’язані приходи"
+msgstr "Linked receipts"
+
+msgid "Пов’язаних приходів ще немає."
+msgstr "There are no linked receipts yet."
