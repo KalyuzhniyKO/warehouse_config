@@ -4831,3 +4831,83 @@ msgstr "Linked receipts"
 
 msgid "Пов’язаних приходів ще немає."
 msgstr "There are no linked receipts yet."
+msgid "Опис потреби"
+msgstr "Need description"
+
+msgid "Вартість за одиницю (грн)"
+msgstr "Unit price (UAH)"
+
+msgid "Сума (грн)"
+msgstr "Total (UAH)"
+
+msgid "Тип замовлення"
+msgstr "Order type"
+
+msgid "Статус погодження"
+msgstr "Approval status"
+
+msgid "Статус оплати"
+msgstr "Payment status"
+
+msgid "Статус доставки"
+msgstr "Delivery status"
+
+msgid "Посилання на товар"
+msgstr "Product link"
+
+msgid "Аварійний"
+msgstr "Emergency"
+
+msgid "Терміновий"
+msgstr "Urgent"
+
+msgid "Плановий"
+msgstr "Planned"
+
+msgid "Очікування"
+msgstr "Pending"
+
+msgid "Рахунок не отримано"
+msgstr "Invoice not received"
+
+msgid "Рахунок отримано"
+msgstr "Invoice received"
+
+msgid "Передано на оплату"
+msgstr "Sent for payment"
+
+msgid "Оплачено"
+msgstr "Paid"
+
+msgid "Не потребує оплати"
+msgstr "No payment required"
+
+msgid "Не відправлено"
+msgstr "Not shipped"
+
+msgid "В дорозі"
+msgstr "In transit"
+
+msgid "Не актуально"
+msgstr "Not applicable"
+
+msgid "Усі типи замовлень"
+msgstr "All order types"
+
+msgid "Усі статуси погодження"
+msgstr "All approval statuses"
+
+msgid "Усі статуси оплати"
+msgstr "All payment statuses"
+
+msgid "Усі статуси доставки"
+msgstr "All delivery statuses"
+
+msgid "Назва, опис потреби або посилання"
+msgstr "Item name, need description, or link"
+
+msgid "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару."
+msgstr "Track orders, approvals, payments, and delivery without automatic stock movements."
+
+msgid "Заявку на закупівлю оновлено."
+msgstr "Purchase request updated."

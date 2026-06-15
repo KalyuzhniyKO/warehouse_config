@@ -23,7 +23,8 @@ PURCHASE_REQUEST_QTY_EXCEEDED_ERROR = _(
 
 def purchase_requests_available_for_receiving(user):
     queryset = PurchaseRequest.objects.filter(
-        status__in=RECEIVABLE_PURCHASE_REQUEST_STATUSES
+        status__in=RECEIVABLE_PURCHASE_REQUEST_STATUSES,
+        approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
     ).select_related("requested_by")
     if can_manage_purchase_requests(user):
         return queryset

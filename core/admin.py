@@ -206,17 +206,32 @@ class InventoryCountAdmin(admin.ModelAdmin):
 @admin.register(PurchaseRequest)
 class PurchaseRequestAdmin(admin.ModelAdmin):
     list_display = (
+        "request_date",
         "title",
         "requested_qty",
         "unit",
-        "supplier_name",
-        "status",
+        "unit_price_uah",
+        "order_type",
+        "approval_status",
+        "payment_status",
+        "delivery_status",
         "received_qty",
         "requested_by",
         "created_at",
     )
-    list_filter = ("status", "currency", "created_at")
-    search_fields = ("title", "description", "supplier_name", "requested_by__username")
+    list_filter = (
+        "order_type",
+        "approval_status",
+        "payment_status",
+        "delivery_status",
+        "request_date",
+    )
+    search_fields = (
+        "title",
+        "need_description",
+        "product_url",
+        "requested_by__username",
+    )
     readonly_fields = (
         "requested_by",
         "approved_by",

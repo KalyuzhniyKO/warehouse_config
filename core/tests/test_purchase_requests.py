@@ -1,4 +1,5 @@
 from io import StringIO
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -34,25 +35,27 @@ class PurchaseRequestTests(TestCase):
 
     def request_data(self, **overrides):
         data = {
+            "request_date": "2026-06-15",
             "title": "Safety gloves",
-            "description": "Planned purchase",
+            "need_description": "Planned purchase",
             "requested_qty": "12.000",
             "unit": "pairs",
-            "estimated_unit_price": "55.50",
-            "currency": "UAH",
-            "supplier_name": "Safety supplier",
-            "supplier_url": "",
+            "unit_price_uah": "55.50",
+            "order_type": PurchaseRequest.OrderType.PLANNED,
+            "product_url": "",
             "comment": "Needed next month",
         }
         data.update(overrides)
         return data
 
     def create_request(self, user=None, status=PurchaseRequest.Status.DRAFT, **overrides):
-        return PurchaseRequest.objects.create(
+        purchase_request = PurchaseRequest.objects.create(
             requested_by=user or self.requester,
             status=status,
             **self.request_data(**overrides),
         )
+        purchase_request.refresh_from_db()
+        return purchase_request
 
     def login(self, user):
         self.client.force_login(user)
@@ -82,15 +85,34 @@ class PurchaseRequestTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(PurchaseRequest.objects.get().requested_by, self.admin)
 
-    def test_supplier_url_is_optional(self):
+    def test_product_url_is_optional(self):
         self.login(self.requester)
 
         response = self.client.post(
-            reverse("purchase_request_create"), self.request_data(supplier_url="")
+            reverse("purchase_request_create"), self.request_data(product_url="")
         )
 
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(PurchaseRequest.objects.get().supplier_url, "")
+        self.assertEqual(PurchaseRequest.objects.get().product_url, "")
+
+    def test_unit_price_is_optional_and_total_is_empty_without_it(self):
+        self.login(self.requester)
+
+        response = self.client.post(
+            reverse("purchase_request_create"), self.request_data(unit_price_uah="")
+        )
+
+        purchase_request = PurchaseRequest.objects.get()
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(purchase_request.unit_price_uah)
+        self.assertIsNone(purchase_request.total_price_uah)
+
+    def test_total_price_is_quantity_times_unit_price(self):
+        purchase_request = self.create_request(
+            requested_qty="3.000", unit_price_uah="12.50"
+        )
+
+        self.assertEqual(purchase_request.total_price_uah, Decimal("37.50"))
 
     def test_requested_qty_is_required_and_positive(self):
         self.login(self.requester)
@@ -119,11 +141,15 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(admin_response, own.title)
         self.assertContains(admin_response, other.title)
 
-    def test_list_filters_by_status_requester_date_and_search(self):
+    def test_list_filters_by_tracking_fields_requester_date_and_search(self):
         matching = self.create_request(
             status=PurchaseRequest.Status.APPROVED,
+            order_type=PurchaseRequest.OrderType.URGENT,
+            approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+            delivery_status=PurchaseRequest.DeliveryStatus.IN_TRANSIT,
             title="Matching purchase",
-            supplier_name="Target supplier",
+            product_url="https://example.com/target-product",
         )
         self.create_request(user=self.other_requester, title="Unrelated")
         self.login(self.admin)
@@ -131,16 +157,57 @@ class PurchaseRequestTests(TestCase):
         response = self.client.get(
             reverse("purchase_request_list"),
             {
-                "status": PurchaseRequest.Status.APPROVED,
+                "order_type": PurchaseRequest.OrderType.URGENT,
+                "approval_status": PurchaseRequest.ApprovalStatus.APPROVED,
+                "payment_status": PurchaseRequest.PaymentStatus.PAID,
+                "delivery_status": PurchaseRequest.DeliveryStatus.IN_TRANSIT,
                 "requested_by": self.requester.pk,
-                "date_from": matching.created_at.date().isoformat(),
-                "date_to": matching.created_at.date().isoformat(),
-                "q": "Target supplier",
+                "date_from": matching.request_date.isoformat(),
+                "date_to": matching.request_date.isoformat(),
+                "q": "target-product",
             },
         )
 
         self.assertContains(response, matching.title)
         self.assertNotContains(response, "Unrelated")
+
+    def test_each_tracking_status_filter_works(self):
+        matching = self.create_request(
+            title="Filter target",
+            order_type=PurchaseRequest.OrderType.EMERGENCY,
+            approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
+            payment_status=PurchaseRequest.PaymentStatus.SENT_FOR_PAYMENT,
+            delivery_status=PurchaseRequest.DeliveryStatus.IN_TRANSIT,
+        )
+        other = self.create_request(user=self.other_requester, title="Filter other")
+        self.login(self.admin)
+
+        filters = {
+            "order_type": matching.order_type,
+            "approval_status": matching.approval_status,
+            "payment_status": matching.payment_status,
+            "delivery_status": matching.delivery_status,
+        }
+        for field, value in filters.items():
+            with self.subTest(field=field):
+                response = self.client.get(
+                    reverse("purchase_request_list"), {field: value}
+                )
+                self.assertContains(response, matching.title)
+                self.assertNotContains(response, other.title)
+
+    def test_search_works_by_item_name_description_and_product_url(self):
+        purchase_request = self.create_request(
+            title="Hydraulic hose",
+            need_description="Repair press line",
+            product_url="https://example.com/hose-42",
+        )
+        self.login(self.admin)
+
+        for query in ["Hydraulic", "press line", "hose-42"]:
+            with self.subTest(query=query):
+                response = self.client.get(reverse("purchase_request_list"), {"q": query})
+                self.assertContains(response, purchase_request.title)
 
     def test_detail_page_is_visible_to_owner_and_admin_only(self):
         purchase_request = self.create_request()
@@ -188,6 +255,10 @@ class PurchaseRequestTests(TestCase):
 
         purchase_request.refresh_from_db()
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
+        self.assertEqual(
+            purchase_request.approval_status,
+            PurchaseRequest.ApprovalStatus.APPROVED,
+        )
         self.assertEqual(purchase_request.approved_by, self.admin)
         self.assertIsNotNone(purchase_request.approved_at)
 
@@ -198,6 +269,10 @@ class PurchaseRequestTests(TestCase):
 
         purchase_request.refresh_from_db()
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.REJECTED)
+        self.assertEqual(
+            purchase_request.approval_status,
+            PurchaseRequest.ApprovalStatus.REJECTED,
+        )
         self.assertEqual(purchase_request.rejected_by, self.admin)
         self.assertIsNotNone(purchase_request.rejected_at)
 
@@ -258,6 +333,92 @@ class PurchaseRequestTests(TestCase):
 
         self.assertEqual(StockMovement.objects.count(), movement_count)
         self.assertEqual(StockBalance.objects.count(), balance_count)
+
+    def test_regular_user_cannot_manage_tracking_statuses(self):
+        purchase_request = self.create_request()
+        self.login(self.requester)
+        data = self.request_data(
+            approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+            delivery_status=PurchaseRequest.DeliveryStatus.DELIVERED,
+        )
+
+        self.client.post(
+            reverse("purchase_request_update", args=[purchase_request.pk]), data
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(
+            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.PENDING
+        )
+        self.assertEqual(
+            purchase_request.payment_status,
+            PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+        )
+        self.assertEqual(
+            purchase_request.delivery_status,
+            PurchaseRequest.DeliveryStatus.NOT_SHIPPED,
+        )
+
+    def test_admin_can_update_payment_and_delivery_without_stock_effects(self):
+        purchase_request = self.create_request()
+        self.login(self.admin)
+        movement_count = StockMovement.objects.count()
+        balance_count = StockBalance.objects.count()
+
+        response = self.client.post(
+            reverse("purchase_request_update", args=[purchase_request.pk]),
+            self.request_data(
+                approval_status=PurchaseRequest.ApprovalStatus.PENDING,
+                payment_status=PurchaseRequest.PaymentStatus.PAID,
+                delivery_status=PurchaseRequest.DeliveryStatus.DELIVERED,
+            ),
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.PENDING
+        )
+        self.assertEqual(purchase_request.payment_status, PurchaseRequest.PaymentStatus.PAID)
+        self.assertEqual(
+            purchase_request.delivery_status, PurchaseRequest.DeliveryStatus.DELIVERED
+        )
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+        self.assertEqual(StockBalance.objects.count(), balance_count)
+
+    def test_admin_can_update_approval_status_from_edit_page(self):
+        purchase_request = self.create_request()
+        self.login(self.admin)
+
+        response = self.client.post(
+            reverse("purchase_request_update", args=[purchase_request.pk]),
+            self.request_data(
+                approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
+                payment_status=PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+                delivery_status=PurchaseRequest.DeliveryStatus.NOT_SHIPPED,
+            ),
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            purchase_request.approval_status, PurchaseRequest.ApprovalStatus.APPROVED
+        )
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
+        self.assertEqual(purchase_request.approved_by, self.admin)
+        self.assertIsNotNone(purchase_request.approved_at)
+
+    def test_sheet_fields_do_not_include_code_or_invoice_fields(self):
+        self.login(self.requester)
+
+        response = self.client.get(reverse("purchase_request_create"))
+
+        fields = response.context["form"].fields
+        self.assertNotIn("code", fields)
+        self.assertNotIn("item_code", fields)
+        self.assertNotIn("order_number", fields)
+        self.assertNotIn("invoice_number", fields)
 
     def test_purchase_list_title_is_localized(self):
         expected_titles = {
