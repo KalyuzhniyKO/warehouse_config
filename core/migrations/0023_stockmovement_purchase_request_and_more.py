@@ -12,6 +12,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
+            model_name='purchaserequest',
+            name='receiving_base_status',
+            field=models.CharField(blank=True, choices=[('approved', 'Погоджено'), ('ordered', 'Замовлено')], max_length=24),
+        ),
+        migrations.AddField(
             model_name='stockmovement',
             name='purchase_request',
             field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='linked_receive_movements', to='core.purchaserequest', verbose_name='Заявка на закупівлю'),

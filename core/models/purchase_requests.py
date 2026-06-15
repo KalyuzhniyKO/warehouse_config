@@ -66,6 +66,14 @@ class PurchaseRequest(models.Model):
         choices=Status.choices,
         default=Status.DRAFT,
     )
+    receiving_base_status = models.CharField(
+        max_length=24,
+        choices=[
+            (Status.APPROVED, Status.APPROVED.label),
+            (Status.ORDERED, Status.ORDERED.label),
+        ],
+        blank=True,
+    )
     comment = models.TextField(_("Коментар"), blank=True)
     created_at = models.DateTimeField(_("Створено"), auto_now_add=True)
     updated_at = models.DateTimeField(_("Оновлено"), auto_now=True)

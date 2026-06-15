@@ -210,6 +210,31 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(purchase_request.remaining_qty, Decimal("10.000"))
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
 
+    def test_cancelling_partial_receive_keeps_ordered_request_ordered(self):
+        superuser = get_user_model().objects.create_superuser(
+            "ordered-receive-super", "ordered-super@example.com", "pw"
+        )
+        purchase_request = self.create_request(status=PurchaseRequest.Status.ORDERED)
+        movement = receive_stock(
+            item=self.item,
+            location=self.location,
+            qty=Decimal("4.000"),
+            performed_by=self.owner,
+            purchase_request=purchase_request,
+        )
+        purchase_request.refresh_from_db()
+        self.assertEqual(
+            purchase_request.status, PurchaseRequest.Status.PARTIALLY_RECEIVED
+        )
+
+        cancel_stock_movement(
+            movement=movement, cancelled_by=superuser, reason="Wrong receipt"
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(purchase_request.received_qty, Decimal("0"))
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.ORDERED)
+
     def test_linked_receive_appears_in_journal_and_increases_balance(self):
         purchase_request = self.create_request()
 

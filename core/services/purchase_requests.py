@@ -50,13 +50,26 @@ def sync_purchase_request_receiving_status(purchase_request):
     received_qty = get_received_purchase_request_qty(purchase_request)
     if purchase_request.status == PurchaseRequest.Status.CANCELLED:
         return received_qty
+    update_fields = []
+    # Preserve the business state to restore if all linked receipts are cancelled.
+    if (
+        not purchase_request.receiving_base_status
+        and purchase_request.status
+        in {PurchaseRequest.Status.APPROVED, PurchaseRequest.Status.ORDERED}
+    ):
+        purchase_request.receiving_base_status = purchase_request.status
+        update_fields.append("receiving_base_status")
     if received_qty >= purchase_request.requested_qty:
         status = PurchaseRequest.Status.RECEIVED
     elif received_qty > 0:
         status = PurchaseRequest.Status.PARTIALLY_RECEIVED
     else:
-        status = PurchaseRequest.Status.APPROVED
+        status = (
+            purchase_request.receiving_base_status or PurchaseRequest.Status.APPROVED
+        )
     if purchase_request.status != status:
         purchase_request.status = status
-        purchase_request.save(update_fields=["status", "updated_at"])
+        update_fields.append("status")
+    if update_fields:
+        purchase_request.save(update_fields=[*update_fields, "updated_at"])
     return received_qty
