@@ -146,6 +146,12 @@ header .navbar { min-height: 56px; }
 .data-table td.movement-code-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
 .data-table td.movement-document-cell{white-space:nowrap}
 .data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.purchase-request-table{min-width:1500px}
+.purchase-request-table .purchase-table-filter-row th{padding:.35rem .45rem;background:#fffdf2;vertical-align:top}
+.purchase-request-table .purchase-table-filter-row .form-control,
+.purchase-request-table .purchase-table-filter-row .form-select{min-width:9rem}
+.purchase-request-table .purchase-table-filter-row input[type="date"]{min-width:8.5rem}
+.purchase-table-filter-actions{white-space:nowrap}
 .table-action{min-height:2rem}
 .status-badge{font-weight:600}
 .empty-state{color:#667085;font-weight:500}

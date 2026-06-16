@@ -30,6 +30,11 @@ item. New text does not create an item automatically.
 The unit field is a normal text field with existing units offered for convenience.
 Users may type a new unit value without changing the unit directory.
 
+The purchase request list is table-first: filters live in the table header next
+to their related columns. Date range filters are under the date column, search
+is under the item/name column, and status/requester filters are under their
+matching columns. Filters use GET parameters, so filtered links can be shared.
+
 Approval status records whether the request is pending, approved, or rejected.
 Payment and delivery statuses are tracking fields only. Changing them never
 creates a stock movement and never changes stock balance.

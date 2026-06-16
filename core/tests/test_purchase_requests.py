@@ -219,6 +219,50 @@ class PurchaseRequestTests(TestCase):
 
         self.assertContains(response, "Ivan Petrenko")
 
+    def test_list_filters_are_compact_in_table_header(self):
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_list"),
+            {
+                "q": "gloves",
+                "order_type": PurchaseRequest.OrderType.PLANNED,
+                "approval_status": PurchaseRequest.ApprovalStatus.PENDING,
+                "payment_status": PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+                "delivery_status": PurchaseRequest.DeliveryStatus.NOT_SHIPPED,
+                "requested_by": self.requester.pk,
+                "date_from": "2026-06-01",
+                "date_to": "2026-06-30",
+            },
+        )
+
+        self.assertNotContains(response, "filter-panel")
+        self.assertContains(response, "purchase-table-filter-row")
+        self.assertContains(response, "purchase-table-filter-actions")
+        self.assertContains(response, 'name="date_from"')
+        self.assertContains(response, 'name="date_to"')
+        self.assertContains(response, 'name="q"')
+        self.assertContains(response, 'value="gloves"')
+        self.assertContains(response, 'name="order_type"')
+        self.assertContains(response, 'name="approval_status"')
+        self.assertContains(response, 'name="payment_status"')
+        self.assertContains(response, 'name="delivery_status"')
+        self.assertContains(response, 'name="requested_by"')
+
+    def test_purchase_list_reset_filters_link_clears_query(self):
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_list"),
+            {"q": "gloves", "order_type": PurchaseRequest.OrderType.PLANNED},
+        )
+
+        self.assertContains(
+            response,
+            f'href="{reverse("purchase_request_list")}"',
+            html=False,
+        )
+
     def test_list_filters_by_tracking_fields_requester_date_and_search(self):
         matching = self.create_request(
             status=PurchaseRequest.Status.APPROVED,
