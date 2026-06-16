@@ -170,21 +170,48 @@ header .navbar { min-height: 56px; }
 .purchase-status-inline-form{display:flex;align-items:center;gap:.25rem;min-width:0}
 .purchase-status-inline-form .form-select{min-width:0;font-size:.78rem;padding:.2rem 1.55rem .2rem .45rem}
 .purchase-status-save{padding:.2rem .35rem;font-size:.72rem;line-height:1.1}
-.purchase-create-card .card-body{padding:1rem}
+.purchase-create-card .card-body{padding:.85rem 1rem 1rem}
 .purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
-.purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.65rem .75rem;align-items:end}
+.purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.6rem .75rem;align-items:end}
 .purchase-create-field--item,
 .purchase-create-field--description,
 .purchase-create-field--url{min-width:0}
-.purchase-create-actions{display:flex;justify-content:flex-start}
+.purchase-create-actions{display:flex;justify-content:flex-start;align-items:end}
+.purchase-create-submit{min-width:11rem;min-height:2.35rem;font-weight:650}
 @media (min-width:768px){
-  .purchase-create-grid{grid-template-columns:minmax(18rem,2.8fr) minmax(6rem,.7fr) minmax(7rem,.8fr) minmax(8rem,1fr)}
-  .purchase-create-field--description{grid-column:span 2}
-  .purchase-create-field--url{grid-column:span 1}
-  .purchase-create-actions{justify-content:flex-end}
+  .purchase-create-grid{grid-template-columns:repeat(12,minmax(0,1fr))}
+  .purchase-create-field--item{grid-column:span 6}
+  .purchase-create-field--qty{grid-column:span 2}
+  .purchase-create-field--unit{grid-column:span 2}
+  .purchase-create-field--type{grid-column:span 2}
+  .purchase-create-field--description{grid-column:span 4}
+  .purchase-create-field--url{grid-column:span 5}
+  .purchase-create-actions{grid-column:span 3;justify-content:flex-end}
+  .purchase-create-submit{width:100%}
 }
 .purchase-create-form .form-control,
 .purchase-create-form .form-select{min-height:2.15rem;padding-top:.25rem;padding-bottom:.25rem}
+.purchase-detail-page{display:grid;gap:1rem}
+.purchase-detail-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.purchase-detail-grid{display:grid;grid-template-columns:1fr;gap:1rem}
+.purchase-detail-main,.purchase-detail-side{display:grid;gap:1rem;align-content:start}
+.purchase-detail-card .card-body{padding:1rem}
+.purchase-detail-fields{display:grid;grid-template-columns:1fr;gap:.65rem .85rem}
+.purchase-detail-fields--compact{grid-template-columns:1fr}
+.purchase-detail-label{font-size:.76rem;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:#667085;margin-bottom:.1rem}
+.purchase-detail-value{font-size:.95rem;line-height:1.25;overflow-wrap:anywhere}
+.purchase-detail-actions{display:grid;gap:.5rem}
+.purchase-detail-actions .btn{width:100%}
+.purchase-detail-status-form{display:grid;gap:.6rem}
+.purchase-detail-status-form .form-label{font-size:.82rem;font-weight:600;margin-bottom:.2rem}
+.purchase-detail-reject-form{display:grid;gap:.45rem}
+@media (min-width:992px){
+  .purchase-detail-grid{grid-template-columns:minmax(0,1.45fr) minmax(20rem,.75fr);align-items:start}
+  .purchase-detail-fields--main{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .purchase-detail-fields--compact{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .purchase-detail-field--wide{grid-column:1 / -1}
+  .purchase-detail-side{position:sticky;top:5rem}
+}
 .table-action{min-height:2rem}
 .status-badge{font-weight:600}
 .empty-state{color:#667085;font-weight:500}

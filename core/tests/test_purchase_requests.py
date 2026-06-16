@@ -161,6 +161,7 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "purchase-create-field--description")
         self.assertContains(response, "purchase-create-field--url")
         self.assertContains(response, "purchase-create-actions")
+        self.assertContains(response, "purchase-create-submit")
         self.assertContains(response, 'list="purchase-item-options"')
         self.assertContains(response, '<input type="number" name="requested_qty"', html=False)
         self.assertContains(response, '<select name="unit"', html=False)
@@ -543,6 +544,28 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, self.requester.username)
         self.assertContains(response, self.admin.username)
         self.assertContains(response, "Budget refused")
+
+    def test_detail_page_uses_compact_two_column_layout(self):
+        purchase_request = self.create_request(
+            unit_price_uah=Decimal("55.50"),
+            requested_qty=Decimal("12.000"),
+        )
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+
+        self.assertContains(response, "purchase-detail-grid")
+        self.assertContains(response, "purchase-detail-main")
+        self.assertContains(response, "purchase-detail-side")
+        self.assertContains(response, "purchase-detail-status-form")
+        self.assertContains(response, "detail-payment-status")
+        self.assertContains(response, "detail-delivery-status")
+        self.assertContains(response, "Кількість / одиниця")
+        self.assertContains(response, "12,000 pairs")
+        self.assertContains(response, "Вартість за одиницю")
+        self.assertContains(response, "Сума")
 
     def test_owner_can_edit_draft_but_not_submitted_request(self):
         draft = self.create_request()
