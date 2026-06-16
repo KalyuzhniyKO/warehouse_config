@@ -2,32 +2,83 @@
 {% load i18n %}
 {% block title %}{{ page_title }} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="card content-card">
+<div class="card content-card{% if is_create %} purchase-create-card{% endif %}">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-center gap-3 mb-4">
             <h1 class="h3 mb-0">{{ page_title }}</h1>
             <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку заявок" %}</a>
         </div>
-        <form method="post" novalidate>
+        <form method="post" novalidate{% if is_create %} class="purchase-create-form"{% endif %}>
             {% csrf_token %}
             {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
-            {% for field in form %}
-                <div class="mb-3">
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                    {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
-                </div>
-            {% endfor %}
             {% if is_create %}
+                <div class="purchase-create-grid">
+                    <div class="purchase-create-field purchase-create-field--item">
+                        {% with field=form.requested_item %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-field purchase-create-field--qty">
+                        {% with field=form.requested_qty %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-field purchase-create-field--unit">
+                        {% with field=form.unit %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-field purchase-create-field--type">
+                        {% with field=form.order_type %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-field purchase-create-field--description">
+                        {% with field=form.need_description %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-field purchase-create-field--url">
+                        {% with field=form.product_url %}
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+                        {% endwith %}
+                    </div>
+                    <div class="purchase-create-actions">
+                        <button class="btn btn-primary btn-sm" type="submit">{% trans "Зберегти" %}</button>
+                    </div>
+                </div>
                 <datalist id="purchase-item-options">
                     {% for item in purchase_item_options %}<option value="{{ item.name }}"></option>{% endfor %}
                 </datalist>
-                <datalist id="purchase-unit-options">
-                    {% for unit in purchase_unit_options %}<option value="{{ unit.symbol }}"></option>{% endfor %}
-                </datalist>
+            {% else %}
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                    </div>
+                {% endfor %}
+                <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
             {% endif %}
-            <button class="btn btn-primary" type="submit">{% trans "Зберегти" %}</button>
         </form>
     </div>
 </div>

@@ -9,6 +9,7 @@ from core.models import Item, PurchaseRequest, Unit
 
 class PurchaseRequestForm(BootstrapModelForm):
     requested_item = forms.CharField(label=_("Назва товару"))
+    unit = forms.ChoiceField(label=_("Одиниця виміру"))
 
     class Meta:
         model = PurchaseRequest
@@ -22,12 +23,17 @@ class PurchaseRequestForm(BootstrapModelForm):
         ]
         widgets = {
             "requested_qty": forms.NumberInput(attrs={"min": "0.001", "step": "0.001"}),
+            "need_description": forms.TextInput(),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["requested_item"].widget.attrs["list"] = "purchase-item-options"
-        self.fields["unit"].widget.attrs["list"] = "purchase-unit-options"
+        self.fields["unit"].choices = [
+            (unit.symbol, unit.symbol)
+            for unit in Unit.objects.filter(is_active=True).order_by("name", "symbol")
+        ]
+        self.fields["unit"].widget.attrs["class"] = "form-select"
 
     def clean_requested_item(self):
         return normalize_text(self.cleaned_data.get("requested_item"))
