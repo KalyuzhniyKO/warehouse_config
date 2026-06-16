@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO, StringIO
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
@@ -258,7 +258,10 @@ class PurchaseRequestTests(TestCase):
         )
 
         self.assertNotContains(response, "filter-panel")
-        self.assertContains(response, "purchase-table-filter-row")
+        self.assertNotContains(response, "purchase-table-filter-row")
+        self.assertContains(response, "purchase-filter-heading")
+        self.assertContains(response, "purchase-filter-toggle active")
+        self.assertContains(response, 'data-bs-toggle="dropdown"')
         self.assertContains(response, "purchase-table-filter-actions")
         self.assertContains(response, 'name="date_from"')
         self.assertContains(response, 'name="date_to"')
@@ -269,6 +272,7 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, 'name="payment_status"')
         self.assertContains(response, 'name="delivery_status"')
         self.assertContains(response, 'name="requested_by"')
+        self.assertContains(response, 'form="purchase-filter-form"')
 
     def test_purchase_list_reset_filters_link_clears_query(self):
         self.login(self.admin)
@@ -313,6 +317,102 @@ class PurchaseRequestTests(TestCase):
 
         self.assertContains(response, matching.title)
         self.assertNotContains(response, "Unrelated")
+
+    def test_admin_can_update_tracking_status_from_action_without_stock_effects(self):
+        purchase_request = self.create_request()
+        self.login(self.admin)
+        movement_count = StockMovement.objects.count()
+        balance_count = StockBalance.objects.count()
+
+        response = self.client.post(
+            reverse("purchase_request_tracking_status", args=[purchase_request.pk]),
+            {
+                "payment_status": PurchaseRequest.PaymentStatus.PAID,
+                "delivery_status": PurchaseRequest.DeliveryStatus.IN_TRANSIT,
+            },
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertRedirects(
+            response, reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertEqual(purchase_request.payment_status, PurchaseRequest.PaymentStatus.PAID)
+        self.assertEqual(
+            purchase_request.delivery_status,
+            PurchaseRequest.DeliveryStatus.IN_TRANSIT,
+        )
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+        self.assertEqual(StockBalance.objects.count(), balance_count)
+
+    def test_regular_user_cannot_update_tracking_status_action(self):
+        purchase_request = self.create_request()
+        self.login(self.requester)
+
+        response = self.client.post(
+            reverse("purchase_request_tracking_status", args=[purchase_request.pk]),
+            {"payment_status": PurchaseRequest.PaymentStatus.PAID},
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            purchase_request.payment_status,
+            PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+        )
+
+    def test_list_and_detail_show_tracking_status_controls_for_admin_only(self):
+        purchase_request = self.create_request()
+
+        self.login(self.admin)
+        list_response = self.client.get(reverse("purchase_request_list"))
+        detail_response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertContains(list_response, reverse("purchase_request_tracking_status", args=[purchase_request.pk]))
+        self.assertContains(detail_response, "detail-payment-status")
+        self.assertContains(detail_response, "detail-delivery-status")
+
+        self.login(self.requester)
+        list_response = self.client.get(reverse("purchase_request_list"))
+        detail_response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertNotContains(list_response, reverse("purchase_request_tracking_status", args=[purchase_request.pk]))
+        self.assertNotContains(detail_response, "detail-payment-status")
+        self.assertNotContains(detail_response, "detail-delivery-status")
+
+    def test_purchase_request_xlsx_export_respects_filters(self):
+        from openpyxl import load_workbook
+
+        matching = self.create_request(
+            title="Export target",
+            need_description="Need export",
+            product_url="https://example.com/export-target",
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+            delivery_status=PurchaseRequest.DeliveryStatus.IN_TRANSIT,
+            approved_by=self.admin,
+            approved_at=timezone.now(),
+        )
+        self.create_request(title="Hidden request")
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_export_xlsx"),
+            {"q": "export-target"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "purchase_requests_",
+            response["Content-Disposition"],
+        )
+        workbook = load_workbook(BytesIO(response.content))
+        sheet = workbook.active
+        headers = [cell.value for cell in sheet[1]]
+        self.assertEqual(headers[0], "Дата")
+        self.assertIn("Статус оплати", headers)
+        titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
+        self.assertEqual(titles, [matching.title])
 
     def test_each_tracking_status_filter_works(self):
         matching = self.create_request(

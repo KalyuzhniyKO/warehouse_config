@@ -147,11 +147,15 @@ header .navbar { min-height: 56px; }
 .data-table td.movement-document-cell{white-space:nowrap}
 .data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
 .purchase-request-table{min-width:1500px}
-.purchase-request-table .purchase-table-filter-row th{padding:.35rem .45rem;background:#fffdf2;vertical-align:top}
-.purchase-request-table .purchase-table-filter-row .form-control,
-.purchase-request-table .purchase-table-filter-row .form-select{min-width:9rem}
-.purchase-request-table .purchase-table-filter-row input[type="date"]{min-width:8.5rem}
+.purchase-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:.35rem}
+.purchase-filter-toggle{border:1px solid #d0d5dd;background:#fff;color:#475467;line-height:1;padding:.15rem .35rem}
+.purchase-filter-toggle.active{border-color:#d4ac00;background:#fff7cc;color:#92400e}
+.purchase-filter-menu{min-width:14rem}
+.purchase-filter-menu--wide{min-width:20rem}
+.purchase-filter-menu .form-control,.purchase-filter-menu .form-select{min-width:100%}
 .purchase-table-filter-actions{white-space:nowrap}
+.purchase-status-inline-form{display:flex;align-items:center;gap:.35rem;min-width:13rem}
+.purchase-status-inline-form .form-select{min-width:10rem}
 .purchase-create-card .card-body{padding:1rem}
 .purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
 .purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.65rem .75rem;align-items:end}
