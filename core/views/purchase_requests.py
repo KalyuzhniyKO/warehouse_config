@@ -8,7 +8,6 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
@@ -23,6 +22,9 @@ from core.permissions import (
     can_create_purchase_requests,
     can_manage_purchase_requests,
     can_view_purchase_requests,
+)
+from core.services.exports.purchase_requests_excel import (
+    build_purchase_requests_workbook,
 )
 from core.services.purchase_requests import can_receive_against_purchase_request
 from core.services.warehouse_access import restrict_stock_movement_queryset_for_user
@@ -114,31 +116,7 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
 class PurchaseRequestXLSXExportView(
     LoginRequiredMixin, PurchaseRequestAccessMixin, View
 ):
-    headers = [
-        _("Дата"),
-        _("Назва товару"),
-        _("Опис потреби"),
-        _("Кількість"),
-        _("Одиниця виміру"),
-        _("Вартість за одиницю"),
-        _("Сума"),
-        _("Тип замовлення"),
-        _("Статус погодження"),
-        _("Статус оплати"),
-        _("Статус доставки"),
-        _("Заявник"),
-        _("Ким погоджено"),
-        _("Дата погодження"),
-        _("Посилання на товар"),
-    ]
-
     def get(self, request, *args, **kwargs):
-        try:
-            from openpyxl import Workbook
-            from openpyxl.styles import Alignment, Font, PatternFill
-        except ImportError:
-            return HttpResponse(_("XLSX export requires openpyxl."), status=503)
-
         list_view = PurchaseRequestListView()
         list_view.request = request
         purchase_requests = list(
@@ -146,32 +124,10 @@ class PurchaseRequestXLSXExportView(
                 "requested_by", "approved_by", "rejected_by"
             )
         )
-
-        workbook = Workbook()
-        sheet = workbook.active
-        sheet.title = "Purchase requests"
-        sheet.append([str(header) for header in self.headers])
-        for purchase_request in purchase_requests:
-            sheet.append(self.purchase_request_row(purchase_request))
-
-        header_fill = PatternFill("solid", fgColor="D4AC00")
-        for cell in sheet[1]:
-            cell.font = Font(bold=True, color="101828")
-            cell.fill = header_fill
-            cell.alignment = Alignment(wrap_text=True, vertical="top")
-        widths = [14, 32, 36, 14, 16, 20, 16, 18, 20, 24, 20, 24, 24, 21, 36]
-        for index, width in enumerate(widths, start=1):
-            column_letter = sheet.cell(row=1, column=index).column_letter
-            sheet.column_dimensions[column_letter].width = width
-        sheet.freeze_panes = "A2"
-        sheet.auto_filter.ref = sheet.dimensions
-        for row in sheet.iter_rows(min_row=2, min_col=4, max_col=7):
-            for cell in row:
-                cell.number_format = "#,##0.00"
-        for cell in sheet["A"][1:]:
-            cell.number_format = "yyyy-mm-dd"
-        for cell in sheet["N"][1:]:
-            cell.number_format = "yyyy-mm-dd hh:mm:ss"
+        try:
+            workbook = build_purchase_requests_workbook(purchase_requests)
+        except ImportError:
+            return HttpResponse(_("XLSX export requires openpyxl."), status=503)
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -180,36 +136,6 @@ class PurchaseRequestXLSXExportView(
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         workbook.save(response)
         return response
-
-    def purchase_request_row(self, purchase_request):
-        approved_at = (
-            localtime(purchase_request.approved_at).replace(tzinfo=None)
-            if purchase_request.approved_at
-            else ""
-        )
-        return [
-            purchase_request.request_date,
-            purchase_request.title,
-            purchase_request.need_description,
-            purchase_request.requested_qty,
-            purchase_request.unit,
-            purchase_request.unit_price_uah or "",
-            purchase_request.total_price_uah or "",
-            purchase_request.get_order_type_display(),
-            purchase_request.get_approval_status_display(),
-            purchase_request.get_payment_status_display(),
-            purchase_request.get_delivery_status_display(),
-            purchase_request.requested_by.get_full_name()
-            or purchase_request.requested_by.get_username(),
-            (
-                purchase_request.approved_by.get_full_name()
-                or purchase_request.approved_by.get_username()
-                if purchase_request.approved_by
-                else ""
-            ),
-            approved_at,
-            purchase_request.product_url,
-        ]
 
 
 class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
