@@ -8,104 +8,202 @@
             <h1 class="mb-1">{% trans "Заявки на закупівлю" %}</h1>
             <p class="text-muted mb-0">{% trans "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару." %}</p>
         </div>
-        {% if can_create_purchase_request %}
-            <div class="list-page-actions"><a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Створити заявку на закупівлю" %}</a></div>
-        {% endif %}
+        <div class="list-page-actions d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-success" href="{% url 'purchase_request_export_xlsx' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">{% trans "Експорт Excel" %}</a>
+            {% if can_create_purchase_request %}
+                <a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Створити заявку на закупівлю" %}</a>
+            {% endif %}
+        </div>
     </div>
 
+    <form id="purchase-filter-form" method="get" class="visually-hidden"></form>
     <div class="card content-card data-table-card">
-        <form method="get" class="purchase-table-filter-form">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0 data-table purchase-request-table">
-                    <thead class="table-light">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover align-middle mb-0 data-table purchase-request-table">
+                <thead class="table-light">
+                    <tr>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Дата" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "date_from" in active_filter_names or "date_to" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр дати' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.date_from.id_for_label }}">{{ filter_form.date_from.label }}</label>
+                                        {{ filter_form.date_from }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.date_to.id_for_label }}">{{ filter_form.date_to.label }}</label>
+                                        {{ filter_form.date_to }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Назва товару" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "q" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр назви товару' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu purchase-filter-menu--wide">
+                                        <label class="form-label small" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                                        {{ filter_form.q }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>{% trans "Опис потреби" %}</th>
+                        <th>{% trans "Кількість" %}</th>
+                        <th>{% trans "Одиниці вимірювання" %}</th>
+                        <th>{% trans "Вартість за одиницю (грн)" %}</th>
+                        <th>{% trans "Сума (грн)" %}</th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Тип замовлення" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "order_type" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр типу замовлення' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.order_type.id_for_label }}">{{ filter_form.order_type.label }}</label>
+                                        {{ filter_form.order_type }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Статус погодження" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "approval_status" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр статусу погодження' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.approval_status.id_for_label }}">{{ filter_form.approval_status.label }}</label>
+                                        {{ filter_form.approval_status }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Статус оплати" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "payment_status" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр статусу оплати' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.payment_status.id_for_label }}">{{ filter_form.payment_status.label }}</label>
+                                        {{ filter_form.payment_status }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Статус доставки" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "delivery_status" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр статусу доставки' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.delivery_status.id_for_label }}">{{ filter_form.delivery_status.label }}</label>
+                                        {{ filter_form.delivery_status }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="purchase-filter-heading">
+                                <span>{% trans "Заявник" %}</span>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm purchase-filter-toggle{% if "requested_by" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр заявника' %}">▾</button>
+                                    <div class="dropdown-menu p-2 shadow purchase-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.requested_by.id_for_label }}">{{ filter_form.requested_by.label }}</label>
+                                        {{ filter_form.requested_by }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>{% trans "Посилання на товар" %}</th>
+                        <th class="text-end">
+                            <div class="d-flex justify-content-end gap-1 purchase-table-filter-actions">
+                                <button class="btn btn-outline-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
+                                <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase_request in purchase_requests %}
                         <tr>
-                            <th>{% trans "Дата" %}</th>
-                            <th>{% trans "Назва товару" %}</th>
-                            <th>{% trans "Опис потреби" %}</th>
-                            <th>{% trans "Кількість" %}</th>
-                            <th>{% trans "Одиниці вимірювання" %}</th>
-                            <th>{% trans "Вартість за одиницю (грн)" %}</th>
-                            <th>{% trans "Сума (грн)" %}</th>
-                            <th>{% trans "Тип замовлення" %}</th>
-                            <th>{% trans "Статус погодження" %}</th>
-                            <th>{% trans "Статус оплати" %}</th>
-                            <th>{% trans "Статус доставки" %}</th>
-                            <th>{% trans "Заявник" %}</th>
-                            <th>{% trans "Посилання на товар" %}</th>
-                            <th class="text-end">{% trans "Дії" %}</th>
+                            <td>{{ purchase_request.request_date|date:"SHORT_DATE_FORMAT" }}</td>
+                            <td class="fw-semibold">{{ purchase_request.title }}</td>
+                            <td>{{ purchase_request.need_description|default:"—"|truncatechars:80 }}</td>
+                            <td>{{ purchase_request.requested_qty }}</td>
+                            <td>{{ purchase_request.unit }}</td>
+                            <td>{{ purchase_request.unit_price_uah|default_if_none:"—" }}</td>
+                            <td>{{ purchase_request.total_price_uah|default_if_none:"—" }}</td>
+                            <td>{{ purchase_request.get_order_type_display }}</td>
+                            <td><span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span></td>
+                            <td>
+                                {% if can_manage_purchase_requests %}
+                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <select class="form-select form-select-sm" name="payment_status" aria-label="{% trans 'Статус оплати' %}">
+                                            {% for value, label in payment_status_choices %}
+                                                <option value="{{ value }}"{% if purchase_request.payment_status == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn btn-outline-primary btn-sm" type="submit">{% trans "OK" %}</button>
+                                    </form>
+                                {% else %}
+                                    {{ purchase_request.get_payment_status_display }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if can_manage_purchase_requests %}
+                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                        <select class="form-select form-select-sm" name="delivery_status" aria-label="{% trans 'Статус доставки' %}">
+                                            {% for value, label in delivery_status_choices %}
+                                                <option value="{{ value }}"{% if purchase_request.delivery_status == value %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button class="btn btn-outline-primary btn-sm" type="submit">{% trans "OK" %}</button>
+                                    </form>
+                                {% else %}
+                                    {{ purchase_request.get_delivery_status_display }}
+                                {% endif %}
+                            </td>
+                            <td>{{ purchase_request.requested_by|display_name }}</td>
+                            <td>{% if purchase_request.product_url %}<a href="{{ purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити" %}</a>{% else %}—{% endif %}</td>
+                            <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{% url 'purchase_request_detail' purchase_request.pk %}">{% trans "Перегляд" %}</a></td>
                         </tr>
-                        <tr class="purchase-table-filter-row">
-                            <th>
-                                <div class="d-grid gap-1">
-                                    <label class="visually-hidden" for="{{ filter_form.date_from.id_for_label }}">{{ filter_form.date_from.label }}</label>
-                                    {{ filter_form.date_from }}
-                                    <label class="visually-hidden" for="{{ filter_form.date_to.id_for_label }}">{{ filter_form.date_to.label }}</label>
-                                    {{ filter_form.date_to }}
-                                </div>
-                            </th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
-                                {{ filter_form.q }}
-                            </th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.order_type.id_for_label }}">{{ filter_form.order_type.label }}</label>
-                                {{ filter_form.order_type }}
-                            </th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.approval_status.id_for_label }}">{{ filter_form.approval_status.label }}</label>
-                                {{ filter_form.approval_status }}
-                            </th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.payment_status.id_for_label }}">{{ filter_form.payment_status.label }}</label>
-                                {{ filter_form.payment_status }}
-                            </th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.delivery_status.id_for_label }}">{{ filter_form.delivery_status.label }}</label>
-                                {{ filter_form.delivery_status }}
-                            </th>
-                            <th>
-                                <label class="visually-hidden" for="{{ filter_form.requested_by.id_for_label }}">{{ filter_form.requested_by.label }}</label>
-                                {{ filter_form.requested_by }}
-                            </th>
-                            <th></th>
-                            <th>
-                                <div class="d-flex justify-content-end gap-1 purchase-table-filter-actions">
-                                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
-                                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
-                                </div>
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for purchase_request in purchase_requests %}
-                            <tr>
-                                <td>{{ purchase_request.request_date|date:"SHORT_DATE_FORMAT" }}</td>
-                                <td class="fw-semibold">{{ purchase_request.title }}</td>
-                                <td>{{ purchase_request.need_description|default:"—"|truncatechars:80 }}</td>
-                                <td>{{ purchase_request.requested_qty }}</td>
-                                <td>{{ purchase_request.unit }}</td>
-                                <td>{{ purchase_request.unit_price_uah|default_if_none:"—" }}</td>
-                                <td>{{ purchase_request.total_price_uah|default_if_none:"—" }}</td>
-                                <td>{{ purchase_request.get_order_type_display }}</td>
-                                <td><span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span></td>
-                                <td>{{ purchase_request.get_payment_status_display }}</td>
-                                <td>{{ purchase_request.get_delivery_status_display }}</td>
-                                <td>{{ purchase_request.requested_by|display_name }}</td>
-                                <td>{% if purchase_request.product_url %}<a href="{{ purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити" %}</a>{% else %}—{% endif %}</td>
-                                <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{% url 'purchase_request_detail' purchase_request.pk %}">{% trans "Перегляд" %}</a></td>
-                            </tr>
-                        {% empty %}
-                            <tr><td colspan="14" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </form>
+                    {% empty %}
+                        <tr><td colspan="14" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% include "core/includes/pagination.html" %}
 </div>

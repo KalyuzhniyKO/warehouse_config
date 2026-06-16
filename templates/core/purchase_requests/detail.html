@@ -40,6 +40,36 @@
     </dl>
 </div></div>
 
+{% if can_manage %}
+    <div class="card content-card mb-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">{% trans "Оплата та доставка" %}</h2>
+            <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="row g-2 align-items-end">
+                {% csrf_token %}
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label" for="detail-payment-status">{% trans "Статус оплати" %}</label>
+                    <select class="form-select form-select-sm" id="detail-payment-status" name="payment_status">
+                        {% for value, label in payment_status_choices %}
+                            <option value="{{ value }}"{% if purchase_request.payment_status == value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <label class="form-label" for="detail-delivery-status">{% trans "Статус доставки" %}</label>
+                    <select class="form-select form-select-sm" id="detail-delivery-status" name="delivery_status">
+                        {% for value, label in delivery_status_choices %}
+                            <option value="{{ value }}"{% if purchase_request.delivery_status == value %} selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 col-lg-2">
+                    <button class="btn btn-outline-primary btn-sm w-100" type="submit">{% trans "Оновити" %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endif %}
+
 <div class="d-flex flex-wrap gap-2">
     {% if can_send %}
         <form method="post" action="{% url 'purchase_request_send' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary" type="submit">{% trans "Надіслати на погодження" %}</button></form>

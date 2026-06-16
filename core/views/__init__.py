@@ -80,7 +80,9 @@ from .purchase_requests import (
     PurchaseRequestDetailView,
     PurchaseRequestListView,
     PurchaseRequestStatusActionView,
+    PurchaseRequestTrackingStatusUpdateView,
     PurchaseRequestUpdateView,
+    PurchaseRequestXLSXExportView,
 )
 from .analytics import (
     AnalyticsCSVExportView,
@@ -153,7 +155,9 @@ __all__ = [
     "PurchaseRequestDetailView",
     "PurchaseRequestListView",
     "PurchaseRequestStatusActionView",
+    "PurchaseRequestTrackingStatusUpdateView",
     "PurchaseRequestUpdateView",
+    "PurchaseRequestXLSXExportView",
     "StockBalanceListView",
     "StockIssueResultView",
     "StockIssueView",

@@ -4,10 +4,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import localtime
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import CreateView, DetailView, ListView, UpdateView, View
 
@@ -91,11 +92,124 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["filter_form"] = self.get_filter_form()
+        filter_form = self.get_filter_form()
+        active_filter_names = [
+            name
+            for name in filter_form.fields
+            if self.request.GET.get(name) not in (None, "")
+        ]
+        context["filter_form"] = filter_form
+        context["active_filter_names"] = active_filter_names
         context["can_create_purchase_request"] = can_create_purchase_requests(
             self.request.user
         )
+        context["can_manage_purchase_requests"] = can_manage_purchase_requests(
+            self.request.user
+        )
+        context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
+        context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
         return context
+
+
+class PurchaseRequestXLSXExportView(
+    LoginRequiredMixin, PurchaseRequestAccessMixin, View
+):
+    headers = [
+        _("Дата"),
+        _("Назва товару"),
+        _("Опис потреби"),
+        _("Кількість"),
+        _("Одиниця виміру"),
+        _("Вартість за одиницю"),
+        _("Сума"),
+        _("Тип замовлення"),
+        _("Статус погодження"),
+        _("Статус оплати"),
+        _("Статус доставки"),
+        _("Заявник"),
+        _("Ким погоджено"),
+        _("Дата погодження"),
+        _("Посилання на товар"),
+    ]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            from openpyxl import Workbook
+            from openpyxl.styles import Alignment, Font, PatternFill
+        except ImportError:
+            return HttpResponse(_("XLSX export requires openpyxl."), status=503)
+
+        list_view = PurchaseRequestListView()
+        list_view.request = request
+        purchase_requests = list(
+            list_view.get_queryset().select_related(
+                "requested_by", "approved_by", "rejected_by"
+            )
+        )
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.title = "Purchase requests"
+        sheet.append([str(header) for header in self.headers])
+        for purchase_request in purchase_requests:
+            sheet.append(self.purchase_request_row(purchase_request))
+
+        header_fill = PatternFill("solid", fgColor="D4AC00")
+        for cell in sheet[1]:
+            cell.font = Font(bold=True, color="101828")
+            cell.fill = header_fill
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
+        widths = [14, 32, 36, 14, 16, 20, 16, 18, 20, 24, 20, 24, 24, 21, 36]
+        for index, width in enumerate(widths, start=1):
+            column_letter = sheet.cell(row=1, column=index).column_letter
+            sheet.column_dimensions[column_letter].width = width
+        sheet.freeze_panes = "A2"
+        sheet.auto_filter.ref = sheet.dimensions
+        for row in sheet.iter_rows(min_row=2, min_col=4, max_col=7):
+            for cell in row:
+                cell.number_format = "#,##0.00"
+        for cell in sheet["A"][1:]:
+            cell.number_format = "yyyy-mm-dd"
+        for cell in sheet["N"][1:]:
+            cell.number_format = "yyyy-mm-dd hh:mm:ss"
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = timezone.localdate().strftime("purchase_requests_%Y-%m-%d.xlsx")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        workbook.save(response)
+        return response
+
+    def purchase_request_row(self, purchase_request):
+        approved_at = (
+            localtime(purchase_request.approved_at).replace(tzinfo=None)
+            if purchase_request.approved_at
+            else ""
+        )
+        return [
+            purchase_request.request_date,
+            purchase_request.title,
+            purchase_request.need_description,
+            purchase_request.requested_qty,
+            purchase_request.unit,
+            purchase_request.unit_price_uah or "",
+            purchase_request.total_price_uah or "",
+            purchase_request.get_order_type_display(),
+            purchase_request.get_approval_status_display(),
+            purchase_request.get_payment_status_display(),
+            purchase_request.get_delivery_status_display(),
+            purchase_request.requested_by.get_full_name()
+            or purchase_request.requested_by.get_username(),
+            (
+                purchase_request.approved_by.get_full_name()
+                or purchase_request.approved_by.get_username()
+                if purchase_request.approved_by
+                else ""
+            ),
+            approved_at,
+            purchase_request.product_url,
+        ]
 
 
 class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -157,6 +271,8 @@ class PurchaseRequestDetailView(
         )
         context["can_send"] = purchase_request.status == PurchaseRequest.Status.DRAFT
         context["can_manage"] = can_manage_purchase_requests(self.request.user)
+        context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
+        context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
         context["can_receive"] = can_receive_against_purchase_request(
             self.request.user, purchase_request
         )
@@ -294,4 +410,49 @@ class PurchaseRequestStatusActionView(
             purchase_request.save(update_fields=update_fields)
 
         messages.success(request, transition["message"])
+        return redirect("purchase_request_detail", pk=purchase_request.pk)
+
+
+class PurchaseRequestTrackingStatusUpdateView(
+    LoginRequiredMixin, PurchaseRequestAccessMixin, View
+):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        if not can_manage_purchase_requests(request.user):
+            raise PermissionDenied(_("Лише адміністратор може змінити цей статус."))
+
+        purchase_request = get_object_or_404(
+            purchase_requests_for_user(request.user), pk=kwargs["pk"]
+        )
+        update_fields = []
+        payment_status = request.POST.get("payment_status")
+        delivery_status = request.POST.get("delivery_status")
+
+        if payment_status:
+            valid_payment_statuses = {
+                value for value, _label in PurchaseRequest.PaymentStatus.choices
+            }
+            if payment_status not in valid_payment_statuses:
+                return HttpResponseBadRequest(_("Недоступний статус оплати."))
+            purchase_request.payment_status = payment_status
+            update_fields.append("payment_status")
+
+        if delivery_status:
+            valid_delivery_statuses = {
+                value for value, _label in PurchaseRequest.DeliveryStatus.choices
+            }
+            if delivery_status not in valid_delivery_statuses:
+                return HttpResponseBadRequest(_("Недоступний статус доставки."))
+            purchase_request.delivery_status = delivery_status
+            update_fields.append("delivery_status")
+
+        if not update_fields:
+            return HttpResponseBadRequest(_("Не вибрано статус для оновлення."))
+
+        purchase_request.save(update_fields=[*update_fields, "updated_at"])
+        messages.success(request, _("Статус заявки оновлено."))
+        next_url = request.POST.get("next")
+        if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+            return redirect(next_url)
         return redirect("purchase_request_detail", pk=purchase_request.pk)

@@ -189,6 +189,11 @@ urlpatterns = [
         name="purchase_request_create",
     ),
     path(
+        "purchases/export.xlsx",
+        views.PurchaseRequestXLSXExportView.as_view(),
+        name="purchase_request_export_xlsx",
+    ),
+    path(
         "purchases/<int:pk>/",
         views.PurchaseRequestDetailView.as_view(),
         name="purchase_request_detail",
@@ -222,6 +227,11 @@ urlpatterns = [
         "purchases/<int:pk>/cancel/",
         views.PurchaseRequestStatusActionView.as_view(action="cancel"),
         name="purchase_request_cancel",
+    ),
+    path(
+        "purchases/<int:pk>/tracking-status/",
+        views.PurchaseRequestTrackingStatusUpdateView.as_view(),
+        name="purchase_request_tracking_status",
     ),
     path("stock/inventory/", views.InventoryListView.as_view(), name="inventory_list"),
     path("stock/inventory/create/", views.InventoryCreateView.as_view(), name="inventory_create"),
