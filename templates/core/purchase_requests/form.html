@@ -45,7 +45,7 @@
                             {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
                         {% endwith %}
                     </div>
-                    <div class="purchase-create-field purchase-create-field--description">
+                    <div class="purchase-create-field purchase-create-field--description purchase-create-field--compact-text">
                         {% with field=form.need_description %}
                             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {{ field }}
@@ -53,7 +53,7 @@
                             {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
                         {% endwith %}
                     </div>
-                    <div class="purchase-create-field purchase-create-field--url">
+                    <div class="purchase-create-field purchase-create-field--url purchase-create-field--wide-url">
                         {% with field=form.product_url %}
                             <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {{ field }}
@@ -62,7 +62,7 @@
                         {% endwith %}
                     </div>
                     <div class="purchase-create-actions">
-                        <button class="btn btn-primary purchase-create-submit" type="submit">{% trans "Зберегти" %}</button>
+                        <button class="btn btn-primary purchase-create-submit purchase-create-submit--large" type="submit">{% trans "Зберегти" %}</button>
                     </div>
                 </div>
                 <datalist id="purchase-item-options">
