@@ -28,22 +28,6 @@
                             <div class="purchase-detail-label">{% trans "Опис потреби" %}</div>
                             <div class="purchase-detail-value">{{ purchase_request.need_description|default:"—"|linebreaksbr }}</div>
                         </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Кількість / одиниця" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Тип замовлення" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.get_order_type_display }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Вартість за одиницю" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.unit_price_uah|default_if_none:"—" }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Сума" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.total_price_uah|default_if_none:"—" }}</div>
-                        </div>
                         <div class="purchase-detail-field purchase-detail-field--wide">
                             <div class="purchase-detail-label">{% trans "Посилання на товар" %}</div>
                             <div class="purchase-detail-value">
@@ -53,6 +37,26 @@
                                     —
                                 {% endif %}
                             </div>
+                        </div>
+                        <div class="purchase-detail-field purchase-detail-field--wide">
+                            <div class="purchase-detail-metrics">
+                                <div>
+                                    <div class="purchase-detail-label">{% trans "Кількість / одиниця" %}</div>
+                                    <div class="purchase-detail-value">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</div>
+                                </div>
+                                <div>
+                                    <div class="purchase-detail-label">{% trans "Вартість за одиницю" %}</div>
+                                    <div class="purchase-detail-value">{{ purchase_request.unit_price_uah|default_if_none:"—" }}</div>
+                                </div>
+                                <div>
+                                    <div class="purchase-detail-label">{% trans "Сума" %}</div>
+                                    <div class="purchase-detail-value">{{ purchase_request.total_price_uah|default_if_none:"—" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="purchase-detail-field">
+                            <div class="purchase-detail-label">{% trans "Тип замовлення" %}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.get_order_type_display }}</div>
                         </div>
                     </div>
                 </div>
@@ -89,13 +93,29 @@
         </div>
 
         <aside class="purchase-detail-side">
-            <div class="card content-card purchase-detail-card">
+            <div class="card content-card purchase-detail-card purchase-detail-status-panel">
                 <div class="card-body">
                     <h2 class="h5 mb-3">{% trans "Статуси" %}</h2>
-                    <div class="purchase-detail-fields purchase-detail-fields--side">
+                    <div class="purchase-detail-fields purchase-detail-fields--side purchase-detail-fields--status-top">
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Статус погодження" %}</div>
                             <div class="purchase-detail-value"><span class="badge text-bg-light border">{{ purchase_request.get_approval_status_display }}</span></div>
+                        </div>
+                        <div class="purchase-detail-field">
+                            <div class="purchase-detail-label">{% trans "Заявник" %}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.requested_by|display_name }}</div>
+                        </div>
+                        <div class="purchase-detail-field">
+                            <div class="purchase-detail-label">{% trans "Створено" %}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.created_at|date:"SHORT_DATETIME_FORMAT" }}</div>
+                        </div>
+                        <div class="purchase-detail-field">
+                            <div class="purchase-detail-label">{% trans "Погодив" %}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.approved_by|display_name|default:"—" }}</div>
+                        </div>
+                        <div class="purchase-detail-field">
+                            <div class="purchase-detail-label">{% trans "Дата погодження" %}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</div>
                         </div>
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Статус оплати" %}</div>
@@ -129,29 +149,8 @@
                             <button class="btn btn-outline-primary btn-sm w-100" type="submit">{% trans "Оновити" %}</button>
                         </form>
                     {% endif %}
-                </div>
-            </div>
 
-            <div class="card content-card purchase-detail-card">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">{% trans "Аудит" %}</h2>
-                    <div class="purchase-detail-fields purchase-detail-fields--side">
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Заявник" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.requested_by|display_name }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Створено" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.created_at|date:"SHORT_DATETIME_FORMAT" }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Погодив" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.approved_by|display_name|default:"—" }}</div>
-                        </div>
-                        <div class="purchase-detail-field">
-                            <div class="purchase-detail-label">{% trans "Дата погодження" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.approved_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</div>
-                        </div>
+                    <div class="purchase-detail-audit-extra">
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Відхилив" %}</div>
                             <div class="purchase-detail-value">{{ purchase_request.rejected_by|display_name|default:"—" }}</div>
@@ -165,13 +164,9 @@
                             <div class="purchase-detail-value">{{ purchase_request.rejection_comment|default:"—"|linebreaksbr }}</div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="card content-card purchase-detail-card">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">{% trans "Дії" %}</h2>
-                    <div class="purchase-detail-actions">
+                    <h2 class="h5 mb-3 mt-3">{% trans "Дії" %}</h2>
+                    <div class="purchase-detail-actions purchase-detail-actions--primary">
                         <a class="btn btn-outline-secondary" href="{% url 'purchase_request_list' %}">{% trans "До списку заявок" %}</a>
                         {% if can_receive %}<a class="btn btn-success" href="{% url 'stock_receive' %}?purchase_request={{ purchase_request.pk }}">{% trans "Прийняти на склад" %}</a>{% endif %}
                         {% if can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
