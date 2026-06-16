@@ -152,6 +152,21 @@ header .navbar { min-height: 56px; }
 .purchase-request-table .purchase-table-filter-row .form-select{min-width:9rem}
 .purchase-request-table .purchase-table-filter-row input[type="date"]{min-width:8.5rem}
 .purchase-table-filter-actions{white-space:nowrap}
+.purchase-create-card .card-body{padding:1rem}
+.purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
+.purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.65rem .75rem;align-items:end}
+.purchase-create-field--item,
+.purchase-create-field--description,
+.purchase-create-field--url{min-width:0}
+.purchase-create-actions{display:flex;justify-content:flex-start}
+@media (min-width:768px){
+  .purchase-create-grid{grid-template-columns:minmax(18rem,2.8fr) minmax(6rem,.7fr) minmax(7rem,.8fr) minmax(8rem,1fr)}
+  .purchase-create-field--description{grid-column:span 2}
+  .purchase-create-field--url{grid-column:span 1}
+  .purchase-create-actions{justify-content:flex-end}
+}
+.purchase-create-form .form-control,
+.purchase-create-form .form-select{min-height:2.15rem;padding-top:.25rem;padding-bottom:.25rem}
 .table-action{min-height:2rem}
 .status-badge{font-weight:600}
 .empty-state{color:#667085;font-weight:500}

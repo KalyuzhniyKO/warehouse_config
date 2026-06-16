@@ -148,6 +148,27 @@ class PurchaseRequestTests(TestCase):
             self.assertNotContains(response, f'name="{field}"')
         self.assertNotContains(response, "<table", html=False)
 
+    def test_create_form_uses_compact_layout_fields(self):
+        self.login(self.requester)
+
+        response = self.client.get(reverse("purchase_request_create"))
+
+        self.assertContains(response, "purchase-create-form")
+        self.assertContains(response, "purchase-create-grid")
+        self.assertContains(response, "purchase-create-field--item")
+        self.assertContains(response, "purchase-create-field--qty")
+        self.assertContains(response, "purchase-create-field--unit")
+        self.assertContains(response, "purchase-create-field--description")
+        self.assertContains(response, "purchase-create-field--url")
+        self.assertContains(response, "purchase-create-actions")
+        self.assertContains(response, 'list="purchase-item-options"')
+        self.assertContains(response, '<input type="number" name="requested_qty"', html=False)
+        self.assertContains(response, '<select name="unit"', html=False)
+        self.assertContains(response, '<option value="pairs"', html=False)
+        self.assertContains(response, '<input type="text" name="need_description"', html=False)
+        self.assertNotContains(response, '<textarea name="need_description"', html=False)
+        self.assertNotContains(response, "purchase-unit-options")
+
     def test_new_requested_item_text_does_not_create_item(self):
         self.login(self.requester)
         item_count = Item.objects.count()
