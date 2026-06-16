@@ -424,6 +424,9 @@ class PurchaseRequestTests(TestCase):
             delivery_status=PurchaseRequest.DeliveryStatus.IN_TRANSIT,
             approved_by=self.admin,
             approved_at=timezone.now(),
+            rejected_by=self.other_requester,
+            rejected_at=timezone.now(),
+            rejection_comment="Not now",
         )
         self.create_request(title="Hidden request")
         self.login(self.admin)
@@ -438,13 +441,40 @@ class PurchaseRequestTests(TestCase):
             "purchase_requests_",
             response["Content-Disposition"],
         )
+        self.assertIn(".xlsx", response["Content-Disposition"])
         workbook = load_workbook(BytesIO(response.content))
         sheet = workbook.active
         headers = [cell.value for cell in sheet[1]]
-        self.assertEqual(headers[0], "Дата")
-        self.assertIn("Статус оплати", headers)
+        self.assertEqual(
+            headers,
+            [
+                "Дата",
+                "Назва товару",
+                "Опис потреби",
+                "Кількість",
+                "Одиниця виміру",
+                "Вартість за одиницю",
+                "Сума",
+                "Тип замовлення",
+                "Статус погодження",
+                "Статус оплати",
+                "Статус доставки",
+                "Заявник",
+                "Ким погоджено",
+                "Дата погодження",
+                "Ким відхилено",
+                "Дата відхилення",
+                "Коментар відхилення",
+                "Посилання на товар",
+            ],
+        )
+        self.assertEqual(sheet.freeze_panes, "A2")
+        self.assertEqual(sheet.auto_filter.ref, sheet.dimensions)
         titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
         self.assertEqual(titles, [matching.title])
+        exported_row = next(sheet.iter_rows(min_row=2, values_only=True))
+        self.assertEqual(exported_row[14], self.other_requester.username)
+        self.assertEqual(exported_row[16], "Not now")
 
     def test_each_tracking_status_filter_works(self):
         matching = self.create_request(
