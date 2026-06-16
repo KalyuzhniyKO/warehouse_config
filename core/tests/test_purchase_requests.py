@@ -70,6 +70,14 @@ class PurchaseRequestTests(TestCase):
         self.login(user or self.admin)
         return self.client.post(reverse(f"purchase_request_{action}", args=[purchase_request.pk]))
 
+    def load_purchase_request_export(self, params=None, user=None):
+        from openpyxl import load_workbook
+
+        self.login(user or self.admin)
+        response = self.client.get(reverse("purchase_request_export_xlsx"), params or {})
+        workbook = load_workbook(BytesIO(response.content))
+        return response, workbook.active
+
     def test_user_with_warehouse_access_can_create_purchase_request(self):
         self.login(self.requester)
 
@@ -418,8 +426,6 @@ class PurchaseRequestTests(TestCase):
         self.assertNotContains(detail_response, "detail-delivery-status")
 
     def test_purchase_request_xlsx_export_respects_filters(self):
-        from openpyxl import load_workbook
-
         matching = self.create_request(
             title="Export target",
             need_description="Need export",
@@ -433,32 +439,30 @@ class PurchaseRequestTests(TestCase):
             rejection_comment="Not now",
         )
         self.create_request(title="Hidden request")
-        self.login(self.admin)
 
-        response = self.client.get(
-            reverse("purchase_request_export_xlsx"),
-            {"q": "export-target"},
-        )
+        response, sheet = self.load_purchase_request_export({"q": "export-target"})
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            "purchase_requests_",
-            response["Content-Disposition"],
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        self.assertIn(".xlsx", response["Content-Disposition"])
-        workbook = load_workbook(BytesIO(response.content))
-        sheet = workbook.active
+        self.assertRegex(
+            response["Content-Disposition"],
+            r'attachment; filename="purchase_requests_\d{4}-\d{2}-\d{2}\.xlsx"',
+        )
         headers = [cell.value for cell in sheet[1]]
         self.assertEqual(
             headers,
             [
-                "Дата",
+                "Дата створення",
                 "Назва товару",
                 "Опис потреби",
+                "Посилання на товар",
                 "Кількість",
                 "Одиниця виміру",
-                "Вартість за одиницю",
-                "Сума",
+                "Вартість за одиницю, грн",
+                "Сума, грн",
                 "Тип замовлення",
                 "Статус погодження",
                 "Статус оплати",
@@ -469,16 +473,86 @@ class PurchaseRequestTests(TestCase):
                 "Ким відхилено",
                 "Дата відхилення",
                 "Коментар відхилення",
-                "Посилання на товар",
             ],
         )
         self.assertEqual(sheet.freeze_panes, "A2")
         self.assertEqual(sheet.auto_filter.ref, sheet.dimensions)
+        self.assertTrue(all(cell.font.bold for cell in sheet[1]))
+        self.assertEqual(sheet["G2"].number_format, "#,##0.00")
+        self.assertEqual(sheet["H2"].number_format, "#,##0.00")
+        self.assertTrue(sheet["B2"].alignment.wrap_text)
+        self.assertTrue(sheet["C2"].alignment.wrap_text)
+        self.assertTrue(sheet["D2"].alignment.wrap_text)
+        self.assertTrue(sheet["R2"].alignment.wrap_text)
+        self.assertNotEqual(sheet["J2"].fill.fgColor.rgb, "00000000")
+        self.assertNotEqual(sheet["K2"].fill.fgColor.rgb, "00000000")
         titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
         self.assertEqual(titles, [matching.title])
         exported_row = next(sheet.iter_rows(min_row=2, values_only=True))
-        self.assertEqual(exported_row[14], self.other_requester.username)
-        self.assertEqual(exported_row[16], "Not now")
+        self.assertEqual(exported_row[3], "https://example.com/export-target")
+        self.assertEqual(exported_row[15], self.other_requester.username)
+        self.assertEqual(exported_row[17], "Not now")
+
+    def test_purchase_request_xlsx_export_button_preserves_filters(self):
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_list"),
+            {"q": "gloves", "payment_status": PurchaseRequest.PaymentStatus.PAID},
+        )
+
+        export_url = (
+            reverse("purchase_request_export_xlsx")
+            + f"?q=gloves&amp;payment_status={PurchaseRequest.PaymentStatus.PAID}"
+        )
+        self.assertContains(response, "Експорт Excel")
+        self.assertContains(response, export_url, html=False)
+
+    def test_purchase_request_xlsx_export_without_filters_includes_visible_requests(self):
+        own = self.create_request(title="Visible own export")
+        other = self.create_request(user=self.other_requester, title="Visible other export")
+
+        _response, sheet = self.load_purchase_request_export()
+
+        titles = {row[1].value for row in sheet.iter_rows(min_row=2)}
+        self.assertIn(own.title, titles)
+        self.assertIn(other.title, titles)
+
+    def test_purchase_request_xlsx_export_filters_by_statuses_and_date(self):
+        matching = self.create_request(
+            title="Export status target",
+            request_date="2026-06-10",
+            approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+            delivery_status=PurchaseRequest.DeliveryStatus.DELIVERED,
+        )
+        self.create_request(
+            title="Export status hidden",
+            request_date="2026-06-20",
+            approval_status=PurchaseRequest.ApprovalStatus.PENDING,
+            payment_status=PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED,
+            delivery_status=PurchaseRequest.DeliveryStatus.NOT_SHIPPED,
+        )
+
+        _response, sheet = self.load_purchase_request_export(
+            {
+                "approval_status": PurchaseRequest.ApprovalStatus.APPROVED,
+                "payment_status": PurchaseRequest.PaymentStatus.PAID,
+                "delivery_status": PurchaseRequest.DeliveryStatus.DELIVERED,
+                "date_from": "2026-06-01",
+                "date_to": "2026-06-15",
+            }
+        )
+
+        titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
+        self.assertEqual(titles, [matching.title])
+
+    def test_purchase_request_xlsx_export_requires_purchase_request_access(self):
+        self.login(self.no_access_user)
+
+        response = self.client.get(reverse("purchase_request_export_xlsx"))
+
+        self.assertEqual(response.status_code, 403)
 
     def test_each_tracking_status_filter_works(self):
         matching = self.create_request(
