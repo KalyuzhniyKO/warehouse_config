@@ -133,6 +133,6 @@ class PurchaseRequestFilterForm(forms.Form):
         self.fields["requested_by"].queryset = users
         for field in self.fields.values():
             if isinstance(field.widget, forms.Select):
-                field.widget.attrs.setdefault("class", "form-select")
+                field.widget.attrs.setdefault("class", "form-select form-select-sm")
             else:
-                field.widget.attrs.setdefault("class", "form-control")
+                field.widget.attrs.setdefault("class", "form-control form-control-sm")
