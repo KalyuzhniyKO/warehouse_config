@@ -274,6 +274,38 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, 'name="requested_by"')
         self.assertContains(response, 'form="purchase-filter-form"')
 
+    def test_purchase_list_table_is_compact_for_small_screens(self):
+        purchase_request = self.create_request(
+            title="Compact purchase row",
+            need_description="Compact need description",
+            requested_qty=Decimal("10.000"),
+            unit="pairs",
+        )
+        self.login(self.admin)
+
+        response = self.client.get(reverse("purchase_request_list"))
+        detail_url = reverse("purchase_request_detail", args=[purchase_request.pk])
+
+        self.assertNotContains(response, "<th>Дії</th>", html=False)
+        self.assertNotContains(response, "<th>Actions</th>", html=False)
+        self.assertNotContains(response, "Перегляд")
+        self.assertNotContains(response, "<th>Опис потреби</th>", html=False)
+        self.assertNotContains(response, "<th>Кількість</th>", html=False)
+        self.assertNotContains(response, "<th>Одиниці вимірювання</th>", html=False)
+        self.assertNotContains(
+            response, "<th>Вартість за одиницю (грн)</th>", html=False
+        )
+        self.assertNotContains(response, "<th>Сума (грн)</th>", html=False)
+        self.assertNotContains(response, "<th>Посилання на товар</th>", html=False)
+        self.assertContains(response, "<span>Погодження</span>", html=False)
+        self.assertContains(response, "<span>Оплата</span>", html=False)
+        self.assertContains(response, "<span>Доставка</span>", html=False)
+        self.assertContains(response, "<th class=\"purchase-col-qty\">К-сть / Од.</th>", html=False)
+        self.assertContains(response, f'href="{detail_url}"')
+        self.assertContains(response, "Compact purchase row")
+        self.assertContains(response, "Compact need description")
+        self.assertContains(response, "10,000 pairs")
+
     def test_purchase_list_reset_filters_link_clears_query(self):
         self.login(self.admin)
 
