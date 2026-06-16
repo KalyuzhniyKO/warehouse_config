@@ -19,9 +19,12 @@ from core.forms import (
 )
 from core.models import Item, PurchaseRequest, Unit
 from core.permissions import (
+    can_approve_purchase_requests,
     can_create_purchase_requests,
     can_manage_purchase_requests,
+    can_update_purchase_request_tracking,
     can_view_purchase_requests,
+    has_purchase_request_view_permission,
 )
 from core.services.exports.purchase_requests_excel import (
     build_purchase_requests_workbook,
@@ -34,7 +37,7 @@ def purchase_requests_for_user(user):
     queryset = PurchaseRequest.objects.select_related(
         "requested_by", "approved_by", "rejected_by"
     )
-    if can_manage_purchase_requests(user):
+    if can_manage_purchase_requests(user) or has_purchase_request_view_permission(user):
         return queryset
     return queryset.filter(requested_by=user)
 
@@ -107,6 +110,9 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
         )
         context["can_manage_purchase_requests"] = can_manage_purchase_requests(
             self.request.user
+        )
+        context["can_update_purchase_request_tracking"] = (
+            can_update_purchase_request_tracking(self.request.user)
         )
         context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
         context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
@@ -197,6 +203,12 @@ class PurchaseRequestDetailView(
         )
         context["can_send"] = purchase_request.status == PurchaseRequest.Status.DRAFT
         context["can_manage"] = can_manage_purchase_requests(self.request.user)
+        context["can_approve_purchase_request"] = can_approve_purchase_requests(
+            self.request.user
+        )
+        context["can_update_purchase_request_tracking"] = (
+            can_update_purchase_request_tracking(self.request.user)
+        )
         context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
         context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
         context["can_receive"] = can_receive_against_purchase_request(
@@ -229,13 +241,13 @@ class PurchaseRequestUpdateView(
     template_name = "core/purchase_requests/form.html"
 
     def get_form_class(self):
-        if can_manage_purchase_requests(self.request.user):
+        if can_update_purchase_request_tracking(self.request.user):
             return PurchaseRequestManagerForm
         return PurchaseRequestEditForm
 
     def get_queryset(self):
         queryset = purchase_requests_for_user(self.request.user)
-        if can_manage_purchase_requests(self.request.user):
+        if can_update_purchase_request_tracking(self.request.user):
             return queryset
         return queryset.filter(status=PurchaseRequest.Status.DRAFT)
 
@@ -303,7 +315,15 @@ class PurchaseRequestStatusActionView(
         transition = self.transitions.get(self.action)
         if transition is None:
             return HttpResponseBadRequest()
-        if transition.get("admin") and not can_manage_purchase_requests(request.user):
+        if self.action in {"approve", "reject"} and not can_approve_purchase_requests(
+            request.user
+        ):
+            raise PermissionDenied(_("У вас немає прав погоджувати заявки."))
+        if (
+            self.action in {"order", "cancel"}
+            and transition.get("admin")
+            and not can_manage_purchase_requests(request.user)
+        ):
             raise PermissionDenied(_("Лише адміністратор може змінити цей статус."))
 
         with transaction.atomic():
@@ -345,8 +365,8 @@ class PurchaseRequestTrackingStatusUpdateView(
     http_method_names = ["post"]
 
     def post(self, request, *args, **kwargs):
-        if not can_manage_purchase_requests(request.user):
-            raise PermissionDenied(_("Лише адміністратор може змінити цей статус."))
+        if not can_update_purchase_request_tracking(request.user):
+            raise PermissionDenied(_("У вас немає прав змінювати оплату та доставку."))
 
         purchase_request = get_object_or_404(
             purchase_requests_for_user(request.user), pk=kwargs["pk"]

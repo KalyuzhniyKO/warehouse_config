@@ -41,9 +41,11 @@
     <section class="section-shell" aria-labelledby="control-heading">
         <div class="section-header"><h2 id="control-heading" class="section-title">{% trans "Контроль" %}</h2></div>
         <div class="dashboard-grid dashboard-grid--compact compact-card-grid">
-            {% url 'stockbalance_list' as card_url %}{% trans "Залишки на складі" as card_title %}{% trans "Актуальні залишки по складах." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📊" css_classes="report-card report-card--balance" %}
-            {% url 'movement_list' as card_url %}{% trans "Журнал операцій" as card_title %}{% trans "Історія рухів товарів." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🔁" css_classes="report-card report-card--journal" %}
-            {% url 'inventory_list' as card_url %}{% trans "Інвентаризація" as card_title %}{% trans "Провести або переглянути інвентаризацію." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📋" css_classes="report-card report-card--inventory" %}
+            {% if can_access_warehouse %}
+                {% url 'stockbalance_list' as card_url %}{% trans "Залишки на складі" as card_title %}{% trans "Актуальні залишки по складах." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📊" css_classes="report-card report-card--balance" %}
+                {% url 'movement_list' as card_url %}{% trans "Журнал операцій" as card_title %}{% trans "Історія рухів товарів." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🔁" css_classes="report-card report-card--journal" %}
+                {% url 'inventory_list' as card_url %}{% trans "Інвентаризація" as card_title %}{% trans "Провести або переглянути інвентаризацію." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📋" css_classes="report-card report-card--inventory" %}
+            {% endif %}
             {% if can_view_analytics %}
                 {% url 'management_analytics' as card_url %}{% trans "Аналітика" as card_title %}{% trans "KPI та управлінський огляд за період." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📈" css_classes="report-card report-card--analytics" %}
             {% endif %}
@@ -59,9 +61,11 @@
     <section class="section-shell" aria-labelledby="items-heading">
         <div class="section-header"><h2 id="items-heading" class="section-title">{% trans "Номенклатура" %}</h2></div>
         <div class="dashboard-grid dashboard-grid--compact compact-card-grid">
-            {% url 'item_list' as card_url %}{% trans "Товари / матеріали" as card_title %}{% trans "Пошук і редагування номенклатури." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📁" css_classes="admin-card admin-card--items" %}
-            {% if can_edit_directories %}
-                {% url 'item_create' as card_url %}{% trans "+ Створити товар / матеріал" as card_title %}{% trans "Швидке додавання товару." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="➕" css_classes="admin-card admin-card--create-item" %}
+            {% if can_access_warehouse %}
+                {% url 'item_list' as card_url %}{% trans "Товари / матеріали" as card_title %}{% trans "Пошук і редагування номенклатури." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📁" css_classes="admin-card admin-card--items" %}
+                {% if can_edit_directories %}
+                    {% url 'item_create' as card_url %}{% trans "+ Створити товар / матеріал" as card_title %}{% trans "Швидке додавання товару." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="➕" css_classes="admin-card admin-card--create-item" %}
+                {% endif %}
             {% endif %}
         </div>
     </section>

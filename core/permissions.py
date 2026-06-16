@@ -25,6 +25,20 @@ STOCK_VIEW_GROUPS = {WAREHOUSE_ADMIN_GROUP, STOREKEEPER_GROUP, AUDITOR_GROUP}
 PRINT_GROUPS = {WAREHOUSE_ADMIN_GROUP, STOREKEEPER_GROUP}
 SETTINGS_GROUPS = {WAREHOUSE_ADMIN_GROUP}
 
+WAREHOUSE_ACCESS_PERMISSION = "core.can_access_warehouse"
+PURCHASE_REQUEST_VIEW_PERMISSION = "core.can_view_purchase_requests"
+PURCHASE_REQUEST_CREATE_PERMISSION = "core.can_create_purchase_requests"
+PURCHASE_REQUEST_APPROVE_PERMISSION = "core.can_approve_purchase_requests"
+PURCHASE_REQUEST_TRACKING_PERMISSION = "core.can_update_purchase_request_tracking"
+
+EXPLICIT_USER_PERMISSION_CODENAMES = {
+    "can_access_warehouse",
+    "can_view_purchase_requests",
+    "can_create_purchase_requests",
+    "can_approve_purchase_requests",
+    "can_update_purchase_request_tracking",
+}
+
 
 def user_in_groups(user, group_names):
     if not user.is_authenticated:
@@ -80,12 +94,55 @@ def can_manage_purchase_requests(user):
     return user_in_groups(user, MANAGEMENT_GROUPS)
 
 
+def has_explicit_permission(user, permission):
+    return bool(
+        getattr(user, "is_authenticated", False)
+        and getattr(user, "is_active", False)
+        and (getattr(user, "is_superuser", False) or user.has_perm(permission))
+    )
+
+
+def can_access_warehouse(user):
+    if not getattr(user, "is_authenticated", False) or not getattr(user, "is_active", False):
+        return False
+    if getattr(user, "is_superuser", False):
+        return True
+    if user.has_perm(WAREHOUSE_ACCESS_PERMISSION):
+        return True
+    # Compatibility: existing warehouse roles and delegated warehouse access keep working.
+    return user_in_groups(user, STOCK_VIEW_GROUPS) or can_view_warehouse_data(user)
+
+
+def has_purchase_request_view_permission(user):
+    return has_explicit_permission(user, PURCHASE_REQUEST_VIEW_PERMISSION)
+
+
 def can_create_purchase_requests(user):
-    return can_manage_purchase_requests(user) or can_view_warehouse_data(user)
+    return (
+        can_manage_purchase_requests(user)
+        or has_explicit_permission(user, PURCHASE_REQUEST_CREATE_PERMISSION)
+        or can_view_warehouse_data(user)
+    )
 
 
 def can_view_purchase_requests(user):
-    return can_manage_purchase_requests(user) or can_create_purchase_requests(user)
+    return (
+        can_manage_purchase_requests(user)
+        or has_purchase_request_view_permission(user)
+        or can_create_purchase_requests(user)
+    )
+
+
+def can_approve_purchase_requests(user):
+    return can_manage_purchase_requests(user) or has_explicit_permission(
+        user, PURCHASE_REQUEST_APPROVE_PERMISSION
+    )
+
+
+def can_update_purchase_request_tracking(user):
+    return can_manage_purchase_requests(user) or has_explicit_permission(
+        user, PURCHASE_REQUEST_TRACKING_PERMISSION
+    )
 
 
 def can_manage_directories(user):

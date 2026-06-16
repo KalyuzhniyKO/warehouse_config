@@ -7,6 +7,7 @@ from core.models import (
     Category,
     Item,
     Location,
+    PurchaseRequest,
     Recipient,
     StockBalance,
     StockMovement,
@@ -15,6 +16,7 @@ from core.models import (
     Warehouse,
 )
 from core.permissions import AUDITOR_GROUP, STOREKEEPER_GROUP, WAREHOUSE_ADMIN_GROUP
+from core.permissions import EXPLICIT_USER_PERMISSION_CODENAMES
 
 
 class Command(BaseCommand):
@@ -28,6 +30,7 @@ class Command(BaseCommand):
         directory_models = [Unit, Category, Recipient, Item, Warehouse, Location]
         stock_models = [StockBalance, StockMovement]
         admin_models = directory_models + stock_models + [
+            PurchaseRequest,
             UserWarehouseAccess,
             get_user_model(),
             Group,
@@ -35,7 +38,10 @@ class Command(BaseCommand):
         all_models = directory_models + stock_models
 
         admin_group.permissions.set(
-            self.permissions_for(admin_models, ["view", "add", "change", "delete"])
+            [
+                *self.permissions_for(admin_models, ["view", "add", "change", "delete"]),
+                *self.explicit_user_permissions(),
+            ]
         )
         storekeeper_group.permissions.set(
             self.permissions_for(
@@ -62,3 +68,6 @@ class Command(BaseCommand):
                 )
             )
         return permissions
+
+    def explicit_user_permissions(self):
+        return Permission.objects.filter(codename__in=EXPLICIT_USER_PERMISSION_CODENAMES)

@@ -1,20 +1,34 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.utils.translation import gettext_lazy as _
 
 from core.models import UserWarehouseAccess
-from core.permissions import ROLE_DISPLAY_NAMES, STOREKEEPER_GROUP, WAREHOUSE_ADMIN_GROUP
+from core.permissions import (
+    EXPLICIT_USER_PERMISSION_CODENAMES,
+    ROLE_DISPLAY_NAMES,
+    STOREKEEPER_GROUP,
+    WAREHOUSE_ADMIN_GROUP,
+)
 from core.services.audit import log_action
 from core.services.warehouse_access import get_delegatable_warehouses
 
 WAREHOUSE_ROLE_GROUPS = (WAREHOUSE_ADMIN_GROUP, STOREKEEPER_GROUP)
 WAREHOUSE_ACCESS_PREFIX = "warehouse_access_"
 WAREHOUSE_DELEGATE_PREFIX = "warehouse_delegate_"
+USER_ACCESS_PERMISSIONS_FIELD = "access_permissions"
 
 
 def warehouse_role_queryset():
     return Group.objects.filter(name__in=WAREHOUSE_ROLE_GROUPS).order_by("name")
+
+
+def user_access_permission_queryset():
+    return (
+        Permission.objects.filter(codename__in=EXPLICIT_USER_PERMISSION_CODENAMES)
+        .select_related("content_type")
+        .order_by("name")
+    )
 
 
 class WarehouseRoleChoiceField(forms.ModelMultipleChoiceField):
@@ -22,11 +36,17 @@ class WarehouseRoleChoiceField(forms.ModelMultipleChoiceField):
         return ROLE_DISPLAY_NAMES.get(obj.name, obj.name)
 
 
+class UserAccessPermissionChoiceField(forms.ModelMultipleChoiceField):
+    def label_from_instance(self, obj):
+        return obj.name
+
+
 class ManagementUserFormMixin:
     def __init__(self, *args, **kwargs):
         self.request_user = kwargs.pop("request_user", None)
         super().__init__(*args, **kwargs)
         self.fields["groups"].queryset = warehouse_role_queryset()
+        self.add_user_access_permission_field()
         self.delegatable_warehouses = self.get_delegatable_warehouses()
         self.add_warehouse_access_fields()
         for field in self.fields.values():
@@ -39,6 +59,24 @@ class ManagementUserFormMixin:
                 widget.attrs.setdefault("class", "form-select")
             else:
                 widget.attrs.setdefault("class", "form-control")
+
+    def add_user_access_permission_field(self):
+        instance = getattr(self, "instance", None)
+        if instance and instance.pk and instance.is_superuser:
+            return
+        initial = []
+        if instance and instance.pk:
+            initial = instance.user_permissions.filter(
+                codename__in=EXPLICIT_USER_PERMISSION_CODENAMES
+            )
+        self.fields[USER_ACCESS_PERMISSIONS_FIELD] = UserAccessPermissionChoiceField(
+            label=_("Права доступу"),
+            queryset=user_access_permission_queryset(),
+            required=False,
+            initial=initial,
+            widget=forms.CheckboxSelectMultiple,
+            help_text=_("Явні права користувача для входу, заявок і погодження."),
+        )
 
     def get_delegatable_warehouses(self):
         instance = getattr(self, "instance", None)
@@ -110,6 +148,15 @@ class ManagementUserFormMixin:
         if groups and any(group.id not in allowed_ids for group in groups):
             raise forms.ValidationError(_("Можна вибирати тільки складські ролі."))
         return groups
+
+    def clean_access_permissions(self):
+        permissions = self.cleaned_data.get(USER_ACCESS_PERMISSIONS_FIELD)
+        if not permissions:
+            return permissions
+        allowed_ids = set(user_access_permission_queryset().values_list("id", flat=True))
+        if any(permission.id not in allowed_ids for permission in permissions):
+            raise forms.ValidationError(_("Можна вибирати тільки дозволені права."))
+        return permissions
 
     def clean(self):
         cleaned_data = super().clean()
@@ -254,6 +301,18 @@ class ManagementUserFormMixin:
                     changes=changes,
                 )
 
+    def save_user_access_permissions(self, user):
+        if not user.pk or user.is_superuser or USER_ACCESS_PERMISSIONS_FIELD not in self.fields:
+            return
+        selected_permissions = set(
+            self.cleaned_data.get(USER_ACCESS_PERMISSIONS_FIELD) or []
+        )
+        managed_permissions = set(user_access_permission_queryset())
+        current_permissions = set(user.user_permissions.all())
+        user.user_permissions.set(
+            (current_permissions - managed_permissions) | selected_permissions
+        )
+
 
 class ManagementUserCreateForm(ManagementUserFormMixin, forms.ModelForm):
     password1 = forms.CharField(label=_("Пароль"), widget=forms.PasswordInput)
@@ -309,6 +368,7 @@ class ManagementUserCreateForm(ManagementUserFormMixin, forms.ModelForm):
         if commit:
             user.save()
             self.save_m2m()
+            self.save_user_access_permissions(user)
             self.save_warehouse_accesses(user)
         return user
 
@@ -339,6 +399,7 @@ class ManagementUserUpdateForm(ManagementUserFormMixin, forms.ModelForm):
             user.save()
             if not user.is_superuser:
                 self.save_m2m()
+                self.save_user_access_permissions(user)
                 self.save_warehouse_accesses(user)
         return user
 

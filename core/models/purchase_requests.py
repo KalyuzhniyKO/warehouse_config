@@ -142,6 +142,24 @@ class PurchaseRequest(models.Model):
         verbose_name = _("Заявка на закупівлю")
         verbose_name_plural = _("Заявки на закупівлю")
         ordering = ["-created_at", "-id"]
+        permissions = [
+            (
+                "can_view_purchase_requests",
+                _("Може переглядати заявки на закупівлю"),
+            ),
+            (
+                "can_create_purchase_requests",
+                _("Може створювати заявки на закупівлю"),
+            ),
+            (
+                "can_approve_purchase_requests",
+                _("Може погоджувати заявки на закупівлю"),
+            ),
+            (
+                "can_update_purchase_request_tracking",
+                _("Може змінювати оплату та доставку заявок"),
+            ),
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(requested_qty__gt=0),

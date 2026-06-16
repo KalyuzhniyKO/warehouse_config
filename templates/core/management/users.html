@@ -15,6 +15,7 @@
                     <th>{% trans "Ім'я" %}</th>
                     <th>{% trans "Email" %}</th>
                     <th>{% trans "Ролі" %}</th>
+                    <th>{% trans "Права" %}</th>
                     <th>{% trans "Доступні склади" %}</th>
                     <th>{% trans "Статус" %}</th>
                     <th class="text-end">{% trans "Дії" %}</th>
@@ -30,6 +31,17 @@
                             {% for group in app_user.groups.all %}
                                 <span class="badge text-bg-secondary">{{ group|role_display_name }}</span>
                             {% empty %}—{% endfor %}
+                        </td>
+                        <td>
+                            {% if app_user.is_superuser %}
+                                <span class="badge text-bg-primary">{% trans "Усі права" %}</span>
+                            {% else %}
+                                {% for permission in app_user.explicit_access_permissions %}
+                                    <span class="badge text-bg-light border">{{ permission.name }}</span>
+                                {% empty %}
+                                    <span class="text-muted">—</span>
+                                {% endfor %}
+                            {% endif %}
                         </td>
                         <td>
                             {% if app_user.is_superuser %}
@@ -61,7 +73,7 @@
                         </td>
                     </tr>
                 {% empty %}
-                    <tr><td colspan="7" class="text-center text-muted py-4">{% trans "Користувачів ще немає." %}</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">{% trans "Користувачів ще немає." %}</td></tr>
                 {% endfor %}
             </tbody>
         </table>

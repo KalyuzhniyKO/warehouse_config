@@ -7,7 +7,7 @@ from django.db import IntegrityError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.password_validation import validate_password
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.test import RequestFactory, TestCase, override_settings
 from django.utils import timezone
 from io import BytesIO, StringIO
@@ -23,6 +23,7 @@ from ..permissions import (
     USER_MANAGEMENT_GROUPS,
     WAREHOUSE_ADMIN_GROUP,
     can_assign_warehouse_access,
+    can_access_warehouse,
     can_cancel_movement,
     can_manage_directories,
     can_manage_settings,
@@ -643,6 +644,29 @@ class DashboardPermissionTests(TestCase):
         from django.utils import translation
 
         translation.activate("uk")
+
+    def test_user_without_warehouse_access_sees_no_warehouse_actions_on_dashboard(self):
+        user = get_user_model().objects.create_user(
+            username="dash-no-access", password="pw"
+        )
+
+        response = self.dashboard_for(user, "/uk/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Прихід товару")
+        self.assertNotContains(response, "Журнал операцій")
+        self.assertFalse(can_access_warehouse(user))
+
+    def test_user_with_explicit_warehouse_access_permission_can_open_dashboard(self):
+        user = get_user_model().objects.create_user(
+            username="dash-explicit-access", password="pw"
+        )
+        user.user_permissions.add(Permission.objects.get(codename="can_access_warehouse"))
+
+        response = self.dashboard_for(user, "/uk/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(can_access_warehouse(user))
 
     def test_admin_dashboard_shows_stock_transfer_card(self):
         response = self.dashboard_for(self.admin, "/uk/")
