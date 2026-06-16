@@ -146,7 +146,15 @@ header .navbar { min-height: 56px; }
 .data-table td.movement-code-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
 .data-table td.movement-document-cell{white-space:nowrap}
 .data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
-.purchase-request-table{min-width:1500px}
+.purchase-request-table{min-width:1040px;table-layout:fixed}
+.purchase-request-table td,.purchase-request-table th{padding:.5rem .55rem}
+.purchase-table-toolbar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.55rem .75rem;border-bottom:1px solid var(--dash-border)}
+.purchase-col-date{width:7.5rem}
+.purchase-col-title{width:31%}
+.purchase-col-qty{width:7rem}
+.purchase-col-type{width:7.5rem}
+.purchase-col-status{width:10.5rem}
+.purchase-col-requester{width:9.5rem}
 .purchase-filter-heading{display:flex;align-items:center;justify-content:space-between;gap:.35rem}
 .purchase-filter-toggle{border:1px solid #d0d5dd;background:#fff;color:#475467;line-height:1;padding:.15rem .35rem}
 .purchase-filter-toggle.active{border-color:#d4ac00;background:#fff7cc;color:#92400e}
@@ -154,8 +162,14 @@ header .navbar { min-height: 56px; }
 .purchase-filter-menu--wide{min-width:20rem}
 .purchase-filter-menu .form-control,.purchase-filter-menu .form-select{min-width:100%}
 .purchase-table-filter-actions{white-space:nowrap}
-.purchase-status-inline-form{display:flex;align-items:center;gap:.35rem;min-width:13rem}
-.purchase-status-inline-form .form-select{min-width:10rem}
+.purchase-title-cell{min-width:0}
+.purchase-title-link{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:650;line-height:1.2;text-decoration:none}
+.purchase-title-link:hover{text-decoration:underline}
+.purchase-need-description{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:.82rem;line-height:1.2;margin-top:.15rem}
+.purchase-status-badge{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+.purchase-status-inline-form{display:flex;align-items:center;gap:.25rem;min-width:0}
+.purchase-status-inline-form .form-select{min-width:0;font-size:.78rem;padding:.2rem 1.55rem .2rem .45rem}
+.purchase-status-save{padding:.2rem .35rem;font-size:.72rem;line-height:1.1}
 .purchase-create-card .card-body{padding:1rem}
 .purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
 .purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.65rem .75rem;align-items:end}
