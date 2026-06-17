@@ -12,6 +12,7 @@ from core.forms.management_users import (
     ManagementUserCreateForm,
     ManagementUserPasswordForm,
     ManagementUserUpdateForm,
+    effective_user_access_permissions,
     warehouse_role_queryset,
 )
 from core.models import UserWarehouseAccess
@@ -39,7 +40,7 @@ class ManagementUsersView(LoginRequiredMixin, CanManageUsersMixin, TemplateView)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         role_names = tuple(warehouse_role_queryset().values_list("name", flat=True))
-        context["users"] = (
+        users = list(
             get_user_model()
             .objects.filter(is_superuser=False)
             .filter(Q(groups__name__in=role_names) | Q(groups__isnull=True))
@@ -63,6 +64,11 @@ class ManagementUsersView(LoginRequiredMixin, CanManageUsersMixin, TemplateView)
             )
             .order_by("username")
         )
+        for app_user in users:
+            app_user.effective_access_permissions = effective_user_access_permissions(
+                app_user
+            )
+        context["users"] = users
         context["groups"] = warehouse_role_queryset()
         context["role_details"] = [
             {

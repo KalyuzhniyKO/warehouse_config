@@ -36,7 +36,7 @@
                             {% if app_user.is_superuser %}
                                 <span class="badge text-bg-primary">{% trans "Усі права" %}</span>
                             {% else %}
-                                {% for permission in app_user.explicit_access_permissions %}
+                                {% for permission in app_user.effective_access_permissions %}
                                     <span class="badge text-bg-light border">{{ permission.name }}</span>
                                 {% empty %}
                                     <span class="text-muted">—</span>

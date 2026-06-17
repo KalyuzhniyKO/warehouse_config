@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
+from django.db.models import Case, IntegerField, Value, When
 from django.utils.translation import gettext_lazy as _
 
 from core.models import UserWarehouseAccess
@@ -24,10 +25,48 @@ def warehouse_role_queryset():
 
 
 def user_access_permission_queryset():
+    ordering = Case(
+        *[
+            When(codename=codename, then=Value(position))
+            for position, codename in enumerate(
+                [
+                    "can_access_warehouse",
+                    "can_view_purchase_requests",
+                    "can_create_purchase_requests",
+                    "can_approve_purchase_requests",
+                    "can_update_purchase_request_tracking",
+                ]
+            )
+        ],
+        default=Value(99),
+        output_field=IntegerField(),
+    )
     return (
         Permission.objects.filter(codename__in=EXPLICIT_USER_PERMISSION_CODENAMES)
         .select_related("content_type")
-        .order_by("name")
+        .order_by(ordering, "name")
+    )
+
+
+def inherited_user_access_permissions(user):
+    if not user.pk:
+        return Permission.objects.none()
+    return Permission.objects.filter(
+        group__user=user,
+        codename__in=EXPLICIT_USER_PERMISSION_CODENAMES,
+    ).distinct()
+
+
+def effective_user_access_permissions(user):
+    if not user.pk:
+        return Permission.objects.none()
+    return user_access_permission_queryset().filter(
+        id__in=set(
+            user.user_permissions.filter(
+                codename__in=EXPLICIT_USER_PERMISSION_CODENAMES
+            ).values_list("id", flat=True)
+        )
+        | set(inherited_user_access_permissions(user).values_list("id", flat=True))
     )
 
 
@@ -66,16 +105,18 @@ class ManagementUserFormMixin:
             return
         initial = []
         if instance and instance.pk:
-            initial = instance.user_permissions.filter(
-                codename__in=EXPLICIT_USER_PERMISSION_CODENAMES
-            )
+            initial = effective_user_access_permissions(instance)
         self.fields[USER_ACCESS_PERMISSIONS_FIELD] = UserAccessPermissionChoiceField(
             label=_("Права доступу"),
             queryset=user_access_permission_queryset(),
             required=False,
             initial=initial,
             widget=forms.CheckboxSelectMultiple,
-            help_text=_("Явні права користувача для входу, заявок і погодження."),
+            help_text=_(
+                "Ці права визначають, які розділи та дії доступні користувачу "
+                "в системі складу. Права, отримані через роль, показуються як "
+                "активні, але змінюються в блоці ролей."
+            ),
         )
 
     def get_delegatable_warehouses(self):
@@ -307,10 +348,18 @@ class ManagementUserFormMixin:
         selected_permissions = set(
             self.cleaned_data.get(USER_ACCESS_PERMISSIONS_FIELD) or []
         )
+        inherited_permission_ids = set(
+            inherited_user_access_permissions(user).values_list("id", flat=True)
+        )
+        direct_selected_permissions = {
+            permission
+            for permission in selected_permissions
+            if permission.id not in inherited_permission_ids
+        }
         managed_permissions = set(user_access_permission_queryset())
         current_permissions = set(user.user_permissions.all())
         user.user_permissions.set(
-            (current_permissions - managed_permissions) | selected_permissions
+            (current_permissions - managed_permissions) | direct_selected_permissions
         )
 
 
