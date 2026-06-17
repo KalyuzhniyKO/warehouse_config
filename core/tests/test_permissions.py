@@ -24,13 +24,17 @@ from ..permissions import (
     WAREHOUSE_ADMIN_GROUP,
     can_assign_warehouse_access,
     can_access_warehouse,
+    can_approve_purchase_requests,
     can_cancel_movement,
+    can_create_purchase_requests,
     can_manage_directories,
     can_manage_settings,
     can_manage_users,
     can_print_labels,
+    can_update_purchase_request_tracking,
     can_view_analytics,
     can_view_audit,
+    can_view_purchase_requests,
     can_view_warehouse_data,
 )
 from .i18n_test_utils import compile_test_messages
@@ -169,6 +173,44 @@ class PermissionHelperTests(TestCase):
                 "manage_settings": False,
             },
         )
+
+    def test_superuser_passes_explicit_warehouse_and_purchase_helpers(self):
+        self.assertTrue(can_access_warehouse(self.superuser))
+        self.assertTrue(can_view_purchase_requests(self.superuser))
+        self.assertTrue(can_create_purchase_requests(self.superuser))
+        self.assertTrue(can_approve_purchase_requests(self.superuser))
+        self.assertTrue(can_update_purchase_request_tracking(self.superuser))
+
+    def test_management_group_keeps_purchase_request_compatibility(self):
+        self.assertTrue(can_view_purchase_requests(self.admin))
+        self.assertTrue(can_create_purchase_requests(self.admin))
+        self.assertTrue(can_approve_purchase_requests(self.admin))
+        self.assertTrue(can_update_purchase_request_tracking(self.admin))
+
+    def test_plain_user_needs_explicit_warehouse_and_purchase_permissions(self):
+        self.assertFalse(can_access_warehouse(self.plain_user))
+        self.assertFalse(can_view_purchase_requests(self.plain_user))
+        self.assertFalse(can_create_purchase_requests(self.plain_user))
+        self.assertFalse(can_approve_purchase_requests(self.plain_user))
+        self.assertFalse(can_update_purchase_request_tracking(self.plain_user))
+
+        permission_codenames = [
+            "can_access_warehouse",
+            "can_view_purchase_requests",
+            "can_create_purchase_requests",
+            "can_approve_purchase_requests",
+            "can_update_purchase_request_tracking",
+        ]
+        self.plain_user.user_permissions.add(
+            *Permission.objects.filter(codename__in=permission_codenames)
+        )
+        self.plain_user = get_user_model().objects.get(pk=self.plain_user.pk)
+
+        self.assertTrue(can_access_warehouse(self.plain_user))
+        self.assertTrue(can_view_purchase_requests(self.plain_user))
+        self.assertTrue(can_create_purchase_requests(self.plain_user))
+        self.assertTrue(can_approve_purchase_requests(self.plain_user))
+        self.assertTrue(can_update_purchase_request_tracking(self.plain_user))
 
     def test_anonymous_user_cannot_view_audit(self):
         self.assertFalse(can_view_audit(AnonymousUser()))

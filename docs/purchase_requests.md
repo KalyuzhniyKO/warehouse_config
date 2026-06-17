@@ -11,15 +11,16 @@ other accounting workflow fields.
 
 Workflow:
 
-1. A user with warehouse access creates a simple request with the needed item
-   name, quantity, unit, need description, optional product URL, and order type.
-   The requester is set automatically from the logged-in account; it is not an
-   editable field.
+1. A user with `can_create_purchase_requests` creates a simple request with the
+   needed item name, quantity, unit, need description, optional product URL, and
+   order type. The requester is set automatically from the logged-in account; it
+   is not an editable field.
 2. New requests start as pending approval. The create page does not show
    approval, payment, delivery, audit, receiving, or existing request tables.
-3. A warehouse administrator or superuser approves or rejects the request with
-   action buttons. Approval writes `approved_by` and `approved_at`; rejection
-   writes `rejected_by`, `rejected_at`, and an optional rejection comment.
+3. A user with `can_approve_purchase_requests` approves or rejects the request
+   with action buttons. Approval writes `approved_by` and `approved_at`;
+   rejection writes `rejected_by`, `rejected_at`, and an optional rejection
+   comment.
 4. An approved request can be marked as ordered.
 5. A warehouse administrator or superuser can cancel a request.
 
@@ -39,6 +40,27 @@ Approval status records whether the request is pending, approved, or rejected.
 Payment and delivery statuses are tracking fields only. Changing them never
 creates a stock movement and never changes stock balance.
 
+## Permissions
+
+Purchase requests use explicit Django permissions, exposed as clear checkboxes
+on the internal **Користувачі та ролі** page and through Django Admin user/group
+permissions:
+
+- `can_access_warehouse` — user can enter and use the warehouse web interface.
+- `can_view_purchase_requests` — user can open purchase request list/detail pages
+  and export the visible list to Excel.
+- `can_create_purchase_requests` — user can open and submit the create request
+  form and sees the create button.
+- `can_approve_purchase_requests` — user can approve or reject requests. The
+  requester may approve their own request only when this permission is granted.
+- `can_update_purchase_request_tracking` — user can update payment and delivery
+  statuses without changing approval status or stock.
+
+Superusers pass all permission checks. Existing `Адміністратор складу`
+management users keep their previous purchase request abilities for backward
+compatibility, but ordinary users can now be granted only the specific purchase
+permissions they need.
+
 Normal edit forms do not expose requester or approval audit fields. Approval and
 rejection audit data is populated only from the logged-in user performing the
 action.
@@ -51,9 +73,11 @@ unchanged.
 Received and remaining quantities are derived from active linked receive
 movements. Cancelled movements and cancellation/reversal rows are excluded.
 
-Warehouse administrators and superusers can view and manage all requests.
-Other users with warehouse access can view and edit only their own draft
-requests.
+Users with explicit view permission and management users can view the purchase
+request list according to the configured business visibility. Users who can only
+create requests can still work with their own requests. Direct POST requests for
+create, approve/reject, tracking updates, and Excel export are checked on the
+server side, not only hidden in templates.
 
 Actual stock balance changes only through the normal stock receive flow.
 
