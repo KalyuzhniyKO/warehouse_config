@@ -20,7 +20,7 @@
                 {% if field.name|slice:":17" == "warehouse_access_" or field.name|slice:":19" == "warehouse_delegate_" %}
                 {% elif field.name == "access_permissions" %}
                     <div class="border rounded p-3 mb-4">
-                        <label class="form-label fw-semibold">{{ field.label }}</label>
+                        <h2 class="h5 mb-2">{{ field.label }}</h2>
                         {% if field.help_text %}<div class="form-text mb-2">{{ field.help_text }}</div>{% endif %}
                         {% for choice in field %}
                             <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>

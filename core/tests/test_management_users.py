@@ -4,6 +4,14 @@ from django.contrib.auth.password_validation import validate_password
 from django.test import override_settings
 from django.urls import reverse
 
+from core.permissions import (
+    can_access_warehouse,
+    can_approve_purchase_requests,
+    can_create_purchase_requests,
+    can_update_purchase_request_tracking,
+    can_view_purchase_requests,
+)
+
 from .management_test_utils import ManagementTestBase
 
 
@@ -71,6 +79,10 @@ class ManagementUserTests(ManagementTestBase):
         response = self.client.get(reverse("management_user_create"))
 
         self.assertContains(response, "Права доступу")
+        self.assertContains(
+            response,
+            "Ці права визначають, які розділи та дії доступні користувачу",
+        )
         self.assertContains(response, "Може входити в складську систему")
         self.assertContains(response, "Може переглядати заявки на закупівлю")
         self.assertContains(response, "Може створювати заявки на закупівлю")
@@ -200,6 +212,147 @@ class ManagementUserTests(ManagementTestBase):
                 codename="can_view_purchase_requests"
             ).exists()
         )
+
+    def test_user_update_form_shows_group_inherited_permissions_as_active(self):
+        self.client.force_login(self.admin)
+        view_permission = Permission.objects.get(codename="can_view_purchase_requests")
+        self.storekeeper.groups.get(name="Комірник").permissions.add(view_permission)
+
+        response = self.client.get(
+            reverse("management_user_update", args=[self.storekeeper.pk])
+        )
+
+        self.assertContains(response, "Права доступу")
+        html = response.content.decode()
+        self.assertRegex(
+            html,
+            rf'name="access_permissions" value="{view_permission.pk}"[^>]*checked',
+        )
+
+    def test_user_list_shows_effective_group_permissions(self):
+        self.client.force_login(self.admin)
+        view_permission = Permission.objects.get(codename="can_view_purchase_requests")
+        self.storekeeper.groups.get(name="Комірник").permissions.add(view_permission)
+
+        response = self.client.get(reverse("management_users"))
+
+        self.assertContains(response, "Може переглядати заявки на закупівлю")
+
+    def test_saving_user_form_preserves_group_inherited_permissions_without_direct_copy(self):
+        self.client.force_login(self.admin)
+        group = Group.objects.get(name="Комірник")
+        view_permission = Permission.objects.get(codename="can_view_purchase_requests")
+        approve_permission = Permission.objects.get(
+            codename="can_approve_purchase_requests"
+        )
+        group.permissions.add(view_permission)
+        self.storekeeper.user_permissions.add(approve_permission)
+
+        response = self.client.post(
+            reverse("management_user_update", args=[self.storekeeper.pk]),
+            {
+                "first_name": "Олена",
+                "last_name": "Петренко",
+                "email": "olena@example.com",
+                "groups": [str(group.pk)],
+                "access_permissions": [str(view_permission.pk)],
+                "is_active": "on",
+            },
+        )
+
+        self.assertRedirects(response, reverse("management_users"))
+        self.storekeeper.refresh_from_db()
+        self.assertTrue(self.storekeeper.has_perm("core.can_view_purchase_requests"))
+        self.assertFalse(
+            self.storekeeper.user_permissions.filter(pk=view_permission.pk).exists()
+        )
+        self.assertFalse(
+            self.storekeeper.user_permissions.filter(pk=approve_permission.pk).exists()
+        )
+
+    def test_admin_can_grant_each_access_permission_and_helpers_update(self):
+        self.client.force_login(self.admin)
+        plain_user = get_user_model().objects.create_user(
+            username="plain-access", password="pw"
+        )
+        permission_codenames = [
+            "can_access_warehouse",
+            "can_view_purchase_requests",
+            "can_create_purchase_requests",
+            "can_approve_purchase_requests",
+            "can_update_purchase_request_tracking",
+        ]
+        permissions = list(Permission.objects.filter(codename__in=permission_codenames))
+
+        response = self.client.post(
+            reverse("management_user_update", args=[plain_user.pk]),
+            {
+                "first_name": "Plain",
+                "last_name": "Access",
+                "email": "plain@example.com",
+                "groups": [],
+                "access_permissions": [str(permission.pk) for permission in permissions],
+                "is_active": "on",
+            },
+        )
+
+        self.assertRedirects(response, reverse("management_users"))
+        plain_user = get_user_model().objects.get(pk=plain_user.pk)
+        self.assertTrue(can_access_warehouse(plain_user))
+        self.assertTrue(can_view_purchase_requests(plain_user))
+        self.assertTrue(can_create_purchase_requests(plain_user))
+        self.assertTrue(can_approve_purchase_requests(plain_user))
+        self.assertTrue(can_update_purchase_request_tracking(plain_user))
+
+    def test_admin_can_remove_can_access_warehouse_permission(self):
+        self.client.force_login(self.admin)
+        plain_user = get_user_model().objects.create_user(
+            username="plain-remove", password="pw"
+        )
+        access_permission = Permission.objects.get(codename="can_access_warehouse")
+        plain_user.user_permissions.add(access_permission)
+
+        response = self.client.post(
+            reverse("management_user_update", args=[plain_user.pk]),
+            {
+                "first_name": "",
+                "last_name": "",
+                "email": "",
+                "groups": [],
+                "access_permissions": [],
+                "is_active": "on",
+            },
+        )
+
+        self.assertRedirects(response, reverse("management_users"))
+        plain_user = get_user_model().objects.get(pk=plain_user.pk)
+        self.assertFalse(
+            plain_user.user_permissions.filter(codename="can_access_warehouse").exists()
+        )
+        self.assertFalse(can_access_warehouse(plain_user))
+
+    def test_regular_user_cannot_post_permission_changes(self):
+        target = get_user_model().objects.create_user(username="target", password="pw")
+        approve_permission = Permission.objects.get(
+            codename="can_approve_purchase_requests"
+        )
+        self.client.force_login(self.storekeeper)
+
+        response = self.client.post(
+            reverse("management_user_update", args=[target.pk]),
+            {
+                "first_name": "",
+                "last_name": "",
+                "email": "",
+                "groups": [],
+                "access_permissions": [str(approve_permission.pk)],
+                "is_active": "on",
+            },
+        )
+
+        self.assertEqual(response.status_code, 403)
+        target.refresh_from_db()
+        self.assertFalse(target.has_perm("core.can_approve_purchase_requests"))
 
     def test_password_view_changes_password(self):
         self.client.force_login(self.admin)
