@@ -47,11 +47,12 @@ class Item(ActiveModel):
             raise ValidationError({"barcode": _("Item barcode must use the ITM prefix.")})
 
     def save(self, *args, **kwargs):
+        generate_barcode = kwargs.pop("generate_barcode", True)
         self.name = self.name.strip()
         if self.internal_code is not None:
             self.internal_code = self.internal_code.strip() or None
         super().save(*args, **kwargs)
-        if not self.barcode_id:
+        if generate_barcode and not self.barcode_id:
             from core.services.barcodes import ensure_item_barcode
 
             ensure_item_barcode(self)

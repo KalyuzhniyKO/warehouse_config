@@ -299,6 +299,7 @@ def receive_stock(
     performed_by=None,
     request=None,
     purchase_request=None,
+    ensure_barcode=True,
 ):
     """Receive stock into a warehouse; location is optional."""
     qty = validate_positive_qty(qty)
@@ -341,7 +342,8 @@ def receive_stock(
             )
             if qty > remaining_qty:
                 raise StockServiceError(PURCHASE_REQUEST_QTY_EXCEEDED_ERROR)
-        ensure_item_barcode(item)
+        if ensure_barcode:
+            ensure_item_barcode(item)
         balance = get_or_create_balance_locked(item, warehouse=warehouse, location=location)
         _increase_balance(balance, qty)
         movement = _create_movement(
