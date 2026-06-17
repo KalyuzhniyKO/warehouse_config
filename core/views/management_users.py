@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404
@@ -15,6 +16,7 @@ from core.forms.management_users import (
 )
 from core.models import UserWarehouseAccess
 from core.permissions import (
+    EXPLICIT_USER_PERMISSION_CODENAMES,
     ROLE_DESCRIPTIONS,
     ROLE_DISPLAY_NAMES,
     USER_MANAGEMENT_GROUPS,
@@ -50,6 +52,13 @@ class ManagementUsersView(LoginRequiredMixin, CanManageUsersMixin, TemplateView)
                         is_active=True
                     ).select_related("warehouse"),
                     to_attr="active_warehouse_accesses",
+                ),
+                Prefetch(
+                    "user_permissions",
+                    queryset=Permission.objects.filter(
+                        codename__in=EXPLICIT_USER_PERMISSION_CODENAMES
+                    ).order_by("name"),
+                    to_attr="explicit_access_permissions",
                 ),
             )
             .order_by("username")

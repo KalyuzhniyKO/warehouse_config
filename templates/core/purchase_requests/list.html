@@ -160,7 +160,7 @@
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_order_type_display }}</span></td>
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_approval_status_display }}</span></td>
                             <td>
-                                {% if can_manage_purchase_requests %}
+                                {% if can_update_purchase_request_tracking %}
                                     <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -176,7 +176,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if can_manage_purchase_requests %}
+                                {% if can_update_purchase_request_tracking %}
                                     <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">

@@ -35,6 +35,12 @@ class UserWarehouseAccess(models.Model):
         verbose_name = _("Доступ до складу")
         verbose_name_plural = _("Доступ до складів")
         ordering = ["user__username", "warehouse__name"]
+        permissions = [
+            (
+                "can_access_warehouse",
+                _("Може входити в складську систему"),
+            ),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "warehouse"],

@@ -18,6 +18,15 @@
             {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
             {% for field in form %}
                 {% if field.name|slice:":17" == "warehouse_access_" or field.name|slice:":19" == "warehouse_delegate_" %}
+                {% elif field.name == "access_permissions" %}
+                    <div class="border rounded p-3 mb-4">
+                        <label class="form-label fw-semibold">{{ field.label }}</label>
+                        {% if field.help_text %}<div class="form-text mb-2">{{ field.help_text }}</div>{% endif %}
+                        {% for choice in field %}
+                            <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+                        {% endfor %}
+                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                    </div>
                 {% elif field.field.widget.input_type == "checkbox" and field.name != "groups" %}
                     <div class="form-check mb-3">
                         {{ field }}

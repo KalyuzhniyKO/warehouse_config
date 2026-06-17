@@ -127,7 +127,7 @@
                         </div>
                     </div>
 
-                    {% if can_manage %}
+                    {% if can_update_purchase_request_tracking %}
                         <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-detail-status-form mt-3">
                             {% csrf_token %}
                             <div>
@@ -173,7 +173,7 @@
                         {% if can_send %}
                             <form method="post" action="{% url 'purchase_request_send' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Надіслати на погодження" %}</button></form>
                         {% endif %}
-                        {% if can_manage and purchase_request.status == "pending_approval" %}
+                        {% if can_approve_purchase_request and purchase_request.status == "pending_approval" %}
                             <form method="post" action="{% url 'purchase_request_approve' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">{% trans "Погодити" %}</button></form>
                             <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}" class="purchase-detail-reject-form">
                                 {% csrf_token %}

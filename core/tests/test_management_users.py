@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.test import override_settings
 from django.urls import reverse
@@ -65,6 +65,18 @@ class ManagementUserTests(ManagementTestBase):
         self.assertNotContains(response, 'name="is_staff"')
         self.assertNotContains(response, 'name="is_superuser"')
 
+    def test_user_create_form_shows_explicit_access_permissions(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("management_user_create"))
+
+        self.assertContains(response, "Права доступу")
+        self.assertContains(response, "Може входити в складську систему")
+        self.assertContains(response, "Може переглядати заявки на закупівлю")
+        self.assertContains(response, "Може створювати заявки на закупівлю")
+        self.assertContains(response, "Може погоджувати заявки на закупівлю")
+        self.assertContains(response, "Може змінювати оплату та доставку заявок")
+
     def test_auditor_cannot_open_user_management_forms(self):
         self.client.force_login(self.auditor)
         target = self.storekeeper
@@ -92,6 +104,12 @@ class ManagementUserTests(ManagementTestBase):
     def test_create_user_creates_user_and_adds_selected_group(self):
         self.client.force_login(self.admin)
         group = Group.objects.get(name="Комірник")
+        approve_permission = Permission.objects.get(
+            codename="can_approve_purchase_requests"
+        )
+        tracking_permission = Permission.objects.get(
+            codename="can_update_purchase_request_tracking"
+        )
 
         response = self.client.post(
             reverse("management_user_create"),
@@ -103,6 +121,10 @@ class ManagementUserTests(ManagementTestBase):
                 "password1": "secret",
                 "password2": "secret",
                 "groups": [str(group.pk)],
+                "access_permissions": [
+                    str(approve_permission.pk),
+                    str(tracking_permission.pk),
+                ],
                 "is_active": "on",
                 "is_staff": "on",
                 "is_superuser": "on",
@@ -113,6 +135,8 @@ class ManagementUserTests(ManagementTestBase):
         created = get_user_model().objects.get(username="newkeeper")
         self.assertTrue(created.check_password("secret"))
         self.assertTrue(created.groups.filter(name="Комірник").exists())
+        self.assertTrue(created.has_perm("core.can_approve_purchase_requests"))
+        self.assertTrue(created.has_perm("core.can_update_purchase_request_tracking"))
         self.assertFalse(created.is_staff)
         self.assertFalse(created.is_superuser)
 
@@ -136,6 +160,7 @@ class ManagementUserTests(ManagementTestBase):
     def test_update_user_changes_profile_and_groups(self):
         self.client.force_login(self.admin)
         group = Group.objects.get(name="Адміністратор складу")
+        view_permission = Permission.objects.get(codename="can_view_purchase_requests")
 
         response = self.client.post(
             reverse("management_user_update", args=[self.storekeeper.pk]),
@@ -144,6 +169,7 @@ class ManagementUserTests(ManagementTestBase):
                 "last_name": "Петренко",
                 "email": "olena@example.com",
                 "groups": [str(group.pk)],
+                "access_permissions": [str(view_permission.pk)],
                 "is_active": "on",
             },
         )
@@ -155,6 +181,25 @@ class ManagementUserTests(ManagementTestBase):
         self.assertEqual(self.storekeeper.last_name, "Петренко")
         self.assertTrue(self.storekeeper.groups.filter(name="Адміністратор складу").exists())
         self.assertFalse(self.storekeeper.groups.filter(name="Комірник").exists())
+        self.assertTrue(self.storekeeper.has_perm("core.can_view_purchase_requests"))
+
+        response = self.client.post(
+            reverse("management_user_update", args=[self.storekeeper.pk]),
+            {
+                "first_name": "Олена",
+                "last_name": "Петренко",
+                "email": "olena@example.com",
+                "groups": [str(group.pk)],
+                "is_active": "on",
+            },
+        )
+        self.assertRedirects(response, reverse("management_users"))
+        self.storekeeper.refresh_from_db()
+        self.assertFalse(
+            self.storekeeper.user_permissions.filter(
+                codename="can_view_purchase_requests"
+            ).exists()
+        )
 
     def test_password_view_changes_password(self):
         self.client.force_login(self.admin)

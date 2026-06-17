@@ -63,6 +63,7 @@ from ..permissions import (
     USER_MANAGEMENT_GROUPS,
     GroupRequiredMixin,
     can_manage_directories,
+    can_access_warehouse,
     can_view_analytics,
     can_view_purchase_requests,
     can_view_warehouse_data,

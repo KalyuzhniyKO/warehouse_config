@@ -2,7 +2,7 @@ from io import BytesIO, StringIO
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
@@ -65,6 +65,9 @@ class PurchaseRequestTests(TestCase):
 
     def login(self, user):
         self.client.force_login(user)
+
+    def grant_permission(self, user, codename):
+        user.user_permissions.add(Permission.objects.get(codename=codename))
 
     def post_action(self, purchase_request, action, user=None):
         self.login(user or self.admin)
@@ -745,6 +748,144 @@ class PurchaseRequestTests(TestCase):
 
         self.assertEqual(self.client.get(reverse("purchase_request_list")).status_code, 403)
         self.assertEqual(self.client.get(reverse("purchase_request_create")).status_code, 403)
+
+    def test_user_with_view_permission_can_see_purchase_request_list(self):
+        purchase_request = self.create_request()
+        self.grant_permission(self.no_access_user, "can_view_purchase_requests")
+        self.login(self.no_access_user)
+
+        response = self.client.get(reverse("purchase_request_list"))
+
+        self.assertContains(response, purchase_request.title)
+
+    def test_user_with_create_permission_can_create_purchase_request(self):
+        self.grant_permission(self.no_access_user, "can_create_purchase_requests")
+        self.login(self.no_access_user)
+
+        response = self.client.post(
+            reverse("purchase_request_create"), self.request_data()
+        )
+
+        purchase_request = PurchaseRequest.objects.get(requested_by=self.no_access_user)
+        self.assertRedirects(
+            response, reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+
+    def test_user_without_create_permission_cannot_create_by_post(self):
+        self.login(self.no_access_user)
+
+        response = self.client.post(
+            reverse("purchase_request_create"), self.request_data()
+        )
+
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(PurchaseRequest.objects.filter(requested_by=self.no_access_user).exists())
+
+    def test_approver_permission_controls_buttons_and_direct_post(self):
+        purchase_request = self.create_request(
+            status=PurchaseRequest.Status.PENDING_APPROVAL
+        )
+        self.grant_permission(self.other_requester, "can_view_purchase_requests")
+        self.login(self.other_requester)
+
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertNotContains(response, "Погодити")
+
+        denied = self.client.post(
+            reverse("purchase_request_approve", args=[purchase_request.pk])
+        )
+        self.assertEqual(denied.status_code, 403)
+
+        self.grant_permission(self.other_requester, "can_approve_purchase_requests")
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertContains(response, "Погодити")
+
+        approved = self.client.post(
+            reverse("purchase_request_approve", args=[purchase_request.pk])
+        )
+        purchase_request.refresh_from_db()
+        self.assertEqual(approved.status_code, 302)
+        self.assertEqual(purchase_request.approved_by, self.other_requester)
+        self.assertIsNotNone(purchase_request.approved_at)
+
+    def test_approver_permission_can_approve_own_request(self):
+        purchase_request = self.create_request(
+            user=self.requester,
+            status=PurchaseRequest.Status.PENDING_APPROVAL,
+        )
+        self.grant_permission(self.requester, "can_approve_purchase_requests")
+
+        response = self.post_action(purchase_request, "approve", self.requester)
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(purchase_request.approved_by, self.requester)
+
+    def test_approver_permission_can_reject_and_writes_audit(self):
+        purchase_request = self.create_request(
+            status=PurchaseRequest.Status.PENDING_APPROVAL
+        )
+        self.grant_permission(self.other_requester, "can_view_purchase_requests")
+        self.grant_permission(self.other_requester, "can_approve_purchase_requests")
+        self.login(self.other_requester)
+
+        response = self.client.post(
+            reverse("purchase_request_reject", args=[purchase_request.pk]),
+            {"rejection_comment": "Not enough budget"},
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(purchase_request.rejected_by, self.other_requester)
+        self.assertIsNotNone(purchase_request.rejected_at)
+        self.assertEqual(purchase_request.rejection_comment, "Not enough budget")
+
+    def test_tracking_permission_controls_payment_and_delivery_update(self):
+        purchase_request = self.create_request()
+        self.grant_permission(self.other_requester, "can_view_purchase_requests")
+        self.login(self.other_requester)
+
+        denied = self.client.post(
+            reverse("purchase_request_tracking_status", args=[purchase_request.pk]),
+            {"payment_status": PurchaseRequest.PaymentStatus.PAID},
+        )
+        self.assertEqual(denied.status_code, 403)
+
+        self.grant_permission(
+            self.other_requester, "can_update_purchase_request_tracking"
+        )
+        movement_count = StockMovement.objects.count()
+        balance_count = StockBalance.objects.count()
+        updated = self.client.post(
+            reverse("purchase_request_tracking_status", args=[purchase_request.pk]),
+            {
+                "payment_status": PurchaseRequest.PaymentStatus.PAID,
+                "delivery_status": PurchaseRequest.DeliveryStatus.DELIVERED,
+            },
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(updated.status_code, 302)
+        self.assertEqual(purchase_request.payment_status, PurchaseRequest.PaymentStatus.PAID)
+        self.assertEqual(
+            purchase_request.delivery_status, PurchaseRequest.DeliveryStatus.DELIVERED
+        )
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+        self.assertEqual(StockBalance.objects.count(), balance_count)
+
+    def test_purchase_request_export_works_for_view_permission_user(self):
+        purchase_request = self.create_request(title="Permission export")
+        self.grant_permission(self.no_access_user, "can_view_purchase_requests")
+
+        response, sheet = self.load_purchase_request_export(user=self.no_access_user)
+
+        self.assertEqual(response.status_code, 200)
+        titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
+        self.assertIn(purchase_request.title, titles)
 
     def test_invalid_status_transition_is_rejected(self):
         purchase_request = self.create_request(status=PurchaseRequest.Status.DRAFT)
