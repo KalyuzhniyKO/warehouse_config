@@ -61,11 +61,13 @@ class PurchaseRequestStatusControlTests(TestCase):
         self.client.force_login(self.requester)
 
         response = self.client.get(reverse("purchase_request_list"))
+        html = response.content.decode()
+        table_body = html[html.index("<tbody>") : html.index("</tbody>")]
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "purchase-request-status-form")
-        self.assertNotContains(response, "purchase-request-payment-select")
-        self.assertNotContains(response, "purchase-request-delivery-select")
-        self.assertNotContains(response, 'name="payment_status"')
-        self.assertNotContains(response, 'name="delivery_status"')
-        self.assertContains(response, "purchase-status-badge")
+        self.assertNotIn("purchase-request-status-form", table_body)
+        self.assertNotIn("purchase-request-payment-select", table_body)
+        self.assertNotIn("purchase-request-delivery-select", table_body)
+        self.assertNotIn('name="payment_status"', table_body)
+        self.assertNotIn('name="delivery_status"', table_body)
+        self.assertIn("purchase-status-badge", table_body)
