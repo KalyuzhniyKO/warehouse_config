@@ -20,7 +20,10 @@ from ..forms import (
 )
 from ..models import StockBalance, StockMovement
 from ..permissions import STOCK_EDIT_GROUPS, GroupRequiredMixin
-from ..services.purchase_requests import purchase_requests_available_for_receiving
+from ..services.purchase_requests import (
+    find_item_for_purchase_request,
+    purchase_requests_available_for_receiving,
+)
 from ..services.barcodes import resolve_item_barcode
 from ..services.stock import (
     InsufficientStockError,
@@ -179,6 +182,23 @@ class StockReceiveView(
     form_class = StockReceiveForm
     result_url_name = "stock_receive_result"
 
+    def get_selected_purchase_request(self, form=None):
+        if form is not None:
+            purchase_request_id = (
+                form.data.get("purchase_request")
+                if form.is_bound
+                else getattr(form.initial.get("purchase_request"), "pk", None)
+            )
+        else:
+            purchase_request_id = self.request.GET.get("purchase_request")
+        if not purchase_request_id:
+            return None
+        return (
+            purchase_requests_available_for_receiving(self.request.user)
+            .filter(pk=purchase_request_id)
+            .first()
+        )
+
     def get_initial(self):
         initial = super().get_initial()
         initial["occurred_at"] = timezone.localtime(timezone.now()).strftime(
@@ -192,23 +212,29 @@ class StockReceiveView(
             ).filter(pk=purchase_request_id).first()
             if purchase_request is not None:
                 initial["purchase_request"] = purchase_request
+                resolved_item = find_item_for_purchase_request(purchase_request)
+                if resolved_item is not None:
+                    initial["item"] = resolved_item
         return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["can_submit_receive"] = self.scanned_item is not None
         form = context["form"]
-        purchase_request_id = (
-            form.data.get("purchase_request")
-            if form.is_bound
-            else getattr(form.initial.get("purchase_request"), "pk", None)
-        )
-        context["selected_purchase_request"] = (
-            purchase_requests_available_for_receiving(self.request.user)
-            .filter(pk=purchase_request_id)
-            .first()
-            if purchase_request_id
+        selected_purchase_request = self.get_selected_purchase_request(form)
+        purchase_request_item = (
+            find_item_for_purchase_request(selected_purchase_request)
+            if selected_purchase_request is not None
             else None
+        )
+        context["selected_purchase_request"] = selected_purchase_request
+        context["purchase_request_resolved_item"] = purchase_request_item
+        context["purchase_request_item_will_be_created"] = (
+            selected_purchase_request is not None
+            and purchase_request_item is None
+            and bool((selected_purchase_request.title or "").strip())
+        )
+        context["can_submit_receive"] = (
+            self.scanned_item is not None or selected_purchase_request is not None
         )
         return self.add_operation_token_context(context, context["can_submit_receive"])
 
@@ -227,6 +253,10 @@ class StockReceiveView(
                 performed_by=self.request.user,
                 request=self.request,
                 purchase_request=form.cleaned_data.get("purchase_request"),
+                ensure_barcode=not bool(
+                    form.cleaned_data.get("purchase_request")
+                    and not form.cleaned_data.get("barcode")
+                ),
             )
         except StockServiceError as exc:
             message = str(exc)

@@ -42,17 +42,19 @@ class PurchaseRequestReceivingTests(TestCase):
         grant_warehouse_access(self.owner, self.warehouse)
         grant_warehouse_access(self.other_user, self.warehouse)
 
-    def create_request(self, *, user=None, status=PurchaseRequest.Status.APPROVED):
-        return PurchaseRequest.objects.create(
-            title="Planned cables",
-            need_description="",
-            requested_qty=Decimal("10.000"),
-            unit="pc",
-            unit_price_uah=Decimal("2.00"),
-            product_url="https://example.com/cables",
-            requested_by=user or self.owner,
-            status=status,
-            approval_status=(
+    def create_request(
+        self, *, user=None, status=PurchaseRequest.Status.APPROVED, **overrides
+    ):
+        data = {
+            "title": "Planned cables",
+            "need_description": "",
+            "requested_qty": Decimal("10.000"),
+            "unit": "pc",
+            "unit_price_uah": Decimal("2.00"),
+            "product_url": "https://example.com/cables",
+            "requested_by": user or self.owner,
+            "status": status,
+            "approval_status": (
                 PurchaseRequest.ApprovalStatus.APPROVED
                 if status
                 in {
@@ -63,7 +65,9 @@ class PurchaseRequestReceivingTests(TestCase):
                 }
                 else PurchaseRequest.ApprovalStatus.PENDING
             ),
-        )
+        }
+        data.update(overrides)
+        return PurchaseRequest.objects.create(**data)
 
     def receive_via_form(self, *, user, qty, purchase_request=None):
         self.client.force_login(user)
@@ -83,6 +87,23 @@ class PurchaseRequestReceivingTests(TestCase):
         }
         if purchase_request is not None:
             data["purchase_request"] = purchase_request.pk
+        return self.client.post(reverse("stock_receive"), data)
+
+    def receive_purchase_request_without_barcode(self, *, user, qty, purchase_request):
+        self.client.force_login(user)
+        get_response = self.client.get(
+            reverse("stock_receive"), {"purchase_request": purchase_request.pk}
+        )
+        token = get_response.context["operation_token"]
+        data = {
+            "operation_token": token,
+            "purchase_request": purchase_request.pk,
+            "warehouse": self.warehouse.pk,
+            "location": self.location.pk,
+            "qty": str(qty),
+            "comment": "",
+            "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+        }
         return self.client.post(reverse("stock_receive"), data)
 
     def test_existing_receive_without_purchase_request_still_works(self):
@@ -107,6 +128,89 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(movement.purchase_request, purchase_request)
 
+    def test_purchase_request_receive_does_not_require_barcode(self):
+        purchase_request = self.create_request(title="Шина алюмінієва 4х20", unit="m")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="3.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(movement_type=StockMovement.MovementType.IN)
+        self.assertEqual(movement.purchase_request, purchase_request)
+        self.assertEqual(movement.item.name, "Шина алюмінієва 4х20")
+
+    def test_purchase_request_receive_uses_existing_item_by_exact_normalized_name(self):
+        existing_item = Item.objects.create(name="Шина алюмінієва 4х20", unit=self.unit)
+        item_count = Item.objects.count()
+        purchase_request = self.create_request(title="Шина алюмінієва 4х20")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="2.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        movement = StockMovement.objects.get(purchase_request=purchase_request)
+        self.assertEqual(movement.item, existing_item)
+        self.assertEqual(Item.objects.count(), item_count)
+        purchase_request.refresh_from_db()
+        self.assertEqual(purchase_request.item, existing_item)
+
+    def test_purchase_request_receive_matches_existing_item_case_insensitive_and_trimmed(
+        self,
+    ):
+        existing_item = Item.objects.create(name="Шина алюмінієва 4х20", unit=self.unit)
+        purchase_request = self.create_request(title="  шина алюмінієва 4х20  ")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="1.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            StockMovement.objects.get(purchase_request=purchase_request).item,
+            existing_item,
+        )
+        self.assertEqual(
+            Item.objects.filter(name__iexact="Шина алюмінієва 4х20").count(), 1
+        )
+
+    def test_purchase_request_receive_creates_new_item_with_request_unit_without_barcode(
+        self,
+    ):
+        purchase_request = self.create_request(title="Новий підшипник", unit="m")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="4.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        created_item = Item.objects.get(name="Новий підшипник")
+        self.assertEqual(created_item.unit.symbol, "m")
+        self.assertIsNone(created_item.barcode_id)
+        movement = StockMovement.objects.get(purchase_request=purchase_request)
+        self.assertEqual(movement.item, created_item)
+
+    def test_purchase_request_receive_without_barcode_updates_balance_and_request_quantities(
+        self,
+    ):
+        purchase_request = self.create_request(title="Новий кабель")
+
+        self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="3.000", purchase_request=purchase_request
+        )
+
+        item = Item.objects.get(name="Новий кабель")
+        default_location = get_default_location_for_warehouse(self.warehouse)
+        balance = StockBalance.objects.get(item=item, location=default_location)
+        purchase_request.refresh_from_db()
+        self.assertEqual(balance.qty, Decimal("3.000"))
+        self.assertEqual(purchase_request.received_qty, Decimal("3.000"))
+        self.assertEqual(purchase_request.remaining_qty, Decimal("7.000"))
+        self.assertEqual(
+            purchase_request.status, PurchaseRequest.Status.PARTIALLY_RECEIVED
+        )
+
     def test_admin_can_receive_from_another_users_request(self):
         purchase_request = self.create_request(user=self.other_user)
 
@@ -121,6 +225,17 @@ class PurchaseRequestReceivingTests(TestCase):
         purchase_request = self.create_request(user=self.other_user)
 
         response = self.receive_via_form(
+            user=self.owner, qty="3.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("purchase_request", response.context["form"].errors)
+        self.assertFalse(StockMovement.objects.exists())
+
+    def test_regular_user_cannot_receive_another_users_request_without_barcode(self):
+        purchase_request = self.create_request(user=self.other_user)
+
+        response = self.receive_purchase_request_without_barcode(
             user=self.owner, qty="3.000", purchase_request=purchase_request
         )
 
@@ -166,6 +281,39 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("qty", response.context["form"].errors)
         self.assertEqual(purchase_request.received_qty, Decimal("8.000"))
+
+    def test_purchase_request_receive_without_barcode_cannot_exceed_remaining_qty(self):
+        purchase_request = self.create_request(title="Лімітована позиція")
+        item_count = Item.objects.count()
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="11.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("qty", response.context["form"].errors)
+        self.assertFalse(
+            StockMovement.objects.filter(purchase_request=purchase_request).exists()
+        )
+        self.assertEqual(Item.objects.count(), item_count)
+
+    def test_normal_receive_without_purchase_request_still_requires_item_or_barcode(self):
+        self.client.force_login(self.owner)
+
+        response = self.client.post(
+            reverse("stock_receive"),
+            {
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "qty": "1.000",
+                "comment": "",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("barcode", response.context["form"].errors)
+        self.assertFalse(StockMovement.objects.exists())
 
     def test_draft_rejected_and_cancelled_requests_cannot_be_received(self):
         for status in [
@@ -315,3 +463,26 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertContains(response, purchase_request.title)
         self.assertContains(response, purchase_request.product_url)
         self.assertContains(response, "Залишилось отримати")
+
+    def test_receive_shortcut_shows_purchase_request_item_resolution_state(self):
+        existing_item = Item.objects.create(name="Known purchase item", unit=self.unit)
+        purchase_request = self.create_request(title=" known purchase item ")
+        self.client.force_login(self.owner)
+
+        response = self.client.get(
+            reverse("stock_receive"), {"purchase_request": purchase_request.pk}
+        )
+
+        self.assertContains(response, "Товар буде прийнято за назвою із заявки")
+        self.assertContains(response, "Знайдено існуючу номенклатуру")
+        self.assertEqual(
+            response.context["purchase_request_resolved_item"], existing_item
+        )
+
+        new_request = self.create_request(title="Brand new purchase item")
+        response = self.client.get(
+            reverse("stock_receive"), {"purchase_request": new_request.pk}
+        )
+
+        self.assertContains(response, "Номенклатура буде створена автоматично")
+        self.assertTrue(response.context["purchase_request_item_will_be_created"])

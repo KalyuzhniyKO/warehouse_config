@@ -18,8 +18,10 @@ from core.models import (
 from core.services.barcodes import resolve_item_barcode
 from core.services.locations import get_default_location_for_warehouse
 from core.services.purchase_requests import (
+    PURCHASE_REQUEST_ITEM_NAME_REQUIRED_ERROR,
     PURCHASE_REQUEST_QTY_EXCEEDED_ERROR,
     purchase_requests_available_for_receiving,
+    resolve_or_create_item_for_purchase_request,
 )
 from core.services.stock import (
     RETURN_QUANTITY_EXCEEDED_ERROR,
@@ -206,6 +208,10 @@ class StockReceiveForm(StockOperationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.resolved_purchase_request_item = None
+        self.purchase_request_item_created = False
+        if "item" in self.fields:
+            self.fields["item"].required = False
         if self.request_user is None:
             self.fields.pop("purchase_request", None)
         else:
@@ -295,9 +301,32 @@ class StockReceiveForm(StockReceiveForm):
             cleaned_data["location"] = get_default_location_for_warehouse(warehouse)
         purchase_request = cleaned_data.get("purchase_request")
         qty = cleaned_data.get("qty")
+        item = cleaned_data.get("item")
         if purchase_request is not None and qty is not None:
             if qty > purchase_request.remaining_qty:
                 self.add_error("qty", PURCHASE_REQUEST_QTY_EXCEEDED_ERROR)
+                return cleaned_data
+        if purchase_request is not None and item is None:
+            try:
+                item, created = resolve_or_create_item_for_purchase_request(
+                    purchase_request
+                )
+            except ValueError:
+                self.add_error(
+                    "purchase_request", PURCHASE_REQUEST_ITEM_NAME_REQUIRED_ERROR
+                )
+            else:
+                cleaned_data["item"] = item
+                self.resolved_purchase_request_item = item
+                self.purchase_request_item_created = created
+        elif purchase_request is not None and item is not None:
+            self.resolved_purchase_request_item = item
+            self.purchase_request_item_created = False
+            if purchase_request.item_id is None:
+                PurchaseRequest.objects.filter(pk=purchase_request.pk).update(item=item)
+                purchase_request.item = item
+        elif purchase_request is None and item is None:
+            self.add_error("barcode", _("Відскануйте або виберіть товар."))
         return cleaned_data
 
 

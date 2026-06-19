@@ -4,7 +4,8 @@
 {% block content %}
 <div class="operation-form-page"><header class="operation-form-header mb-3"><h1 class="h3 mb-1">{% trans "Прихід товару" %}</h1><p class="text-muted mb-0">{% trans "Операція адаптована для планшетного сценарію роботи." %}</p></header>
 
-<div class="card content-card shadow-sm rounded-4 mb-4 operation-form-card">
+{% if not selected_purchase_request or barcode_query %}
+<div class="card content-card shadow-sm rounded-4 mb-4 operation-form-card{% if selected_purchase_request %} opacity-75{% endif %}">
     <div class="card-body p-4 p-lg-5">
         <div class="mb-4">
             <h2 class="h4 fw-bold mb-2">{% trans "Сканування товару" %}</h2>
@@ -52,6 +53,7 @@
         {% endif %}
     </div>
 </div>
+{% endif %}
 
 {% if selected_purchase_request %}
 <div class="alert alert-info mb-4">
@@ -64,6 +66,16 @@
         <dt class="col-sm-4">{% trans "Заявник" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.requested_by }}</dd>
         {% if selected_purchase_request.product_url %}<dt class="col-sm-4">{% trans "Посилання на товар" %}</dt><dd class="col-sm-8"><a href="{{ selected_purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a></dd>{% endif %}
     </dl>
+</div>
+<div class="alert alert-primary mb-4" role="status">
+    <div class="fw-semibold mb-2">
+        {% trans "Товар буде прийнято за назвою із заявки. Якщо номенклатури немає, вона буде створена автоматично." %}
+    </div>
+    {% if purchase_request_resolved_item %}
+        {% trans "Знайдено існуючу номенклатуру:" %} <strong>{{ purchase_request_resolved_item.name }}</strong>
+    {% elif purchase_request_item_will_be_created %}
+        {% trans "Номенклатура буде створена автоматично:" %} <strong>{{ selected_purchase_request.title }}</strong>
+    {% endif %}
 </div>
 {% endif %}
 
