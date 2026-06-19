@@ -2,6 +2,48 @@
 {% load i18n core_extras %}
 {% block title %}{% trans "Заявки на закупівлю" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
+<style>
+    .purchase-request-table {
+        min-width: 1280px;
+    }
+
+    .purchase-col-payment-status {
+        width: 17rem;
+    }
+
+    .purchase-col-delivery-status {
+        width: 15.5rem;
+    }
+
+    .purchase-request-status-form {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+        white-space: nowrap;
+    }
+
+    .purchase-request-status-select {
+        width: auto;
+        max-width: 260px;
+        font-size: .78rem;
+        padding: .2rem 1.55rem .2rem .45rem;
+    }
+
+    .purchase-request-payment-select {
+        min-width: 220px;
+    }
+
+    .purchase-request-delivery-select {
+        min-width: 200px;
+    }
+
+    .purchase-request-status-submit {
+        flex: 0 0 auto;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+</style>
 <div class="list-page">
     <div class="list-page-header">
         <div class="list-page-title">
@@ -96,7 +138,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="purchase-col-status">
+                        <th class="purchase-col-status purchase-col-payment-status">
                             <div class="purchase-filter-heading">
                                 <span>{% trans "Оплата" %}</span>
                                 <div class="dropdown">
@@ -112,7 +154,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="purchase-col-status">
+                        <th class="purchase-col-status purchase-col-delivery-status">
                             <div class="purchase-filter-heading">
                                 <span>{% trans "Доставка" %}</span>
                                 <div class="dropdown">
@@ -161,15 +203,15 @@
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_approval_status_display }}</span></td>
                             <td>
                                 {% if can_update_purchase_request_tracking %}
-                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
+                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form purchase-request-status-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <select class="form-select form-select-sm" name="payment_status" aria-label="{% trans 'Статус оплати' %}">
+                                        <select class="form-select form-select-sm purchase-request-status-select purchase-request-payment-select" name="payment_status" aria-label="{% trans 'Статус оплати' %}">
                                             {% for value, label in payment_status_choices %}
                                                 <option value="{{ value }}"{% if purchase_request.payment_status == value %} selected{% endif %}>{{ label }}</option>
                                             {% endfor %}
                                         </select>
-                                        <button class="btn btn-outline-primary btn-sm purchase-status-save" type="submit">{% trans "OK" %}</button>
+                                        <button class="btn btn-outline-primary btn-sm purchase-status-save purchase-request-status-submit" type="submit">{% trans "OK" %}</button>
                                     </form>
                                 {% else %}
                                     <span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_payment_status_display }}</span>
@@ -177,15 +219,15 @@
                             </td>
                             <td>
                                 {% if can_update_purchase_request_tracking %}
-                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form">
+                                    <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form purchase-request-status-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                        <select class="form-select form-select-sm" name="delivery_status" aria-label="{% trans 'Статус доставки' %}">
+                                        <select class="form-select form-select-sm purchase-request-status-select purchase-request-delivery-select" name="delivery_status" aria-label="{% trans 'Статус доставки' %}">
                                             {% for value, label in delivery_status_choices %}
                                                 <option value="{{ value }}"{% if purchase_request.delivery_status == value %} selected{% endif %}>{{ label }}</option>
                                             {% endfor %}
                                         </select>
-                                        <button class="btn btn-outline-primary btn-sm purchase-status-save" type="submit">{% trans "OK" %}</button>
+                                        <button class="btn btn-outline-primary btn-sm purchase-status-save purchase-request-status-submit" type="submit">{% trans "OK" %}</button>
                                     </form>
                                 {% else %}
                                     <span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_delivery_status_display }}</span>
