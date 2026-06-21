@@ -2,7 +2,7 @@ from io import StringIO
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
@@ -39,10 +39,22 @@ class DashboardLocalizationTests(TestCase):
         self.staff = User.objects.create_user(
             username="dash-staff", password="pw", is_staff=True
         )
+        self.purchase_viewer = User.objects.create_user(
+            username="dash-purchase-viewer", password="pw"
+        )
+        self.no_access_user = User.objects.create_user(
+            username="dash-no-access", password="pw"
+        )
+        self.superuser = User.objects.create_superuser(
+            username="dash-owner", password="pw", first_name="Олена", last_name="Власник"
+        )
         self.warehouse = Warehouse.objects.create(name="Dashboard warehouse")
         grant_warehouse_access(self.admin, self.warehouse, can_delegate=True)
         grant_warehouse_access(self.storekeeper, self.warehouse)
         grant_warehouse_access(self.auditor, self.warehouse)
+        self.purchase_viewer.user_permissions.add(
+            Permission.objects.get(codename="can_view_purchase_requests")
+        )
 
     def dashboard_for(self, user, path=None):
         self.client.force_login(user)
@@ -62,6 +74,11 @@ class DashboardLocalizationTests(TestCase):
         html = response.content.decode()
         start = html.index('aria-labelledby="control-heading"')
         return html[start:html.index('aria-labelledby="items-heading"', start)]
+
+    def user_menu_html(self, response):
+        html = response.content.decode()
+        start = html.index('<div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">')
+        return html[start:html.index("</form>", start)]
 
     def tearDown(self):
         from django.utils import translation
@@ -233,21 +250,36 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("user-menu-toggle", html)
         self.assertIn("Тарас Технолог", html)
         self.assertNotIn(">dash-admin<", html)
-        self.assertIn("Мої налаштування", html)
-        self.assertIn("Налаштування складу", html)
-        self.assertIn('href="/uk/management/"', html)
-        self.assertIn('href="/uk/settings/printers/"', html)
-        self.assertIn('href="/uk/settings/label-templates/"', html)
+        dropdown_html = self.user_menu_html(response)
+        self.assertIn("Користувачі та ролі", dropdown_html)
+        self.assertIn(f'href="{reverse("management_users")}"', dropdown_html)
+        self.assertIn("Вийти", dropdown_html)
+        for url_name in [
+            "stock_receive",
+            "stock_issue",
+            "stock_return",
+            "purchase_request_list",
+            "purchase_request_create",
+            "purchase_request_archive",
+            "management_reports",
+            "management_analytics",
+            "warehouse_list",
+            "location_list",
+            "printer_list",
+            "labeltemplate_list",
+        ]:
+            self.assertNotIn(f'href="{reverse(url_name)}"', dropdown_html)
 
     def test_auditor_account_dropdown_hides_management_links(self):
         response = self.dashboard_for(self.auditor, "/uk/")
         html = response.content.decode()
 
         self.assertIn("user-menu-toggle", html)
-        self.assertIn("Мої налаштування", html)
-        self.assertNotIn("Налаштування складу", html)
-        self.assertNotIn('href="/uk/settings/printers/"', html)
-        self.assertNotIn('href="/uk/settings/label-templates/"', html)
+        dropdown_html = self.user_menu_html(response)
+        self.assertNotIn("Користувачі та ролі", dropdown_html)
+        self.assertNotIn("Налаштування складу", dropdown_html)
+        self.assertNotIn(f'href="{reverse("management_users")}"', dropdown_html)
+        self.assertIn("Вийти", dropdown_html)
 
     def test_language_switcher_lists_all_configured_languages_in_navbar(self):
         from django.conf import settings
@@ -326,6 +358,55 @@ class DashboardLocalizationTests(TestCase):
         response = self.dashboard_for(self.admin, reverse("management_analytics"))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_dashboard_control_card_includes_purchase_request_shortcuts_for_viewer(self):
+        response = self.dashboard_for(self.purchase_viewer, "/uk/")
+        control_block = self.control_block_html(response)
+
+        self.assertIn("Активні заявки на закупівлю", control_block)
+        self.assertIn("Архів заявок на закупівлю", control_block)
+        self.assertIn(f'href="{reverse("purchase_request_list")}"', control_block)
+        self.assertIn(f'href="{reverse("purchase_request_archive")}"', control_block)
+
+    def test_dashboard_control_card_includes_create_purchase_request_for_creator(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        control_block = self.control_block_html(response)
+
+        self.assertIn("Створити заявку на закупівлю", control_block)
+        self.assertIn(f'href="{reverse("purchase_request_create")}"', control_block)
+
+    def test_dashboard_control_card_hides_create_purchase_request_without_create_permission(self):
+        response = self.dashboard_for(self.purchase_viewer, "/uk/")
+        control_block = self.control_block_html(response)
+
+        self.assertNotIn("Створити заявку на закупівлю", control_block)
+        self.assertNotIn(f'href="{reverse("purchase_request_create")}"', control_block)
+
+    def test_dashboard_control_card_hides_purchase_request_shortcuts_without_access(self):
+        response = self.dashboard_for(self.no_access_user, "/uk/")
+        control_block = self.control_block_html(response)
+
+        self.assertNotIn(f'href="{reverse("purchase_request_list")}"', control_block)
+        self.assertNotIn(f'href="{reverse("purchase_request_archive")}"', control_block)
+        self.assertNotIn(f'href="{reverse("purchase_request_create")}"', control_block)
+
+    def test_superuser_sees_all_purchase_request_dashboard_shortcuts(self):
+        response = self.dashboard_for(self.superuser, "/uk/")
+        control_block = self.control_block_html(response)
+
+        for url_name in [
+            "purchase_request_list",
+            "purchase_request_archive",
+            "purchase_request_create",
+        ]:
+            self.assertIn(f'href="{reverse(url_name)}"', control_block)
+
+    def test_staff_user_menu_keeps_admin_link(self):
+        response = self.dashboard_for(self.staff, "/uk/")
+        dropdown_html = self.user_menu_html(response)
+
+        self.assertIn(f'href="{reverse("admin:index")}"', dropdown_html)
+        self.assertIn("Панель адміністратора", dropdown_html)
 
     def test_mobile_account_labels_are_localized(self):
         expected = {

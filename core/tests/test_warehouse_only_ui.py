@@ -206,9 +206,15 @@ class CompactDashboardAndNavbarTests(TestCase):
         ]:
             self.assertNotIn(label, main)
 
-    def test_admin_dropdown_contains_rare_functions(self):
+    def user_menu_html(self, response):
+        html = response.content.decode()
+        start = html.index('<div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">')
+        return html[start:html.index("</form>", start)]
+
+    def test_admin_dropdown_excludes_warehouse_work_actions(self):
         self.client.force_login(self.admin)
-        html = self.client.get(reverse("dashboard")).content.decode()
+        response = self.client.get(reverse("dashboard"))
+        dropdown_html = self.user_menu_html(response)
 
         for label in [
             "Керування складом",
@@ -223,7 +229,9 @@ class CompactDashboardAndNavbarTests(TestCase):
             "Шаблони етикеток",
             "Допомога",
         ]:
-            self.assertIn(label, html)
+            self.assertNotIn(label, dropdown_html)
+        self.assertIn("Користувачі та ролі", dropdown_html)
+        self.assertIn("Вийти", dropdown_html)
 
     def test_superuser_dropdown_contains_audit_log(self):
         self.client.force_login(self.superuser)
