@@ -28,7 +28,7 @@ class PwaSupportTests(TestCase):
         self.assertEqual(manifest["start_url"], "/uk/")
         self.assertEqual(manifest["scope"], "/")
         self.assertEqual(manifest["display"], "standalone")
-        self.assertEqual(manifest["theme_color"], "#f5c400")
+        self.assertEqual(manifest["theme_color"], "#111827")
         self.assertEqual(
             manifest["icons"],
             [
@@ -54,7 +54,7 @@ class PwaSupportTests(TestCase):
         self.assertIn('{% load i18n static core_extras %}', template)
         self.assertIn('rel="manifest" href="{% url \'webmanifest\' %}"', template)
         self.assertNotIn('/static/manifest.webmanifest', template)
-        self.assertIn('name="theme-color" content="#f5c400"', template)
+        self.assertIn('name="theme-color" content="#111827"', template)
         self.assertIn('name="mobile-web-app-capable" content="yes"', template)
         self.assertIn('name="apple-mobile-web-app-capable" content="yes"', template)
         self.assertIn('name="apple-mobile-web-app-title" content="YANTOS Warehouse"', template)
@@ -100,7 +100,7 @@ class PwaSupportTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'rel="manifest" href="/manifest.webmanifest"')
         self.assertNotContains(response, '/static/manifest.webmanifest')
-        self.assertContains(response, 'name="theme-color" content="#f5c400"')
+        self.assertContains(response, 'name="theme-color" content="#111827"')
 
     def test_no_binary_assets_were_added(self):
         forbidden_extensions = (".png", ".jpg", ".jpeg", ".ico", ".webp", ".mo")
