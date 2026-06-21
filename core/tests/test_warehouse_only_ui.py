@@ -216,8 +216,9 @@ class CompactDashboardAndNavbarTests(TestCase):
         response = self.client.get(reverse("dashboard"))
         dropdown_html = self.user_menu_html(response)
 
+        self.assertIn("Керування складом", dropdown_html)
+        self.assertIn(f'href="{reverse("management_dashboard")}"', dropdown_html)
         for label in [
-            "Керування складом",
             "Склади",
             "Локації",
             "Працівники / отримувачі",

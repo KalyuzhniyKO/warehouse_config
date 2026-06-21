@@ -1620,3 +1620,15 @@ msgstr "Print formats and templates."
 
 msgid "Перегляньте інвентаризації складу."
 msgstr "Depo envanter sayımlarını görüntüleyin."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Aktif satın alma talepleri"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Güncel talepler, onaylar, ödemeler ve teslimatlar."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Satın alma talebi arşivi"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Tamamlanan ve arşivlenen satın alma talepleri."

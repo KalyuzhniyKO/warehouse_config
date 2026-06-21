@@ -1632,3 +1632,15 @@ msgstr "Print formats and templates."
 
 msgid "Перегляньте інвентаризації складу."
 msgstr "Lagerinventuren anzeigen."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Aktive Kaufanfragen"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Aktuelle Anfragen, Freigaben, Zahlungen und Lieferungen."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Archiv der Kaufanfragen"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Abgeschlossene und archivierte Kaufanfragen."

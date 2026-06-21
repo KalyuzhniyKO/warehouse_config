@@ -7,6 +7,7 @@
     </button>
     <div class="dropdown-menu dropdown-menu-end shadow user-menu-dropdown">
         {% if can_manage_users %}
+            <a class="dropdown-item" href="{% url 'management_dashboard' %}">{% trans "Керування складом" %}</a>
             <a class="dropdown-item" href="{% url 'management_users' %}">{% trans "Користувачі та ролі" %}</a>
         {% endif %}
         {% if user.is_superuser %}

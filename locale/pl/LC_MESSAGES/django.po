@@ -3164,3 +3164,15 @@ msgstr "Śledzenie zamówień, zatwierdzeń, płatności i dostaw bez automatycz
 
 msgid "Заявку на закупівлю оновлено."
 msgstr "Zaktualizowano wniosek zakupowy."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Aktywne wnioski zakupowe"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Bieżące wnioski, akceptacje, płatności i dostawy."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Archiwum wniosków zakupowych"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Zakończone i zarchiwizowane wnioski zakupowe."
