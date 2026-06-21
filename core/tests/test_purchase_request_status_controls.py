@@ -62,7 +62,7 @@ class PurchaseRequestStatusControlTests(TestCase):
 
         response = self.client.get(reverse("purchase_request_list"))
         html = response.content.decode()
-        table_body = html[html.index("<tbody>") : html.index("</tbody>")]
+        table_body = html[html.index("<tbody") : html.index("</tbody>")]
 
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("purchase-request-status-form", table_body)

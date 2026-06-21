@@ -373,6 +373,32 @@ class PurchaseRequestTests(TestCase):
         self.assertNotContains(archive_response, active.title)
         self.assertContains(archive_response, "Finished")
 
+    def test_archive_list_uses_compact_normal_table_rows(self):
+        archived = self.create_request(title="Compact archived request")
+        archive_purchase_request(archived, archived_by=self.admin, reason="Finished")
+        self.login(self.admin)
+
+        response = self.client.get(reverse("purchase_request_archive"))
+        html = response.content.decode()
+        header_end = html.index("</thead>")
+        row_start = html.index("purchase-request-row", header_end)
+        title_start = html.index(archived.title, row_start)
+        between_header_and_row = html[header_end:row_start]
+        row_tag = html[row_start - 80 : html.index(">", row_start) + 1]
+
+        self.assertContains(response, "purchase-request-table")
+        self.assertContains(response, "purchase-request-table-body")
+        self.assertContains(response, "purchase-request-row")
+        self.assertContains(response, ".purchase-request-table > tbody")
+        self.assertContains(response, "display: table-row-group")
+        self.assertContains(response, "display: table-row")
+        self.assertContains(response, "height: auto")
+        self.assertLess(row_start, title_start)
+        self.assertNotIn("purchase-request-empty-row", between_header_and_row)
+        self.assertNotIn("h-100", row_tag)
+        self.assertNotIn("min-vh", row_tag)
+        self.assertNotIn("align-items", row_tag)
+
     def test_active_and_archive_filters_work_independently(self):
         active_match = self.create_request(title="Need filter active")
         active_other = self.create_request(title="Other active")
