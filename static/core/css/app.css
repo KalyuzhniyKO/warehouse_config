@@ -1,10 +1,12 @@
 :root {
     --dash-bg: #f8fafc;
     --dash-card: #ffffff;
-    --dash-border: #d7dee8;
+    --dash-border: #d9dee7;
     --dash-muted: #5b6777;
     --dash-title: #101828;
     --dash-primary: #d4ac00;
+    --dash-graphite: #111827;
+    --dash-graphite-soft: #334155;
 }
 
 .dashboard-main { animation: dash-fade-in .18s ease-out; }
@@ -25,11 +27,13 @@
 
 .clickable-card { display: block; text-decoration: none; color: inherit; }
 .operation-card {
-    --accent: #475467;
-    border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--dash-border));
+    --accent: var(--dash-graphite-soft);
+    border: 1px solid var(--dash-border);
     border-left: .32rem solid var(--accent);
     border-radius: .78rem;
-    background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 6%, white), #fff 45%);
+    background:
+        linear-gradient(90deg, rgba(255, 210, 0, .18), transparent 34%) top left / 100% 3px no-repeat,
+        linear-gradient(145deg, #fff, #f8fafc 76%);
     box-shadow: 0 .15rem .5rem rgba(15, 23, 42, .06);
     min-height: 108px;
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
@@ -37,13 +41,18 @@
 .operation-card .card-body { min-height: 100%; padding: .68rem .75rem; position: relative; }
 .card-main { display: flex; gap: .58rem; align-items: flex-start; padding-right: .75rem; }
 .operation-card h3 { font-weight: 760; font-size: .98rem; line-height: 1.2; }
-.operation-card:hover, .operation-card:focus-visible { transform: translateY(-2px); box-shadow: 0 .45rem 1rem rgba(15,23,42,.11); }
-.clickable-card:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 42%, #1d4ed8); outline-offset: 2px; }
+.operation-card:hover, .operation-card:focus-visible {
+    transform: translateY(-2px);
+    border-color: #c4ccd8;
+    box-shadow: 0 .45rem 1rem rgba(15,23,42,.11);
+}
+.clickable-card:focus-visible { outline: 3px solid rgba(212,172,0,.48); outline-offset: 2px; }
 .card-icon {
     width: 2.15rem;
     height: 2.15rem;
     border-radius: .55rem;
-    background: color-mix(in srgb, var(--accent) 18%, white);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -53,26 +62,29 @@
     position: absolute;
     top: .7rem;
     right: .8rem;
-    color: color-mix(in srgb, var(--accent) 68%, #253041);
+    color: var(--accent);
     font-weight: 700;
     transition: transform .16s ease;
 }
 .operation-card:hover .card-chevron, .operation-card:focus-visible .card-chevron { transform: translateX(2px); }
 
-.operation-card--issue { --accent: #ea580c; }
-.operation-card--return { --accent: #0284c7; }
-.operation-card--receive { --accent: #15803d; }
-.operation-card--transfer { --accent: #4f46e5; }
-.report-card--balance { --accent: #0369a1; }
-.report-card--journal { --accent: #0e7490; }
-.report-card--inventory { --accent: #7c3aed; }
-.report-card--writeoff { --accent: #6b7280; }
+.operation-card--issue,
+.operation-card--return,
+.operation-card--receive,
+.operation-card--transfer,
+.report-card--balance,
+.report-card--journal,
+.report-card--inventory,
+.report-card--writeoff,
+.report-card--analytics,
+.report-card--purchases { --accent: var(--dash-graphite-soft); }
 .admin-card { --accent: #334155; min-height: 96px; }
-.admin-card--items { --accent: #0f766e; }
-.admin-card--warehouses { --accent: #1d4ed8; }
-.admin-card--printers { --accent: #475569; }
-.admin-card--labels { --accent: #7c3aed; }
-.admin-card--management { --accent: #b45309; }
+.admin-card--items,
+.admin-card--warehouses,
+.admin-card--printers,
+.admin-card--labels,
+.admin-card--management,
+.admin-card--create-item { --accent: var(--dash-graphite-soft); }
 
 header .navbar { min-height: 56px; }
 

@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ app_brand_title }}{% endblock %}</title>
     <link rel="manifest" href="{% url 'webmanifest' %}">
-    <meta name="theme-color" content="#f5c400">
+    <meta name="theme-color" content="#111827">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="YANTOS Warehouse">
@@ -18,6 +18,8 @@
             --yantos-yellow: #FFD200;
             --yantos-yellow-hover: #E6BD00;
             --yantos-yellow-soft: #FFF4BF;
+            --yantos-graphite: #111827;
+            --yantos-graphite-soft: #1F2937;
             --yantos-text: #111827;
             --yantos-muted: #4B5563;
             --yantos-border: #C49A00;
@@ -26,35 +28,72 @@
         .app-shell { max-width: 1480px; }
         .yantos-navbar {
             min-height: 58px;
-            background: linear-gradient(90deg, var(--yantos-yellow), #FFE15C);
-            color: var(--yantos-text);
-            border-bottom: 1px solid rgba(196, 154, 0, .45);
+            background: linear-gradient(90deg, #0b111c, var(--yantos-graphite) 42%, var(--yantos-graphite-soft));
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 210, 0, .22);
         }
         .yantos-navbar .navbar-brand,
         .yantos-navbar .nav-link,
         .yantos-navbar .navbar-text {
-            color: var(--yantos-text);
+            color: #f9fafb;
         }
         .yantos-navbar .navbar-brand:hover,
         .yantos-navbar .nav-link:hover,
         .yantos-navbar .nav-link:focus {
-            color: #000;
+            color: #fff;
         }
-        .brand-mark {
-            width: 2rem;
-            height: 2rem;
+        .yantos-wordmark {
             display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: .55rem;
-            background: var(--yantos-text);
-            color: var(--yantos-yellow);
-            font-weight: 800;
-            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+            align-items: flex-end;
+            gap: .045em;
+            color: #fff;
+            font-weight: 900;
+            letter-spacing: .075em;
+            line-height: 1;
+            text-transform: uppercase;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, .08);
         }
-        .brand-name { letter-spacing: .01em; }
-        .brand-divider { color: var(--yantos-muted); }
-        .brand-subtitle { color: #1F2937; }
+        .yantos-wordmark__letters {
+            font-size: 1.15rem;
+            line-height: 1;
+        }
+        .yantos-wordmark__bolt-t {
+            position: relative;
+            display: inline-block;
+            width: .72em;
+            height: 1.55em;
+            margin-inline: -.02em;
+            transform: translateY(-.08em);
+        }
+        .yantos-wordmark__bolt-head,
+        .yantos-wordmark__bolt-cross,
+        .yantos-wordmark__bolt-stem {
+            position: absolute;
+            left: 50%;
+            background: currentColor;
+            transform: translateX(-50%);
+        }
+        .yantos-wordmark__bolt-head {
+            top: 0;
+            width: .62em;
+            height: .18em;
+            border-radius: .08em .08em .03em .03em;
+            box-shadow: inset 0 -1px 0 rgba(17, 24, 39, .18);
+        }
+        .yantos-wordmark__bolt-cross {
+            top: .34em;
+            width: .78em;
+            height: .16em;
+            border-radius: .03em;
+        }
+        .yantos-wordmark__bolt-stem {
+            top: .22em;
+            width: .18em;
+            height: 1.28em;
+            border-radius: .03em;
+        }
+        .brand-divider { color: rgba(255, 210, 0, .75); }
+        .brand-subtitle { color: #e5e7eb; }
         .sidebar-card { border-top: .25rem solid var(--yantos-yellow); }
         .sidebar-link { color: #334155; border-radius: .75rem; padding: .65rem .85rem; text-decoration: none; display: block; }
         .sidebar-link:hover,
@@ -77,22 +116,22 @@
             --bs-btn-disabled-color: #374151;
         }
         .yantos-navbar .btn-outline-light {
-            --bs-btn-color: var(--yantos-text);
-            --bs-btn-border-color: rgba(17, 24, 39, .35);
-            --bs-btn-hover-bg: var(--yantos-text);
-            --bs-btn-hover-border-color: var(--yantos-text);
-            --bs-btn-hover-color: var(--yantos-yellow);
-            --bs-btn-active-bg: var(--yantos-text);
-            --bs-btn-active-border-color: var(--yantos-text);
-            --bs-btn-active-color: var(--yantos-yellow);
+            --bs-btn-color: #f9fafb;
+            --bs-btn-border-color: rgba(255, 255, 255, .35);
+            --bs-btn-hover-bg: rgba(255, 255, 255, .12);
+            --bs-btn-hover-border-color: rgba(255, 255, 255, .7);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-active-bg: rgba(255, 255, 255, .18);
+            --bs-btn-active-border-color: rgba(255, 255, 255, .75);
+            --bs-btn-active-color: #fff;
         }
     
-        .app-header-meta { font-size: .85rem; color: rgba(17,24,39,.8); }
+        .app-header-meta { font-size: .85rem; color: rgba(249,250,251,.86); }
         .app-header-user { font-weight: 600; }
         .user-menu-toggle {
-            border: 1px solid rgba(17, 24, 39, .24);
-            background: rgba(255, 255, 255, .35);
-            color: var(--yantos-text);
+            border: 1px solid rgba(255, 255, 255, .22);
+            background: rgba(255, 255, 255, .08);
+            color: #fff;
             border-radius: 999px;
             padding: .25rem .75rem .25rem .35rem;
             display: inline-flex;
@@ -101,13 +140,13 @@
             max-width: min(88vw, 420px);
         }
         .user-menu-toggle:hover,
-        .user-menu-toggle:focus { background: rgba(255,255,255,.6); color: #000; }
+        .user-menu-toggle:focus { background: rgba(255,255,255,.16); color: #fff; }
         .user-avatar-badge {
             width: 1.9rem;
             height: 1.9rem;
             border-radius: 50%;
-            background: var(--yantos-text);
-            color: #fff;
+            background: #fff;
+            color: var(--yantos-graphite);
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -123,10 +162,10 @@
             white-space: nowrap;
         }
         .user-role-badge {
-            border: 1px solid rgba(17, 24, 39, .18);
+            border: 1px solid rgba(255, 255, 255, .22);
             border-radius: 999px;
-            background: rgba(255, 255, 255, .5);
-            color: #374151;
+            background: rgba(255, 255, 255, .1);
+            color: #f3f4f6;
             font-size: .68rem;
             font-weight: 700;
             line-height: 1;
@@ -141,7 +180,8 @@
             color: #6b7280;
             padding: .4rem 1rem .25rem;
         }
-        .navbar-toggler { border-color: rgba(17,24,39,.25); }
+        .navbar-toggler { border-color: rgba(255,255,255,.28); }
+        .navbar-toggler-icon { filter: invert(1) grayscale(1) brightness(1.8); }
         .navbar-toggler:focus { box-shadow: 0 0 0 .2rem rgba(255,210,0,.35); }
         @media (max-width: 991.98px) {
             .brand-subtitle { font-size: .88rem; }
@@ -151,12 +191,20 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light yantos-navbar shadow-sm sticky-top">
+<nav class="navbar navbar-expand-lg navbar-dark yantos-navbar shadow-sm sticky-top">
     <div class="container-fluid app-shell">
         <a class="navbar-brand d-inline-flex align-items-center gap-2 fw-semibold py-1 my-0" href="{% url 'dashboard' %}" aria-label="{{ app_brand_title }}" title="{{ app_brand_title }}">
-            <span class="brand-mark" aria-hidden="true">Y</span>
             <span class="d-inline-flex flex-wrap align-items-baseline gap-1">
-                <span class="brand-name">YANTOS</span>
+                <span class="yantos-wordmark" aria-label="YANTOS">
+                    <span class="visually-hidden">YANTOS</span>
+                    <span class="yantos-wordmark__letters" aria-hidden="true">YAN</span>
+                    <span class="yantos-wordmark__bolt-t" aria-hidden="true">
+                        <span class="yantos-wordmark__bolt-head"></span>
+                        <span class="yantos-wordmark__bolt-cross"></span>
+                        <span class="yantos-wordmark__bolt-stem"></span>
+                    </span>
+                    <span class="yantos-wordmark__letters" aria-hidden="true">OS</span>
+                </span>
                 <span class="brand-divider">·</span>
                 <span class="brand-subtitle">{% trans "Складський облік" %}</span>
             </span>

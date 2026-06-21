@@ -51,8 +51,24 @@ class LocalizedWebInterfaceTests(TestCase):
         self.assertNotIn("navbar-dark bg-primary", template)
         self.assertNotIn("bg-primary", template)
         self.assertIn("yantos-navbar", template)
-        self.assertIn('brand-name">YANTOS</span>', template)
+        self.assertIn("yantos-wordmark", template)
+        self.assertIn('aria-label="YANTOS"', template)
+        self.assertNotIn('brand-name">YANTOS</span>', template)
         self.assertNotIn('brand-name">Yantos</span>', template)
+
+    def test_header_renders_bolt_style_yantos_wordmark(self):
+        response = self.client.get("/uk/")
+        html = response.content.decode()
+
+        self.assertContains(response, "YANTOS")
+        self.assertIn("yantos-wordmark", html)
+        self.assertIn("yantos-wordmark__bolt-t", html)
+        self.assertIn("yantos-wordmark__bolt-head", html)
+        self.assertIn("yantos-wordmark__bolt-cross", html)
+        self.assertIn("yantos-wordmark__bolt-stem", html)
+        self.assertNotIn('<span class="brand-mark" aria-hidden="true">Y</span>', html)
+        self.assertIn("user-menu-toggle", html)
+        self.assertIn("language-switcher", html)
 
     def test_item_form_labels_are_ukrainian(self):
         with translation.override("uk"):
