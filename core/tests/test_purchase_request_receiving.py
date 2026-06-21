@@ -210,6 +210,7 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(
             purchase_request.status, PurchaseRequest.Status.PARTIALLY_RECEIVED
         )
+        self.assertIsNone(purchase_request.archived_at)
 
     def test_admin_can_receive_from_another_users_request(self):
         purchase_request = self.create_request(user=self.other_user)
@@ -255,6 +256,7 @@ class PurchaseRequestReceivingTests(TestCase):
         )
         self.assertEqual(purchase_request.received_qty, Decimal("4.000"))
         self.assertEqual(purchase_request.remaining_qty, Decimal("6.000"))
+        self.assertIsNone(purchase_request.archived_at)
 
         self.receive_via_form(
             user=self.owner, qty="6.000", purchase_request=purchase_request
@@ -263,6 +265,33 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.RECEIVED)
         self.assertEqual(purchase_request.received_qty, Decimal("10.000"))
         self.assertEqual(purchase_request.remaining_qty, Decimal("0.000"))
+        self.assertIsNotNone(purchase_request.archived_at)
+        self.assertEqual(purchase_request.archived_by, self.owner)
+        self.assertEqual(purchase_request.archive_reason, "Повністю отримано на склад")
+
+    def test_fully_received_purchase_request_without_barcode_is_archived(self):
+        purchase_request = self.create_request(title="Повний прихід без штрихкоду")
+
+        self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="10.000", purchase_request=purchase_request
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.RECEIVED)
+        self.assertIsNotNone(purchase_request.archived_at)
+        self.assertEqual(purchase_request.archived_by, self.owner)
+
+    def test_failed_purchase_request_receive_does_not_archive_request(self):
+        purchase_request = self.create_request()
+
+        response = self.receive_via_form(
+            user=self.owner, qty="11.000", purchase_request=purchase_request
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(purchase_request.archived_at)
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
 
     def test_receive_more_than_remaining_is_prevented(self):
         purchase_request = self.create_request()
@@ -281,6 +310,27 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("qty", response.context["form"].errors)
         self.assertEqual(purchase_request.received_qty, Decimal("8.000"))
+        purchase_request.refresh_from_db()
+        self.assertIsNone(purchase_request.archived_at)
+
+    def test_archived_purchase_request_cannot_be_received(self):
+        purchase_request = self.create_request()
+        purchase_request.archived_at = timezone.now()
+        purchase_request.archived_by = self.admin
+        purchase_request.archive_reason = "Finished"
+        purchase_request.save(
+            update_fields=["archived_at", "archived_by", "archive_reason"]
+        )
+
+        response = self.receive_via_form(
+            user=self.owner, qty="1.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("purchase_request", response.context["form"].errors)
+        self.assertFalse(
+            StockMovement.objects.filter(purchase_request=purchase_request).exists()
+        )
 
     def test_purchase_request_receive_without_barcode_cannot_exceed_remaining_qty(self):
         purchase_request = self.create_request(title="Лімітована позиція")
@@ -380,6 +430,31 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(purchase_request.received_qty, Decimal("0"))
         self.assertEqual(purchase_request.remaining_qty, Decimal("10.000"))
         self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
+
+    def test_cancelling_fully_received_request_restores_auto_archived_request(self):
+        superuser = get_user_model().objects.create_superuser(
+            "full-receive-super", "full-super@example.com", "pw"
+        )
+        purchase_request = self.create_request()
+        movement = receive_stock(
+            item=self.item,
+            location=self.location,
+            qty=Decimal("10.000"),
+            performed_by=self.owner,
+            purchase_request=purchase_request,
+        )
+        purchase_request.refresh_from_db()
+        self.assertTrue(purchase_request.is_archived)
+
+        cancel_stock_movement(
+            movement=movement, cancelled_by=superuser, reason="Wrong receipt"
+        )
+
+        purchase_request.refresh_from_db()
+        self.assertEqual(purchase_request.received_qty, Decimal("0"))
+        self.assertEqual(purchase_request.remaining_qty, Decimal("10.000"))
+        self.assertEqual(purchase_request.status, PurchaseRequest.Status.APPROVED)
+        self.assertFalse(purchase_request.is_archived)
 
     def test_cancelling_partial_receive_keeps_ordered_request_ordered(self):
         superuser = get_user_model().objects.create_superuser(

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
-{% block title %}{% trans "Заявки на закупівлю" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{{ page_title }} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <style>
     .purchase-request-table {
@@ -47,11 +47,13 @@
 <div class="list-page">
     <div class="list-page-header">
         <div class="list-page-title">
-            <h1 class="mb-1">{% trans "Заявки на закупівлю" %}</h1>
-            <p class="text-muted mb-0">{% trans "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару." %}</p>
+            <h1 class="mb-1">{{ page_title }}</h1>
+            <p class="text-muted mb-0">{% if is_archive_view %}{% trans "Завершені заявки, прихід за якими вже не потребує щоденної уваги." %}{% else %}{% trans "Облік замовлень, погодження, оплати та доставки без автоматичних рухів товару." %}{% endif %}</p>
         </div>
         <div class="list-page-actions d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-success" href="{% url 'purchase_request_export_xlsx' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">{% trans "Експорт Excel" %}</a>
+            <a class="btn btn-outline-secondary{% if not is_archive_view %} active{% endif %}" href="{% url 'purchase_request_list' %}">{% trans "Активні" %}</a>
+            <a class="btn btn-outline-secondary{% if is_archive_view %} active{% endif %}" href="{% url 'purchase_request_archive' %}">{% trans "Архів" %}</a>
+            <a class="btn btn-outline-success" href="{% url export_url_name %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}">{% trans "Експорт Excel" %}</a>
             {% if can_create_purchase_request %}
                 <a class="btn btn-primary" href="{% url 'purchase_request_create' %}">{% trans "Створити заявку на закупівлю" %}</a>
             {% endif %}
@@ -64,7 +66,7 @@
             <div class="text-muted small">{% trans "Фільтри знаходяться у заголовках колонок." %}</div>
             <div class="d-flex justify-content-end gap-1 purchase-table-filter-actions">
                 <button class="btn btn-outline-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
             </div>
         </div>
         <div class="table-responsive">
@@ -83,7 +85,7 @@
                                         {{ filter_form.date_to }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -99,7 +101,7 @@
                                         {{ filter_form.q }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -116,7 +118,7 @@
                                         {{ filter_form.order_type }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -132,7 +134,7 @@
                                         {{ filter_form.approval_status }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -148,7 +150,7 @@
                                         {{ filter_form.payment_status }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -164,7 +166,7 @@
                                         {{ filter_form.delivery_status }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -180,12 +182,19 @@
                                         {{ filter_form.requested_by }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="purchase-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'purchase_request_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url list_url_name %}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </th>
+                        {% if is_archive_view %}
+                            <th>{% trans "Отримано" %}</th>
+                            <th>{% trans "Залишок" %}</th>
+                            <th>{% trans "Архівовано" %}</th>
+                            <th>{% trans "Архівував" %}</th>
+                            <th>{% trans "Причина" %}</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -202,7 +211,7 @@
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_order_type_display }}</span></td>
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_approval_status_display }}</span></td>
                             <td>
-                                {% if can_update_purchase_request_tracking %}
+                                {% if can_update_purchase_request_tracking and not is_archive_view %}
                                     <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form purchase-request-status-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -218,7 +227,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                {% if can_update_purchase_request_tracking %}
+                                {% if can_update_purchase_request_tracking and not is_archive_view %}
                                     <form method="post" action="{% url 'purchase_request_tracking_status' purchase_request.pk %}" class="purchase-status-inline-form purchase-request-status-form">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -234,9 +243,16 @@
                                 {% endif %}
                             </td>
                             <td>{{ purchase_request.requested_by|display_name }}</td>
+                            {% if is_archive_view %}
+                                <td class="text-nowrap">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</td>
+                                <td class="text-nowrap">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</td>
+                                <td class="text-nowrap">{{ purchase_request.archived_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+                                <td>{{ purchase_request.archived_by|display_name|default:"—" }}</td>
+                                <td>{{ purchase_request.archive_reason|default:"—" }}</td>
+                            {% endif %}
                         </tr>
                     {% empty %}
-                        <tr><td colspan="8" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
+                        <tr><td colspan="{% if is_archive_view %}13{% else %}8{% endif %}" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -189,9 +189,19 @@ urlpatterns = [
         name="purchase_request_create",
     ),
     path(
+        "purchases/archive/",
+        views.PurchaseRequestArchiveListView.as_view(),
+        name="purchase_request_archive",
+    ),
+    path(
         "purchases/export.xlsx",
         views.PurchaseRequestXLSXExportView.as_view(),
         name="purchase_request_export_xlsx",
+    ),
+    path(
+        "purchases/archive/export.xlsx",
+        views.PurchaseRequestArchiveXLSXExportView.as_view(),
+        name="purchase_request_archive_export_xlsx",
     ),
     path(
         "purchases/<int:pk>/",
@@ -227,6 +237,16 @@ urlpatterns = [
         "purchases/<int:pk>/cancel/",
         views.PurchaseRequestStatusActionView.as_view(action="cancel"),
         name="purchase_request_cancel",
+    ),
+    path(
+        "purchases/<int:pk>/archive/",
+        views.PurchaseRequestArchiveActionView.as_view(),
+        name="purchase_request_archive_action",
+    ),
+    path(
+        "purchases/<int:pk>/restore/",
+        views.PurchaseRequestRestoreActionView.as_view(),
+        name="purchase_request_restore_action",
     ),
     path(
         "purchases/<int:pk>/tracking-status/",

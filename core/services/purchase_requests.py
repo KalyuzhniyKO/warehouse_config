@@ -24,10 +24,13 @@ PURCHASE_REQUEST_QTY_EXCEEDED_ERROR = _(
 PURCHASE_REQUEST_ITEM_NAME_REQUIRED_ERROR = _(
     "У заявці на закупівлю не вказано назву товару."
 )
+PURCHASE_REQUEST_AUTO_ARCHIVE_REASON = _("Повністю отримано на склад")
+PURCHASE_REQUEST_MANUAL_ARCHIVE_REASON = _("Архівовано вручну")
 
 
 def purchase_requests_available_for_receiving(user):
     queryset = PurchaseRequest.objects.filter(
+        archived_at__isnull=True,
         status__in=RECEIVABLE_PURCHASE_REQUEST_STATUSES,
         approval_status=PurchaseRequest.ApprovalStatus.APPROVED,
     ).select_related("requested_by")
@@ -150,3 +153,53 @@ def sync_purchase_request_receiving_status(purchase_request):
     if update_fields:
         purchase_request.save(update_fields=[*update_fields, "updated_at"])
     return received_qty
+
+
+def archive_purchase_request(
+    purchase_request, *, archived_by=None, reason=PURCHASE_REQUEST_MANUAL_ARCHIVE_REASON
+):
+    if purchase_request.archived_at:
+        return purchase_request
+    from django.utils import timezone  # noqa: PLC0415
+
+    purchase_request.archived_at = timezone.now()
+    purchase_request.archived_by = archived_by
+    purchase_request.archive_reason = str(reason)
+    purchase_request.save(
+        update_fields=["archived_at", "archived_by", "archive_reason", "updated_at"]
+    )
+    return purchase_request
+
+
+def restore_purchase_request(purchase_request):
+    if not purchase_request.archived_at:
+        return purchase_request
+    purchase_request.archived_at = None
+    purchase_request.archived_by = None
+    purchase_request.archive_reason = ""
+    purchase_request.save(
+        update_fields=["archived_at", "archived_by", "archive_reason", "updated_at"]
+    )
+    return purchase_request
+
+
+def archive_purchase_request_if_fully_received(purchase_request, *, archived_by=None):
+    purchase_request.refresh_from_db()
+    if purchase_request.archived_at or purchase_request.remaining_qty > 0:
+        return purchase_request
+    return archive_purchase_request(
+        purchase_request,
+        archived_by=archived_by,
+        reason=PURCHASE_REQUEST_AUTO_ARCHIVE_REASON,
+    )
+
+
+def restore_purchase_request_if_receiving_reopened(purchase_request):
+    purchase_request.refresh_from_db()
+    if (
+        purchase_request.archived_at
+        and purchase_request.archive_reason == str(PURCHASE_REQUEST_AUTO_ARCHIVE_REASON)
+        and purchase_request.remaining_qty > 0
+    ):
+        return restore_purchase_request(purchase_request)
+    return purchase_request

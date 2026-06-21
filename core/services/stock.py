@@ -311,6 +311,7 @@ def receive_stock(
                 PURCHASE_REQUEST_NOT_RECEIVABLE_ERROR,
                 PURCHASE_REQUEST_QTY_EXCEEDED_ERROR,
                 can_receive_against_purchase_request,
+                archive_purchase_request_if_fully_received,
                 get_received_purchase_request_qty,
                 sync_purchase_request_receiving_status,
             )
@@ -360,6 +361,9 @@ def receive_stock(
         )
         if purchase_request is not None:
             sync_purchase_request_receiving_status(purchase_request)
+            archive_purchase_request_if_fully_received(
+                purchase_request, archived_by=performed_by
+            )
     return movement
 
 
