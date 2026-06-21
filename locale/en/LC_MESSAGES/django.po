@@ -4923,3 +4923,15 @@ msgstr "Track orders, approvals, payments, and delivery without automatic stock 
 
 msgid "Заявку на закупівлю оновлено."
 msgstr "Purchase request updated."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Active purchase requests"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Current requests, approvals, payments, and deliveries."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Purchase request archive"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Completed and archived purchase requests."

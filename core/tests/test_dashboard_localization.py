@@ -251,6 +251,8 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Тарас Технолог", html)
         self.assertNotIn(">dash-admin<", html)
         dropdown_html = self.user_menu_html(response)
+        self.assertIn("Керування складом", dropdown_html)
+        self.assertIn(f'href="{reverse("management_dashboard")}"', dropdown_html)
         self.assertIn("Користувачі та ролі", dropdown_html)
         self.assertIn(f'href="{reverse("management_users")}"', dropdown_html)
         self.assertIn("Вийти", dropdown_html)
@@ -276,6 +278,7 @@ class DashboardLocalizationTests(TestCase):
 
         self.assertIn("user-menu-toggle", html)
         dropdown_html = self.user_menu_html(response)
+        self.assertNotIn("Керування складом", dropdown_html)
         self.assertNotIn("Користувачі та ролі", dropdown_html)
         self.assertNotIn("Налаштування складу", dropdown_html)
         self.assertNotIn(f'href="{reverse("management_users")}"', dropdown_html)

@@ -1629,3 +1629,15 @@ msgstr "Print formats and templates."
 
 msgid "Перегляньте інвентаризації складу."
 msgstr "Revise los inventarios del almacén."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Solicitudes de compra activas"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Solicitudes actuales, aprobaciones, pagos y entregas."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Archivo de solicitudes de compra"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Solicitudes de compra completadas y archivadas."

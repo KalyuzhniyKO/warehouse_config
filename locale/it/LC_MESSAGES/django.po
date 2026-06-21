@@ -4539,3 +4539,15 @@ msgstr "Traccia ordini, approvazioni, pagamenti e consegne senza movimenti autom
 
 msgid "Заявку на закупівлю оновлено."
 msgstr "Richiesta di acquisto aggiornata."
+
+msgid "Активні заявки на закупівлю"
+msgstr "Richieste di acquisto attive"
+
+msgid "Поточні заявки, погодження, оплати та доставки."
+msgstr "Richieste correnti, approvazioni, pagamenti e consegne."
+
+msgid "Архів заявок на закупівлю"
+msgstr "Archivio richieste di acquisto"
+
+msgid "Завершені та заархівовані заявки на закупівлю."
+msgstr "Richieste di acquisto completate e archiviate."
