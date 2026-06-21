@@ -9,6 +9,10 @@ from django.utils import translation
 from django.utils import timezone
 
 from core.models import Item, PurchaseRequest, StockBalance, StockMovement, Unit, Warehouse
+from core.services.purchase_requests import (
+    archive_purchase_request,
+    restore_purchase_request,
+)
 from core.tests.i18n_test_utils import compile_test_messages
 from core.tests.warehouse_access_utils import grant_warehouse_access
 
@@ -78,6 +82,16 @@ class PurchaseRequestTests(TestCase):
 
         self.login(user or self.admin)
         response = self.client.get(reverse("purchase_request_export_xlsx"), params or {})
+        workbook = load_workbook(BytesIO(response.content))
+        return response, workbook.active
+
+    def load_purchase_request_archive_export(self, params=None, user=None):
+        from openpyxl import load_workbook
+
+        self.login(user or self.admin)
+        response = self.client.get(
+            reverse("purchase_request_archive_export_xlsx"), params or {}
+        )
         workbook = load_workbook(BytesIO(response.content))
         return response, workbook.active
 
@@ -217,6 +231,28 @@ class PurchaseRequestTests(TestCase):
 
         self.assertEqual(purchase_request.total_price_uah, Decimal("37.50"))
 
+    def test_archive_metadata_marks_request_archived_and_restore_clears_it(self):
+        purchase_request = self.create_request()
+
+        self.assertIsNone(purchase_request.archived_at)
+        self.assertFalse(purchase_request.is_archived)
+
+        archive_purchase_request(
+            purchase_request, archived_by=self.admin, reason="Done manually"
+        )
+        purchase_request.refresh_from_db()
+
+        self.assertTrue(purchase_request.is_archived)
+        self.assertEqual(purchase_request.archived_by, self.admin)
+        self.assertEqual(purchase_request.archive_reason, "Done manually")
+
+        restore_purchase_request(purchase_request)
+        purchase_request.refresh_from_db()
+
+        self.assertFalse(purchase_request.is_archived)
+        self.assertIsNone(purchase_request.archived_by)
+        self.assertEqual(purchase_request.archive_reason, "")
+
     def test_requested_qty_is_required_and_positive(self):
         self.login(self.requester)
         url = reverse("purchase_request_create")
@@ -320,6 +356,49 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "Compact purchase row")
         self.assertContains(response, "Compact need description")
         self.assertContains(response, "10,000 pairs")
+
+    def test_active_list_hides_archived_requests_and_archive_list_hides_active(self):
+        active = self.create_request(title="Active request")
+        archived = self.create_request(title="Archived request")
+        archive_purchase_request(archived, archived_by=self.admin, reason="Finished")
+        self.login(self.admin)
+
+        active_response = self.client.get(reverse("purchase_request_list"))
+        archive_response = self.client.get(reverse("purchase_request_archive"))
+
+        self.assertContains(active_response, active.title)
+        self.assertNotContains(active_response, archived.title)
+        self.assertContains(archive_response, "Архів заявок на закупівлю")
+        self.assertContains(archive_response, archived.title)
+        self.assertNotContains(archive_response, active.title)
+        self.assertContains(archive_response, "Finished")
+
+    def test_active_and_archive_filters_work_independently(self):
+        active_match = self.create_request(title="Need filter active")
+        active_other = self.create_request(title="Other active")
+        archived_match = self.create_request(
+            title="Need filter archive",
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+        )
+        archived_other = self.create_request(title="Other archive")
+        archive_purchase_request(archived_match, archived_by=self.admin, reason="Done")
+        archive_purchase_request(archived_other, archived_by=self.admin, reason="Done")
+        self.login(self.admin)
+
+        active_response = self.client.get(
+            reverse("purchase_request_list"), {"q": "filter"}
+        )
+        archive_response = self.client.get(
+            reverse("purchase_request_archive"),
+            {"q": "filter", "payment_status": PurchaseRequest.PaymentStatus.PAID},
+        )
+
+        self.assertContains(active_response, active_match.title)
+        self.assertNotContains(active_response, active_other.title)
+        self.assertNotContains(active_response, archived_match.title)
+        self.assertContains(archive_response, archived_match.title)
+        self.assertNotContains(archive_response, archived_other.title)
+        self.assertNotContains(archive_response, active_match.title)
 
     def test_purchase_list_reset_filters_link_clears_query(self):
         self.login(self.admin)
@@ -452,7 +531,7 @@ class PurchaseRequestTests(TestCase):
         )
         self.assertRegex(
             response["Content-Disposition"],
-            r'attachment; filename="purchase_requests_\d{4}-\d{2}-\d{2}\.xlsx"',
+            r'attachment; filename="purchase_requests_active_\d{4}-\d{2}-\d{2}\.xlsx"',
         )
         headers = [cell.value for cell in sheet[1]]
         self.assertEqual(
@@ -514,12 +593,41 @@ class PurchaseRequestTests(TestCase):
     def test_purchase_request_xlsx_export_without_filters_includes_visible_requests(self):
         own = self.create_request(title="Visible own export")
         other = self.create_request(user=self.other_requester, title="Visible other export")
+        archived = self.create_request(title="Archived hidden export")
+        archive_purchase_request(archived, archived_by=self.admin, reason="Finished")
 
         _response, sheet = self.load_purchase_request_export()
 
         titles = {row[1].value for row in sheet.iter_rows(min_row=2)}
         self.assertIn(own.title, titles)
         self.assertIn(other.title, titles)
+        self.assertNotIn(archived.title, titles)
+
+    def test_purchase_request_archive_xlsx_export_includes_archive_fields_only(self):
+        active = self.create_request(title="Active hidden export")
+        archived = self.create_request(
+            title="Archived export target",
+            payment_status=PurchaseRequest.PaymentStatus.PAID,
+        )
+        archive_purchase_request(archived, archived_by=self.admin, reason="Finished")
+
+        response, sheet = self.load_purchase_request_archive_export(
+            {"payment_status": PurchaseRequest.PaymentStatus.PAID}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertRegex(
+            response["Content-Disposition"],
+            r'attachment; filename="purchase_requests_archive_\d{4}-\d{2}-\d{2}\.xlsx"',
+        )
+        headers = [cell.value for cell in sheet[1]]
+        self.assertEqual(headers[-3:], ["Дата архівування", "Архівував", "Причина архівування"])
+        titles = [row[1].value for row in sheet.iter_rows(min_row=2)]
+        self.assertEqual(titles, [archived.title])
+        self.assertNotIn(active.title, titles)
+        row = next(sheet.iter_rows(min_row=2, values_only=True))
+        self.assertEqual(row[19], self.admin.username)
+        self.assertEqual(row[20], "Finished")
 
     def test_purchase_request_xlsx_export_filters_by_statuses_and_date(self):
         matching = self.create_request(
@@ -624,6 +732,79 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, self.requester.username)
         self.assertContains(response, self.admin.username)
         self.assertContains(response, "Budget refused")
+
+    def test_archived_detail_shows_badge_archive_info_and_restore_button(self):
+        purchase_request = self.create_request()
+        archive_purchase_request(
+            purchase_request, archived_by=self.admin, reason="Повністю отримано на склад"
+        )
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+
+        self.assertContains(response, "В архіві")
+        self.assertContains(response, "Повністю отримано на склад")
+        self.assertContains(response, "Повернути з архіву")
+        self.assertNotContains(response, "Прийняти на склад")
+
+    def test_active_detail_shows_archive_button_for_allowed_user_only(self):
+        purchase_request = self.create_request()
+
+        self.login(self.admin)
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertContains(response, "Архівувати")
+        self.assertNotContains(response, "В архіві")
+
+        self.login(self.requester)
+        response = self.client.get(
+            reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        self.assertNotContains(response, "Архівувати")
+
+    def test_archive_restore_permissions_by_post(self):
+        purchase_request = self.create_request()
+
+        self.login(self.requester)
+        response = self.client.post(
+            reverse("purchase_request_archive_action", args=[purchase_request.pk])
+        )
+        self.assertEqual(response.status_code, 403)
+        purchase_request.refresh_from_db()
+        self.assertFalse(purchase_request.is_archived)
+
+        self.login(self.admin)
+        response = self.client.post(
+            reverse("purchase_request_archive_action", args=[purchase_request.pk]),
+            {"archive_reason": "No longer active"},
+        )
+        self.assertRedirects(
+            response, reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        purchase_request.refresh_from_db()
+        self.assertTrue(purchase_request.is_archived)
+        self.assertEqual(purchase_request.archive_reason, "No longer active")
+
+        self.login(self.requester)
+        response = self.client.post(
+            reverse("purchase_request_restore_action", args=[purchase_request.pk])
+        )
+        self.assertEqual(response.status_code, 403)
+        purchase_request.refresh_from_db()
+        self.assertTrue(purchase_request.is_archived)
+
+        self.login(self.admin)
+        response = self.client.post(
+            reverse("purchase_request_restore_action", args=[purchase_request.pk])
+        )
+        self.assertRedirects(
+            response, reverse("purchase_request_detail", args=[purchase_request.pk])
+        )
+        purchase_request.refresh_from_db()
+        self.assertFalse(purchase_request.is_archived)
 
     def test_detail_page_uses_compact_two_column_layout(self):
         purchase_request = self.create_request(

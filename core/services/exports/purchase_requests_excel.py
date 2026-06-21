@@ -51,7 +51,7 @@ def _status_fill(value):
     return None
 
 
-def build_purchase_requests_workbook(purchase_requests):
+def build_purchase_requests_workbook(purchase_requests, *, include_archive_fields=False):
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Font, PatternFill
 
@@ -76,6 +76,9 @@ def build_purchase_requests_workbook(purchase_requests):
         _("Коментар відхилення"),
     ]
     widths = [19, 34, 42, 42, 12, 16, 22, 16, 18, 20, 24, 20, 24, 24, 21, 24, 21, 34]
+    if include_archive_fields:
+        headers.extend([_("Дата архівування"), _("Архівував"), _("Причина архівування")])
+        widths.extend([21, 24, 38])
 
     workbook = Workbook()
     sheet = workbook.active
@@ -85,28 +88,35 @@ def build_purchase_requests_workbook(purchase_requests):
     status_values_by_row = {}
     for purchase_request in purchase_requests:
         row_number = sheet.max_row + 1
-        sheet.append(
-            [
-                _local_datetime(purchase_request.created_at),
-                purchase_request.title,
-                purchase_request.need_description,
-                purchase_request.product_url,
-                purchase_request.requested_qty,
-                purchase_request.unit,
-                purchase_request.unit_price_uah or "",
-                purchase_request.total_price_uah or "",
-                purchase_request.get_order_type_display(),
-                purchase_request.get_approval_status_display(),
-                purchase_request.get_payment_status_display(),
-                purchase_request.get_delivery_status_display(),
-                _display_user(purchase_request.requested_by),
-                _display_user(purchase_request.approved_by),
-                _local_datetime(purchase_request.approved_at),
-                _display_user(purchase_request.rejected_by),
-                _local_datetime(purchase_request.rejected_at),
-                purchase_request.rejection_comment,
-            ]
-        )
+        row = [
+            _local_datetime(purchase_request.created_at),
+            purchase_request.title,
+            purchase_request.need_description,
+            purchase_request.product_url,
+            purchase_request.requested_qty,
+            purchase_request.unit,
+            purchase_request.unit_price_uah or "",
+            purchase_request.total_price_uah or "",
+            purchase_request.get_order_type_display(),
+            purchase_request.get_approval_status_display(),
+            purchase_request.get_payment_status_display(),
+            purchase_request.get_delivery_status_display(),
+            _display_user(purchase_request.requested_by),
+            _display_user(purchase_request.approved_by),
+            _local_datetime(purchase_request.approved_at),
+            _display_user(purchase_request.rejected_by),
+            _local_datetime(purchase_request.rejected_at),
+            purchase_request.rejection_comment,
+        ]
+        if include_archive_fields:
+            row.extend(
+                [
+                    _local_datetime(purchase_request.archived_at),
+                    _display_user(purchase_request.archived_by),
+                    purchase_request.archive_reason,
+                ]
+            )
+        sheet.append(row)
         status_values_by_row[row_number] = (
             purchase_request.approval_status,
             purchase_request.payment_status,
@@ -142,5 +152,8 @@ def build_purchase_requests_workbook(purchase_requests):
         row[13].number_format = "yyyy-mm-dd hh:mm:ss"
         row[15].number_format = "yyyy-mm-dd hh:mm:ss"
         row[17].alignment = Alignment(wrap_text=True, vertical="top")
+        if include_archive_fields:
+            row[18].number_format = "yyyy-mm-dd hh:mm:ss"
+            row[20].alignment = Alignment(wrap_text=True, vertical="top")
 
     return workbook

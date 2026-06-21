@@ -30,12 +30,17 @@ from core.services.exports.purchase_requests_excel import (
     build_purchase_requests_workbook,
 )
 from core.services.purchase_requests import can_receive_against_purchase_request
+from core.services.purchase_requests import (
+    PURCHASE_REQUEST_MANUAL_ARCHIVE_REASON,
+    archive_purchase_request,
+    restore_purchase_request,
+)
 from core.services.warehouse_access import restrict_stock_movement_queryset_for_user
 
 
 def purchase_requests_for_user(user):
     queryset = PurchaseRequest.objects.select_related(
-        "requested_by", "approved_by", "rejected_by"
+        "requested_by", "approved_by", "rejected_by", "archived_by"
     )
     if can_manage_purchase_requests(user) or has_purchase_request_view_permission(user):
         return queryset
@@ -59,15 +64,23 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
     template_name = "core/purchase_requests/list.html"
     context_object_name = "purchase_requests"
     paginate_by = 40
+    show_archived = False
 
     def get_filter_form(self):
+        queryset = self.base_queryset()
         users = get_user_model().objects.filter(
-            purchase_requests__in=purchase_requests_for_user(self.request.user)
+            purchase_requests__in=queryset
         ).distinct().order_by("last_name", "first_name", "username")
         return PurchaseRequestFilterForm(self.request.GET or None, users=users)
 
-    def get_queryset(self):
+    def base_queryset(self):
         queryset = purchase_requests_for_user(self.request.user)
+        if self.show_archived:
+            return queryset.filter(archived_at__isnull=False)
+        return queryset.filter(archived_at__isnull=True)
+
+    def get_queryset(self):
+        queryset = self.base_queryset()
         form = self.get_filter_form()
         if not form.is_valid():
             return queryset
@@ -116,32 +129,62 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
         )
         context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
         context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
+        context["is_archive_view"] = self.show_archived
+        context["page_title"] = (
+            _("Архів заявок на закупівлю")
+            if self.show_archived
+            else _("Заявки на закупівлю")
+        )
+        context["export_url_name"] = (
+            "purchase_request_archive_export_xlsx"
+            if self.show_archived
+            else "purchase_request_export_xlsx"
+        )
+        context["list_url_name"] = (
+            "purchase_request_archive" if self.show_archived else "purchase_request_list"
+        )
         return context
+
+
+class PurchaseRequestArchiveListView(PurchaseRequestListView):
+    show_archived = True
 
 
 class PurchaseRequestXLSXExportView(
     LoginRequiredMixin, PurchaseRequestAccessMixin, View
 ):
+    show_archived = False
+
     def get(self, request, *args, **kwargs):
         list_view = PurchaseRequestListView()
+        list_view.show_archived = self.show_archived
         list_view.request = request
         purchase_requests = list(
             list_view.get_queryset().select_related(
-                "requested_by", "approved_by", "rejected_by"
+                "requested_by", "approved_by", "rejected_by", "archived_by"
             )
         )
         try:
-            workbook = build_purchase_requests_workbook(purchase_requests)
+            workbook = build_purchase_requests_workbook(
+                purchase_requests, include_archive_fields=self.show_archived
+            )
         except ImportError:
             return HttpResponse(_("XLSX export requires openpyxl."), status=503)
 
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        filename = timezone.localdate().strftime("purchase_requests_%Y-%m-%d.xlsx")
+        export_kind = "archive" if self.show_archived else "active"
+        filename = timezone.localdate().strftime(
+            f"purchase_requests_{export_kind}_%Y-%m-%d.xlsx"
+        )
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         workbook.save(response)
         return response
+
+
+class PurchaseRequestArchiveXLSXExportView(PurchaseRequestXLSXExportView):
+    show_archived = True
 
 
 class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -209,6 +252,15 @@ class PurchaseRequestDetailView(
         context["can_update_purchase_request_tracking"] = (
             can_update_purchase_request_tracking(self.request.user)
         )
+        can_archive_restore = context[
+            "can_update_purchase_request_tracking"
+        ] or can_manage_purchase_requests(self.request.user)
+        context["can_archive_purchase_request"] = (
+            can_archive_restore and not purchase_request.is_archived
+        )
+        context["can_restore_purchase_request"] = (
+            can_archive_restore and purchase_request.is_archived
+        )
         context["payment_status_choices"] = PurchaseRequest.PaymentStatus.choices
         context["delivery_status_choices"] = PurchaseRequest.DeliveryStatus.choices
         context["can_receive"] = can_receive_against_purchase_request(
@@ -232,6 +284,50 @@ class PurchaseRequestDetailView(
             .order_by("-occurred_at", "-id")
         )
         return context
+
+
+class PurchaseRequestArchiveActionView(
+    LoginRequiredMixin, PurchaseRequestAccessMixin, View
+):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        if not (
+            can_update_purchase_request_tracking(request.user)
+            or can_manage_purchase_requests(request.user)
+        ):
+            raise PermissionDenied(_("У вас немає прав архівувати заявки."))
+        purchase_request = get_object_or_404(
+            purchase_requests_for_user(request.user), pk=kwargs["pk"]
+        )
+        reason = (
+            request.POST.get("archive_reason", "").strip()
+            or PURCHASE_REQUEST_MANUAL_ARCHIVE_REASON
+        )
+        archive_purchase_request(
+            purchase_request, archived_by=request.user, reason=reason
+        )
+        messages.success(request, _("Заявку переміщено в архів."))
+        return redirect("purchase_request_detail", pk=purchase_request.pk)
+
+
+class PurchaseRequestRestoreActionView(
+    LoginRequiredMixin, PurchaseRequestAccessMixin, View
+):
+    http_method_names = ["post"]
+
+    def post(self, request, *args, **kwargs):
+        if not (
+            can_update_purchase_request_tracking(request.user)
+            or can_manage_purchase_requests(request.user)
+        ):
+            raise PermissionDenied(_("У вас немає прав повертати заявки з архіву."))
+        purchase_request = get_object_or_404(
+            purchase_requests_for_user(request.user), pk=kwargs["pk"]
+        )
+        restore_purchase_request(purchase_request)
+        messages.success(request, _("Заявку повернуто з архіву."))
+        return redirect("purchase_request_detail", pk=purchase_request.pk)
 
 
 class PurchaseRequestUpdateView(

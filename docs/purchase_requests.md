@@ -70,6 +70,22 @@ operations. Linked receives update the request to `partially_received` or
 `received`. Manual receives without a purchase request continue to work
 unchanged.
 
+When a linked receive fully covers the requested quantity, the request is moved
+to the archive automatically. The archive stores `archived_at`, `archived_by`,
+and an archive reason. The default automatic reason is
+`Повністю отримано на склад`. Users who can manage purchase tracking may also
+archive active requests manually with the default reason `Архівовано вручну`,
+and restore archived requests when they need to continue work on them.
+If a fully received movement is later cancelled and the request was archived
+only by this automatic rule, the request is returned to active work because the
+remaining quantity is open again.
+
+The active purchase request list hides archived requests by default. The archive
+tab shows only archived requests and includes the archive date, user, reason,
+received quantity, and remaining quantity. Excel export follows the current tab:
+the active export contains active requests only, and the archive export contains
+archive fields.
+
 Received and remaining quantities are derived from active linked receive
 movements. Cancelled movements and cancellation/reversal rows are excluded.
 

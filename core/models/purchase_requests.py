@@ -120,6 +120,16 @@ class PurchaseRequest(models.Model):
     )
     rejected_at = models.DateTimeField(_("Дата відхилення"), blank=True, null=True)
     rejection_comment = models.TextField(_("Коментар відхилення"), blank=True)
+    archived_at = models.DateTimeField(_("Дата архівування"), blank=True, null=True)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("Архівував"),
+        on_delete=models.SET_NULL,
+        related_name="archived_purchase_requests",
+        blank=True,
+        null=True,
+    )
+    archive_reason = models.TextField(_("Причина архівування"), blank=True)
     status = models.CharField(
         _("Статус"),
         max_length=24,
@@ -189,6 +199,10 @@ class PurchaseRequest(models.Model):
     @property
     def remaining_qty(self):
         return max(self.requested_qty - self.received_qty, Decimal("0"))
+
+    @property
+    def is_archived(self):
+        return self.archived_at is not None
 
     def __str__(self):
         return self.title

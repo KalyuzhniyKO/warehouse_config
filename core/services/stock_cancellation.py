@@ -208,6 +208,7 @@ def cancel_stock_movement(*, movement, cancelled_by, reason, request=None):
         if movement.purchase_request_id:
             from core.models import PurchaseRequest  # noqa: PLC0415
             from core.services.purchase_requests import (  # noqa: PLC0415
+                restore_purchase_request_if_receiving_reopened,
                 sync_purchase_request_receiving_status,
             )
 
@@ -215,6 +216,7 @@ def cancel_stock_movement(*, movement, cancelled_by, reason, request=None):
                 pk=movement.purchase_request_id
             )
             sync_purchase_request_receiving_status(purchase_request)
+            restore_purchase_request_if_receiving_reopened(purchase_request)
 
         log_action(
             cancelled_by,
