@@ -56,16 +56,18 @@ class LocalizedWebInterfaceTests(TestCase):
         self.assertNotIn('brand-name">YANTOS</span>', template)
         self.assertNotIn('brand-name">Yantos</span>', template)
 
-    def test_header_renders_bolt_style_yantos_wordmark(self):
+    def test_header_renders_text_yantos_wordmark_with_raised_t(self):
         response = self.client.get("/uk/")
         html = response.content.decode()
 
         self.assertContains(response, "YANTOS")
         self.assertIn("yantos-wordmark", html)
-        self.assertIn("yantos-wordmark__bolt-t", html)
-        self.assertIn("yantos-wordmark__bolt-head", html)
-        self.assertIn("yantos-wordmark__bolt-cross", html)
-        self.assertIn("yantos-wordmark__bolt-stem", html)
+        self.assertIn("yantos-wordmark__t", html)
+        self.assertIn('<span class="yantos-wordmark__t">T</span>', html)
+        self.assertNotIn("yantos-wordmark__bolt", html)
+        self.assertNotIn("yantos-wordmark__bolt-head", html)
+        self.assertNotIn("yantos-wordmark__bolt-cross", html)
+        self.assertNotIn("yantos-wordmark__bolt-stem", html)
         self.assertNotIn('<span class="brand-mark" aria-hidden="true">Y</span>', html)
         self.assertIn("user-menu-toggle", html)
         self.assertIn("language-switcher", html)

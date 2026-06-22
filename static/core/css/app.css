@@ -1,12 +1,12 @@
 :root {
-    --dash-bg: #f8fafc;
+    --dash-bg: #f3f4f6;
     --dash-card: #ffffff;
-    --dash-border: #d9dee7;
-    --dash-muted: #5b6777;
-    --dash-title: #101828;
-    --dash-primary: #d4ac00;
-    --dash-graphite: #111827;
-    --dash-graphite-soft: #334155;
+    --dash-border: #e4e7ec;
+    --dash-muted: #667085;
+    --dash-title: #111827;
+    --dash-primary: #ffd200;
+    --dash-graphite: #0f1720;
+    --dash-graphite-soft: #1b2430;
 }
 
 .dashboard-main { animation: dash-fade-in .18s ease-out; }
@@ -30,10 +30,8 @@
     --accent: var(--dash-graphite-soft);
     border: 1px solid var(--dash-border);
     border-left: .32rem solid var(--accent);
-    border-radius: .78rem;
-    background:
-        linear-gradient(90deg, rgba(255, 210, 0, .18), transparent 34%) top left / 100% 3px no-repeat,
-        linear-gradient(145deg, #fff, #f8fafc 76%);
+    border-radius: .5rem;
+    background: var(--dash-card);
     box-shadow: 0 .15rem .5rem rgba(15, 23, 42, .06);
     min-height: 108px;
     transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
@@ -43,16 +41,16 @@
 .operation-card h3 { font-weight: 760; font-size: .98rem; line-height: 1.2; }
 .operation-card:hover, .operation-card:focus-visible {
     transform: translateY(-2px);
-    border-color: #c4ccd8;
+    border-color: #cfd5df;
     box-shadow: 0 .45rem 1rem rgba(15,23,42,.11);
 }
-.clickable-card:focus-visible { outline: 3px solid rgba(212,172,0,.48); outline-offset: 2px; }
+.clickable-card:focus-visible { outline: 3px solid rgba(255,210,0,.58); outline-offset: 2px; }
 .card-icon {
     width: 2.15rem;
     height: 2.15rem;
-    border-radius: .55rem;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
+    border-radius: .5rem;
+    background: #f3f4f6;
+    border: 1px solid var(--dash-border);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -85,6 +83,15 @@
 .admin-card--labels,
 .admin-card--management,
 .admin-card--create-item { --accent: var(--dash-graphite-soft); }
+
+.content-card,
+.data-table-card,
+.analytics-panel,
+.report-preset-card,
+.purchase-create-card,
+.purchase-detail-card {
+    background: var(--dash-card);
+}
 
 header .navbar { min-height: 56px; }
 
