@@ -72,6 +72,18 @@ class LocalizedWebInterfaceTests(TestCase):
         self.assertIn("user-menu-toggle", html)
         self.assertIn("language-switcher", html)
 
+    def test_user_menu_dropdown_css_keeps_light_menu_text_readable(self):
+        template = Path("templates/includes/language_switcher.html").read_text()
+
+        self.assertIn(".user-menu-dropdown {", template)
+        self.assertIn("background: #ffffff", template)
+        self.assertIn("color: #111827", template)
+        self.assertIn(".user-menu-dropdown .dropdown-item {", template)
+        self.assertIn(".user-menu-dropdown .dropdown-item:hover", template)
+        self.assertIn(".user-menu-dropdown .dropdown-item:focus", template)
+        self.assertIn(".user-menu-dropdown .dropdown-item.text-danger", template)
+        self.assertIn(".user-menu-dropdown .dropdown-divider", template)
+
     def test_item_form_labels_are_ukrainian(self):
         with translation.override("uk"):
             response = self.client.get("/uk/items/create/")
