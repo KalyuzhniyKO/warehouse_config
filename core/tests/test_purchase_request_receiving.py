@@ -175,7 +175,7 @@ class PurchaseRequestReceivingTests(TestCase):
             Item.objects.filter(name__iexact="Шина алюмінієва 4х20").count(), 1
         )
 
-    def test_purchase_request_receive_creates_new_item_with_request_unit_without_barcode(
+    def test_purchase_request_receive_creates_new_item_with_request_unit_and_barcode(
         self,
     ):
         purchase_request = self.create_request(title="Новий підшипник", unit="m")
@@ -187,9 +187,58 @@ class PurchaseRequestReceivingTests(TestCase):
         self.assertEqual(response.status_code, 302)
         created_item = Item.objects.get(name="Новий підшипник")
         self.assertEqual(created_item.unit.symbol, "m")
-        self.assertIsNone(created_item.barcode_id)
+        self.assertIsNotNone(created_item.barcode_id)
+        self.assertTrue(created_item.barcode.barcode.startswith("ITM"))
         movement = StockMovement.objects.get(purchase_request=purchase_request)
         self.assertEqual(movement.item, created_item)
+
+    def test_purchase_request_receive_preserves_existing_item_barcode(self):
+        existing_item = Item.objects.create(name="Шина алюмінієва 4х20", unit=self.unit)
+        existing_barcode = existing_item.barcode.barcode
+        item_count = Item.objects.count()
+        purchase_request = self.create_request(title="Шина алюмінієва 4х20")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="2.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        existing_item.refresh_from_db()
+        self.assertEqual(existing_item.barcode.barcode, existing_barcode)
+        self.assertEqual(Item.objects.count(), item_count)
+        self.assertEqual(
+            StockMovement.objects.get(purchase_request=purchase_request).item,
+            existing_item,
+        )
+        self.assertEqual(
+            StockBalance.objects.get(item=existing_item, warehouse=self.warehouse).qty,
+            Decimal("2.000"),
+        )
+
+    def test_purchase_request_receive_adds_barcode_to_existing_item_without_one(self):
+        existing_item = Item(name="Шина алюмінієва 4х20", unit=self.unit)
+        existing_item.save(generate_barcode=False)
+        self.assertIsNone(existing_item.barcode_id)
+        item_count = Item.objects.count()
+        purchase_request = self.create_request(title="Шина алюмінієва 4х20")
+
+        response = self.receive_purchase_request_without_barcode(
+            user=self.owner, qty="2.000", purchase_request=purchase_request
+        )
+
+        self.assertEqual(response.status_code, 302)
+        existing_item.refresh_from_db()
+        self.assertIsNotNone(existing_item.barcode_id)
+        self.assertTrue(existing_item.barcode.barcode.startswith("ITM"))
+        self.assertEqual(Item.objects.count(), item_count)
+        self.assertEqual(
+            StockMovement.objects.get(purchase_request=purchase_request).item,
+            existing_item,
+        )
+        self.assertEqual(
+            StockBalance.objects.get(item=existing_item, warehouse=self.warehouse).qty,
+            Decimal("2.000"),
+        )
 
     def test_purchase_request_receive_without_barcode_updates_balance_and_request_quantities(
         self,

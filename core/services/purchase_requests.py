@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from core.models import Item, PurchaseRequest, StockMovement, Unit
 from core.permissions import STOCK_EDIT_GROUPS, can_manage_purchase_requests, user_in_groups
+from core.services.barcodes import ensure_item_barcode
 
 
 RECEIVABLE_PURCHASE_REQUEST_STATUSES = {
@@ -107,11 +108,13 @@ def resolve_or_create_item_for_purchase_request(purchase_request):
         raise ValueError(PURCHASE_REQUEST_ITEM_NAME_REQUIRED_ERROR)
 
     if purchase_request.item_id:
+        ensure_item_barcode(purchase_request.item)
         return purchase_request.item, False
 
     with transaction.atomic():
         item = find_item_for_purchase_request(purchase_request)
         if item is not None:
+            ensure_item_barcode(item)
             PurchaseRequest.objects.filter(
                 pk=purchase_request.pk, item__isnull=True
             ).update(item=item)
@@ -120,7 +123,7 @@ def resolve_or_create_item_for_purchase_request(purchase_request):
 
         unit = resolve_purchase_request_unit(purchase_request)
         item = Item(name=item_name, unit=unit)
-        item.save(generate_barcode=False)
+        item.save()
         PurchaseRequest.objects.filter(pk=purchase_request.pk).update(item=item)
         purchase_request.item = item
         return item, True
