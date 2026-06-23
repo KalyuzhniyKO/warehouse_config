@@ -2,6 +2,37 @@
 {% get_current_language as CURRENT_LANGUAGE %}
 {% get_available_languages as LANGUAGES %}
 
+<style>
+  .user-menu-dropdown {
+    background: #ffffff;
+    color: #111827;
+    border: 1px solid rgba(15, 23, 42, .14);
+  }
+  .user-menu-dropdown .dropdown-item {
+    color: #111827;
+  }
+  .user-menu-dropdown .dropdown-item:hover,
+  .user-menu-dropdown .dropdown-item:focus {
+    background: #f3f4f6;
+    color: #0f1720;
+  }
+  .user-menu-dropdown .dropdown-item.text-danger {
+    color: #dc3545;
+  }
+  .user-menu-dropdown .dropdown-item.text-danger:hover,
+  .user-menu-dropdown .dropdown-item.text-danger:focus {
+    background: #fff1f2;
+    color: #b42318;
+  }
+  .user-menu-section,
+  .user-menu-dropdown .dropdown-header {
+    color: #667085;
+  }
+  .user-menu-dropdown .dropdown-divider {
+    border-top-color: #e5e7eb;
+  }
+</style>
+
 <div class="dropdown language-switcher{% if mobile %} mobile-language-switcher{% endif %}">
   <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
     {% language_flag CURRENT_LANGUAGE as current_flag %}
