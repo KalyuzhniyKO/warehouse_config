@@ -15,45 +15,11 @@
         </div>
     </div>
 
-    <form method="get" class="card content-card filter-panel filter-panel--compact mb-3">
-        <div class="card-body">
-            {{ filter_form.report_scope }}
-            {{ filter_form.quality_check }}
-            <p class="small text-muted mb-2">{% trans "Фільтри запамʼятовуються для вашого користувача." %}</p>
-            {% if used_remembered_filters %}<p class="small text-success mb-2">{% trans "Застосовано збережені фільтри." %}</p>{% endif %}
-            {% if business_report_scope %}<p class="small text-success mb-2">{% trans "Звіт враховує лише господарські операції: анульовані рухи та рухи анулювання виключено." %}</p>{% endif %}
-            <div class="filter-grid filter-grid--main">
-                {% for field in filter_form %}
-                    {% if field.name == 'q' or field.name == 'department' or field.name == 'warehouse' or field.name == 'date_from' or field.name == 'date_to' or field.name == 'movement_type' %}
-                        <div>
-                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            {{ field }}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-                <div class="filter-action-group">
-                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
-                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
-                    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#advancedMovementFilters" aria-expanded="false" aria-controls="advancedMovementFilters">{% trans "Розширені фільтри" %}</button>
-                </div>
-            </div>
-            <div class="collapse mt-2" id="advancedMovementFilters">
-                <div class="filter-grid filter-grid--advanced">
-                    {% for field in filter_form %}
-                        {% if field.name != 'report_scope' and field.name != 'quality_check' and field.name != 'q' and field.name != 'department' and field.name != 'warehouse' and field.name != 'date_from' and field.name != 'date_to' and field.name != 'movement_type' and field.name != 'item_id' and field.name != 'recipient_id' %}
-                            <div>
-                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                {{ field }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                    <div class="advanced-filter-actions">
-                        <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}?reset_filters=1">{% trans "Скинути збережені фільтри" %}</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
+    <form id="movement-filter-form" method="get">
+        {{ filter_form.report_scope }}
+        {{ filter_form.quality_check }}
+        {{ filter_form.item_id }}
+        {{ filter_form.recipient_id }}
 
     <div class="mb-3 d-flex flex-wrap gap-2">
         {% for key, value in request.GET.items %}
@@ -62,13 +28,148 @@
     </div>
 
     <div class="card content-card data-table-card">
+        <div class="table-filter-toolbar">
+            <div>
+                <div class="text-muted small">{% trans "Фільтри знаходяться у заголовках колонок і запамʼятовуються для вашого користувача." %}</div>
+                {% if used_remembered_filters %}<div class="small text-success">{% trans "Застосовано збережені фільтри." %}</div>{% endif %}
+                {% if business_report_scope %}<div class="small text-success">{% trans "Звіт враховує лише господарські операції: анульовані рухи та рухи анулювання виключено." %}</div>{% endif %}
+            </div>
+            <div class="d-flex justify-content-end gap-1 table-filter-actions">
+                <button class="btn btn-outline-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                <div class="dropdown table-filter-dropdown">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">{% trans "Розширені" %}</button>
+                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
+                        <label class="form-label small" for="{{ filter_form.location.id_for_label }}">{{ filter_form.location.label }}</label>
+                        {{ filter_form.location }}
+                        <label class="form-label small mt-2" for="{{ filter_form.recipient.id_for_label }}">{{ filter_form.recipient.label }}</label>
+                        {{ filter_form.recipient }}
+                        <label class="form-label small mt-2" for="{{ filter_form.issue_reason.id_for_label }}">{{ filter_form.issue_reason.label }}</label>
+                        {{ filter_form.issue_reason }}
+                        <div class="form-check mt-2">{{ filter_form.no_document }} <label class="form-check-label" for="{{ filter_form.no_document.id_for_label }}">{{ filter_form.no_document.label }}</label></div>
+                        <div class="form-check">{{ filter_form.missing_recipient }} <label class="form-check-label" for="{{ filter_form.missing_recipient.id_for_label }}">{{ filter_form.missing_recipient.label }}</label></div>
+                        <div class="form-check">{{ filter_form.missing_usage_place }} <label class="form-check-label" for="{{ filter_form.missing_usage_place.id_for_label }}">{{ filter_form.missing_usage_place.label }}</label></div>
+                        <div class="form-check">{{ filter_form.missing_destination }} <label class="form-check-label" for="{{ filter_form.missing_destination.id_for_label }}">{{ filter_form.missing_destination.label }}</label></div>
+                        <div class="form-check">{{ filter_form.invalid_qty }} <label class="form-check-label" for="{{ filter_form.invalid_qty.id_for_label }}">{{ filter_form.invalid_qty.label }}</label></div>
+                        <div class="d-flex gap-2 mt-2">
+                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}?reset_filters=1">{% trans "Скинути збережені" %}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle mb-0 data-table">
                 <thead class="table-light">
                     <tr>
-                        <th>{% trans "Дата" %}</th><th>{% trans "Тип операції" %}</th><th>{% trans "Товари / матеріали" %}</th><th>{% trans "Штрихкод" %}</th>
-                        <th class="text-end">{% trans "Кількість" %}</th><th>{% trans "Звідки" %}</th><th>{% trans "Куди" %}</th><th>{% trans "Отримувач" %}</th>
-                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Виконав" %}</th><th>{% trans "Цех / підрозділ" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th><th>{% trans "Дії" %}</th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Дата" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.date_from or request.GET.date_to %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр дати' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.date_from.id_for_label }}">{{ filter_form.date_from.label }}</label>
+                                        {{ filter_form.date_from }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.date_to.id_for_label }}">{{ filter_form.date_to.label }}</label>
+                                        {{ filter_form.date_to }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Тип операції" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.movement_type %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр типу операції' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.movement_type.id_for_label }}">{{ filter_form.movement_type.label }}</label>
+                                        {{ filter_form.movement_type }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Товари / матеріали" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.q or request.GET.item %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр товару' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
+                                        <label class="form-label small" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                                        {{ filter_form.q }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.item.id_for_label }}">{{ filter_form.item.label }}</label>
+                                        {{ filter_form.item }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>{% trans "Штрихкод" %}</th>
+                        <th class="text-end">{% trans "Кількість" %}</th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Звідки" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.warehouse %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр складу' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.warehouse.id_for_label }}">{{ filter_form.warehouse.label }}</label>
+                                        {{ filter_form.warehouse }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>{% trans "Куди" %}</th><th>{% trans "Отримувач" %}</th>
+                        <th>{% trans "Тип видачі" %}</th><th>{% trans "Статус" %}</th><th>{% trans "Виконав" %}</th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Цех / підрозділ" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.department or request.GET.usage_place_id %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр цеху' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.department.id_for_label }}">{{ filter_form.department.label }}</label>
+                                        {{ filter_form.department }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.usage_place_id.id_for_label }}">{{ filter_form.usage_place_id.label }}</label>
+                                        {{ filter_form.usage_place_id }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Документ" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.document_number or request.GET.no_document %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр документа' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.document_number.id_for_label }}">{{ filter_form.document_number.label }}</label>
+                                        {{ filter_form.document_number }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th><th>{% trans "Дії" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,6 +189,7 @@
             </table>
         </div>
     </div>
+    </form>
 
     {% include "core/includes/pagination.html" %}
 </div>

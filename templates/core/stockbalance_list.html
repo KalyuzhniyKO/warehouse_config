@@ -14,28 +14,73 @@
         {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}<a class="btn btn-primary" href="{% url 'stock_receive' %}">{% trans "Нова операція" %}</a>{% endif %}
     </div>
 </div>
-<form method="get" class="card content-card filter-panel filter-panel--compact mb-3">
-    <div class="card-body">
-        <div class="filter-grid filter-grid--main">
-            {% for field in filter_form %}
-                <div >
-                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    {{ field }}
-                </div>
-            {% endfor %}
-        </div>
-        <div class="filter-action-group">
-            <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+<form id="stockbalance-filter-form" method="get" class="card content-card data-table-card">
+    <div class="table-filter-toolbar">
+        <div class="text-muted small">{% trans "Фільтри знаходяться у заголовках колонок." %}</div>
+        <div class="d-flex justify-content-end gap-1 table-filter-actions">
+            <button class="btn btn-outline-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
             <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
         </div>
     </div>
-</form>
-<div class="card content-card data-table-card">
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle mb-0 data-table">
             <thead class="table-light">
             <tr>
-                <th scope="col">{% trans "Товари / матеріали" %}</th><th scope="col">{% trans "Внутрішній код" %}</th><th scope="col">{% trans "Штрихкод" %}</th><th scope="col">{% trans "Склад" %}</th><th scope="col">{% trans "Локація" %}</th><th scope="col" class="text-end">{% trans "Кількість" %}</th><th scope="col">{% trans "Одиниця виміру" %}</th><th scope="col" class="text-end">{% trans "Дії" %}</th>
+                <th scope="col">
+                    <div class="table-filter-heading">
+                        <span>{% trans "Товари / матеріали" %}</span>
+                        <div class="dropdown table-filter-dropdown">
+                            <button class="btn btn-sm table-filter-toggle{% if request.GET.q or request.GET.item %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр товару' %}">▾</button>
+                            <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
+                                <label class="form-label small" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                                {{ filter_form.q }}
+                                <label class="form-label small mt-2" for="{{ filter_form.item.id_for_label }}">{{ filter_form.item.label }}</label>
+                                {{ filter_form.item }}
+                                <div class="d-flex gap-2 mt-2">
+                                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+                                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th>
+                <th scope="col">{% trans "Внутрішній код" %}</th>
+                <th scope="col">{% trans "Штрихкод" %}</th>
+                <th scope="col">
+                    <div class="table-filter-heading">
+                        <span>{% trans "Склад" %}</span>
+                        <div class="dropdown table-filter-dropdown">
+                            <button class="btn btn-sm table-filter-toggle{% if request.GET.warehouse %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр складу' %}">▾</button>
+                            <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                <label class="visually-hidden" for="{{ filter_form.warehouse.id_for_label }}">{{ filter_form.warehouse.label }}</label>
+                                {{ filter_form.warehouse }}
+                                <div class="d-flex gap-2 mt-2">
+                                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+                                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th>
+                <th scope="col">
+                    <div class="table-filter-heading">
+                        <span>{% trans "Локація" %}</span>
+                        <div class="dropdown table-filter-dropdown">
+                            <button class="btn btn-sm table-filter-toggle{% if request.GET.location %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр локації' %}">▾</button>
+                            <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                <label class="visually-hidden" for="{{ filter_form.location.id_for_label }}">{{ filter_form.location.label }}</label>
+                                {{ filter_form.location }}
+                                <div class="d-flex gap-2 mt-2">
+                                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
+                                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </th>
+                <th scope="col" class="text-end">{% trans "Кількість" %}</th>
+                <th scope="col">{% trans "Одиниця виміру" %}</th>
+                <th scope="col" class="text-end">{% trans "Дії" %}</th>
             </tr>
             </thead>
             <tbody>
@@ -47,7 +92,7 @@
             </tbody>
         </table>
     </div>
-</div>
+</form>
 {% include "core/includes/pagination.html" %}
 </div>
 {% endblock %}
