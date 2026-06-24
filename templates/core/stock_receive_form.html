@@ -15,11 +15,13 @@
             {% if selected_purchase_request %}<input type="hidden" name="purchase_request" value="{{ selected_purchase_request.pk }}">{% endif %}
             <div class="col-12 col-lg">
                 <label class="visually-hidden" for="receive-barcode-input">{% trans "Штрихкод, назва або код товару" %}</label>
-                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" inputmode="none" readonly data-keyboard-locked placeholder="{% trans 'Штрихкод, назва або код товару' %}">
+                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off"{% if is_storekeeper_workplace %} inputmode="none" readonly data-keyboard-locked{% endif %} placeholder="{% trans 'Штрихкод, назва або код товару' %}">
             </div>
-            <div class="col-12 col-lg-auto d-grid">
-                <button class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" type="button" data-enable-keyboard-input data-target="#receive-barcode-input">{% trans "Ввести з клавіатури" %}</button>
-            </div>
+            {% if is_storekeeper_workplace %}
+                <div class="col-12 col-lg-auto d-grid">
+                    <button class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" type="button" data-enable-keyboard-input data-target="#receive-barcode-input">{% trans "Ввести з клавіатури" %}</button>
+                </div>
+            {% endif %}
             <div class="col-12 col-lg-auto d-grid">
                 <button class="btn btn-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти товар" %}</button>
             </div>
