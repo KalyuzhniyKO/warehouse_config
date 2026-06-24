@@ -148,8 +148,11 @@ class BarcodePrefillMixin:
         if self.scanned_barcode:
             self.scanned_item = resolve_item_barcode(self.scanned_barcode)
             if self.scanned_item is None:
-                messages.warning(request, self.barcode_not_found_message)
+                self.handle_unresolved_barcode(request)
         return super().dispatch(request, *args, **kwargs)
+
+    def handle_unresolved_barcode(self, request):
+        messages.warning(request, self.barcode_not_found_message)
 
     def get_initial(self):
         initial = super().get_initial()
@@ -184,7 +187,7 @@ class StockReceiveView(
 
     def dispatch(self, request, *args, **kwargs):
         self.manual_item_id = request.GET.get("item", "").strip()
-        self.manual_item_query = request.GET.get("item_search", "").strip()
+        self.manual_item_query = request.GET.get(self.barcode_param, "").strip()
         self.manual_item = None
         if self.manual_item_id:
             self.manual_item = (
@@ -195,8 +198,11 @@ class StockReceiveView(
             )
         return super().dispatch(request, *args, **kwargs)
 
+    def handle_unresolved_barcode(self, request):
+        return None
+
     def get_manual_item_results(self):
-        if not self.manual_item_query:
+        if not self.manual_item_query or self.scanned_item is not None:
             return []
         return list(
             Item.objects.filter(is_active=True)
