@@ -21,7 +21,7 @@ class TableHeaderFilterUITests(TestCase):
         call_command("init_roles", stdout=StringIO())
         User = get_user_model()
         self.user = User.objects.create_user("filter-ui", password="pw")
-        self.user.groups.add(Group.objects.get(name="РђРґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂ СЃРєР»Р°РґСѓ"))
+        self.user.groups.add(Group.objects.get(name="Адміністратор складу"))
         self.client.force_login(self.user)
         self.unit = Unit.objects.create(name="Piece", symbol="pc")
         self.item = Item.objects.create(
