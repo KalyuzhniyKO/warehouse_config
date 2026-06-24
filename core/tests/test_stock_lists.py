@@ -63,6 +63,28 @@ class StockBalanceListTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Болт М8")
 
+    def test_stock_balance_list_hides_zero_quantity_balances(self):
+        zero_item = Item.objects.create(
+            name="Zero stock item",
+            internal_code="ZERO-STOCK",
+            category=self.category,
+            unit=self.unit,
+        )
+        StockBalance.objects.create(
+            item=zero_item,
+            warehouse=self.warehouse,
+            location=self.location,
+            qty=Decimal("0.000"),
+        )
+
+        response = self.client.get(reverse("stockbalance_list"), {"q": "STOCK"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(
+            zero_item.pk,
+            [balance.item_id for balance in response.context["balances"]],
+        )
+
 
 class StockMovementListTests(TestCase):
 
