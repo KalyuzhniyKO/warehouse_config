@@ -188,19 +188,24 @@ header .navbar { min-height: 56px; }
 .table-filter-menu.dropdown-menu-end{right:0;left:auto}
 .table-filter-menu .form-check{margin:.15rem 0}
 .table-filter-menu .form-check-input{margin-top:.2rem}
-.purchase-request-table--archive{min-width:1120px}
+.purchase-request-table--archive{min-width:1180px}
 .purchase-request-table--archive td,.purchase-request-table--archive th{padding:.35rem .45rem;vertical-align:top;line-height:1.15;font-size:.86rem}
 .purchase-request-table--archive .purchase-title-link{-webkit-line-clamp:1;line-height:1.15}
 .purchase-request-table--archive .purchase-need-description{display:none}
 .purchase-request-table--archive .purchase-status-badge{font-size:.76rem;line-height:1.05;padding:.2rem .38rem}
 .purchase-request-table--archive .purchase-col-date{width:6.5rem}
-.purchase-request-table--archive .purchase-col-title{width:28%}
+.purchase-request-table--archive .purchase-col-title{width:26%}
 .purchase-request-table--archive .purchase-col-qty{width:6rem}
 .purchase-request-table--archive .purchase-col-type{width:6.25rem}
 .purchase-request-table--archive .purchase-col-status{width:7.25rem}
 .purchase-request-table--archive .purchase-col-requester{width:7.5rem}
-.purchase-archive-qty-cell,.purchase-archive-date-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
-.purchase-archive-user-cell,.purchase-archive-reason-cell{max-width:10rem;overflow:hidden;text-overflow:ellipsis}
+.purchase-archive-stock-col{width:9rem}
+.purchase-archive-meta-col{width:13rem}
+.purchase-archive-stock-cell,.purchase-archive-meta-cell{overflow:hidden}
+.purchase-archive-line{display:flex;align-items:baseline;gap:.3rem;min-width:0;white-space:nowrap}
+.purchase-archive-label{flex:0 0 auto;color:#667085;font-size:.74rem;font-weight:650}
+.purchase-archive-value{min-width:0;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.purchase-archive-reason{margin-top:.15rem;color:#344054;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .purchase-title-cell{min-width:0}
 .purchase-title-link{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:650;line-height:1.2;text-decoration:none}
 .purchase-title-link:hover{text-decoration:underline}
