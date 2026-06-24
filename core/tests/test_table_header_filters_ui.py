@@ -53,8 +53,11 @@ class TableHeaderFilterUITests(TestCase):
         self.assertContains(response, "table-filter-heading")
         self.assertContains(response, "purchase-filter-toggle active")
         self.assertContains(response, "dropdown-menu-end")
-        self.assertContains(response, "purchase-archive-qty-cell")
-        self.assertContains(response, "purchase-archive-date-cell")
+        self.assertContains(response, "purchase-archive-stock-cell")
+        self.assertContains(response, "purchase-archive-meta-cell")
+        self.assertContains(response, "purchase-archive-label")
+        self.assertNotContains(response, "purchase-archive-qty-cell")
+        self.assertNotContains(response, "purchase-archive-date-cell")
         self.assertContains(response, "Archived filter request")
 
     def test_item_list_uses_header_dropdown_filters_without_top_filter_panel(self):
@@ -131,6 +134,8 @@ class TableHeaderFilterUITests(TestCase):
         self.assertIn(".table-filter-menu--wide", css)
         self.assertIn(".purchase-request-table--archive", css)
         self.assertIn(".purchase-request-table--archive td", css)
+        self.assertIn(".purchase-archive-stock-cell", css)
+        self.assertIn(".purchase-archive-meta-cell", css)
         self.assertIn("@media print", css)
         self.assertIn(".yantos-navbar", css)
         self.assertIn(".sticky-top{position:static!important}", css)

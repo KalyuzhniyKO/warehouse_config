@@ -226,11 +226,8 @@
                             </div>
                         </th>
                         {% if is_archive_view %}
-                            <th>{% trans "Отримано" %}</th>
-                            <th>{% trans "Залишок" %}</th>
-                            <th>{% trans "Архівовано" %}</th>
-                            <th>{% trans "Архівував" %}</th>
-                            <th>{% trans "Причина" %}</th>
+                            <th class="purchase-archive-stock-col">{% trans "Рух товару" %}</th>
+                            <th class="purchase-archive-meta-col">{% trans "Архів" %}</th>
                         {% endif %}
                     </tr>
                 </thead>
@@ -281,15 +278,31 @@
                             </td>
                             <td>{{ purchase_request.requested_by|display_name }}</td>
                             {% if is_archive_view %}
-                                <td class="purchase-archive-qty-cell">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</td>
-                                <td class="purchase-archive-qty-cell">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</td>
-                                <td class="purchase-archive-date-cell">{{ purchase_request.archived_at|date:"SHORT_DATETIME_FORMAT" }}</td>
-                                <td class="purchase-archive-user-cell" title="{{ purchase_request.archived_by|display_name|default:"—" }}">{{ purchase_request.archived_by|display_name|default:"—" }}</td>
-                                <td class="purchase-archive-reason-cell" title="{{ purchase_request.archive_reason|default:"—" }}">{{ purchase_request.archive_reason|default:"—" }}</td>
+                                <td class="purchase-archive-stock-cell">
+                                    <div class="purchase-archive-line">
+                                        <span class="purchase-archive-label">{% trans "Отримано" %}:</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</span>
+                                    </div>
+                                    <div class="purchase-archive-line">
+                                        <span class="purchase-archive-label">{% trans "Залишок" %}:</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</span>
+                                    </div>
+                                </td>
+                                <td class="purchase-archive-meta-cell" title="{{ purchase_request.archive_reason|default:"—" }}">
+                                    <div class="purchase-archive-line">
+                                        <span class="purchase-archive-label">{% trans "Дата" %}:</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.archived_at|date:"SHORT_DATETIME_FORMAT" }}</span>
+                                    </div>
+                                    <div class="purchase-archive-line">
+                                        <span class="purchase-archive-label">{% trans "Хто" %}:</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.archived_by|display_name|default:"—" }}</span>
+                                    </div>
+                                    <div class="purchase-archive-reason">{{ purchase_request.archive_reason|default:"—" }}</div>
+                                </td>
                             {% endif %}
                         </tr>
                     {% empty %}
-                        <tr class="purchase-request-empty-row"><td colspan="{% if is_archive_view %}13{% else %}8{% endif %}" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
+                        <tr class="purchase-request-empty-row"><td colspan="{% if is_archive_view %}10{% else %}8{% endif %}" class="text-center text-muted py-5">{% trans "Заявок на закупівлю не знайдено." %}</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
