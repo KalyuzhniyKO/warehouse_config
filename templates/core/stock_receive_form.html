@@ -15,7 +15,10 @@
             {% if selected_purchase_request %}<input type="hidden" name="purchase_request" value="{{ selected_purchase_request.pk }}">{% endif %}
             <div class="col-12 col-lg">
                 <label class="visually-hidden" for="receive-barcode-input">{% trans "Штрихкод товару" %}</label>
-                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" placeholder="{% trans 'Штрихкод товару' %}">
+                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" inputmode="none" readonly data-keyboard-locked placeholder="{% trans 'Штрихкод товару' %}">
+            </div>
+            <div class="col-12 col-lg-auto d-grid">
+                <button class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" type="button" data-enable-keyboard-input data-target="#receive-barcode-input">{% trans "Ввести з клавіатури" %}</button>
             </div>
             <div class="col-12 col-lg-auto d-grid">
                 <button class="btn btn-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти товар" %}</button>
@@ -26,6 +29,35 @@
                 </div>
             {% endif %}
         </form>
+        <form class="mt-4" method="get" action="{% url 'stock_receive' %}">
+            {% if selected_purchase_request %}<input type="hidden" name="purchase_request" value="{{ selected_purchase_request.pk }}">{% endif %}
+            <label class="form-label fw-semibold" for="receive-item-search">{% trans "Пошук за назвою або кодом" %}</label>
+            <div class="row g-2 align-items-stretch">
+                <div class="col-12 col-lg">
+                    <input id="receive-item-search" class="form-control form-control-lg py-3 touch-input" type="search" name="item_search" value="{{ manual_item_query }}" autocomplete="off" placeholder="{% trans 'Назва, внутрішній код або штрихкод' %}">
+                </div>
+                <div class="col-12 col-lg-auto d-grid">
+                    <button class="btn btn-outline-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти за назвою" %}</button>
+                </div>
+            </div>
+        </form>
+        {% if manual_item_results %}
+            <div class="list-group mt-3">
+                {% for item in manual_item_results %}
+                    <a class="list-group-item list-group-item-action d-flex flex-column flex-lg-row justify-content-between gap-2" href="{% url 'stock_receive' %}?item={{ item.pk }}{% if selected_purchase_request %}&amp;purchase_request={{ selected_purchase_request.pk }}{% endif %}">
+                        <span>
+                            <span class="fw-semibold">{{ item.name }}</span>
+                            <span class="text-muted ms-lg-2">{{ item.internal_code|default:"—" }}</span>
+                        </span>
+                        <span class="fw-semibold text-primary">{% trans "Обрати" %}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% elif manual_item_query %}
+            <div class="alert alert-warning rounded-4 mt-3 mb-0" role="alert">
+                {% trans "Товарів за цим пошуком не знайдено." %}
+            </div>
+        {% endif %}
         {% if scanned_item_context %}
             <div class="alert alert-success border-0 shadow-sm rounded-4 mt-4 mb-0" role="status">
                 <div class="fw-bold fs-5 mb-3">{% trans "Знайдений товар" %}</div>
@@ -123,6 +155,18 @@
 {% include "core/includes/self_service_form_scripts.html" %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("[data-enable-keyboard-input]").forEach(function (button) {
+            button.addEventListener("click", function () {
+                var input = document.querySelector(button.dataset.target);
+                if (!input) {
+                    return;
+                }
+                input.readOnly = false;
+                input.removeAttribute("readonly");
+                input.setAttribute("inputmode", "text");
+                input.focus();
+            });
+        });
         var purchaseRequestSelect = document.getElementById("id_purchase_request");
         if (!purchaseRequestSelect) {
             return;

@@ -114,6 +114,39 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertIn('btn btn-primary btn-lg px-4 py-3 fw-semibold', html)
         self.assertNotIn('autofocus', html)
 
+    def test_stock_receive_barcode_input_is_keyboard_locked_until_button(self):
+        response = self.client.get(reverse("stock_receive"))
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="receive-barcode-input"', html)
+        self.assertIn('inputmode="none"', html)
+        self.assertIn('readonly', html)
+        self.assertIn('data-keyboard-locked', html)
+        self.assertIn('data-enable-keyboard-input', html)
+        self.assertIn('data-target="#receive-barcode-input"', html)
+        self.assertIn('input.setAttribute("inputmode", "text")', html)
+
+    def test_stock_receive_can_search_item_by_name(self):
+        response = self.client.get(reverse("stock_receive"), {"item_search": "Workflow"})
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(response.context["manual_item_results"]), [self.item])
+        self.assertIn('name="item_search"', html)
+        self.assertIn("Workflow item", html)
+        self.assertIn(f"?item={self.item.pk}", html)
+
+    def test_stock_receive_can_select_manual_item_for_receipt(self):
+        response = self.client.get(reverse("stock_receive"), {"item": self.item.pk})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["manual_item"], self.item)
+        self.assertEqual(response.context["form"].initial["item"], self.item)
+        self.assertTrue(response.context["can_submit_receive"])
+        self.assertContains(response, "Workflow item")
+        self.assertContains(response, 'name="operation_token"')
+
     def test_stock_receive_get_barcode_requires_explicit_warehouse_destination(self):
         response = self.client.get(
             f'{reverse("stock_receive")}?barcode={self.item.barcode.barcode}'

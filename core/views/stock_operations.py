@@ -2,7 +2,7 @@ import secrets
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -18,7 +18,7 @@ from ..forms import (
     StockTransferForm,
     StockWriteOffForm,
 )
-from ..models import StockBalance, StockMovement
+from ..models import Item, StockBalance, StockMovement
 from ..permissions import STOCK_EDIT_GROUPS, GroupRequiredMixin
 from ..services.purchase_requests import (
     find_item_for_purchase_request,
@@ -182,6 +182,33 @@ class StockReceiveView(
     form_class = StockReceiveForm
     result_url_name = "stock_receive_result"
 
+    def dispatch(self, request, *args, **kwargs):
+        self.manual_item_id = request.GET.get("item", "").strip()
+        self.manual_item_query = request.GET.get("item_search", "").strip()
+        self.manual_item = None
+        if self.manual_item_id:
+            self.manual_item = (
+                Item.objects.filter(is_active=True)
+                .select_related("unit", "barcode")
+                .filter(pk=self.manual_item_id)
+                .first()
+            )
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_manual_item_results(self):
+        if not self.manual_item_query:
+            return []
+        return list(
+            Item.objects.filter(is_active=True)
+            .select_related("unit", "barcode")
+            .filter(
+                Q(name__icontains=self.manual_item_query)
+                | Q(internal_code__icontains=self.manual_item_query)
+                | Q(barcode__barcode__icontains=self.manual_item_query)
+            )
+            .order_by("name")[:20]
+        )
+
     def get_selected_purchase_request(self, form=None):
         if form is not None:
             purchase_request_id = (
@@ -215,6 +242,8 @@ class StockReceiveView(
                 resolved_item = find_item_for_purchase_request(purchase_request)
                 if resolved_item is not None:
                     initial["item"] = resolved_item
+        if self.manual_item is not None:
+            initial["item"] = self.manual_item
         return initial
 
     def get_context_data(self, **kwargs):
@@ -233,8 +262,17 @@ class StockReceiveView(
             and purchase_request_item is None
             and bool((selected_purchase_request.title or "").strip())
         )
+        context["manual_item_query"] = self.manual_item_query
+        context["manual_item_results"] = self.get_manual_item_results()
+        context["manual_item"] = self.manual_item
+        if self.scanned_item is None and self.manual_item is not None:
+            context["scanned_item_context"] = stock_operation_barcode_context(
+                self.manual_item, self.request.user
+            )
         context["can_submit_receive"] = (
-            self.scanned_item is not None or selected_purchase_request is not None
+            self.scanned_item is not None
+            or self.manual_item is not None
+            or selected_purchase_request is not None
         )
         return self.add_operation_token_context(context, context["can_submit_receive"])
 
