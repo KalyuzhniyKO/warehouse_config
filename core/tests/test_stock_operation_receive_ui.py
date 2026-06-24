@@ -114,15 +114,38 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertIn('btn btn-primary btn-lg px-4 py-3 fw-semibold', html)
         self.assertNotIn('autofocus', html)
 
-    def test_stock_receive_barcode_input_is_keyboard_locked_until_button(self):
+    def test_stock_receive_desktop_input_has_no_keyboard_toggle(self):
         response = self.client.get(reverse("stock_receive"))
         html = response.content.decode()
+        input_start = html.index('<input id="receive-barcode-input"')
+        input_tag = html[input_start:html.index(">", input_start)]
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('id="receive-barcode-input"', html)
-        self.assertIn('inputmode="none"', html)
-        self.assertIn('readonly', html)
-        self.assertIn('data-keyboard-locked', html)
+        self.assertNotIn('inputmode="none"', input_tag)
+        self.assertNotIn('readonly', input_tag)
+        self.assertNotIn('data-keyboard-locked', input_tag)
+        self.assertNotIn('type="button" data-enable-keyboard-input', html)
+
+    def test_stock_receive_tablet_input_is_keyboard_locked_until_button(self):
+        storekeeper = get_user_model().objects.create_user("tablet-keeper", password="pass")
+        storekeeper.groups.add(Group.objects.get(name="Комірник"))
+        grant_warehouse_access(
+            storekeeper,
+            [self.warehouse, self.destination_warehouse],
+        )
+        self.client.force_login(storekeeper)
+
+        response = self.client.get(reverse("stock_receive"))
+        html = response.content.decode()
+        input_start = html.index('<input id="receive-barcode-input"')
+        input_tag = html[input_start:html.index(">", input_start)]
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('id="receive-barcode-input"', html)
+        self.assertIn('inputmode="none"', input_tag)
+        self.assertIn('readonly', input_tag)
+        self.assertIn('data-keyboard-locked', input_tag)
         self.assertIn('data-enable-keyboard-input', html)
         self.assertIn('data-target="#receive-barcode-input"', html)
         self.assertIn('input.setAttribute("inputmode", "text")', html)
