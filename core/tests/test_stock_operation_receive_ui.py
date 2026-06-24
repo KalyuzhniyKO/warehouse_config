@@ -128,12 +128,14 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertIn('input.setAttribute("inputmode", "text")', html)
 
     def test_stock_receive_can_search_item_by_name(self):
-        response = self.client.get(reverse("stock_receive"), {"item_search": "Workflow"})
+        response = self.client.get(reverse("stock_receive"), {"barcode": "Workflow"})
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["manual_item_query"], "Workflow")
         self.assertEqual(list(response.context["manual_item_results"]), [self.item])
-        self.assertIn('name="item_search"', html)
+        self.assertIn('name="barcode"', html)
+        self.assertNotIn('name="item_search"', html)
         self.assertIn("Workflow item", html)
         self.assertIn(f"?item={self.item.pk}", html)
 

@@ -14,8 +14,8 @@
         <form class="row g-3 align-items-stretch" method="get" action="{% url 'stock_receive' %}">
             {% if selected_purchase_request %}<input type="hidden" name="purchase_request" value="{{ selected_purchase_request.pk }}">{% endif %}
             <div class="col-12 col-lg">
-                <label class="visually-hidden" for="receive-barcode-input">{% trans "Штрихкод товару" %}</label>
-                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" inputmode="none" readonly data-keyboard-locked placeholder="{% trans 'Штрихкод товару' %}">
+                <label class="visually-hidden" for="receive-barcode-input">{% trans "Штрихкод, назва або код товару" %}</label>
+                <input id="receive-barcode-input" class="form-control form-control-lg py-3 fs-4 touch-input" type="text" name="barcode" value="{{ barcode_query }}" autocomplete="off" inputmode="none" readonly data-keyboard-locked placeholder="{% trans 'Штрихкод, назва або код товару' %}">
             </div>
             <div class="col-12 col-lg-auto d-grid">
                 <button class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" type="button" data-enable-keyboard-input data-target="#receive-barcode-input">{% trans "Ввести з клавіатури" %}</button>
@@ -28,18 +28,6 @@
                     <a class="btn btn-outline-secondary btn-lg px-4 py-3 fw-semibold" href="{% url 'stock_receive' %}">{% trans "Очистити" %}</a>
                 </div>
             {% endif %}
-        </form>
-        <form class="mt-4" method="get" action="{% url 'stock_receive' %}">
-            {% if selected_purchase_request %}<input type="hidden" name="purchase_request" value="{{ selected_purchase_request.pk }}">{% endif %}
-            <label class="form-label fw-semibold" for="receive-item-search">{% trans "Пошук за назвою або кодом" %}</label>
-            <div class="row g-2 align-items-stretch">
-                <div class="col-12 col-lg">
-                    <input id="receive-item-search" class="form-control form-control-lg py-3 touch-input" type="search" name="item_search" value="{{ manual_item_query }}" autocomplete="off" placeholder="{% trans 'Назва, внутрішній код або штрихкод' %}">
-                </div>
-                <div class="col-12 col-lg-auto d-grid">
-                    <button class="btn btn-outline-primary btn-lg px-4 py-3 fw-semibold" type="submit">{% trans "Знайти за назвою" %}</button>
-                </div>
-            </div>
         </form>
         {% if manual_item_results %}
             <div class="list-group mt-3">
@@ -55,7 +43,7 @@
             </div>
         {% elif manual_item_query %}
             <div class="alert alert-warning rounded-4 mt-3 mb-0" role="alert">
-                {% trans "Товарів за цим пошуком не знайдено." %}
+                {% trans "Товарів за цим штрихкодом, назвою або кодом не знайдено." %}
             </div>
         {% endif %}
         {% if scanned_item_context %}
@@ -74,11 +62,7 @@
                     {% endif %}
                 </dl>
             </div>
-        {% elif barcode_query %}
-            <div class="alert alert-warning rounded-4 mt-4 mb-0" role="alert">
-                {% trans "Товар за цим штрихкодом не знайдено." %}
-            </div>
-        {% else %}
+        {% elif not manual_item_query %}
             <div class="alert alert-info rounded-4 mt-4 mb-0" role="status">
                 {% trans "Відскануйте штрихкод товару або введіть його вручну" %}
             </div>
