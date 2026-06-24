@@ -28,7 +28,9 @@ class StockBalanceListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
                 "warehouse",
             )
             .filter(
+                is_active=True,
                 item__is_active=True,
+                qty__gt=0,
                 warehouse__is_active=True,
                 warehouse__in=get_accessible_warehouses(self.request.user),
             )
