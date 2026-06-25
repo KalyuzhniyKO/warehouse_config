@@ -389,10 +389,15 @@ class ListLayoutSmokeTests(ListLayoutSmokeTestBase):
         self.assertContains(response, "data-table-card")
 
     def test_stock_lists_have_filter_and_table_cards(self):
-        for name in ["stockbalance_list", "movement_list"]:
+        balance_response = self.client.get(reverse("stockbalance_list"))
+        self.assertContains(balance_response, "data-table-card")
+        self.assertContains(balance_response, "table-filter-heading")
+
+        for name in ["movement_list"]:
             response = self.client.get(reverse(name))
-            self.assertContains(response, "filter-panel")
             self.assertContains(response, "data-table-card")
+            self.assertContains(response, "table-filter-toolbar")
+            self.assertContains(response, "table-filter-heading")
 
     def test_printer_list_preserves_error_or_empty_states(self, *_):
         response = self.client.get(reverse("printer_list"))
