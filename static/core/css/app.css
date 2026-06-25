@@ -170,7 +170,12 @@ header .navbar { min-height: 56px; }
 .data-table td.movement-code-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
 .data-table td.movement-document-cell{white-space:nowrap}
 .data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
-.purchase-filter-panel{border:1px solid var(--dash-border);border-radius:.85rem;background:#fff;padding:.75rem .85rem;box-shadow:0 .35rem 1rem rgba(15,23,42,.04)}
+.purchase-filter-panel{border:1px solid var(--dash-border);border-radius:.85rem;background:#fff;padding:.72rem .85rem .8rem;box-shadow:0 .35rem 1rem rgba(15,23,42,.04)}
+.purchase-filter-panel--active{border-color:rgba(212,172,0,.55);box-shadow:0 .35rem 1rem rgba(15,23,42,.04),inset 0 3px 0 #d4ac00}
+.purchase-filter-panel-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.55rem}
+.purchase-filter-panel-title{font-weight:700;color:#0f172a}
+.purchase-filter-active-count{border:1px solid #efd88a;background:#fff8db;color:#92400e;border-radius:999px;padding:.18rem .55rem;font-size:.78rem;font-weight:700}
+.purchase-filter-active-count--empty{border-color:#e5e7eb;background:#f8fafc;color:#667085}
 .purchase-filter-grid{display:grid;grid-template-columns:1fr;gap:.55rem .65rem;align-items:end}
 .purchase-filter-field{min-width:0}
 .purchase-filter-field .form-label{font-size:.76rem;font-weight:700;text-transform:uppercase;color:#667085;margin-bottom:.18rem}
