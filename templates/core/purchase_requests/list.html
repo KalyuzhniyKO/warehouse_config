@@ -5,7 +5,7 @@
 <style>
     .purchase-request-table {
         height: auto;
-        min-width: 1280px;
+        min-width: auto;
     }
 
     .purchase-request-table > thead,
@@ -63,7 +63,15 @@
         </div>
     </div>
 
-    <form id="purchase-filter-form" method="get" class="purchase-filter-panel">
+    <form id="purchase-filter-form" method="get" class="purchase-filter-panel{% if active_filter_count %} purchase-filter-panel--active{% endif %}">
+        <div class="purchase-filter-panel-header">
+            <div class="purchase-filter-panel-title">{% trans "Фільтри" %}</div>
+            {% if active_filter_count %}
+                <div class="purchase-filter-active-count">{% blocktrans count counter=active_filter_count %}{{ counter }} активний фільтр{% plural %}{{ counter }} активних фільтрів{% endblocktrans %}</div>
+            {% else %}
+                <div class="purchase-filter-active-count purchase-filter-active-count--empty">{% trans "Без активних фільтрів" %}</div>
+            {% endif %}
+        </div>
         <div class="purchase-filter-grid">
             <div class="purchase-filter-field purchase-filter-field--search">
                 <label class="form-label" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>

@@ -323,6 +323,9 @@ class PurchaseRequestTests(TestCase):
         )
 
         self.assertContains(response, "purchase-filter-panel")
+        self.assertContains(response, "purchase-filter-panel--active")
+        self.assertContains(response, "purchase-filter-active-count")
+        self.assertContains(response, "активн")
         self.assertContains(response, "purchase-filter-grid")
         self.assertContains(response, "purchase-list-tabs")
         self.assertContains(response, "purchase-list-tab active")
@@ -371,6 +374,7 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "purchase-status-select")
         self.assertNotContains(response, "purchase-request-status-select")
         self.assertNotContains(response, "purchase-request-status-submit")
+        self.assertNotContains(response, "min-width: 1280px")
         self.assertContains(response, f'href="{detail_url}"')
         self.assertContains(response, "Compact purchase row")
         self.assertContains(response, "Compact need description")

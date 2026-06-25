@@ -118,6 +118,7 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
         ]
         context["filter_form"] = filter_form
         context["active_filter_names"] = active_filter_names
+        context["active_filter_count"] = len(active_filter_names)
         context["can_create_purchase_request"] = can_create_purchase_requests(
             self.request.user
         )
