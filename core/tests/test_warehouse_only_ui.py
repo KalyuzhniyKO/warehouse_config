@@ -34,6 +34,7 @@ from core.tests.warehouse_access_utils import grant_warehouse_access
 
 class WarehouseOnlyOperationFormTests(TestCase):
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         SystemSettings.objects.update_or_create(pk=1, defaults={"use_locations": True})
         User = get_user_model()
@@ -175,6 +176,7 @@ class WarehouseOnlyOperationFormTests(TestCase):
 
 class CompactDashboardAndNavbarTests(TestCase):
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         User = get_user_model()
         self.admin = User.objects.create_user(
