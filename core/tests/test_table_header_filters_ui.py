@@ -36,7 +36,7 @@ class TableHeaderFilterUITests(TestCase):
             item=self.item, warehouse=self.warehouse, location=self.location, qty=Decimal("5.000")
         )
 
-    def test_purchase_archive_uses_compact_table_and_aligned_header_filters(self):
+    def test_purchase_archive_uses_compact_table_and_top_filter_panel(self):
         purchase_request = PurchaseRequest.objects.create(
             requested_by=self.user,
             title="Archived filter request",
@@ -50,9 +50,10 @@ class TableHeaderFilterUITests(TestCase):
         response = self.client.get(reverse("purchase_request_archive"), {"q": "Archived"})
 
         self.assertContains(response, "purchase-request-table--archive")
-        self.assertContains(response, "table-filter-heading")
-        self.assertContains(response, "purchase-filter-toggle active")
-        self.assertContains(response, "dropdown-menu-end")
+        self.assertContains(response, "purchase-filter-panel")
+        self.assertContains(response, "purchase-filter-grid")
+        self.assertContains(response, "purchase-list-tabs")
+        self.assertNotContains(response, "purchase-filter-toggle")
         self.assertContains(response, "purchase-archive-stock-cell")
         self.assertContains(response, "purchase-archive-meta-cell")
         self.assertContains(response, "purchase-archive-label")
@@ -132,6 +133,9 @@ class TableHeaderFilterUITests(TestCase):
         self.assertIn(".table-filter-toggle", css)
         self.assertIn(".table-filter-menu", css)
         self.assertIn(".table-filter-menu--wide", css)
+        self.assertIn(".purchase-filter-panel", css)
+        self.assertIn(".purchase-status-menu", css)
+        self.assertIn(".purchase-list-tabs", css)
         self.assertIn(".purchase-request-table--archive", css)
         self.assertIn(".purchase-request-table--archive td", css)
         self.assertIn(".purchase-archive-stock-cell", css)

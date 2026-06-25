@@ -37,7 +37,7 @@ class PurchaseRequestStatusControlTests(TestCase):
     def grant_permission(self, user, codename):
         user.user_permissions.add(Permission.objects.get(codename=codename))
 
-    def test_tracking_user_sees_readable_status_control_classes(self):
+    def test_tracking_user_sees_compact_status_menus(self):
         self.grant_permission(self.tracker, "can_view_purchase_requests")
         self.grant_permission(self.tracker, "can_update_purchase_request_tracking")
         self.client.force_login(self.tracker)
@@ -45,11 +45,11 @@ class PurchaseRequestStatusControlTests(TestCase):
         response = self.client.get(reverse("purchase_request_list"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "purchase-request-status-form")
-        self.assertContains(response, "purchase-request-status-select")
-        self.assertContains(response, "purchase-request-payment-select")
-        self.assertContains(response, "purchase-request-delivery-select")
-        self.assertContains(response, "purchase-request-status-submit")
+        self.assertContains(response, "purchase-status-menu")
+        self.assertContains(response, "purchase-status-inline-form")
+        self.assertContains(response, "purchase-status-select")
+        self.assertNotContains(response, "purchase-request-status-select")
+        self.assertNotContains(response, "purchase-request-status-submit")
         self.assertContains(response, 'name="payment_status"')
         self.assertContains(response, 'name="delivery_status"')
         self.assertContains(
@@ -65,9 +65,8 @@ class PurchaseRequestStatusControlTests(TestCase):
         table_body = html[html.index("<tbody") : html.index("</tbody>")]
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotIn("purchase-request-status-form", table_body)
-        self.assertNotIn("purchase-request-payment-select", table_body)
-        self.assertNotIn("purchase-request-delivery-select", table_body)
+        self.assertNotIn("purchase-status-menu", table_body)
+        self.assertNotIn("purchase-status-select", table_body)
         self.assertNotIn('name="payment_status"', table_body)
         self.assertNotIn('name="delivery_status"', table_body)
         self.assertIn("purchase-status-badge", table_body)
