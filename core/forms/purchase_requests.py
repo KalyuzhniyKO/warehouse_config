@@ -4,7 +4,8 @@ from django.utils.translation import gettext_lazy as _
 
 from core.forms.base import BootstrapModelForm
 from core.forms.base import normalize_text
-from core.models import Item, PurchaseRequest, Unit
+from core.forms.units import units_ordered_by_item_usage
+from core.models import Item, PurchaseRequest
 
 
 class PurchaseRequestForm(BootstrapModelForm):
@@ -31,7 +32,7 @@ class PurchaseRequestForm(BootstrapModelForm):
         self.fields["requested_item"].widget.attrs["list"] = "purchase-item-options"
         self.fields["unit"].choices = [
             (unit.symbol, unit.symbol)
-            for unit in Unit.objects.filter(is_active=True).order_by("name", "symbol")
+            for unit in units_ordered_by_item_usage()
         ]
         self.fields["unit"].widget.attrs["class"] = "form-select"
 

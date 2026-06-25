@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils import translation
 from django.utils import timezone
 
+from core.forms import PurchaseRequestForm
 from core.models import Item, PurchaseRequest, StockBalance, StockMovement, Unit, Warehouse
 from core.services.purchase_requests import (
     archive_purchase_request,
@@ -197,6 +198,19 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, '<input type="text" name="need_description"', html=False)
         self.assertNotContains(response, '<textarea name="need_description"', html=False)
         self.assertNotContains(response, "purchase-unit-options")
+
+    def test_create_form_orders_units_by_active_item_usage(self):
+        meter = Unit.objects.create(name="Meter", symbol="m")
+        pack = Unit.objects.create(name="Pack", symbol="pack")
+        for index in range(2):
+            Item.objects.create(name=f"Meter item {index}", unit=meter)
+        Item.objects.create(name="Archived pack item", unit=pack, is_active=False)
+
+        form = PurchaseRequestForm()
+
+        choices = [value for value, label in form.fields["unit"].choices]
+        self.assertLess(choices.index("m"), choices.index("pairs"))
+        self.assertLess(choices.index("pairs"), choices.index("pack"))
 
     def test_new_requested_item_text_does_not_create_item(self):
         self.login(self.requester)

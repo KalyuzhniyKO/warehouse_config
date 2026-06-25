@@ -59,6 +59,23 @@ class ActiveChoiceFormTests(TestCase):
         self.assertIn(self.active_unit, form.fields["unit"].queryset)
         self.assertNotIn(self.archived_unit, form.fields["unit"].queryset)
 
+    def test_item_form_orders_units_by_active_item_usage(self):
+        meter = Unit.objects.create(name="Meter", symbol="m")
+        kilogram = Unit.objects.create(name="Kilogram", symbol="kg")
+        pack = Unit.objects.create(name="Pack", symbol="pack")
+        for index in range(3):
+            Item.objects.create(name=f"Meter item {index}", unit=meter)
+        for index in range(2):
+            Item.objects.create(name=f"Piece item {index}", unit=self.active_unit)
+        Item.objects.create(name="Kilogram item", unit=kilogram)
+        Item.objects.create(name="Archived pack item", unit=pack, is_active=False)
+
+        form = ItemForm()
+
+        units = list(form.fields["unit"].queryset)
+        self.assertEqual(units[:3], [meter, self.active_unit, kilogram])
+        self.assertLess(units.index(kilogram), units.index(pack))
+
     def test_archived_warehouse_is_hidden_from_location_form_warehouse_queryset(self):
         form = LocationForm()
 
