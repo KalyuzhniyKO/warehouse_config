@@ -863,6 +863,9 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "purchase-detail-status-panel")
         self.assertContains(response, "purchase-detail-fields--status-top")
         self.assertContains(response, "purchase-detail-status-form")
+        self.assertContains(response, "purchase-detail-actions-panel")
+        self.assertContains(response, "purchase-detail-actions--top")
+        self.assertContains(response, "purchase-detail-action-details")
         self.assertContains(response, "purchase-detail-actions--primary")
         self.assertContains(response, "purchase-detail-metrics")
         self.assertContains(response, "detail-payment-status")
@@ -871,6 +874,16 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "12,000 pairs")
         self.assertContains(response, "Вартість за одиницю")
         self.assertContains(response, "Сума")
+        html = response.content.decode()
+        self.assertLess(
+            html.index("purchase-detail-actions-panel"),
+            html.index("purchase-detail-grid"),
+        )
+        status_panel_start = html.index("purchase-detail-status-panel")
+        self.assertNotIn(
+            "purchase-detail-actions--primary",
+            html[status_panel_start:],
+        )
 
     def test_owner_can_edit_draft_but_not_submitted_request(self):
         draft = self.create_request()

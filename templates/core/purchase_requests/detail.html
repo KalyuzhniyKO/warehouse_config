@@ -15,6 +15,52 @@
         </div>
     </div>
 
+    <div class="card content-card purchase-detail-card purchase-detail-actions-panel">
+        <div class="card-body">
+            <div class="purchase-detail-actions-heading">
+                <h2 class="h5 mb-0">{% trans "Дії" %}</h2>
+            </div>
+            <div class="purchase-detail-actions purchase-detail-actions--top purchase-detail-actions--primary">
+                <a class="btn btn-outline-secondary" href="{% if purchase_request.is_archived %}{% url 'purchase_request_archive' %}{% else %}{% url 'purchase_request_list' %}{% endif %}">{% trans "До списку заявок" %}</a>
+                {% if can_restore_purchase_request %}
+                    <form method="post" action="{% url 'purchase_request_restore_action' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Повернути з архіву" %}</button></form>
+                {% endif %}
+                {% if not purchase_request.is_archived and can_receive %}<a class="btn btn-success" href="{% url 'stock_receive' %}?purchase_request={{ purchase_request.pk }}">{% trans "Прийняти на склад" %}</a>{% endif %}
+                {% if not purchase_request.is_archived and can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
+                {% if not purchase_request.is_archived and can_send %}
+                    <form method="post" action="{% url 'purchase_request_send' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Надіслати на погодження" %}</button></form>
+                {% endif %}
+                {% if not purchase_request.is_archived and can_approve_purchase_request and purchase_request.status == "pending_approval" %}
+                    <form method="post" action="{% url 'purchase_request_approve' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">{% trans "Погодити" %}</button></form>
+                    <details class="purchase-detail-action-details">
+                        <summary class="btn btn-outline-danger">{% trans "Відхилити" %}</summary>
+                        <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}" class="purchase-detail-reject-form">
+                            {% csrf_token %}
+                            <input class="form-control form-control-sm" type="text" name="rejection_comment" placeholder="{% trans 'Коментар відхилення' %}">
+                            <button class="btn btn-outline-danger w-100" type="submit">{% trans "Відхилити" %}</button>
+                        </form>
+                    </details>
+                {% endif %}
+                {% if not purchase_request.is_archived and can_manage and purchase_request.status == "approved" %}
+                    <form method="post" action="{% url 'purchase_request_order' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Позначити як замовлену" %}</button></form>
+                {% endif %}
+                {% if not purchase_request.is_archived and can_manage and purchase_request.status != "cancelled" %}
+                    <form method="post" action="{% url 'purchase_request_cancel' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger w-100" type="submit">{% trans "Скасувати заявку" %}</button></form>
+                {% endif %}
+                {% if can_archive_purchase_request %}
+                    <details class="purchase-detail-action-details">
+                        <summary class="btn btn-outline-secondary">{% trans "Архівувати" %}</summary>
+                        <form method="post" action="{% url 'purchase_request_archive_action' purchase_request.pk %}" class="purchase-detail-archive-form">
+                            {% csrf_token %}
+                            <input class="form-control form-control-sm" type="text" name="archive_reason" placeholder="{% trans 'Причина архівування' %}">
+                            <button class="btn btn-outline-secondary w-100" type="submit">{% trans "Архівувати" %}</button>
+                        </form>
+                    </details>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <div class="purchase-detail-grid">
         <div class="purchase-detail-main">
             <div class="card content-card purchase-detail-card">
@@ -180,39 +226,6 @@
                         </div>
                     </div>
 
-                    <h2 class="h5 mb-3 mt-3">{% trans "Дії" %}</h2>
-                    <div class="purchase-detail-actions purchase-detail-actions--primary">
-                        <a class="btn btn-outline-secondary" href="{% if purchase_request.is_archived %}{% url 'purchase_request_archive' %}{% else %}{% url 'purchase_request_list' %}{% endif %}">{% trans "До списку заявок" %}</a>
-                        {% if can_restore_purchase_request %}
-                            <form method="post" action="{% url 'purchase_request_restore_action' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Повернути з архіву" %}</button></form>
-                        {% endif %}
-                        {% if can_archive_purchase_request %}
-                            <form method="post" action="{% url 'purchase_request_archive_action' purchase_request.pk %}">
-                                {% csrf_token %}
-                                <input class="form-control form-control-sm" type="text" name="archive_reason" placeholder="{% trans 'Причина архівування' %}">
-                                <button class="btn btn-outline-secondary w-100" type="submit">{% trans "Архівувати" %}</button>
-                            </form>
-                        {% endif %}
-                        {% if not purchase_request.is_archived and can_receive %}<a class="btn btn-success" href="{% url 'stock_receive' %}?purchase_request={{ purchase_request.pk }}">{% trans "Прийняти на склад" %}</a>{% endif %}
-                        {% if not purchase_request.is_archived and can_edit %}<a class="btn btn-outline-primary" href="{% url 'purchase_request_update' purchase_request.pk %}">{% trans "Редагувати" %}</a>{% endif %}
-                        {% if not purchase_request.is_archived and can_send %}
-                            <form method="post" action="{% url 'purchase_request_send' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Надіслати на погодження" %}</button></form>
-                        {% endif %}
-                        {% if not purchase_request.is_archived and can_approve_purchase_request and purchase_request.status == "pending_approval" %}
-                            <form method="post" action="{% url 'purchase_request_approve' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-success w-100" type="submit">{% trans "Погодити" %}</button></form>
-                            <form method="post" action="{% url 'purchase_request_reject' purchase_request.pk %}" class="purchase-detail-reject-form">
-                                {% csrf_token %}
-                                <input class="form-control form-control-sm" type="text" name="rejection_comment" placeholder="{% trans 'Коментар відхилення' %}">
-                                <button class="btn btn-outline-danger w-100" type="submit">{% trans "Відхилити" %}</button>
-                            </form>
-                        {% endif %}
-                        {% if not purchase_request.is_archived and can_manage and purchase_request.status == "approved" %}
-                            <form method="post" action="{% url 'purchase_request_order' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-primary w-100" type="submit">{% trans "Позначити як замовлену" %}</button></form>
-                        {% endif %}
-                        {% if not purchase_request.is_archived and can_manage and purchase_request.status != "cancelled" %}
-                            <form method="post" action="{% url 'purchase_request_cancel' purchase_request.pk %}">{% csrf_token %}<button class="btn btn-outline-danger w-100" type="submit">{% trans "Скасувати заявку" %}</button></form>
-                        {% endif %}
-                    </div>
                 </div>
             </div>
         </aside>
