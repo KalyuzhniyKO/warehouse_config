@@ -530,6 +530,7 @@ class InventoryLiveMovementReconciliationTests(TestCase):
 
 class InventoryInterfaceTests(TestCase):
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         User = get_user_model()
         self.admin = User.objects.create_user(username="inventory-admin", password="pw")
@@ -825,6 +826,13 @@ class InventoryInterfaceTests(TestCase):
         self.assertContains(response, reverse("inventory_export_pdf", args=[inventory_count.pk]))
 
     def test_pdf_export_returns_inventory_report(self):
+        from ..views.inventory import InventoryPDFExportView
+
+        try:
+            InventoryPDFExportView.pdf_font_paths()
+        except FileNotFoundError:
+            self.skipTest("Unicode PDF font is not available in this environment")
+
         self.login(self.admin)
         inventory_count = self.create_inventory()
         self.complete_inventory(inventory_count, actual_qty=Decimal("4.000"))
