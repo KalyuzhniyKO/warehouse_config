@@ -1641,3 +1641,9 @@ msgstr "Archivo de solicitudes de compra"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Solicitudes de compra completadas y archivadas."
+
+msgid "Од."
+msgstr "Ud."
+
+msgid "Видати"
+msgstr "Entregar"

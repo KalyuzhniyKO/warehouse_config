@@ -1640,3 +1640,9 @@ msgstr "Arquivo de solicitações de compra"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Solicitações de compra concluídas e arquivadas."
+
+msgid "Од."
+msgstr "Un."
+
+msgid "Видати"
+msgstr "Emitir"

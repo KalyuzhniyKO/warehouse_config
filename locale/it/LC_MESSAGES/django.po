@@ -4551,3 +4551,12 @@ msgstr "Archivio richieste di acquisto"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Richieste di acquisto completate e archiviate."
+
+msgid "??."
+msgstr "Unit?"
+
+msgid "Од."
+msgstr "Unità"
+
+msgid "Видати"
+msgstr "Emetti"

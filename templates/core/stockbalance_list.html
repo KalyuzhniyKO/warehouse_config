@@ -79,13 +79,13 @@
                     </div>
                 </th>
                 <th scope="col" class="text-end">{% trans "Кількість" %}</th>
-                <th scope="col">{% trans "Одиниця виміру" %}</th>
+                <th scope="col">{% trans "Од." %}</th>
                 <th scope="col" class="text-end">{% trans "Дії" %}</th>
             </tr>
             </thead>
             <tbody>
             {% for balance in balances %}
-                <tr><td class="fw-semibold">{{ balance.item.name }}</td><td>{{ balance.item.internal_code|default:"—" }}</td><td>{{ balance.item.barcode.barcode|default:"—" }}</td><td>{{ balance.warehouse.name }}</td><td>{{ balance.location.name|default:"—" }}</td><td class="text-end">{{ balance.qty }}</td><td>{{ balance.item.unit }}</td><td class="text-end"><a class="btn btn-sm btn-outline-primary table-action" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк етикетки" %}</a></td></tr>
+                <tr><td class="fw-semibold">{{ balance.item.name }}</td><td>{{ balance.item.internal_code|default:"—" }}</td><td>{{ balance.item.barcode.barcode|default:"—" }}</td><td>{{ balance.warehouse.name }}</td><td>{{ balance.location.name|default:"—" }}</td><td class="text-end">{{ balance.qty }}</td><td>{{ balance.item.unit }}</td><td class="text-end"><div class="d-inline-flex flex-wrap justify-content-end gap-2">{% if balance.item.barcode_id %}<a class="btn btn-sm btn-primary table-action" href="{% url 'stock_issue' %}?barcode={{ balance.item.barcode.barcode|urlencode }}">{% trans "Видати" %}</a>{% endif %}<a class="btn btn-sm btn-outline-primary table-action" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк етикетки" %}</a></div></td></tr>
             {% empty %}
                 <tr><td colspan="8" class="text-center py-5"><div class="empty-state"><div class="fs-1 mb-2">📭</div>{% trans "Немає залишків за вибраними фільтрами." %}</div></td></tr>
             {% endfor %}

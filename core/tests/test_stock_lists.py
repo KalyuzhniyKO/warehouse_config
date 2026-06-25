@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
 from django.test import RequestFactory, TestCase, override_settings
-from django.utils import timezone
+from django.utils import timezone, translation
 from io import BytesIO, StringIO
 from django.urls import reverse
 from ..forms import CategoryForm, ItemForm, LocationForm, StockBalanceFilterForm, StockTransferForm
@@ -35,6 +35,7 @@ from ..models import (
 class StockBalanceListTests(TestCase):
 
     def setUp(self):
+        translation.activate("uk")
         self.user = get_user_model().objects.create_user(
             username="ui-user", password="test-password"
         )
@@ -85,10 +86,31 @@ class StockBalanceListTests(TestCase):
             [balance.item_id for balance in response.context["balances"]],
         )
 
+    def test_stock_balance_list_has_short_unit_heading_and_issue_action(self):
+        response = self.client.get(reverse("stockbalance_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Од.")
+        self.assertNotContains(response, "Одиниця виміру")
+        self.assertContains(
+            response,
+            f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}',
+        )
+        self.assertContains(response, "Видати")
+        self.assertContains(response, "Друк етикетки")
+
+    def test_russian_stock_balance_list_uses_short_labels(self):
+        response = self.client.get("/ru/stock-balances/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Ед.")
+        self.assertContains(response, "Выдать")
+
 
 class StockMovementListTests(TestCase):
 
     def setUp(self):
+        translation.activate("uk")
         call_command("init_roles", stdout=StringIO())
         self.user = get_user_model().objects.create_user("workflow", password="pass")
         self.user.groups.add(Group.objects.get(name="Адміністратор складу"))
