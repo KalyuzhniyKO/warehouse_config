@@ -12,6 +12,7 @@ from core.forms.base import (
     normalized_duplicate_exists,
     set_active_model_choice,
 )
+from core.forms.units import units_ordered_by_item_usage
 from core.models import (
     Category,
     Item,
@@ -170,7 +171,7 @@ class ItemForm(BootstrapModelForm):
         set_active_model_choice(
             self, "category", active_queryset(Category, include=category)
         )
-        set_active_model_choice(self, "unit", active_queryset(Unit, include=unit))
+        set_active_model_choice(self, "unit", units_ordered_by_item_usage(include=unit))
 
     def clean_category(self):
         category = self.cleaned_data.get("category")
