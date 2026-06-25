@@ -126,6 +126,22 @@ class PurchaseRequestFilterForm(forms.Form):
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),
     )
+    quantity_from = forms.DecimalField(
+        label=_("Кількість від"),
+        required=False,
+        min_value=0,
+        max_digits=18,
+        decimal_places=3,
+        widget=forms.NumberInput(attrs={"min": "0", "step": "0.001"}),
+    )
+    quantity_to = forms.DecimalField(
+        label=_("Кількість до"),
+        required=False,
+        min_value=0,
+        max_digits=18,
+        decimal_places=3,
+        widget=forms.NumberInput(attrs={"min": "0", "step": "0.001"}),
+    )
     q = forms.CharField(
         label=_("Пошук"),
         required=False,

@@ -170,17 +170,6 @@ header .navbar { min-height: 56px; }
 .data-table td.movement-code-cell{white-space:nowrap;font-variant-numeric:tabular-nums}
 .data-table td.movement-document-cell{white-space:nowrap}
 .data-table td.movement-qty-cell{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
-.purchase-filter-panel{border:1px solid var(--dash-border);border-radius:.85rem;background:#fff;padding:.72rem .85rem .8rem;box-shadow:0 .35rem 1rem rgba(15,23,42,.04)}
-.purchase-filter-panel--active{border-color:rgba(212,172,0,.55);box-shadow:0 .35rem 1rem rgba(15,23,42,.04),inset 0 3px 0 #d4ac00}
-.purchase-filter-panel-header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.55rem}
-.purchase-filter-panel-title{font-weight:700;color:#0f172a}
-.purchase-filter-active-count{border:1px solid #efd88a;background:#fff8db;color:#92400e;border-radius:999px;padding:.18rem .55rem;font-size:.78rem;font-weight:700}
-.purchase-filter-active-count--empty{border-color:#e5e7eb;background:#f8fafc;color:#667085}
-.purchase-filter-grid{display:grid;grid-template-columns:1fr;gap:.55rem .65rem;align-items:end}
-.purchase-filter-field{min-width:0}
-.purchase-filter-field .form-label{font-size:.76rem;font-weight:700;text-transform:uppercase;color:#667085;margin-bottom:.18rem}
-.purchase-filter-field .form-control,.purchase-filter-field .form-select{min-height:2.15rem;padding-top:.25rem;padding-bottom:.25rem;font-size:.88rem}
-.purchase-filter-actions{display:flex;gap:.45rem;align-items:end;justify-content:flex-start}
 .purchase-request-table{min-width:980px;table-layout:fixed}
 .purchase-request-table td,.purchase-request-table th{padding:.36rem .5rem;line-height:1.16;vertical-align:middle}
 .purchase-request-table td{font-size:.9rem}
@@ -241,15 +230,10 @@ header .navbar { min-height: 56px; }
   .purchase-list-tabs{width:100%}
   .purchase-list-tab{flex:1 1 0}
   .list-page-actions > .btn{width:100%}
-  .purchase-filter-panel{padding:.65rem}
-  .purchase-filter-panel-header{align-items:flex-start}
-  .purchase-filter-active-count{white-space:normal}
-  .purchase-filter-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
   .purchase-request-table{min-width:880px}
   .purchase-request-table--archive{min-width:980px}
   .purchase-status-inline-form{right:auto;left:0;max-width:calc(100vw - 2rem);min-width:min(15rem,calc(100vw - 2rem))}
 }
-@media (min-width:768px){.purchase-filter-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.purchase-filter-field--search{grid-column:span 3}.purchase-filter-field--date{grid-column:span 2}.purchase-filter-field{grid-column:span 2}.purchase-filter-actions{grid-column:span 2}}
 .purchase-create-card .card-body{padding:.75rem .9rem .9rem}
 .purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
 .purchase-create-grid{display:grid;grid-template-columns:1fr;gap:.55rem .7rem;align-items:end}
@@ -315,13 +299,11 @@ header .navbar { min-height: 56px; }
 .table-action{min-height:2rem}
 .status-badge{font-weight:600}
 .empty-state{color:#667085;font-weight:500}
-.operation-audit-filter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;align-items:end}
 .operation-audit-table{min-width:1380px}
 .operation-audit-table td{vertical-align:top}
 .operation-audit-table td:nth-child(6){min-width:230px;white-space:normal}
 .operation-audit-table td:nth-child(8),.operation-audit-table td:nth-child(9){min-width:190px}
-@media (min-width:1200px){.operation-audit-filter-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
-@media (max-width:767.98px){.operation-audit-filter-grid{grid-template-columns:1fr}.operation-audit-page .list-page-actions,.operation-audit-page .list-page-actions .btn{width:100%}}
+@media (max-width:767.98px){.operation-audit-page .list-page-actions,.operation-audit-page .list-page-actions .btn{width:100%}}
 .table-action:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid #d4ac00;outline-offset:2px}
 .label-preview-sheet.show-grid{background-image:linear-gradient(to right,rgba(71,85,105,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(71,85,105,.12) 1px,transparent 1px);background-size:4px 4px}
 [data-label-element]{border:1px solid transparent;cursor:grab;border-radius:.2rem}

@@ -16,36 +16,151 @@
         </div>
     </div>
 
-    <form method="get" class="card content-card filter-panel mb-3">
-        <div class="card-body">
-            <div class="operation-audit-filter-grid">
-                {% for field in filter_form %}
-                    <div>
-                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                    </div>
-                {% endfor %}
-                <div class="filter-action-group">
-                    <button class="btn btn-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
-                    <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
-                </div>
-            </div>
-        </div>
-    </form>
+    <form id="operation-audit-filter-form" method="get" class="visually-hidden"></form>
 
     <div class="card content-card data-table-card">
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle mb-0 data-table operation-audit-table">
                 <thead class="table-light">
                     <tr>
-                        <th>{% trans "Створено" %}</th>
-                        <th>{% trans "Операція" %}</th>
-                        <th>{% trans "Товар / кількість" %}</th>
-                        <th>{% trans "Складський маршрут" %}</th>
-                        <th>{% trans "Отримувач" %}</th>
-                        <th>{% trans "Документ / коментар" %}</th>
-                        <th>{% trans "Створив" %}</th>
-                        <th>{% trans "Статус аудиту" %}</th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Створено" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "date_from" in active_filter_names or "date_to" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр дати створення' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.date_from.id_for_label }}">{{ filter_form.date_from.label }}</label>
+                                        {{ filter_form.date_from }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.date_to.id_for_label }}">{{ filter_form.date_to.label }}</label>
+                                        {{ filter_form.date_to }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Операція" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "movement_type" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр операції' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.movement_type.id_for_label }}">{{ filter_form.movement_type.label }}</label>
+                                        {{ filter_form.movement_type }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Товар / кількість" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "q" in active_filter_names or "quantity_from" in active_filter_names or "quantity_to" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр товару та кількості' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
+                                        <label class="form-label small" for="{{ filter_form.q.id_for_label }}">{{ filter_form.q.label }}</label>
+                                        {{ filter_form.q }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.quantity_from.id_for_label }}">{{ filter_form.quantity_from.label }}</label>
+                                        {{ filter_form.quantity_from }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.quantity_to.id_for_label }}">{{ filter_form.quantity_to.label }}</label>
+                                        {{ filter_form.quantity_to }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Складський маршрут" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "warehouse" in active_filter_names or "location" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр складського маршруту' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.warehouse.id_for_label }}">{{ filter_form.warehouse.label }}</label>
+                                        {{ filter_form.warehouse }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.location.id_for_label }}">{{ filter_form.location.label }}</label>
+                                        {{ filter_form.location }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Отримувач" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "recipient" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр отримувача' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.recipient.id_for_label }}">{{ filter_form.recipient.label }}</label>
+                                        {{ filter_form.recipient }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Документ / коментар" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "document" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр документа або коментаря' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
+                                        <label class="visually-hidden" for="{{ filter_form.document.id_for_label }}">{{ filter_form.document.label }}</label>
+                                        {{ filter_form.document }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Створив" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "user" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр автора' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="visually-hidden" for="{{ filter_form.user.id_for_label }}">{{ filter_form.user.label }}</label>
+                                        {{ filter_form.user }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Статус аудиту" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if "cancelled" in active_filter_names or "inventory_related" in active_filter_names %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр статусу аудиту' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.cancelled.id_for_label }}">{{ filter_form.cancelled.label }}</label>
+                                        {{ filter_form.cancelled }}
+                                        <label class="form-label small mt-2" for="{{ filter_form.inventory_related.id_for_label }}">{{ filter_form.inventory_related.label }}</label>
+                                        {{ filter_form.inventory_related }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="operation-audit-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_operation_audit' %}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
                         <th>{% trans "Пов'язані записи" %}</th>
                         <th>{% trans "Дії" %}</th>
                     </tr>

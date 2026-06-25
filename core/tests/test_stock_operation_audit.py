@@ -148,6 +148,22 @@ class StockOperationAuditTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Аудит операцій")
+        self.assertNotContains(response, "filter-panel")
+        self.assertContains(response, "operation-audit-filter-form")
+        self.assertContains(response, "table-filter-heading")
+        self.assertContains(response, "table-filter-toggle")
+        self.assertContains(response, 'name="date_from"')
+        self.assertContains(response, 'name="movement_type"')
+        self.assertContains(response, 'name="q"')
+        self.assertContains(response, 'name="quantity_from"')
+        self.assertContains(response, 'name="quantity_to"')
+        self.assertContains(response, 'name="warehouse"')
+        self.assertContains(response, 'name="location"')
+        self.assertContains(response, 'name="recipient"')
+        self.assertContains(response, 'name="document"')
+        self.assertContains(response, 'name="user"')
+        self.assertContains(response, 'name="cancelled"')
+        self.assertContains(response, 'name="inventory_related"')
 
     def test_non_management_user_cannot_open_operation_audit(self):
         response = self.audit_response(user=self.storekeeper)
@@ -199,6 +215,18 @@ class StockOperationAuditTests(TestCase):
                 "recipient": self.recipient.pk,
                 "user": self.actor.pk,
                 "inventory_related": "yes",
+            }
+        )
+
+        self.assertEqual(self.movement_ids(response), [self.movement.pk])
+
+    def test_filters_by_quantity_location_and_document_text(self):
+        response = self.audit_response(
+            {
+                "quantity_from": "1.500",
+                "quantity_to": "2.500",
+                "location": self.location.pk,
+                "document": "Business audit",
             }
         )
 
