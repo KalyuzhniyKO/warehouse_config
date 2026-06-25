@@ -73,6 +73,11 @@ def get_stock_operation_audit_queryset(user, params):
                 | Q(source_location__warehouse=warehouse)
                 | Q(destination_location__warehouse=warehouse)
             )
+        if cd.get("location"):
+            location = cd["location"]
+            queryset = queryset.filter(
+                Q(source_location=location) | Q(destination_location=location)
+            )
         if cd.get("q"):
             query = cd["q"]
             queryset = queryset.filter(
@@ -80,8 +85,19 @@ def get_stock_operation_audit_queryset(user, params):
                 | Q(item__internal_code__icontains=query)
                 | Q(item__barcode__barcode__icontains=query)
             )
+        if cd.get("quantity_from") is not None:
+            queryset = queryset.filter(qty__gte=cd["quantity_from"])
+        if cd.get("quantity_to") is not None:
+            queryset = queryset.filter(qty__lte=cd["quantity_to"])
         if cd.get("recipient"):
             queryset = queryset.filter(recipient=cd["recipient"])
+        if cd.get("document"):
+            document = cd["document"]
+            queryset = queryset.filter(
+                Q(document_number__icontains=document)
+                | Q(comment__icontains=document)
+                | Q(cancellation_reason__icontains=document)
+            )
         if cd.get("user"):
             audit_user = cd["user"]
             queryset = queryset.filter(
@@ -238,7 +254,13 @@ class StockOperationAuditView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         query_params = self.request.GET.copy()
         query_params.pop("page", None)
-        context["filter_form"] = self.get_filter_form()
+        filter_form = self.get_filter_form()
+        context["filter_form"] = filter_form
+        context["active_filter_names"] = [
+            name
+            for name in filter_form.fields
+            if self.request.GET.get(name) not in (None, "")
+        ]
         context["filter_query"] = query_params.urlencode()
         return context
 

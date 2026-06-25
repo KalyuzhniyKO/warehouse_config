@@ -99,6 +99,10 @@ class PurchaseRequestListView(LoginRequiredMixin, PurchaseRequestAccessMixin, Li
             queryset = queryset.filter(request_date__gte=filters["date_from"])
         if filters.get("date_to"):
             queryset = queryset.filter(request_date__lte=filters["date_to"])
+        if filters.get("quantity_from") is not None:
+            queryset = queryset.filter(requested_qty__gte=filters["quantity_from"])
+        if filters.get("quantity_to") is not None:
+            queryset = queryset.filter(requested_qty__lte=filters["quantity_to"])
         if filters.get("q"):
             query = filters["q"]
             queryset = queryset.filter(

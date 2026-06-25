@@ -157,6 +157,13 @@ class StockOperationAuditFilterForm(forms.Form):
         queryset=Warehouse.objects.filter(is_active=True),
         required=False,
     )
+    location = forms.ModelChoiceField(
+        label=_("Локація"),
+        queryset=Location.objects.filter(
+            is_active=True, warehouse__is_active=True
+        ).select_related("warehouse"),
+        required=False,
+    )
     q = forms.CharField(
         label=_("Пошук товару"),
         required=False,
@@ -164,10 +171,33 @@ class StockOperationAuditFilterForm(forms.Form):
             attrs={"placeholder": _("Назва, internal_code або barcode")}
         ),
     )
+    quantity_from = forms.DecimalField(
+        label=_("Кількість від"),
+        required=False,
+        min_value=0,
+        max_digits=18,
+        decimal_places=3,
+        widget=forms.NumberInput(attrs={"min": "0", "step": "0.001"}),
+    )
+    quantity_to = forms.DecimalField(
+        label=_("Кількість до"),
+        required=False,
+        min_value=0,
+        max_digits=18,
+        decimal_places=3,
+        widget=forms.NumberInput(attrs={"min": "0", "step": "0.001"}),
+    )
     recipient = forms.ModelChoiceField(
         label=_("Отримувач"),
         queryset=Recipient.objects.filter(is_active=True),
         required=False,
+    )
+    document = forms.CharField(
+        label=_("Документ / коментар"),
+        required=False,
+        widget=forms.TextInput(
+            attrs={"placeholder": _("Номер документа або коментар")}
+        ),
     )
     user = forms.ModelChoiceField(
         label=_("Користувач"),
@@ -191,6 +221,11 @@ class StockOperationAuditFilterForm(forms.Form):
         self.fields["warehouse"].queryset = active_warehouses_for_form_user(
             self.request_user
         )
+        self.fields["location"].queryset = Location.objects.filter(
+            is_active=True,
+            warehouse__is_active=True,
+            warehouse__in=self.fields["warehouse"].queryset,
+        ).select_related("warehouse")
         self.fields["recipient"].queryset = Recipient.objects.filter(
             is_active=True
         ).order_by("name")
@@ -198,6 +233,7 @@ class StockOperationAuditFilterForm(forms.Form):
             is_active=True
         ).order_by("last_name", "first_name", "username")
         for field in self.fields.values():
+            field.widget.attrs.setdefault("form", "operation-audit-filter-form")
             if isinstance(field.widget, forms.Select):
                 field.widget.attrs.setdefault("class", "form-select")
             else:

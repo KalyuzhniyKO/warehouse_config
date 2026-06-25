@@ -319,21 +319,25 @@ class PurchaseRequestTests(TestCase):
                 "requested_by": self.requester.pk,
                 "date_from": "2026-06-01",
                 "date_to": "2026-06-30",
+                "quantity_from": "1",
+                "quantity_to": "10",
             },
         )
 
-        self.assertContains(response, "purchase-filter-panel")
-        self.assertContains(response, "purchase-filter-panel--active")
-        self.assertContains(response, "purchase-filter-active-count")
-        self.assertContains(response, "активн")
-        self.assertContains(response, "purchase-filter-grid")
+        self.assertNotContains(response, "purchase-filter-panel")
+        self.assertNotContains(response, "purchase-filter-grid")
+        self.assertContains(response, "table-filter-heading")
+        self.assertContains(response, "purchase-filter-heading")
+        self.assertContains(response, "table-filter-toggle purchase-filter-toggle active")
+        self.assertContains(response, "table-filter-menu")
+        self.assertContains(response, "dropdown-menu-end")
         self.assertContains(response, "purchase-list-tabs")
         self.assertContains(response, "purchase-list-tab active")
         self.assertNotContains(response, "purchase-table-filter-row")
-        self.assertNotContains(response, "purchase-filter-toggle")
-        self.assertNotContains(response, "purchase-table-filter-actions")
         self.assertContains(response, 'name="date_from"')
         self.assertContains(response, 'name="date_to"')
+        self.assertContains(response, 'name="quantity_from"')
+        self.assertContains(response, 'name="quantity_to"')
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'value="gloves"')
         self.assertContains(response, 'name="order_type"')
@@ -342,6 +346,22 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, 'name="delivery_status"')
         self.assertContains(response, 'name="requested_by"')
         self.assertContains(response, 'id="purchase-filter-form"')
+        self.assertContains(response, 'form="purchase-filter-form"')
+
+    def test_list_filters_by_requested_quantity_range(self):
+        low = self.create_request(title="Low quantity", requested_qty=Decimal("2.000"))
+        match = self.create_request(title="Matching quantity", requested_qty=Decimal("7.000"))
+        high = self.create_request(title="High quantity", requested_qty=Decimal("12.000"))
+        self.login(self.admin)
+
+        response = self.client.get(
+            reverse("purchase_request_list"),
+            {"quantity_from": "5", "quantity_to": "10"},
+        )
+
+        self.assertNotContains(response, low.title)
+        self.assertContains(response, match.title)
+        self.assertNotContains(response, high.title)
 
     def test_purchase_list_table_is_compact_for_small_screens(self):
         purchase_request = self.create_request(
@@ -366,10 +386,14 @@ class PurchaseRequestTests(TestCase):
         )
         self.assertNotContains(response, "<th>Сума (грн)</th>", html=False)
         self.assertNotContains(response, "<th>Посилання на товар</th>", html=False)
-        self.assertContains(response, '<th class="purchase-col-status">Погодження</th>', html=False)
-        self.assertContains(response, '<th class="purchase-col-status purchase-col-payment-status">Оплата</th>', html=False)
-        self.assertContains(response, '<th class="purchase-col-status purchase-col-delivery-status">Доставка</th>', html=False)
-        self.assertContains(response, "<th class=\"purchase-col-qty\">К-сть / Од.</th>", html=False)
+        self.assertContains(response, '<th class="purchase-col-status">', html=False)
+        self.assertContains(response, '<th class="purchase-col-status purchase-col-payment-status">', html=False)
+        self.assertContains(response, '<th class="purchase-col-status purchase-col-delivery-status">', html=False)
+        self.assertContains(response, '<th class="purchase-col-qty">', html=False)
+        self.assertContains(response, ">Погодження</span>", html=False)
+        self.assertContains(response, ">Оплата</span>", html=False)
+        self.assertContains(response, ">Доставка</span>", html=False)
+        self.assertContains(response, ">К-сть / Од.</span>", html=False)
         self.assertContains(response, "purchase-status-menu")
         self.assertContains(response, "purchase-status-select")
         self.assertNotContains(response, "purchase-request-status-select")

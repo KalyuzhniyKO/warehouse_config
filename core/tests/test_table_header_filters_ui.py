@@ -36,7 +36,7 @@ class TableHeaderFilterUITests(TestCase):
             item=self.item, warehouse=self.warehouse, location=self.location, qty=Decimal("5.000")
         )
 
-    def test_purchase_archive_uses_compact_table_and_top_filter_panel(self):
+    def test_purchase_archive_uses_header_dropdown_filters(self):
         purchase_request = PurchaseRequest.objects.create(
             requested_by=self.user,
             title="Archived filter request",
@@ -47,19 +47,58 @@ class TableHeaderFilterUITests(TestCase):
         )
         archive_purchase_request(purchase_request, archived_by=self.user, reason="Done")
 
-        response = self.client.get(reverse("purchase_request_archive"), {"q": "Archived"})
+        response = self.client.get(
+            reverse("purchase_request_archive"),
+            {"q": "Archived", "quantity_from": "1", "quantity_to": "3"},
+        )
 
         self.assertContains(response, "purchase-request-table--archive")
-        self.assertContains(response, "purchase-filter-panel")
-        self.assertContains(response, "purchase-filter-grid")
+        self.assertNotContains(response, "purchase-filter-panel")
+        self.assertNotContains(response, "purchase-filter-grid")
         self.assertContains(response, "purchase-list-tabs")
-        self.assertNotContains(response, "purchase-filter-toggle")
+        self.assertContains(response, "table-filter-heading")
+        self.assertContains(response, "table-filter-toggle purchase-filter-toggle active")
+        self.assertContains(response, "dropdown-menu-end")
+        self.assertContains(response, 'name="quantity_from"')
+        self.assertContains(response, 'name="quantity_to"')
         self.assertContains(response, "purchase-archive-stock-cell")
         self.assertContains(response, "purchase-archive-meta-cell")
         self.assertContains(response, "purchase-archive-label")
         self.assertNotContains(response, "purchase-archive-qty-cell")
         self.assertNotContains(response, "purchase-archive-date-cell")
         self.assertContains(response, "Archived filter request")
+
+    def test_operation_audit_uses_header_dropdown_filters_without_top_panel(self):
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            document_number="DOC-1",
+        )
+
+        response = self.client.get(
+            reverse("stock_operation_audit"),
+            {
+                "q": "Filter",
+                "quantity_from": "1",
+                "quantity_to": "2",
+                "warehouse": self.warehouse.pk,
+                "location": self.location.pk,
+                "document": "DOC",
+                "cancelled": "no",
+            },
+        )
+
+        self.assertNotContains(response, "filter-panel")
+        self.assertContains(response, "operation-audit-filter-form")
+        self.assertContains(response, "table-filter-heading")
+        self.assertContains(response, "table-filter-toggle active")
+        self.assertContains(response, "dropdown-menu-end")
+        self.assertContains(response, 'name="quantity_from"')
+        self.assertContains(response, 'name="quantity_to"')
+        self.assertContains(response, 'name="location"')
+        self.assertContains(response, 'name="document"')
 
     def test_item_list_uses_header_dropdown_filters_without_top_filter_panel(self):
         response = self.client.get(reverse("item_list"), {"q": "FILTER", "status": "all"})
@@ -133,11 +172,11 @@ class TableHeaderFilterUITests(TestCase):
         self.assertIn(".table-filter-toggle", css)
         self.assertIn(".table-filter-menu", css)
         self.assertIn(".table-filter-menu--wide", css)
-        self.assertIn(".purchase-filter-panel", css)
+        self.assertNotIn(".purchase-filter-panel", css)
+        self.assertNotIn(".purchase-filter-grid", css)
         self.assertIn(".purchase-status-menu", css)
         self.assertIn(".purchase-list-tabs", css)
         self.assertIn("@media (max-width:767.98px)", css)
-        self.assertIn(".purchase-filter-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}", css)
         self.assertIn(".purchase-status-inline-form{right:auto;left:0;max-width:calc(100vw - 2rem)", css)
         self.assertIn(".purchase-request-table{min-width:880px}", css)
         self.assertIn(".purchase-request-table--archive{min-width:980px}", css)
