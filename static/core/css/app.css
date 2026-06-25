@@ -236,6 +236,19 @@ header .navbar { min-height: 56px; }
 .purchase-status-inline-form{display:none;position:absolute;z-index:20;top:calc(100% + .25rem);right:0;align-items:center;gap:.25rem;min-width:15rem;padding:.4rem;background:#fff;border:1px solid #d0d5dd;border-radius:.5rem;box-shadow:0 .5rem 1.25rem rgba(15,23,42,.14)}
 .purchase-status-select{min-width:0;font-size:.78rem;padding:.2rem 1.55rem .2rem .45rem}
 .purchase-status-save{padding:.2rem .35rem;font-size:.72rem;line-height:1.1}
+@media (max-width:767.98px){
+  .list-page-actions{width:100%}
+  .purchase-list-tabs{width:100%}
+  .purchase-list-tab{flex:1 1 0}
+  .list-page-actions > .btn{width:100%}
+  .purchase-filter-panel{padding:.65rem}
+  .purchase-filter-panel-header{align-items:flex-start}
+  .purchase-filter-active-count{white-space:normal}
+  .purchase-filter-actions{display:grid;grid-template-columns:1fr 1fr;width:100%}
+  .purchase-request-table{min-width:880px}
+  .purchase-request-table--archive{min-width:980px}
+  .purchase-status-inline-form{right:auto;left:0;max-width:calc(100vw - 2rem);min-width:min(15rem,calc(100vw - 2rem))}
+}
 @media (min-width:768px){.purchase-filter-grid{grid-template-columns:repeat(12,minmax(0,1fr))}.purchase-filter-field--search{grid-column:span 3}.purchase-filter-field--date{grid-column:span 2}.purchase-filter-field{grid-column:span 2}.purchase-filter-actions{grid-column:span 2}}
 .purchase-create-card .card-body{padding:.75rem .9rem .9rem}
 .purchase-create-form .form-label{font-size:.85rem;font-weight:600;margin-bottom:.25rem}
