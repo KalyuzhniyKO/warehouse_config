@@ -1632,3 +1632,9 @@ msgstr "Satın alma talebi arşivi"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Tamamlanan ve arşivlenen satın alma talepleri."
+
+msgid "Од."
+msgstr "Br."
+
+msgid "Видати"
+msgstr "Ver"

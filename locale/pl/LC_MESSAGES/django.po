@@ -3176,3 +3176,9 @@ msgstr "Archiwum wniosków zakupowych"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Zakończone i zarchiwizowane wnioski zakupowe."
+
+msgid "Од."
+msgstr "Jm."
+
+msgid "Видати"
+msgstr "Wydaj"

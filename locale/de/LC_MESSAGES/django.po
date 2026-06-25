@@ -1644,3 +1644,9 @@ msgstr "Archiv der Kaufanfragen"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Abgeschlossene und archivierte Kaufanfragen."
+
+msgid "Од."
+msgstr "Einh."
+
+msgid "Видати"
+msgstr "Ausgeben"

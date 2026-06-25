@@ -4935,3 +4935,9 @@ msgstr "Purchase request archive"
 
 msgid "Завершені та заархівовані заявки на закупівлю."
 msgstr "Completed and archived purchase requests."
+
+msgid "Од."
+msgstr "Unit"
+
+msgid "Видати"
+msgstr "Issue"
