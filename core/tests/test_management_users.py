@@ -43,6 +43,25 @@ class ManagementUserTests(ManagementTestBase):
         self.assertContains(response, "Адміністратор")
         self.assertContains(response, "Користувач")
 
+    def test_management_user_pages_use_yantos_page_layout(self):
+        self.client.force_login(self.admin)
+
+        list_response = self.client.get(reverse("management_users"))
+        create_response = self.client.get(reverse("management_user_create"))
+        password_response = self.client.get(
+            reverse("management_user_password", args=[self.storekeeper.pk])
+        )
+
+        self.assertContains(list_response, "user-management-page")
+        self.assertContains(list_response, "user-management-table")
+        self.assertContains(list_response, "auth-role-grid")
+        self.assertContains(create_response, "auth-user-page")
+        self.assertContains(create_response, "auth-user-card")
+        self.assertContains(create_response, "auth-user-form")
+        self.assertContains(password_response, "auth-user-page")
+        self.assertContains(password_response, "auth-user-card--narrow")
+        self.assertContains(password_response, "auth-user-form")
+
     def test_user_management_shows_business_roles_and_hides_root(self):
         self.client.force_login(self.admin)
 
