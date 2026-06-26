@@ -40,6 +40,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         from ..services.stock import receive_stock
 
         receive_stock(item=self.item, location=self.location, qty=Decimal("5.000"))
+        get_response = self.client.get(reverse("stock_transfer"))
         response = self.client.post(
             reverse("stock_transfer"),
             {
@@ -50,7 +51,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
                 "destination_location": self.destination_location.pk,
                 "qty": "2.000",
                 "comment": "UI transfer",
-                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+                "occurred_at": get_response.context["form"]["occurred_at"].value(),
             },
         )
 
@@ -72,6 +73,13 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             ).qty,
             Decimal("2.000"),
         )
+
+    def test_transfer_form_renders_required_operation_date(self):
+        response = self.client.get(reverse("stock_transfer"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'name="occurred_at"')
+        self.assertContains(response, 'type="hidden"')
 
     def test_stock_operation_views_store_request_user_as_performer(self):
         from ..services.stock import receive_stock
@@ -138,7 +146,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         response = self.client.get(reverse("management_audit"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Журнал аудиту")
-        self.assertContains(response, "stock_movement.created")
+        self.assertContains(response, "Створено складську операцію")
         self.assertNotContains(response, ">root<")
         self.assertNotContains(response, "root@example.com")
 
