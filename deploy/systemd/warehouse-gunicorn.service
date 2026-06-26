@@ -16,6 +16,10 @@ ExecStart=/opt/warehouse_config/venv/bin/gunicorn \
     config.wsgi:application
 Restart=always
 RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/warehouse_config /var/log/warehouse_config /var/backups/warehouse_config
 
 [Install]
 WantedBy=multi-user.target

@@ -35,6 +35,7 @@ from core.services.purchase_requests import (
     archive_purchase_request,
     restore_purchase_request,
 )
+from core.services.audit import log_action
 from core.services.warehouse_access import restrict_stock_movement_queryset_for_user
 
 
@@ -213,6 +214,13 @@ class PurchaseRequestCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateV
         form.instance.payment_status = PurchaseRequest.PaymentStatus.INVOICE_NOT_RECEIVED
         form.instance.delivery_status = PurchaseRequest.DeliveryStatus.NOT_SHIPPED
         response = super().form_valid(form)
+        log_action(
+            self.request.user,
+            "purchase_request.created",
+            obj=self.object,
+            changes={"status": self.object.status},
+            request=self.request,
+        )
         messages.success(self.request, _("Заявку на закупівлю створено."))
         return response
 
@@ -312,6 +320,13 @@ class PurchaseRequestArchiveActionView(
         archive_purchase_request(
             purchase_request, archived_by=request.user, reason=reason
         )
+        log_action(
+            request.user,
+            "purchase_request.archived",
+            obj=purchase_request,
+            changes={"archive_reason": reason},
+            request=request,
+        )
         messages.success(request, _("Заявку переміщено в архів."))
         return redirect("purchase_request_detail", pk=purchase_request.pk)
 
@@ -331,6 +346,12 @@ class PurchaseRequestRestoreActionView(
             purchase_requests_for_user(request.user), pk=kwargs["pk"]
         )
         restore_purchase_request(purchase_request)
+        log_action(
+            request.user,
+            "purchase_request.restored",
+            obj=purchase_request,
+            request=request,
+        )
         messages.success(request, _("Заявку повернуто з архіву."))
         return redirect("purchase_request_detail", pk=purchase_request.pk)
 
@@ -359,7 +380,15 @@ class PurchaseRequestUpdateView(
         # Requester and approval audit fields are not part of normal edit forms.
         # They are assigned only on create and approve/reject actions.
         messages.success(self.request, _("Заявку на закупівлю оновлено."))
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        log_action(
+            self.request.user,
+            "purchase_request.updated",
+            obj=self.object,
+            changes={"status": self.object.status},
+            request=self.request,
+        )
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -455,6 +484,16 @@ class PurchaseRequestStatusActionView(
                     "rejection_comment",
                 ]
             purchase_request.save(update_fields=update_fields)
+            log_action(
+                request.user,
+                f"purchase_request.{self.action}",
+                obj=purchase_request,
+                changes={
+                    "status": purchase_request.status,
+                    "update_fields": update_fields,
+                },
+                request=request,
+            )
 
         messages.success(request, transition["message"])
         return redirect("purchase_request_detail", pk=purchase_request.pk)
@@ -498,6 +537,17 @@ class PurchaseRequestTrackingStatusUpdateView(
             return HttpResponseBadRequest(_("Не вибрано статус для оновлення."))
 
         purchase_request.save(update_fields=[*update_fields, "updated_at"])
+        log_action(
+            request.user,
+            "purchase_request.tracking_updated",
+            obj=purchase_request,
+            changes={
+                "payment_status": purchase_request.payment_status,
+                "delivery_status": purchase_request.delivery_status,
+                "update_fields": update_fields,
+            },
+            request=request,
+        )
         messages.success(request, _("Статус заявки оновлено."))
         next_url = request.POST.get("next")
         if next_url and next_url.startswith("/") and not next_url.startswith("//"):

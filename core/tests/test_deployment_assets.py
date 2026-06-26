@@ -22,6 +22,10 @@ class DeploymentAssetTests(SimpleTestCase):
         self.assertIn("config.wsgi:application", service)
         self.assertIn("Restart=always", service)
         self.assertIn("RestartSec=5", service)
+        self.assertIn("NoNewPrivileges=true", service)
+        self.assertIn("PrivateTmp=true", service)
+        self.assertIn("ProtectSystem=full", service)
+        self.assertIn("ReadWritePaths=/opt/warehouse_config", service)
 
     def test_apache_example_serves_static_and_proxies_dynamic_requests(self):
         apache_config = self.read_file("deploy/apache/warehouse.conf.example")
@@ -63,3 +67,12 @@ class DeploymentAssetTests(SimpleTestCase):
         self.assertIn("curl -I http://100.111.213.115/service-worker.js", runbook)
         self.assertIn("emergency temporary fallback", runbook)
         self.assertIn("python manage.py runserver 0.0.0.0:8000", runbook)
+
+    def test_security_hardening_checklist_exists_with_key_markers(self):
+        checklist = self.read_file("docs/SECURITY_HARDENING.md")
+
+        self.assertIn("DJANGO_ENABLE_PASSWORD_VALIDATORS=True", checklist)
+        self.assertIn("DJANGO_SESSION_COOKIE_SECURE=True", checklist)
+        self.assertIn("DJANGO_SECURE_HSTS_SECONDS=31536000", checklist)
+        self.assertIn("StockBalance` and `StockMovement` are read-only", checklist)
+        self.assertIn("systemctl list-timers 'warehouse-backup*'", checklist)
