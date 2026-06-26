@@ -1,16 +1,21 @@
 {% extends "base.html" %}
 {% load i18n core_extras %}
 
-{% block title %}{% trans "Журнал операцій" %} · {% trans "Складський облік" %}{% endblock %}
+{% block title %}{{ page_title }} · {% trans "Складський облік" %}{% endblock %}
 
 {% block content %}
 <div class="list-page">
     <div class="list-page-header">
-        <div class="list-page-title"><h1 class="mb-0">{% trans "Журнал операцій" %}</h1></div>
+        <div class="list-page-title">
+            <h1 class="mb-0">{{ page_title }}</h1>
+            {% if is_document_registry %}
+                <p class="text-muted mb-0">{% trans "Документи складських операцій для перегляду та повторного друку." %}</p>
+            {% endif %}
+        </div>
         <div class="list-page-actions">
             <a class="btn btn-outline-secondary" href="{% url 'stockbalance_list' %}">{% trans "До залишків" %}</a>
             {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}
-                <a class="btn btn-primary" href="{% url 'stock_receive' %}">{% trans "Нова операція" %}</a>
+                <a class="btn btn-primary" href="{% url 'stock_receive' %}">{{ page_action_label }}</a>
             {% endif %}
         </div>
     </div>
@@ -178,7 +183,7 @@
                             <td class="movement-date-cell"><div class="movement-date">{{ movement.occurred_at|date:"d.m.Y" }}</div><div class="movement-time">{{ movement.occurred_at|date:"H:i" }}</div></td>
                             <td><span class="status-badge">{{ movement.get_movement_type_display }}</span></td><td>{{ movement.item }}</td>
                             <td class="movement-code-cell">{{ movement.item.barcode.barcode|default:movement.item.internal_code|default:"—" }}</td>
-                            <td class="text-end movement-qty-cell">{{ movement.qty }}</td><td>{{ movement.source_location|default:"—" }}</td><td>{{ movement.destination_location|default:"—" }}</td>
+                            <td class="text-end movement-qty-cell">{{ movement.qty|qty }}</td><td>{{ movement.source_location|default:"—" }}</td><td>{{ movement.destination_location|default:"—" }}</td>
                             <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{% if movement.is_cancelled %}<span class="badge text-bg-danger">{% trans "Анулювано" %}</span><div class="small">{{ movement.cancelled_at|date:"d.m.Y H:i" }}</div>{% elif movement.reversal_of_id %}<span class="badge text-bg-warning">{% trans "Рух анулювання" %}</span>{% else %}<span class="badge text-bg-success">{% trans "Активно" %}</span>{% endif %}</td><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td><td>{{ movement.department|default:"—" }}</td>
                             <td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td><td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{% if movement.is_cancelled %}<strong>{% trans "Причина анулювання" %}:</strong> {{ movement.cancellation_reason }}{% else %}{{ movement.comment|default:"—" }}{% endif %}</td><td class="text-nowrap"><a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друк" %}</a>{% if user.is_superuser and not movement.is_cancelled and not movement.reversal_of_id %} <a class="btn btn-outline-danger btn-sm" href="{% url 'stock_movement_cancel' movement.pk %}">{% trans "Анулювати" %}</a>{% endif %}</td>
                         </tr>

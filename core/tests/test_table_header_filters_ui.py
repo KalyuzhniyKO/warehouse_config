@@ -7,9 +7,11 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import translation
 
 from core.models import Item, PurchaseRequest, StockBalance, StockMovement, Unit, Warehouse
 from core.services.purchase_requests import archive_purchase_request
+from core.templatetags.core_extras import qty
 from core.tests.warehouse_access_utils import grant_warehouse_access
 
 
@@ -35,6 +37,13 @@ class TableHeaderFilterUITests(TestCase):
         StockBalance.objects.create(
             item=self.item, warehouse=self.warehouse, location=self.location, qty=Decimal("5.000")
         )
+
+    def test_qty_filter_hides_redundant_decimal_zeroes(self):
+        with translation.override("uk"):
+            self.assertEqual(qty(Decimal("1.000")), "1")
+            self.assertEqual(qty(Decimal("1.500")), "1,5")
+            self.assertEqual(qty(Decimal("1.250")), "1,25")
+            self.assertEqual(qty(Decimal("0.125")), "0,125")
 
     def test_purchase_archive_uses_header_dropdown_filters(self):
         purchase_request = PurchaseRequest.objects.create(
@@ -135,6 +144,27 @@ class TableHeaderFilterUITests(TestCase):
         self.assertContains(response, 'name="warehouse"')
         self.assertContains(response, 'name="location"')
 
+    def test_stock_balance_quantities_do_not_show_redundant_zeroes(self):
+        fractional_item = Item.objects.create(
+            name="Fractional balance item",
+            internal_code="FILTER-2",
+            unit=self.unit,
+        )
+        StockBalance.objects.create(
+            item=fractional_item,
+            warehouse=self.warehouse,
+            location=self.location,
+            qty=Decimal("1.500"),
+        )
+
+        response = self.client.get(reverse("stockbalance_list"))
+        html = response.content.decode()
+
+        self.assertIn(">5<", html)
+        self.assertIn(">1,5<", html)
+        self.assertNotIn("5,000", html)
+        self.assertNotIn("1,500", html)
+
     def test_movement_list_uses_header_dropdown_filters(self):
         StockMovement.objects.create(
             movement_type=StockMovement.MovementType.IN,
@@ -165,6 +195,23 @@ class TableHeaderFilterUITests(TestCase):
         self.assertContains(response, 'name="movement_type"')
         self.assertContains(response, 'name="q"')
         self.assertContains(response, 'value="Filter"')
+        self.assertContains(response, 'name="document_number"')
+
+    def test_stock_documents_registry_uses_movement_document_table(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            document_number="IN-2026-000001",
+        )
+
+        response = self.client.get(reverse("stock_documents"), {"document_number": "IN-2026"})
+
+        self.assertContains(response, "Реєстр документів")
+        self.assertContains(response, "Документи складських операцій")
+        self.assertContains(response, "IN-2026-000001")
+        self.assertContains(response, reverse("stock_movement_print", args=[movement.pk]))
         self.assertContains(response, 'name="document_number"')
 
     def test_table_filter_and_archive_print_css_rules_exist(self):

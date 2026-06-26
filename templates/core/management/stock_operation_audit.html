@@ -179,7 +179,7 @@
                             </td>
                             <td>
                                 <div class="fw-semibold">{{ movement.item }}</div>
-                                <div>{{ movement.qty }} {{ movement.item.unit.symbol }}</div>
+                                <div>{{ movement.qty|qty }} {{ movement.item.unit.symbol }}</div>
                             </td>
                             <td>
                                 <div><span class="text-muted">{% trans "Звідки" %}:</span> {{ movement.resolved_source_warehouse|default:"—" }}</div>

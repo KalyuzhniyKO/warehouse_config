@@ -285,6 +285,15 @@ class AnalyticsCSVExportView(LoginRequiredMixin, AnalyticsPermissionMixin, View)
 
 class AnalyticsXLSXExportView(LoginRequiredMixin, AnalyticsPermissionMixin, View):
     group_names = ANALYTICS_GROUPS
+    quantity_headers = {"Qty", "Receive", "Issue", "Return", "Writeoff"}
+
+    def format_quantity_columns(self, sheet):
+        headers = {cell.column: cell.value for cell in sheet[1]}
+        for column_index, header in headers.items():
+            if header not in self.quantity_headers:
+                continue
+            for row in sheet.iter_rows(min_row=2, min_col=column_index, max_col=column_index):
+                row[0].number_format = "0.###"
 
     def get(self, request, *args, **kwargs):
         try:
@@ -304,6 +313,7 @@ class AnalyticsXLSXExportView(LoginRequiredMixin, AnalyticsPermissionMixin, View
             sh.append(headers)
             for row in rows:
                 sh.append(row)
+            self.format_quantity_columns(sh)
             sh.freeze_panes = 'A2'
             sh.auto_filter.ref = sh.dimensions
         dq_sheet = wb.create_sheet("Data quality")

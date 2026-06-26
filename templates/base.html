@@ -222,6 +222,7 @@
                         <li class="nav-item"><span class="nav-link disabled text-uppercase small fw-semibold">{% trans "Контроль і звіти" %}</span></li>
                         {% if can_access_warehouse %}
                             <li class="nav-item"><a class="nav-link" href="{% url 'stockbalance_list' %}">{% trans "Залишки на складі" %}</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{% url 'stock_documents' %}">{% trans "Документи складу" %}</a></li>
                             <li class="nav-item"><a class="nav-link" href="{% url 'movement_list' %}">{% trans "Журнал операцій" %}</a></li>
                         {% endif %}
                         {% if can_create_purchase_requests %}
@@ -323,6 +324,7 @@
                                     <div class="text-uppercase text-muted small fw-semibold mt-3 mb-1">{% trans "Контроль і звіти" %}</div>
                                     {% if can_access_warehouse %}
                                         <a class="sidebar-link" href="{% url 'stockbalance_list' %}">📊 {% trans "Залишки на складі" %}</a>
+                                        <a class="sidebar-link" href="{% url 'stock_documents' %}">📄 {% trans "Документи складу" %}</a>
                                         <a class="sidebar-link" href="{% url 'movement_list' %}">🔁 {% trans "Журнал операцій" %}</a>
                                     {% endif %}
                                     {% if can_view_purchase_requests %}

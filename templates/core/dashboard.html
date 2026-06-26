@@ -43,6 +43,7 @@
         <div class="dashboard-grid dashboard-grid--compact compact-card-grid">
             {% if can_access_warehouse %}
                 {% url 'stockbalance_list' as card_url %}{% trans "Залишки на складі" as card_title %}{% trans "Актуальні залишки по складах." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📊" css_classes="report-card report-card--balance" %}
+                {% url 'stock_documents' as card_url %}{% trans "Документи складу" as card_title %}{% trans "Реєстр документів для перегляду та друку." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📄" css_classes="report-card report-card--journal" %}
                 {% url 'movement_list' as card_url %}{% trans "Журнал операцій" as card_title %}{% trans "Історія рухів товарів." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="🔁" css_classes="report-card report-card--journal" %}
                 {% url 'inventory_list' as card_url %}{% trans "Інвентаризація" as card_title %}{% trans "Провести або переглянути інвентаризацію." as card_description %}{% include "core/includes/dashboard_card.html" with url=card_url title=card_title description=card_description icon="📋" css_classes="report-card report-card--inventory" %}
             {% endif %}

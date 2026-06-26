@@ -1,53 +1,62 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{% trans "Прототип dashboard" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="dashboard-prototype">
     <aside class="dashboard-prototype-nav" aria-label="{% trans 'Розділи прототипу dashboard' %}">
+        <div class="dashboard-prototype-nav__brand">
+            <span class="yantos-wordmark" aria-label="YANTOS"><span>YAN</span><span class="yantos-wordmark__t">T</span><span>OS</span></span>
+            <span class="brand-divider">&middot;</span>
+            <span>&#1057;&#1082;&#1083;&#1072;&#1076;&#1089;&#1100;&#1082;&#1080;&#1081; &#1086;&#1073;&#1083;&#1110;&#1082;</span>
+        </div>
         <a class="dashboard-prototype-nav__item active" href="{% url 'dashboard_prototype' %}">
-            <span class="dashboard-prototype-nav__mark">OV</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Огляд / Дашборд" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'stockbalance_list' %}">
-            <span class="dashboard-prototype-nav__mark">ST</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Залишки" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'movement_list' %}">
-            <span class="dashboard-prototype-nav__mark">MV</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Рухи товарів" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'stock_receive' %}">
-            <span class="dashboard-prototype-nav__mark">OP</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Нова операція" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'purchase_request_list' %}">
-            <span class="dashboard-prototype-nav__mark">PR</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Заявки на закупівлю" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'item_list' %}">
-            <span class="dashboard-prototype-nav__mark">IT</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Товари / матеріали" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'unit_list' %}">
-            <span class="dashboard-prototype-nav__mark">RF</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Довідники" %}</span>
         </a>
         <a class="dashboard-prototype-nav__item" href="{% url 'item_list' %}">
-            <span class="dashboard-prototype-nav__mark">LB</span>
+            <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
             <span>{% trans "Друк етикеток" %}</span>
         </a>
         {% if can_view_analytics %}
             <a class="dashboard-prototype-nav__item" href="{% url 'management_analytics' %}">
-                <span class="dashboard-prototype-nav__mark">AN</span>
+                <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
                 <span>{% trans "Аналітика" %}</span>
             </a>
         {% endif %}
         {% if can_manage_directories %}
             <a class="dashboard-prototype-nav__item" href="{% url 'management_dashboard' %}">
-                <span class="dashboard-prototype-nav__mark">AD</span>
+                <span class="dashboard-prototype-nav__mark" aria-hidden="true"></span>
                 <span>{% trans "Адміністрування" %}</span>
             </a>
         {% endif %}
+        <div class="dashboard-prototype-nav__user">
+            <span class="user-avatar-badge">{{ request.user.get_full_name|default:request.user.username|slice:":1" }}</span>
+            <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+        </div>
     </aside>
 
     <main class="dashboard-prototype-main">
@@ -103,7 +112,7 @@
                                 <strong>{{ movement.item.name }}</strong>
                                 <small>{{ movement.get_movement_type_display }} · {{ movement.occurred_at|date:"d.m.Y H:i" }}</small>
                             </span>
-                            <em>{{ movement.qty }} {{ movement.item.unit.symbol }}</em>
+                            <em>{{ movement.qty|qty }} {{ movement.item.unit.symbol }}</em>
                         </a>
                     {% empty %}
                         <p class="dashboard-prototype-empty">{% trans "Рухів товарів поки немає." %}</p>
@@ -123,7 +132,7 @@
                                 <strong>{{ request_item.title }}</strong>
                                 <small>{{ request_item.requested_by|default:"-" }} · {{ request_item.created_at|date:"d.m.Y H:i" }}</small>
                             </span>
-                            <em>{{ request_item.requested_qty }} {{ request_item.unit }}</em>
+                            <em>{{ request_item.requested_qty|qty }} {{ request_item.unit }}</em>
                         </a>
                     {% empty %}
                         <p class="dashboard-prototype-empty">{% trans "Немає заявок, які очікують погодження." %}</p>

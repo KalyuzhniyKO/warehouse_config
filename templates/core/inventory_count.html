@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{% trans "Підрахунок" %} {{ inventory_count.number }} · {% trans "Інвентаризація" %}{% endblock %}
 {% block content %}
 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
@@ -54,9 +54,9 @@
                     <td>{{ line.counted_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</td>
                     <td>{{ form.actual_qty }}<div class="text-danger small">{{ form.actual_qty.errors }}</div></td>
                     <td class="text-end">
-                        {% if line.variance_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.variance_qty }}</span>
-                        {% elif line.variance_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.variance_qty }}</span>
-                        {% else %}<span class="badge text-bg-secondary">{{ line.variance_qty }}</span>{% endif %}
+                        {% if line.variance_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.variance_qty|qty }}</span>
+                        {% elif line.variance_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.variance_qty|qty }}</span>
+                        {% else %}<span class="badge text-bg-secondary">{{ line.variance_qty|qty }}</span>{% endif %}
                     </td>
                     <td>{{ form.comment }}<div class="text-danger small">{{ form.comment.errors }}</div></td>
                 </tr>

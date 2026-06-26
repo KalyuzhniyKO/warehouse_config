@@ -16,7 +16,7 @@
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.item }}</dd>
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Кількість" %}</dt>
-                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.qty }}</dd>
+                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.qty|qty }}</dd>
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Хто взяв товар" %}</dt>
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.recipient|default:"—" }}</dd>

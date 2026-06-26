@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext, gettext_lazy as _
 from django.views.generic import FormView, ListView, TemplateView, View
@@ -137,6 +138,10 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
     context_object_name = "movements"
     paginate_by = 50
     page_key = "movement_list"
+    page_title = _("Журнал операцій")
+    page_action_label = _("Нова операція")
+    reset_url_name = "movement_list"
+    is_document_registry = False
 
     def get(self, request, *args, **kwargs):
         params, used_remembered_filters, should_redirect = apply_remembered_filters(request, self.page_key)
@@ -230,11 +235,23 @@ class StockMovementListView(LoginRequiredMixin, GroupRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context["filter_form"] = self.get_filter_form()
         context["used_remembered_filters"] = getattr(self, "used_remembered_filters", False)
+        context["page_title"] = self.page_title
+        context["page_action_label"] = self.page_action_label
+        context["reset_url"] = reverse(self.reset_url_name)
+        context["is_document_registry"] = self.is_document_registry
         context["business_report_scope"] = (
             context["filter_form"].is_valid()
             and context["filter_form"].cleaned_data.get("report_scope") == "business"
         )
         return context
+
+
+class StockDocumentListView(StockMovementListView):
+    page_key = "stock_documents"
+    page_title = _("Реєстр документів")
+    page_action_label = _("Нова операція")
+    reset_url_name = "stock_documents"
+    is_document_registry = True
 
 
 class StockOperationAuditView(LoginRequiredMixin, GroupRequiredMixin, ListView):

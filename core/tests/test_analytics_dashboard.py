@@ -51,8 +51,9 @@ class AnalyticsDashboardTests(TestCase):
         self.assertContains(r, "Огляд рухів, залишків, видачі та якості складських даних.")
         self.assertContains(r, "analytics-kpi-grid")
         self.assertContains(r, "analytics-filter-panel")
+        self.assertContains(r, reverse("management_analytics_export_xlsx"))
         self.assertContains(r, "Експорт Excel")
-        self.assertContains(r, "Експорт CSV")
+        self.assertNotContains(r, reverse("management_analytics_export_csv"))
         self.assertNotContains(r, "Експорт PDF")
         self.assertNotContains(r, ">movement_type=out<", html=True)
         self.assertNotContains(r, "data-analytics-daily-chart")
@@ -247,3 +248,5 @@ class AnalyticsDashboardTests(TestCase):
         wb = load_workbook(filename=BytesIO(r.content))
         for title in ["Summary", "Daily movement", "Operation mix", "Top issued items", "Top usage places", "Top recipients", "Recent movements", "Inactive stock items", "Data quality"]:
             self.assertIn(title, wb.sheetnames)
+        self.assertEqual(wb["Top issued items"]["C2"].number_format, "0.###")
+        self.assertEqual(wb["Recent movements"]["D2"].number_format, "0.###")

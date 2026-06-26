@@ -54,8 +54,9 @@ class StockServiceTests(TestCase):
             warehouse=self.warehouse,
             name="Source",
         )
+        self.target_warehouse = Warehouse.objects.create(name="Target warehouse")
         self.target_location = Location.objects.create(
-            warehouse=self.warehouse,
+            warehouse=self.target_warehouse,
             name="Target",
         )
         self.user = get_user_model().objects.create_user(
@@ -168,6 +169,7 @@ class StockServiceTests(TestCase):
 
         self.assertEqual(self.get_balance_qty(), Decimal("10.000"))
         self.assertEqual(movement.movement_type, StockMovement.MovementType.IN)
+        self.assertRegex(movement.document_number, r"^IN-\d{4}-000001$")
         self.assertEqual(StockMovement.objects.count(), 1)
 
     def test_issue_stock_decreases_balance_and_creates_movement(self):
@@ -209,6 +211,40 @@ class StockServiceTests(TestCase):
         self.assertEqual(movement.issue_reason, StockMovement.IssueReason.REPAIR)
         self.assertEqual(movement.department, "Repair shop")
         self.assertEqual(movement.document_number, "REQ-7")
+
+    def test_stock_document_numbers_are_sequential_per_type_and_year(self):
+        from ..services.stock import receive_stock
+
+        first = receive_stock(item=self.item, location=self.source_location, qty=Decimal("1.000"))
+        second = receive_stock(item=self.item, location=self.source_location, qty=Decimal("1.000"))
+
+        self.assertRegex(first.document_number, r"^IN-\d{4}-000001$")
+        self.assertRegex(second.document_number, r"^IN-\d{4}-000002$")
+
+    def test_backfill_stock_document_numbers_command(self):
+        missing = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.WRITEOFF,
+            item=self.item,
+            qty=Decimal("1.000"),
+            source_location=self.source_location,
+            document_number="",
+        )
+        existing = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.source_location,
+            document_number="MANUAL-1",
+        )
+
+        out = StringIO()
+        call_command("backfill_stock_document_numbers", stdout=out)
+        missing.refresh_from_db()
+        existing.refresh_from_db()
+
+        self.assertRegex(missing.document_number, r"^WOF-\d{4}-000001$")
+        self.assertEqual(existing.document_number, "MANUAL-1")
+        self.assertIn("Backfilled 1 stock document numbers", out.getvalue())
 
     def test_cannot_issue_more_than_available(self):
         from ..services.stock import InsufficientStockError, issue_stock, receive_stock
@@ -396,6 +432,39 @@ class StockServiceTests(TestCase):
             )
 
         self.assertEqual(self.get_balance_qty(self.source_location), Decimal("3.000"))
+        self.assertEqual(StockMovement.objects.count(), 1)
+
+    def test_cannot_transfer_within_same_warehouse_between_locations(self):
+        from ..services.stock import (
+            SameWarehouseTransferError,
+            receive_stock,
+            transfer_stock,
+        )
+
+        same_warehouse_target = Location.objects.create(
+            warehouse=self.warehouse,
+            name="Same warehouse target",
+        )
+        receive_stock(
+            item=self.item, location=self.source_location, qty=Decimal("3.000")
+        )
+
+        with self.assertRaises(SameWarehouseTransferError):
+            transfer_stock(
+                item=self.item,
+                source_location=self.source_location,
+                target_location=same_warehouse_target,
+                qty=Decimal("1.000"),
+            )
+
+        self.assertEqual(self.get_balance_qty(self.source_location), Decimal("3.000"))
+        self.assertFalse(
+            StockBalance.objects.filter(
+                item=self.item,
+                location=same_warehouse_target,
+                qty__gt=0,
+            ).exists()
+        )
         self.assertEqual(StockMovement.objects.count(), 1)
 
     def test_cannot_transfer_more_than_available(self):

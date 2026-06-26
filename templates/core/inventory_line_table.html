@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n core_extras %}
 <div class="card content-card">
     <div class="table-responsive">
         <table class="table table-striped table-hover align-middle mb-0">
@@ -29,11 +29,11 @@
                     </td>
                     <td class="text-end">{{ line.expected_qty_at_count_time }}</td>
                     <td>{{ line.counted_at|date:"SHORT_DATETIME_FORMAT"|default:"—" }}</td>
-                    <td class="text-end">{{ line.actual_qty|default:"—" }}</td>
+                    <td class="text-end">{% if line.actual_qty is not None %}{{ line.actual_qty|qty }}{% else %}—{% endif %}</td>
                     <td class="text-end">
-                        {% if line.variance_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.variance_qty }}</span>
-                        {% elif line.variance_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.variance_qty }}</span>
-                        {% else %}<span class="badge text-bg-secondary">{{ line.variance_qty }}</span>{% endif %}
+                        {% if line.variance_qty > 0 %}<span class="badge text-bg-success">{% trans "Надлишок" %} {{ line.variance_qty|qty }}</span>
+                        {% elif line.variance_qty < 0 %}<span class="badge text-bg-danger">{% trans "Нестача" %} {{ line.variance_qty|qty }}</span>
+                        {% else %}<span class="badge text-bg-secondary">{{ line.variance_qty|qty }}</span>{% endif %}
                     </td>
                     <td>{{ line.comment|default:"—" }}</td>
                 </tr>

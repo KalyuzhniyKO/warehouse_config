@@ -8,6 +8,7 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.models import StockBalance, StockMovement, Warehouse
@@ -16,6 +17,16 @@ from core.services.barcodes import ensure_item_barcode
 from core.services.warehouse_access import get_accessible_warehouses
 
 QTY_QUANT = Decimal("0.001")
+
+DOCUMENT_PREFIXES = {
+    StockMovement.MovementType.IN: "IN",
+    StockMovement.MovementType.OUT: "OUT",
+    StockMovement.MovementType.RETURN: "RET",
+    StockMovement.MovementType.TRANSFER: "TRF",
+    StockMovement.MovementType.WRITEOFF: "WOF",
+    StockMovement.MovementType.ADJUSTMENT: "ADJ",
+    StockMovement.MovementType.INITIAL_BALANCE: "INI",
+}
 
 
 def _warehouse_from_location(location):
@@ -212,6 +223,10 @@ def _create_movement(
     kwargs = {}
     if occurred_at is not None:
         kwargs["occurred_at"] = occurred_at
+    document_number = (document_number or "").strip() or generate_stock_document_number(
+        movement_type=movement_type,
+        occurred_at=occurred_at,
+    )
     movement = StockMovement.objects.create(
         movement_type=movement_type,
         item=item,
@@ -243,6 +258,24 @@ def _create_movement(
         request=request,
     )
     return movement
+
+
+def generate_stock_document_number(*, movement_type, occurred_at=None):
+    prefix = DOCUMENT_PREFIXES.get(movement_type, "MOV")
+    operation_time = occurred_at or timezone.now()
+    year = timezone.localtime(operation_time).year if timezone.is_aware(operation_time) else operation_time.year
+    stem = f"{prefix}-{year}-"
+    existing_numbers = (
+        StockMovement.objects.filter(document_number__startswith=stem)
+        .values_list("document_number", flat=True)
+    )
+    max_number = 0
+    for value in existing_numbers:
+        try:
+            max_number = max(max_number, int(str(value).rsplit("-", 1)[1]))
+        except (IndexError, TypeError, ValueError):
+            continue
+    return f"{stem}{max_number + 1:06d}"
 
 
 def _increase_balance(balance, qty):
@@ -498,30 +531,16 @@ def transfer_stock(
         location=destination_location,
         field_name="destination_warehouse",
     )
-    same_warehouse_location_transfer = False
     if source_warehouse == destination_warehouse:
         if source_location is not None and destination_location is not None and source_location == destination_location:
             raise SameLocationTransferError("Source and target locations must be different.")
-        if source_location is not None and destination_location is not None:
-            same_warehouse_location_transfer = True
-        else:
-            raise SameWarehouseTransferError("Source and target warehouses must be different.")
+        raise SameWarehouseTransferError("Source and target warehouses must be different.")
     qty = validate_positive_qty(qty)
     with transaction.atomic():
         source_balance = get_or_create_balance_locked(item, warehouse=source_warehouse, location=source_location)
-        if same_warehouse_location_transfer:
-            _decrease_balance(source_balance, qty)
-            target_balance, _ = StockBalance.objects.get_or_create(
-                item=item,
-                warehouse=destination_warehouse,
-                location=destination_location,
-                defaults={"qty": Decimal("0.000"), "is_active": False},
-            )
-            _increase_balance(target_balance, qty)
-        else:
-            target_balance = get_or_create_balance_locked(item, warehouse=destination_warehouse, location=destination_location)
-            _decrease_balance(source_balance, qty)
-            _increase_balance(target_balance, qty)
+        target_balance = get_or_create_balance_locked(item, warehouse=destination_warehouse, location=destination_location)
+        _decrease_balance(source_balance, qty)
+        _increase_balance(target_balance, qty)
         movement = _create_movement(
             movement_type=StockMovement.MovementType.TRANSFER,
             item=item,

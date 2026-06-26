@@ -289,6 +289,7 @@ urlpatterns = [
     path("stock/writeoff/<int:pk>/", views.StockWriteOffResultView.as_view(), name="stock_writeoff_result"),
     path("stock/initial/", views.InitialBalanceView.as_view(), name="stock_initial"),
     path("stock/movements/", views.StockMovementListView.as_view(), name="movement_list"),
+    path("stock/documents/", views.StockDocumentListView.as_view(), name="stock_documents"),
     path(
         "stock/movements/<int:pk>/cancel/",
         views.StockMovementCancelView.as_view(),

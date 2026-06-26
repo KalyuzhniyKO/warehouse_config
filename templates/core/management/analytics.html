@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 
 {% block title %}{% trans "Аналітика складу" %} · {% trans "Складський облік" %}{% endblock %}
 
@@ -12,8 +12,7 @@
         </div>
         <div class="analytics-actions">
             <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_reports' %}">{% trans "Готові звіти" %}</a>
-            <a class="btn btn-outline-secondary btn-sm" href="{% url 'management_analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт Excel" %}</a>
-            <a class="btn btn-primary btn-sm" href="{% url 'management_analytics_export_csv' %}?{{ request.GET.urlencode }}">{% trans "Експорт CSV" %}</a>
+            <a class="btn btn-primary btn-sm" href="{% url 'management_analytics_export_xlsx' %}?{{ request.GET.urlencode }}">{% trans "Експорт Excel" %}</a>
         </div>
     </header>
 
@@ -30,12 +29,12 @@
         </article>
         <article class="analytics-kpi-card analytics-kpi-card--issue">
             <div class="analytics-kpi-label">{% trans "Видано" %}</div>
-            <div class="analytics-kpi-value">{{ summary.issue_qty }}</div>
+            <div class="analytics-kpi-value">{{ summary.issue_qty|qty }}</div>
             <p>{% trans "Сумарно видано за період" %}</p>
         </article>
         <article class="analytics-kpi-card analytics-kpi-card--receive">
             <div class="analytics-kpi-label">{% trans "Надійшло" %}</div>
-            <div class="analytics-kpi-value">{{ summary.receive_qty }}</div>
+            <div class="analytics-kpi-value">{{ summary.receive_qty|qty }}</div>
             <p>{% trans "Сумарно прийнято за період" %}</p>
         </article>
         <article class="analytics-kpi-card analytics-kpi-card--inactive">
@@ -131,7 +130,7 @@
                         <div class="analytics-visual-row">
                             <div class="analytics-visual-label">
                                 <a href="{% url 'management_analytics_item_detail' row.item_id %}?{{ filter_query }}">{{ row.item_name|default:"—" }}</a>
-                                <span class="analytics-visual-value">{{ row.total_qty }}</span>
+                                <span class="analytics-visual-value">{{ row.total_qty|qty }}</span>
                             </div>
                             <div class="analytics-visual-bar" aria-hidden="true"><div class="analytics-visual-bar-fill" style="width: {{ row.bar_percent }}%;"></div></div>
                         </div>
@@ -175,7 +174,7 @@
                             {% for row in top_usage_places %}
                                 <tr>
                                     <td><a href="{% url 'management_analytics_usage_place_detail' row.department|default:'-' %}?{{ filter_query }}">{{ row.department|default:"—" }}</a></td>
-                                    <td class="text-end">{{ row.total_qty }}</td>
+                                    <td class="text-end">{{ row.total_qty|qty }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -198,7 +197,7 @@
                             {% for row in top_recipients %}
                                 <tr>
                                     <td><a href="{% url 'management_analytics_recipient_detail' row.recipient__id %}?{{ filter_query }}">{{ row.recipient__name|default:"—" }}</a></td>
-                                    <td class="text-end">{{ row.total_qty }}</td>
+                                    <td class="text-end">{{ row.total_qty|qty }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -233,7 +232,7 @@
                                     <td>{{ movement.document_number|default:"—" }}</td>
                                     <td>{{ movement.item|default:"—" }}</td>
                                     <td>{{ movement.get_movement_type_display|default:"—" }}</td>
-                                    <td class="text-end">{{ movement.qty|default:"—" }}</td>
+                                    <td class="text-end">{% if movement.qty is not None %}{{ movement.qty|qty }}{% else %}&mdash;{% endif %}</td>
                                     <td>{{ movement.resolved_source_warehouse|default:movement.resolved_destination_warehouse|default:"—" }}</td>
                                 </tr>
                             {% endfor %}

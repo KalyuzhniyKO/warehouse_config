@@ -1,4 +1,7 @@
+from decimal import Decimal, InvalidOperation
+
 from django import template
+from django.utils import formats
 from django.utils.translation import gettext as _
 
 from core.permissions import ROLE_DESCRIPTIONS, ROLE_DISPLAY_NAMES
@@ -92,6 +95,22 @@ def audit_object_label(value):
     if str(value or "").strip().lower() == "root":
         return _("Адміністратор")
     return value
+
+
+@register.filter
+def qty(value):
+    if value in (None, ""):
+        return ""
+    try:
+        decimal_value = value if isinstance(value, Decimal) else Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        return value
+    normalized = decimal_value.normalize()
+    if normalized == normalized.to_integral():
+        decimal_places = 0
+    else:
+        decimal_places = min(abs(normalized.as_tuple().exponent), 3)
+    return formats.number_format(decimal_value, decimal_pos=decimal_places)
 
 
 @register.filter

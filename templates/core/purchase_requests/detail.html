@@ -89,7 +89,7 @@
                             <div class="purchase-detail-metrics">
                                 <div>
                                     <div class="purchase-detail-label">{% trans "Кількість / одиниця" %}</div>
-                                    <div class="purchase-detail-value">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</div>
+                                    <div class="purchase-detail-value">{{ purchase_request.requested_qty|qty }} {{ purchase_request.unit }}</div>
                                 </div>
                                 <div>
                                     <div class="purchase-detail-label">{% trans "Вартість за одиницю" %}</div>
@@ -115,15 +115,15 @@
                     <div class="purchase-detail-fields purchase-detail-fields--compact">
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Запитано" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.requested_qty|qty }} {{ purchase_request.unit }}</div>
                         </div>
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Вже отримано" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.received_qty|qty }} {{ purchase_request.unit }}</div>
                         </div>
                         <div class="purchase-detail-field">
                             <div class="purchase-detail-label">{% trans "Залишилось отримати" %}</div>
-                            <div class="purchase-detail-value">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</div>
+                            <div class="purchase-detail-value">{{ purchase_request.remaining_qty|qty }} {{ purchase_request.unit }}</div>
                         </div>
                     </div>
                 </div>
@@ -237,7 +237,7 @@
             <thead><tr><th>{% trans "Дата" %}</th><th>{% trans "Товари / матеріали" %}</th><th>{% trans "Кількість" %}</th><th>{% trans "Склад" %}</th><th>{% trans "Виконав" %}</th></tr></thead>
             <tbody>
             {% for movement in linked_receive_movements %}
-                <tr><td>{{ movement.occurred_at|date:"SHORT_DATETIME_FORMAT" }}</td><td>{{ movement.item }}</td><td>{{ movement.qty }}</td><td>{{ movement.resolved_destination_warehouse|default:"—" }}</td><td>{{ movement.performed_by|display_name|default:"—" }}</td></tr>
+                <tr><td>{{ movement.occurred_at|date:"SHORT_DATETIME_FORMAT" }}</td><td>{{ movement.item }}</td><td>{{ movement.qty|qty }}</td><td>{{ movement.resolved_destination_warehouse|default:"—" }}</td><td>{{ movement.performed_by|display_name|default:"—" }}</td></tr>
             {% empty %}
                 <tr><td colspan="5" class="text-muted">{% trans "Пов’язаних приходів ще немає." %}</td></tr>
             {% endfor %}

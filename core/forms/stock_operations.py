@@ -504,6 +504,10 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
         ).select_related("unit")
         self.fields["source_warehouse"].queryset = accessible_warehouses
         self.fields["destination_warehouse"].queryset = accessible_warehouses
+        if accessible_warehouses.count() < 2:
+            self.fields["destination_warehouse"].help_text = _(
+                "Для переміщення потрібен доступ щонайменше до двох складів."
+            )
         location_queryset = Location.objects.filter(
             is_active=True,
             warehouse__is_active=True,
@@ -527,6 +531,9 @@ class StockTransferForm(LocationsModeMixin, forms.Form):
         destination_warehouse = cleaned_data.get("destination_warehouse")
         source_location = cleaned_data.get("source_location")
         destination_location = cleaned_data.get("destination_location")
+
+        if source_warehouse and destination_warehouse and source_warehouse == destination_warehouse:
+            raise forms.ValidationError(_("РќРµРјРѕР¶Р»РёРІРѕ РїРµСЂРµРјС–СЃС‚РёС‚Рё С‚РѕРІР°СЂ Сѓ С‚РѕР№ СЃР°РјРёР№ СЃРєР»Р°Рґ."))
 
         if (
             not self.use_locations

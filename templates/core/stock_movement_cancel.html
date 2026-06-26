@@ -17,7 +17,7 @@
             <dl class="row mb-4">
                 <dt class="col-sm-4">{% trans "ID операції" %}</dt><dd class="col-sm-8">{{ movement.pk }}</dd>
                 <dt class="col-sm-4">{% trans "Товар / матеріал" %}</dt><dd class="col-sm-8">{{ movement.item }}</dd>
-                <dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty }}</dd>
+                <dt class="col-sm-4">{% trans "Кількість" %}</dt><dd class="col-sm-8">{{ movement.qty|qty }}</dd>
                 <dt class="col-sm-4">{% trans "Тип операції" %}</dt><dd class="col-sm-8">{{ movement.get_movement_type_display }}</dd>
                 <dt class="col-sm-4">{% trans "Звідки" %}</dt><dd class="col-sm-8">{% if movement.resolved_source_warehouse %}{{ movement.resolved_source_warehouse }}{% if movement.source_location %} / {{ movement.source_location }}{% endif %}{% else %}—{% endif %}</dd>
                 <dt class="col-sm-4">{% trans "Куди" %}</dt><dd class="col-sm-8">{% if movement.resolved_destination_warehouse %}{{ movement.resolved_destination_warehouse }}{% if movement.destination_location %} / {{ movement.destination_location }}{% endif %}{% else %}—{% endif %}</dd>

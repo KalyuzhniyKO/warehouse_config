@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{{ item.name }} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="list-page">
@@ -33,9 +33,9 @@
                 <h2 class="h5">{% trans "Останні операції" %}</h2>
                 <dl class="row mb-0 gy-2">
                     <dt class="col-sm-5">{% trans "Останній прихід" %}</dt>
-                    <dd class="col-sm-7">{% if last_receive %}{{ last_receive.occurred_at|date:"Y-m-d H:i" }} · {{ last_receive.qty }}{% else %}—{% endif %}</dd>
+                    <dd class="col-sm-7">{% if last_receive %}{{ last_receive.occurred_at|date:"Y-m-d H:i" }} · {{ last_receive.qty|qty }}{% else %}—{% endif %}</dd>
                     <dt class="col-sm-5">{% trans "Остання видача" %}</dt>
-                    <dd class="col-sm-7">{% if last_issue %}{{ last_issue.occurred_at|date:"Y-m-d H:i" }} · {{ last_issue.qty }}{% else %}—{% endif %}</dd>
+                    <dd class="col-sm-7">{% if last_issue %}{{ last_issue.occurred_at|date:"Y-m-d H:i" }} · {{ last_issue.qty|qty }}{% else %}—{% endif %}</dd>
                 </dl>
             </div></div>
         </div>
@@ -47,7 +47,7 @@
             {% if stock_by_warehouse %}
                 <div class="table-responsive"><table class="table table-sm align-middle mb-0">
                     <thead><tr><th>{% trans "Склад" %}</th><th class="text-end">{% trans "Кількість" %}</th></tr></thead>
-                    <tbody>{% for row in stock_by_warehouse %}<tr><td>{{ row.warehouse__name }}</td><td class="text-end">{{ row.total_qty }}</td></tr>{% endfor %}</tbody>
+                    <tbody>{% for row in stock_by_warehouse %}<tr><td>{{ row.warehouse__name }}</td><td class="text-end">{{ row.total_qty|qty }}</td></tr>{% endfor %}</tbody>
                 </table></div>
             {% else %}
                 <p class="text-muted mb-0">{% trans "Залишків немає." %}</p>
@@ -64,7 +64,7 @@
                 <tr>
                     <td>{{ movement.occurred_at|date:"Y-m-d H:i" }}</td>
                     <td>{{ movement.get_movement_type_display }}</td>
-                    <td class="text-end">{{ movement.qty }}</td>
+                    <td class="text-end">{{ movement.qty|qty }}</td>
                     <td>{{ movement.resolved_source_warehouse|default:"—" }}</td>
                     <td>{{ movement.resolved_destination_warehouse|default:"—" }}</td>
                     <td>{{ movement.document_number|default:"—" }}</td>

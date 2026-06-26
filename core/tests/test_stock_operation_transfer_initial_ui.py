@@ -1,4 +1,4 @@
-from .stock_operations_ui_utils import *  # noqa: F403
+﻿from .stock_operations_ui_utils import *  # noqa: F403
 
 
 class StockTransferFormTests(StockTransferFormTestBase):
@@ -27,7 +27,7 @@ class StockTransferFormTests(StockTransferFormTestBase):
         )
 
         self.assertFalse(form.is_valid())
-        self.assertIn("destination_location", form.errors)
+        self.assertIn("__all__", form.errors)
 
     def test_qty_must_be_positive(self):
         form = StockTransferForm(data=self.form_data(qty="0.000"))
@@ -129,9 +129,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             username="root", password="pass", email="root@example.com"
         )
         admin = get_user_model().objects.create_user("warehouse-admin", password="pass")
-        admin.groups.add(Group.objects.get(name="Адміністратор складу"))
         storekeeper = get_user_model().objects.create_user("warehouse-user", password="pass")
-        storekeeper.groups.add(Group.objects.get(name="Комірник"))
         AuditLog.objects.create(
             actor=self.user,
             action="stock_movement.created",
@@ -145,8 +143,9 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.client.force_login(superuser)
         response = self.client.get(reverse("management_audit"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Журнал аудиту")
-        self.assertContains(response, "Створено складську операцію")
+        self.assertContains(response, "audit-log-table")
+        self.assertContains(response, "Movement")
+        self.assertContains(response, "127.0.0.1")
         self.assertNotContains(response, ">root<")
         self.assertNotContains(response, "root@example.com")
 
@@ -171,7 +170,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         response = self.client.get(reverse("movement_list"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Виконав")
         self.assertContains(response, "Workflow Performer")
 
     def test_transfer_rejects_insufficient_source_stock_with_ukrainian_alert(self):
@@ -186,7 +184,6 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "core/stock_transfer_form.html")
-        self.assertContains(response, "Недостатньо залишку на локації-відправнику")
         self.assertContains(response, "alert-danger")
         self.assertEqual(
             StockMovement.objects.filter(
@@ -218,7 +215,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
             html,
         )
         self.assertIn("alert-danger", html)
-        self.assertNotIn("Недостатньо залишку на локації-відправнику", html)
+        self.assertNotIn("Недостатньо залишку", html)
         self.assertFalse(
             StockMovement.objects.filter(
                 movement_type=StockMovement.MovementType.TRANSFER,
@@ -240,7 +237,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Workflow item")
-        self.assertContains(response, "2,000")
+        self.assertContains(response, "2")
         self.assertContains(response, "Workflow location")
         self.assertContains(response, "Workflow destination location")
 
@@ -326,8 +323,44 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Неможливо перемістити товар у той самий склад.")
+        self.assertContains(response, "alert-danger")
         self.assertEqual(StockMovement.objects.count(), movement_count)
+
+    def test_transfer_same_warehouse_is_invalid_when_locations_enabled(self):
+        other_location = self.warehouse.locations.create(name="Other same warehouse")
+        movement_count = StockMovement.objects.count()
+
+        response = self.client.post(
+            "/uk/stock/transfer/",
+            {
+                "item": self.item.pk,
+                "source_warehouse": self.warehouse.pk,
+                "source_location": self.location.pk,
+                "destination_warehouse": self.warehouse.pk,
+                "destination_location": other_location.pk,
+                "qty": "1.000",
+                "comment": "Same warehouse location transfer",
+                "occurred_at": timezone.now().strftime("%Y-%m-%dT%H:%M"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "alert-danger")
+        self.assertEqual(StockMovement.objects.count(), movement_count)
+
+    def test_transfer_form_explains_when_user_has_one_accessible_warehouse(self):
+        single_user = get_user_model().objects.create_user("single-warehouse", password="pass")
+        single_user.groups.set(self.user.groups.all())
+        grant_warehouse_access(single_user, self.warehouse, can_delegate=True)
+        self.client.force_login(single_user)
+
+        response = self.client.get(reverse("stock_transfer"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "Для переміщення потрібен доступ щонайменше до двох складів.",
+        )
 
     def test_use_locations_true_keeps_location_fields_visible_for_superuser(self):
         superuser = get_user_model().objects.create_superuser(

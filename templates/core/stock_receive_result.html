@@ -16,7 +16,7 @@
                 <dd class="col-md-7 mb-0 fw-semibold">{{ movement.item }}</dd>
 
                 <dt class="col-md-5 text-muted fw-semibold">{% trans "Кількість" %}</dt>
-                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.qty }}</dd>
+                <dd class="col-md-7 mb-0 fw-semibold">{{ movement.qty|qty }}</dd>
 
                 {% if movement.recipient %}<dt class="col-md-5 text-muted fw-semibold">{% trans "Хто повертає" %}</dt><dd class="col-md-7 mb-0 fw-semibold">{{ movement.recipient }}</dd>{% endif %}
                 {% if movement.department %}<dt class="col-md-5 text-muted fw-semibold">{% trans "Місце використання" %}</dt><dd class="col-md-7 mb-0 fw-semibold">{{ movement.department }}</dd>{% endif %}

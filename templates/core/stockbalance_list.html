@@ -91,7 +91,7 @@
                     <td class="stockbalance-code-cell">{{ balance.item.barcode.barcode|default:"—" }}</td>
                     <td class="stockbalance-route-cell">{{ balance.warehouse.name }}</td>
                     <td class="stockbalance-route-cell">{{ balance.location.name|default:"—" }}</td>
-                    <td class="text-end stockbalance-qty-cell">{{ balance.qty }}</td>
+                    <td class="text-end stockbalance-qty-cell">{{ balance.qty|qty }}</td>
                     <td class="stockbalance-unit-cell">{{ balance.item.unit }}</td>
                     <td class="text-end stockbalance-actions-cell">
                         <div class="stockbalance-actions">

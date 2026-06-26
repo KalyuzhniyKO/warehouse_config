@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{% trans "Видача товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="operation-form-page"><header class="operation-form-header mb-3"><h1 class="h3 mb-1">{% trans "Видача товару" %}</h1><p class="text-muted mb-0">{% trans "Операція адаптована для планшетного сценарію роботи." %}</p></header>
@@ -39,7 +39,7 @@
                         <dd class="col-sm-8 mb-0">{{ scanned_item_context.item.barcode_value }}</dd>
                     {% endif %}
                     <dt class="col-sm-4 text-muted">{% trans "Доступний залишок" %}</dt>
-                    <dd class="col-sm-8 fw-semibold mb-0">{{ scanned_item_context.available_qty }}</dd>
+                    <dd class="col-sm-8 fw-semibold mb-0">{{ scanned_item_context.available_qty|qty }}</dd>
                 </dl>
             </div>
         {% elif barcode_query %}

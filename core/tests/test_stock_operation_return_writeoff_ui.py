@@ -73,6 +73,16 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         self.assertContains(response, "Списання товару")
         self.assertContains(response, "writeoff-barcode-scanner")
 
+    def test_stock_writeoff_keeps_barcode_hidden_without_visible_label(self):
+        self.client.force_login(self.storekeeper)
+        response = self.client.get("/uk/stock/writeoff/")
+        html = response.content.decode()
+
+        self.assertContains(response, 'name="barcode"')
+        self.assertContains(response, 'type="hidden"')
+        self.assertNotIn('for="id_barcode"', html)
+        self.assertNotIn(">Barcode<", html)
+
     def test_stock_writeoff_post_decreases_balance_and_creates_writeoff_movement(self):
         self.client.force_login(self.storekeeper)
         response = self.client.post(
@@ -114,7 +124,7 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Кабель ВВГ")
-        self.assertContains(response, "2,000")
+        self.assertContains(response, "2")
         self.assertContains(response, "A1")
 
     def test_auditor_cannot_access_stock_writeoff_form(self):

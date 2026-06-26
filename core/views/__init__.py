@@ -24,6 +24,7 @@ from .stock_lists import StockBalanceListView
 from .stock_movements import (
     StockIssueResultView,
     StockMovementCancelView,
+    StockDocumentListView,
     StockMovementListView,
     StockOperationAuditView,
     StockOperationAuditXLSXExportView,
@@ -168,6 +169,7 @@ __all__ = [
     "PurchaseRequestUpdateView",
     "PurchaseRequestXLSXExportView",
     "StockBalanceListView",
+    "StockDocumentListView",
     "StockIssueResultView",
     "StockIssueView",
     "StockMovementListView",

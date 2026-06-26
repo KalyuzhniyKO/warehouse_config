@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block title %}{% trans "Прихід товару" %} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
 <div class="operation-form-page"><header class="operation-form-header mb-3"><h1 class="h3 mb-1">{% trans "Прихід товару" %}</h1><p class="text-muted mb-0">{% trans "Операція адаптована для планшетного сценарію роботи." %}</p></header>
@@ -78,9 +78,9 @@
     <h2 class="h5">{% trans "Заявка на закупівлю" %} #{{ selected_purchase_request.pk }}</h2>
     <dl class="row mb-0">
         <dt class="col-sm-4">{% trans "Назва / товар" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.title }}</dd>
-        <dt class="col-sm-4">{% trans "Запитана кількість" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.requested_qty }} {{ selected_purchase_request.unit }}</dd>
-        <dt class="col-sm-4">{% trans "Вже отримано" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.received_qty }} {{ selected_purchase_request.unit }}</dd>
-        <dt class="col-sm-4">{% trans "Залишилось отримати" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.remaining_qty }} {{ selected_purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Запитана кількість" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.requested_qty|qty }} {{ selected_purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Вже отримано" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.received_qty|qty }} {{ selected_purchase_request.unit }}</dd>
+        <dt class="col-sm-4">{% trans "Залишилось отримати" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.remaining_qty|qty }} {{ selected_purchase_request.unit }}</dd>
         <dt class="col-sm-4">{% trans "Заявник" %}</dt><dd class="col-sm-8">{{ selected_purchase_request.requested_by }}</dd>
         {% if selected_purchase_request.product_url %}<dt class="col-sm-4">{% trans "Посилання на товар" %}</dt><dd class="col-sm-8"><a href="{{ selected_purchase_request.product_url }}" target="_blank" rel="noopener">{% trans "Відкрити посилання" %}</a></dd>{% endif %}
     </dl>

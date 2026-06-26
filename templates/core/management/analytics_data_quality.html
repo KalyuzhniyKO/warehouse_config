@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n core_extras %}
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
   <div>
@@ -37,7 +37,7 @@
       <a class="btn btn-outline-secondary btn-sm mb-2" href="{{ check.journal_url }}">{% trans "Переглянути в журналі" %}</a>
       {% if check.examples %}
       <div class="table-responsive analytics-quality-table"><table class="table table-sm align-middle"><thead><tr><th>{% trans "Дата" %}</th><th>{% trans "Тип" %}</th><th>{% trans "Товар" %}</th><th>{% trans "Кількість" %}</th><th>{% trans "Документ" %}</th><th>{% trans "Отримувач" %}</th><th>{% trans "Цех / місце використання" %}</th><th>{% trans "Склад / локація" %}</th><th>{% trans "Дія" %}</th></tr></thead>
-      <tbody>{% for m in check.examples %}<tr><td>{{ m.occurred_at|date:"Y-m-d H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.item|default:"—" }}</td><td>{{ m.qty }}</td><td>{{ m.document_number|default:"—" }}</td><td>{{ m.recipient|default:"—" }}</td><td>{{ m.department|default:"—" }}</td><td>{{ m.destination_location|default:m.source_location|default:"—" }}</td><td><a href="{{ movement_list_base_url }}?{{ journal_filter_query }}&document_number={{ m.document_number|urlencode }}">{% trans "Відкрити" %}</a></td></tr>{% endfor %}</tbody></table></div>
+      <tbody>{% for m in check.examples %}<tr><td>{{ m.occurred_at|date:"Y-m-d H:i" }}</td><td>{{ m.get_movement_type_display }}</td><td>{{ m.item|default:"—" }}</td><td>{{ m.qty|qty }}</td><td>{{ m.document_number|default:"—" }}</td><td>{{ m.recipient|default:"—" }}</td><td>{{ m.department|default:"—" }}</td><td>{{ m.destination_location|default:m.source_location|default:"—" }}</td><td><a href="{{ movement_list_base_url }}?{{ journal_filter_query }}&document_number={{ m.document_number|urlencode }}">{% trans "Відкрити" %}</a></td></tr>{% endfor %}</tbody></table></div>
       {% else %}<p class="analytics-muted mb-0">{% trans "Прикладів немає." %}</p>{% endif %}
     </div>
   </div>

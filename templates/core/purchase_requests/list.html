@@ -217,7 +217,7 @@
                                     <div class="purchase-need-description text-muted">{{ purchase_request.need_description|truncatechars:90 }}</div>
                                 {% endif %}
                             </td>
-                            <td class="text-nowrap">{{ purchase_request.requested_qty }} {{ purchase_request.unit }}</td>
+                            <td class="text-nowrap">{{ purchase_request.requested_qty|qty }} {{ purchase_request.unit }}</td>
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_order_type_display }}</span></td>
                             <td><span class="badge text-bg-light border purchase-status-badge">{{ purchase_request.get_approval_status_display }}</span></td>
                             <td>
@@ -263,11 +263,11 @@
                                 <td class="purchase-archive-stock-cell">
                                     <div class="purchase-archive-line">
                                         <span class="purchase-archive-label">{% trans "Отримано" %}:</span>
-                                        <span class="purchase-archive-value">{{ purchase_request.received_qty }} {{ purchase_request.unit }}</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.received_qty|qty }} {{ purchase_request.unit }}</span>
                                     </div>
                                     <div class="purchase-archive-line">
                                         <span class="purchase-archive-label">{% trans "Залишок" %}:</span>
-                                        <span class="purchase-archive-value">{{ purchase_request.remaining_qty }} {{ purchase_request.unit }}</span>
+                                        <span class="purchase-archive-value">{{ purchase_request.remaining_qty|qty }} {{ purchase_request.unit }}</span>
                                     </div>
                                 </td>
                                 <td class="purchase-archive-meta-cell" title="{{ purchase_request.archive_reason|default:"—" }}">
