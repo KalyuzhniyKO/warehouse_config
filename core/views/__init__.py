@@ -1,4 +1,4 @@
-from .dashboard import DashboardView
+from .dashboard import DashboardPrototypeView, DashboardView
 from .barcode import barcode_lookup
 from .directories import (
     ActiveDirectoryQuerysetMixin,
@@ -114,6 +114,7 @@ __all__ = [
     "AnalyticsUsagePlaceDetailView",
     "AnalyticsDataQualityView",
     "AnalyticsItemDetailView",
+    "DashboardPrototypeView",
     "DashboardView",
     "DIRECTORIES",
     "DirectoryArchiveView",

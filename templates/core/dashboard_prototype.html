@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "Прототип dashboard" %} · {% trans "Складський облік" %}{% endblock %}
+{% block content %}
+<div class="dashboard-prototype">
+    <aside class="dashboard-prototype-nav" aria-label="{% trans 'Розділи прототипу dashboard' %}">
+        <a class="dashboard-prototype-nav__item active" href="{% url 'dashboard_prototype' %}">
+            <span class="dashboard-prototype-nav__mark">OV</span>
+            <span>{% trans "Огляд / Дашборд" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'stockbalance_list' %}">
+            <span class="dashboard-prototype-nav__mark">ST</span>
+            <span>{% trans "Залишки" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'movement_list' %}">
+            <span class="dashboard-prototype-nav__mark">MV</span>
+            <span>{% trans "Рухи товарів" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'stock_receive' %}">
+            <span class="dashboard-prototype-nav__mark">OP</span>
+            <span>{% trans "Нова операція" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'purchase_request_list' %}">
+            <span class="dashboard-prototype-nav__mark">PR</span>
+            <span>{% trans "Заявки на закупівлю" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'item_list' %}">
+            <span class="dashboard-prototype-nav__mark">IT</span>
+            <span>{% trans "Товари / матеріали" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'unit_list' %}">
+            <span class="dashboard-prototype-nav__mark">RF</span>
+            <span>{% trans "Довідники" %}</span>
+        </a>
+        <a class="dashboard-prototype-nav__item" href="{% url 'item_list' %}">
+            <span class="dashboard-prototype-nav__mark">LB</span>
+            <span>{% trans "Друк етикеток" %}</span>
+        </a>
+        {% if can_view_analytics %}
+            <a class="dashboard-prototype-nav__item" href="{% url 'management_analytics' %}">
+                <span class="dashboard-prototype-nav__mark">AN</span>
+                <span>{% trans "Аналітика" %}</span>
+            </a>
+        {% endif %}
+        {% if can_manage_directories %}
+            <a class="dashboard-prototype-nav__item" href="{% url 'management_dashboard' %}">
+                <span class="dashboard-prototype-nav__mark">AD</span>
+                <span>{% trans "Адміністрування" %}</span>
+            </a>
+        {% endif %}
+    </aside>
+
+    <main class="dashboard-prototype-main">
+        <div class="dashboard-prototype-header">
+            <div>
+                <p class="dashboard-prototype-eyebrow">{% trans "Безпечний прототип" %}</p>
+                <h1>{% trans "Робочий dashboard складу" %}</h1>
+                <p>{% trans "Окрема сторінка для оцінки нового layout без заміни поточної головної." %}</p>
+            </div>
+            <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">{% trans "Поточна головна" %}</a>
+        </div>
+
+        <form class="dashboard-prototype-search" action="{% url 'item_list' %}" method="get" role="search">
+            <label class="visually-hidden" for="dashboard-prototype-search-input">{% trans "Швидкий пошук" %}</label>
+            <input id="dashboard-prototype-search-input" class="form-control" type="search" name="q" placeholder="{% trans 'Назва, внутрішній код, штрихкод або заявка' %}">
+            <button class="btn btn-primary" type="submit">{% trans "Знайти" %}</button>
+        </form>
+
+        <section class="dashboard-prototype-kpis" aria-label="{% trans 'KPI складу' %}">
+            {% for card in kpi_cards %}
+                <article class="dashboard-prototype-kpi">
+                    <span>{{ card.label }}</span>
+                    <strong>{{ card.value }}</strong>
+                    <small>{{ card.hint }}</small>
+                </article>
+            {% endfor %}
+        </section>
+
+        <section class="dashboard-prototype-actions" aria-label="{% trans 'Швидкі дії' %}">
+            {% if can_edit_stock %}
+                <a class="btn btn-primary" href="{% url 'stock_receive' %}">{% trans "Прихід" %}</a>
+                <a class="btn btn-outline-primary" href="{% url 'stock_issue' %}">{% trans "Видача" %}</a>
+                <a class="btn btn-outline-primary" href="{% url 'stock_return' %}">{% trans "Повернення" %}</a>
+                <a class="btn btn-outline-primary" href="{% url 'stock_transfer' %}">{% trans "Переміщення" %}</a>
+                <a class="btn btn-outline-primary" href="{% url 'stock_writeoff' %}">{% trans "Списання" %}</a>
+            {% endif %}
+            {% if can_create_purchase_requests %}
+                <a class="btn btn-outline-secondary" href="{% url 'purchase_request_create' %}">{% trans "Створити заявку" %}</a>
+            {% endif %}
+            <a class="btn btn-outline-secondary" href="{% url 'item_list' %}">{% trans "Друк етикетки" %}</a>
+        </section>
+
+        <div class="dashboard-prototype-grid">
+            <section class="dashboard-prototype-panel">
+                <div class="dashboard-prototype-panel__header">
+                    <h2>{% trans "Останні рухи товарів" %}</h2>
+                    <a href="{% url 'movement_list' %}">{% trans "Всі рухи" %}</a>
+                </div>
+                <div class="dashboard-prototype-list">
+                    {% for movement in recent_movements %}
+                        <a class="dashboard-prototype-row" href="{% url 'stock_movement_print' movement.pk %}">
+                            <span>
+                                <strong>{{ movement.item.name }}</strong>
+                                <small>{{ movement.get_movement_type_display }} · {{ movement.occurred_at|date:"d.m.Y H:i" }}</small>
+                            </span>
+                            <em>{{ movement.qty }} {{ movement.item.unit.symbol }}</em>
+                        </a>
+                    {% empty %}
+                        <p class="dashboard-prototype-empty">{% trans "Рухів товарів поки немає." %}</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="dashboard-prototype-panel">
+                <div class="dashboard-prototype-panel__header">
+                    <h2>{% trans "Заявки потребують уваги" %}</h2>
+                    <a href="{% url 'purchase_request_list' %}">{% trans "Всі заявки" %}</a>
+                </div>
+                <div class="dashboard-prototype-list">
+                    {% for request_item in attention_requests %}
+                        <a class="dashboard-prototype-row" href="{% url 'purchase_request_detail' request_item.pk %}">
+                            <span>
+                                <strong>{{ request_item.title }}</strong>
+                                <small>{{ request_item.requested_by|default:"-" }} · {{ request_item.created_at|date:"d.m.Y H:i" }}</small>
+                            </span>
+                            <em>{{ request_item.requested_qty }} {{ request_item.unit }}</em>
+                        </a>
+                    {% empty %}
+                        <p class="dashboard-prototype-empty">{% trans "Немає заявок, які очікують погодження." %}</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="dashboard-prototype-panel dashboard-prototype-panel--wide">
+                <div class="dashboard-prototype-panel__header">
+                    <h2>{% trans "Нульові залишки" %}</h2>
+                    <a href="{% url 'stockbalance_list' %}?q=">{% trans "Перевірити залишки" %}</a>
+                </div>
+                <div class="dashboard-prototype-zero-grid">
+                    {% for balance in zero_balances %}
+                        <a class="dashboard-prototype-zero" href="{% url 'item_detail' balance.item.pk %}">
+                            <strong>{{ balance.item.name }}</strong>
+                            <span>{{ balance.warehouse.name }}</span>
+                        </a>
+                    {% empty %}
+                        <p class="dashboard-prototype-empty">{% trans "Нульових залишків у доступних складах немає." %}</p>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+{% endblock %}

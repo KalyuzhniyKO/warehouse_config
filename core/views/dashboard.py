@@ -46,6 +46,7 @@ from ..models import (
     Location,
     PrintJob,
     Printer,
+    PurchaseRequest,
     Recipient,
     StockBalance,
     StockMovement,
@@ -64,6 +65,7 @@ from ..permissions import (
     GroupRequiredMixin,
     can_manage_directories,
     can_access_warehouse,
+    can_create_purchase_requests,
     can_view_analytics,
     can_view_purchase_requests,
     can_view_warehouse_data,
@@ -77,7 +79,10 @@ from ..services.inventory import (
     update_inventory_line_actual_qty,
 )
 from ..services.labels import download_item_label_pdf, get_default_label_template, print_item_label
-from ..services.warehouse_access import get_accessible_warehouses
+from ..services.warehouse_access import (
+    get_accessible_warehouses,
+    restrict_stock_movement_queryset_for_user,
+)
 from ..services.stock import (
     InsufficientStockError,
     SameLocationTransferError,
@@ -126,5 +131,97 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["can_view_analytics"] = can_view_analytics(self.request.user)
         context["can_view_purchase_requests"] = can_view_purchase_requests(
             self.request.user
+        )
+        return context
+
+
+class DashboardPrototypeView(LoginRequiredMixin, TemplateView):
+    template_name = "core/dashboard_prototype.html"
+
+    def get_stock_balance_queryset(self):
+        accessible_warehouses = get_accessible_warehouses(self.request.user)
+        return StockBalance.objects.select_related("item", "warehouse").filter(
+            is_active=True,
+            warehouse__in=accessible_warehouses,
+        )
+
+    def get_stock_movement_queryset(self):
+        queryset = StockMovement.objects.select_related(
+            "item",
+            "source_warehouse",
+            "destination_warehouse",
+            "source_location",
+            "destination_location",
+            "recipient",
+            "performed_by",
+        ).filter(is_active=True, is_cancelled=False, reversal_of__isnull=True)
+        return restrict_stock_movement_queryset_for_user(self.request.user, queryset)
+
+    def get_purchase_request_queryset(self):
+        if not can_view_purchase_requests(self.request.user):
+            return PurchaseRequest.objects.none()
+        return PurchaseRequest.objects.select_related("requested_by").filter(
+            archived_at__isnull=True
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        today = timezone.localdate()
+        balances = self.get_stock_balance_queryset()
+        movements = self.get_stock_movement_queryset()
+        purchase_requests = self.get_purchase_request_queryset()
+        pending_requests = purchase_requests.filter(
+            status=PurchaseRequest.Status.PENDING_APPROVAL
+        )
+        zero_balances = balances.filter(qty=0)
+
+        context.update(
+            {
+                "hide_sidebar": True,
+                "show_sidebar": False,
+                "can_edit_stock": self.request.user.is_superuser
+                or user_in_groups(self.request.user, STOCK_EDIT_GROUPS),
+                "can_access_warehouse": can_access_warehouse(self.request.user),
+                "can_create_purchase_requests": can_create_purchase_requests(
+                    self.request.user
+                ),
+                "can_view_purchase_requests": can_view_purchase_requests(
+                    self.request.user
+                ),
+                "can_view_analytics": can_view_analytics(self.request.user),
+                "can_manage_directories": can_manage_directories(self.request.user),
+                "kpi_cards": [
+                    {
+                        "label": _("Остатки позицій"),
+                        "value": balances.filter(qty__gt=0).count(),
+                        "hint": _("Активні позиції з фактичним залишком"),
+                    },
+                    {
+                        "label": _("Операції сьогодні"),
+                        "value": movements.filter(occurred_at__date=today).count(),
+                        "hint": _("Рухи товарів за поточний день"),
+                    },
+                    {
+                        "label": _("Нові заявки"),
+                        "value": purchase_requests.count(),
+                        "hint": _("Активні заявки на закупівлю"),
+                    },
+                    {
+                        "label": _("Очікують погодження"),
+                        "value": pending_requests.count(),
+                        "hint": _("Заявки, які потребують рішення"),
+                    },
+                    {
+                        "label": _("Нульові залишки"),
+                        "value": zero_balances.count(),
+                        "hint": _("Позиції без доступної кількості"),
+                    },
+                ],
+                "recent_movements": movements.order_by("-occurred_at", "-id")[:6],
+                "attention_requests": pending_requests.order_by("-created_at", "-id")[
+                    :6
+                ],
+                "zero_balances": zero_balances.order_by("item__name")[:6],
+            }
         )
         return context
