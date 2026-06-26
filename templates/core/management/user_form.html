@@ -2,96 +2,105 @@
 {% load i18n %}
 {% block title %}{{ title }} · {% trans "Складський облік" %}{% endblock %}
 {% block content %}
-<div class="card content-card">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">{{ title }}</h1>
+<div class="list-page auth-user-page">
+    <div class="list-page-header">
+        <div class="list-page-title">
+            <h1 class="mb-1">{{ title }}</h1>
+            <p class="text-muted mb-0">{% trans "Керування профілем, ролями та складським доступом користувача." %}</p>
+        </div>
+        <div class="list-page-actions">
             <a class="btn btn-outline-secondary" href="{% url 'management_users' %}">{% trans "Назад до користувачів" %}</a>
         </div>
-        {% if is_superuser_target %}
-            <div class="alert alert-warning" role="alert">
-                {% trans "Це системний адміністратор. Групи та технічні права краще змінювати тільки в Django Admin." %}
-            </div>
-        {% endif %}
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
-            {% for field in form %}
-                {% if field.name|slice:":17" == "warehouse_access_" or field.name|slice:":19" == "warehouse_delegate_" %}
-                {% elif field.name == "access_permissions" %}
-                    <div class="border rounded p-3 mb-4">
-                        <h2 class="h5 mb-2">{{ field.label }}</h2>
-                        {% if field.help_text %}<div class="form-text mb-2">{{ field.help_text }}</div>{% endif %}
-                        {% for choice in field %}
-                            <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
-                        {% endfor %}
-                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
-                    </div>
-                {% elif field.field.widget.input_type == "checkbox" and field.name != "groups" %}
-                    <div class="form-check mb-3">
-                        {{ field }}
-                        <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
-                    </div>
-                {% elif field.name == "groups" %}
-                    <div class="mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {% for choice in field %}
-                            <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
-                        {% endfor %}
-                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
-                    </div>
-                {% else %}
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                        {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
-                    </div>
-                {% endif %}
-            {% endfor %}
-            {% if form.has_warehouse_access_rows %}
-                <div class="border rounded p-3 mb-4">
-                    <h2 class="h5 mb-3">{% trans "Доступ до складів" %}</h2>
-                    <div class="table-responsive">
-                        <table class="table align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>{% trans "Доступні склади" %}</th>
-                                    <th class="text-center">{% trans "Доступ" %}</th>
-                                    <th class="text-center">{% trans "Може делегувати доступ" %}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in form.warehouse_access_rows %}
-                                    <tr>
-                                        <td>{{ row.warehouse.name }}</td>
-                                        <td class="text-center">
-                                            <div class="form-check d-inline-block m-0">
-                                                {{ row.has_access }}
-                                                <label class="visually-hidden" for="{{ row.has_access.id_for_label }}">{{ row.has_access.label }}</label>
-                                            </div>
-                                            {% if row.has_access.errors %}<div class="text-danger">{{ row.has_access.errors }}</div>{% endif %}
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="form-check d-inline-block m-0">
-                                                {{ row.can_delegate }}
-                                                <label class="visually-hidden" for="{{ row.can_delegate.id_for_label }}">{{ row.can_delegate.label }}</label>
-                                            </div>
-                                            {% if row.can_delegate.errors %}<div class="text-danger">{{ row.can_delegate.errors }}</div>{% endif %}
-                                        </td>
-                                    </tr>
-                                {% empty %}
-                                    <tr><td colspan="3" class="text-muted py-3">{% trans "Немає доступу до складів" %}</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+    </div>
+    <div class="card content-card auth-user-card">
+        <div class="card-body">
+            {% if is_superuser_target %}
+                <div class="alert alert-warning" role="alert">
+                    {% trans "Це системний адміністратор. Групи та технічні права краще змінювати тільки в Django Admin." %}
                 </div>
             {% endif %}
-            <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
-        </form>
+            <form class="auth-user-form" method="post" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+                {% for field in form %}
+                    {% if field.name|slice:":17" == "warehouse_access_" or field.name|slice:":19" == "warehouse_delegate_" %}
+                    {% elif field.name == "access_permissions" %}
+                        <div class="auth-user-section">
+                            <h2 class="h5 mb-2">{{ field.label }}</h2>
+                            {% if field.help_text %}<div class="form-text mb-2">{{ field.help_text }}</div>{% endif %}
+                            {% for choice in field %}
+                                <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+                            {% endfor %}
+                            {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% elif field.field.widget.input_type == "checkbox" and field.name != "groups" %}
+                        <div class="form-check auth-user-field">
+                            {{ field }}
+                            <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% elif field.name == "groups" %}
+                        <div class="auth-user-section">
+                            <label class="form-label">{{ field.label }}</label>
+                            {% for choice in field %}
+                                <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+                            {% endfor %}
+                            {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% else %}
+                        <div class="auth-user-field">
+                            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                            {% if field.errors %}<div class="text-danger">{{ field.errors }}</div>{% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% if form.has_warehouse_access_rows %}
+                    <div class="auth-user-section auth-user-section--muted">
+                        <h2 class="h5 mb-3">{% trans "Доступ до складів" %}</h2>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0 auth-user-access-table">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Доступні склади" %}</th>
+                                        <th class="text-center">{% trans "Доступ" %}</th>
+                                        <th class="text-center">{% trans "Може делегувати доступ" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in form.warehouse_access_rows %}
+                                        <tr>
+                                            <td>{{ row.warehouse.name }}</td>
+                                            <td class="text-center">
+                                                <div class="form-check d-inline-block m-0">
+                                                    {{ row.has_access }}
+                                                    <label class="visually-hidden" for="{{ row.has_access.id_for_label }}">{{ row.has_access.label }}</label>
+                                                </div>
+                                                {% if row.has_access.errors %}<div class="text-danger">{{ row.has_access.errors }}</div>{% endif %}
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="form-check d-inline-block m-0">
+                                                    {{ row.can_delegate }}
+                                                    <label class="visually-hidden" for="{{ row.can_delegate.id_for_label }}">{{ row.can_delegate.label }}</label>
+                                                </div>
+                                                {% if row.can_delegate.errors %}<div class="text-danger">{{ row.can_delegate.errors }}</div>{% endif %}
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr><td colspan="3" class="text-muted py-3">{% trans "Немає доступу до складів" %}</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="auth-user-form-actions">
+                    <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

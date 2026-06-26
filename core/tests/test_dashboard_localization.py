@@ -452,6 +452,10 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Accedi", html)
         self.assertIn("Password", html)
+        self.assertIn("login-brand-bar", html)
+        self.assertIn("login-wordmark__t", html)
+        self.assertIn("login-submit", html)
+        self.assertNotIn("brand-mark", html)
 
     def test_polish_login_page_opens(self):
         self.client.logout()
@@ -462,6 +466,10 @@ class DashboardLocalizationTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Zaloguj", html)
         self.assertIn("Hasło", html)
+        self.assertIn("login-brand-bar", html)
+        self.assertIn("login-wordmark__t", html)
+        self.assertIn("login-submit", html)
+        self.assertNotIn("brand-mark", html)
 
     def test_russian_storekeeper_self_service_smoke(self):
         with translation.override("ru"):
