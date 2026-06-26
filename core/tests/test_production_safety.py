@@ -52,16 +52,35 @@ class SettingsSafetyTests(TestCase):
                 "import config.settings; "
                 "print(config.settings.SESSION_COOKIE_SECURE); "
                 "print(config.settings.CSRF_COOKIE_SECURE); "
-                "print(config.settings.SECURE_SSL_REDIRECT)"
+                "print(config.settings.SECURE_SSL_REDIRECT); "
+                "print(config.settings.SECURE_HSTS_SECONDS); "
+                "print(config.settings.SECURE_HSTS_INCLUDE_SUBDOMAINS); "
+                "print(config.settings.SECURE_HSTS_PRELOAD); "
+                "print(config.settings.SECURE_REFERRER_POLICY)"
             ),
             extra_env={
                 "DJANGO_SESSION_COOKIE_SECURE": "True",
                 "DJANGO_CSRF_COOKIE_SECURE": "True",
                 "DJANGO_SECURE_SSL_REDIRECT": "True",
+                "DJANGO_SECURE_HSTS_SECONDS": "31536000",
+                "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS": "True",
+                "DJANGO_SECURE_HSTS_PRELOAD": "True",
+                "DJANGO_SECURE_REFERRER_POLICY": "strict-origin-when-cross-origin",
             },
         )
 
-        self.assertEqual(result.stdout.splitlines(), ["True", "True", "True"])
+        self.assertEqual(
+            result.stdout.splitlines(),
+            [
+                "True",
+                "True",
+                "True",
+                "31536000",
+                "True",
+                "True",
+                "strict-origin-when-cross-origin",
+            ],
+        )
 
     def test_database_conn_max_age_reads_from_env(self):
         result = self.run_settings_subprocess(

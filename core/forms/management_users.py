@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db.models import Case, IntegerField, Value, When
 from django.utils.translation import gettext_lazy as _
 
@@ -407,6 +409,17 @@ class ManagementUserCreateForm(ManagementUserFormMixin, forms.ModelForm):
         password2 = cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             self.add_error("password2", _("Паролі не співпадають."))
+        if password1:
+            password_user = get_user_model()(
+                username=cleaned_data.get("username") or "",
+                first_name=cleaned_data.get("first_name") or "",
+                last_name=cleaned_data.get("last_name") or "",
+                email=cleaned_data.get("email") or "",
+            )
+            try:
+                validate_password(password1, user=password_user)
+            except ValidationError as exc:
+                self.add_error("password1", exc)
         return cleaned_data
 
     def save(self, commit=True):
@@ -471,6 +484,11 @@ class ManagementUserPasswordForm(forms.Form):
         password2 = cleaned_data.get("password2")
         if password1 and password2 and password1 != password2:
             self.add_error("password2", _("Паролі не співпадають."))
+        if password1:
+            try:
+                validate_password(password1, user=self.user)
+            except ValidationError as exc:
+                self.add_error("password1", exc)
         return cleaned_data
 
     def save(self):

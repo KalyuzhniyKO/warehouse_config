@@ -24,6 +24,7 @@ from core.permissions import (
     GroupRequiredMixin,
     can_manage_users,
 )
+from core.services.audit import log_action
 
 
 class CanManageUsersMixin(GroupRequiredMixin):
@@ -101,6 +102,13 @@ class ManagementUserCreateView(LoginRequiredMixin, CanManageUsersMixin, CreateVi
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        log_action(
+            self.request.user,
+            "user.created",
+            obj=self.object,
+            changes={"target_user_id": self.object.pk, "username": self.object.username},
+            request=self.request,
+        )
         messages.success(self.request, _("Користувача створено."))
         return response
 
@@ -132,6 +140,13 @@ class ManagementUserUpdateView(LoginRequiredMixin, CanManageUsersMixin, UpdateVi
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        log_action(
+            self.request.user,
+            "user.updated",
+            obj=self.object,
+            changes={"target_user_id": self.object.pk, "username": self.object.username},
+            request=self.request,
+        )
         messages.success(self.request, _("Користувача оновлено."))
         return response
 
@@ -160,6 +175,16 @@ class ManagementUserPasswordView(LoginRequiredMixin, CanManageUsersMixin, FormVi
         return context
 
     def form_valid(self, form):
-        form.save()
+        changed_user = form.save()
+        log_action(
+            self.request.user,
+            "user.password_changed",
+            obj=changed_user,
+            changes={
+                "target_user_id": changed_user.pk,
+                "username": changed_user.username,
+            },
+            request=self.request,
+        )
         messages.success(self.request, _("Пароль змінено."))
         return super().form_valid(form)

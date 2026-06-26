@@ -74,6 +74,24 @@ class ActiveBadgeAdminMixin:
         return format_html('<span class="status-badge status-badge--{}">{}</span>', css, label)
 
 
+class ReadOnlyAdminMixin:
+    actions = None
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+        model_field_names = [field.name for field in self.model._meta.fields]
+        return tuple(dict.fromkeys(readonly_fields + model_field_names))
+
+
 @admin.register(Unit)
 class UnitAdmin(ActiveBadgeAdminMixin, admin.ModelAdmin):
     actions = [make_active, make_inactive]
@@ -255,8 +273,7 @@ class InventoryCountLineAdmin(admin.ModelAdmin):
 
 
 @admin.register(StockBalance)
-class StockBalanceAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
-    actions = [make_active, make_inactive]
+class StockBalanceAdmin(ReadOnlyAdminMixin, ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
     form = StockBalanceAdminForm
     list_per_page = 30
     list_select_related = ("item", "warehouse", "location")
@@ -267,8 +284,7 @@ class StockBalanceAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin
 
 
 @admin.register(StockMovement)
-class StockMovementAdmin(ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
-    actions = [make_active, make_inactive]
+class StockMovementAdmin(ReadOnlyAdminMixin, ActiveBadgeAdminMixin, IncludeCurrentRelationsAdminMixin, admin.ModelAdmin):
     form = StockMovementAdminForm
     list_per_page = 30
     list_select_related = ("item", "source_warehouse", "destination_warehouse", "source_location", "destination_location", "recipient", "performed_by", "purchase_request")
@@ -417,4 +433,7 @@ class AuditLogAdmin(admin.ModelAdmin):
         return False
 
     def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
         return False
