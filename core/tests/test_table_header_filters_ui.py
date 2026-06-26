@@ -125,6 +125,8 @@ class TableHeaderFilterUITests(TestCase):
 
         self.assertNotContains(response, "filter-panel")
         self.assertContains(response, "stockbalance-filter-form")
+        self.assertContains(response, "stockbalance-card")
+        self.assertContains(response, "stockbalance-table")
         self.assertContains(response, "table-filter-heading")
         self.assertContains(response, "table-filter-toggle active")
         self.assertContains(response, "dropdown-menu-end")
@@ -172,6 +174,9 @@ class TableHeaderFilterUITests(TestCase):
         self.assertIn(".table-filter-toggle", css)
         self.assertIn(".table-filter-menu", css)
         self.assertIn(".table-filter-menu--wide", css)
+        self.assertIn(".stockbalance-table", css)
+        self.assertIn(".stockbalance-table thead th{position:sticky", css)
+        self.assertIn(".stockbalance-actions{display:flex", css)
         self.assertNotIn(".purchase-filter-panel", css)
         self.assertNotIn(".purchase-filter-grid", css)
         self.assertIn(".purchase-status-menu", css)

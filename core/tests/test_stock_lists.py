@@ -92,12 +92,15 @@ class StockBalanceListTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Од.")
         self.assertNotContains(response, "Одиниця виміру")
+        self.assertContains(response, "stockbalance-table")
+        self.assertContains(response, "stockbalance-actions")
         self.assertContains(
             response,
             f'{reverse("stock_issue")}?barcode={self.item.barcode.barcode}',
         )
         self.assertContains(response, "Видати")
-        self.assertContains(response, "Друк етикетки")
+        self.assertContains(response, "Друк")
+        self.assertNotContains(response, "Друк етикетки")
 
     def test_russian_stock_balance_list_uses_short_labels(self):
         response = self.client.get("/ru/stock-balances/")

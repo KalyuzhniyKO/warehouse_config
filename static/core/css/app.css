@@ -195,6 +195,25 @@ header .navbar { min-height: 56px; }
 .table-filter-menu.dropdown-menu-end{right:0;left:auto}
 .table-filter-menu .form-check{margin:.15rem 0}
 .table-filter-menu .form-check-input{margin-top:.2rem}
+.stockbalance-card .table-responsive{max-height:calc(100vh - 15.5rem);overflow:auto}
+.stockbalance-table{min-width:1040px;table-layout:fixed}
+.stockbalance-table thead th{position:sticky;top:0;z-index:3;background:#f8f9fa;box-shadow:inset 0 -1px 0 #d0d5dd}
+.stockbalance-table td,.stockbalance-table th{padding:.38rem .5rem;line-height:1.16;vertical-align:middle}
+.stockbalance-table td{font-size:.9rem}
+.stockbalance-col-item{width:31%}
+.stockbalance-col-code{width:10.5rem}
+.stockbalance-col-barcode{width:10.5rem}
+.stockbalance-col-warehouse{width:12rem}
+.stockbalance-col-location{width:10rem}
+.stockbalance-col-qty{width:7.5rem}
+.stockbalance-col-unit{width:4.4rem}
+.stockbalance-col-actions{width:12.25rem}
+.stockbalance-item-cell{line-height:1.18}
+.stockbalance-code-cell,.stockbalance-route-cell,.stockbalance-qty-cell,.stockbalance-unit-cell{white-space:nowrap}
+.stockbalance-code-cell,.stockbalance-qty-cell{font-variant-numeric:tabular-nums}
+.stockbalance-actions{display:flex;justify-content:flex-end;gap:.35rem;white-space:nowrap}
+.stockbalance-actions .table-action{min-height:1.85rem;padding:.22rem .5rem;line-height:1.15}
+.stockbalance-action-secondary{min-width:4.75rem}
 .purchase-request-table--archive{min-width:1180px}
 .purchase-request-table--archive td,.purchase-request-table--archive th{padding:.35rem .45rem;vertical-align:top;line-height:1.15;font-size:.86rem}
 .purchase-request-table--archive .purchase-title-link{-webkit-line-clamp:1;line-height:1.15}
