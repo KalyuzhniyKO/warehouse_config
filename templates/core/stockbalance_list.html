@@ -14,19 +14,19 @@
         {% if user.is_superuser or user|in_group:"Адміністратор складу" or user|in_group:"Комірник" %}<a class="btn btn-primary" href="{% url 'stock_receive' %}">{% trans "Нова операція" %}</a>{% endif %}
     </div>
 </div>
-<form id="stockbalance-filter-form" method="get" class="card content-card data-table-card">
+<form id="stockbalance-filter-form" method="get" class="card content-card data-table-card stockbalance-card">
     <div class="table-filter-toolbar">
-        <div class="text-muted small">{% trans "Фільтри знаходяться у заголовках колонок." %}</div>
+        <div class="text-muted small">{% trans "Фільтри відкриваються кнопками у заголовках колонок." %}</div>
         <div class="d-flex justify-content-end gap-1 table-filter-actions">
             <button class="btn btn-outline-primary btn-sm" type="submit">{% trans "Застосувати" %}</button>
             <a class="btn btn-outline-secondary btn-sm" href="{% url 'stockbalance_list' %}">{% trans "Скинути" %}</a>
         </div>
     </div>
     <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle mb-0 data-table">
+        <table class="table table-striped table-hover align-middle mb-0 data-table stockbalance-table">
             <thead class="table-light">
             <tr>
-                <th scope="col">
+                <th scope="col" class="stockbalance-col-item">
                     <div class="table-filter-heading">
                         <span>{% trans "Товари / матеріали" %}</span>
                         <div class="dropdown table-filter-dropdown">
@@ -44,9 +44,9 @@
                         </div>
                     </div>
                 </th>
-                <th scope="col">{% trans "Внутрішній код" %}</th>
-                <th scope="col">{% trans "Штрихкод" %}</th>
-                <th scope="col">
+                <th scope="col" class="stockbalance-col-code">{% trans "Внутрішній код" %}</th>
+                <th scope="col" class="stockbalance-col-barcode">{% trans "Штрихкод" %}</th>
+                <th scope="col" class="stockbalance-col-warehouse">
                     <div class="table-filter-heading">
                         <span>{% trans "Склад" %}</span>
                         <div class="dropdown table-filter-dropdown">
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                 </th>
-                <th scope="col">
+                <th scope="col" class="stockbalance-col-location">
                     <div class="table-filter-heading">
                         <span>{% trans "Локація" %}</span>
                         <div class="dropdown table-filter-dropdown">
@@ -78,14 +78,30 @@
                         </div>
                     </div>
                 </th>
-                <th scope="col" class="text-end">{% trans "Кількість" %}</th>
-                <th scope="col">{% trans "Од." %}</th>
-                <th scope="col" class="text-end">{% trans "Дії" %}</th>
+                <th scope="col" class="text-end stockbalance-col-qty">{% trans "Кількість" %}</th>
+                <th scope="col" class="stockbalance-col-unit">{% trans "Од." %}</th>
+                <th scope="col" class="text-end stockbalance-col-actions">{% trans "Дії" %}</th>
             </tr>
             </thead>
             <tbody>
             {% for balance in balances %}
-                <tr><td class="fw-semibold">{{ balance.item.name }}</td><td>{{ balance.item.internal_code|default:"—" }}</td><td>{{ balance.item.barcode.barcode|default:"—" }}</td><td>{{ balance.warehouse.name }}</td><td>{{ balance.location.name|default:"—" }}</td><td class="text-end">{{ balance.qty }}</td><td>{{ balance.item.unit }}</td><td class="text-end"><div class="d-inline-flex flex-wrap justify-content-end gap-2">{% if balance.item.barcode_id %}<a class="btn btn-sm btn-primary table-action" href="{% url 'stock_issue' %}?barcode={{ balance.item.barcode.barcode|urlencode }}">{% trans "Видати" %}</a>{% endif %}<a class="btn btn-sm btn-outline-primary table-action" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк етикетки" %}</a></div></td></tr>
+                <tr>
+                    <td class="fw-semibold stockbalance-item-cell">{{ balance.item.name }}</td>
+                    <td class="stockbalance-code-cell">{{ balance.item.internal_code|default:"—" }}</td>
+                    <td class="stockbalance-code-cell">{{ balance.item.barcode.barcode|default:"—" }}</td>
+                    <td class="stockbalance-route-cell">{{ balance.warehouse.name }}</td>
+                    <td class="stockbalance-route-cell">{{ balance.location.name|default:"—" }}</td>
+                    <td class="text-end stockbalance-qty-cell">{{ balance.qty }}</td>
+                    <td class="stockbalance-unit-cell">{{ balance.item.unit }}</td>
+                    <td class="text-end stockbalance-actions-cell">
+                        <div class="stockbalance-actions">
+                            {% if balance.item.barcode_id %}
+                                <a class="btn btn-sm btn-primary table-action stockbalance-action-primary" href="{% url 'stock_issue' %}?barcode={{ balance.item.barcode.barcode|urlencode }}">{% trans "Видати" %}</a>
+                            {% endif %}
+                            <a class="btn btn-sm btn-outline-primary table-action stockbalance-action-secondary" href="{% url 'item_label_print' balance.item.pk %}">{% trans "Друк" %}</a>
+                        </div>
+                    </td>
+                </tr>
             {% empty %}
                 <tr><td colspan="8" class="text-center py-5"><div class="empty-state"><div class="fs-1 mb-2">📭</div>{% trans "Немає залишків за вибраними фільтрами." %}</div></td></tr>
             {% endfor %}
