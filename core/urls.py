@@ -6,6 +6,11 @@ from . import views
 urlpatterns = [
     path("", views.DashboardView.as_view(), name="dashboard"),
     path(
+        "dashboard/prototype/",
+        views.DashboardPrototypeView.as_view(),
+        name="dashboard_prototype",
+    ),
+    path(
         "units/",
         views.directory_view(views.DirectoryListView, "unit"),
         name="unit_list",

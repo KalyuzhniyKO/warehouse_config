@@ -1,3 +1,4 @@
+from decimal import Decimal
 from io import StringIO
 
 from django.conf import settings
@@ -8,7 +9,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import translation
 
-from ..models import Warehouse
+from ..models import Item, PurchaseRequest, StockBalance, StockMovement, Unit, Warehouse
 from .i18n_test_utils import compile_test_messages
 from .warehouse_access_utils import grant_warehouse_access
 
@@ -212,6 +213,71 @@ class DashboardLocalizationTests(TestCase):
         self.assertIn("Інвентаризація", html)
         self.assertIn("Товари / матеріали", html)
         self.assertIn("Керування", html)
+
+    def test_dashboard_prototype_is_separate_layout_with_real_summary(self):
+        unit = Unit.objects.create(name="Штука", symbol="шт")
+        item = Item.objects.create(
+            name="Прототип кабель",
+            internal_code="PROTO-1",
+            unit=unit,
+        )
+        zero_item = Item.objects.create(
+            name="Нульовий товар",
+            internal_code="ZERO-1",
+            unit=unit,
+        )
+        StockBalance.objects.create(
+            item=item,
+            warehouse=self.warehouse,
+            qty=Decimal("5.000"),
+        )
+        StockBalance.objects.create(
+            item=zero_item,
+            warehouse=self.warehouse,
+            qty=Decimal("0.000"),
+        )
+        StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=item,
+            destination_warehouse=self.warehouse,
+            qty=Decimal("5.000"),
+            performed_by=self.admin,
+        )
+        PurchaseRequest.objects.create(
+            title="Прототип заявка",
+            requested_qty=Decimal("2.000"),
+            unit="шт",
+            requested_by=self.admin,
+            status=PurchaseRequest.Status.PENDING_APPROVAL,
+        )
+
+        response = self.dashboard_for(self.admin, reverse("dashboard_prototype"))
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/dashboard_prototype.html")
+        self.assertIn("dashboard-prototype", html)
+        self.assertIn("dashboard-prototype-nav", html)
+        self.assertIn("dashboard-prototype-kpis", html)
+        self.assertIn("dashboard-prototype-search", html)
+        self.assertIn("Робочий dashboard складу", html)
+        self.assertIn("Огляд / Дашборд", html)
+        self.assertIn("Останні рухи товарів", html)
+        self.assertIn("Заявки потребують уваги", html)
+        self.assertIn("Нульові залишки", html)
+        self.assertIn("Прототип кабель", html)
+        self.assertIn("Прототип заявка", html)
+        self.assertIn("Нульовий товар", html)
+        self.assertIn(f'href="{reverse("dashboard")}"', html)
+
+    def test_current_dashboard_is_not_replaced_by_prototype(self):
+        response = self.dashboard_for(self.admin, "/uk/")
+        html = response.content.decode()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/dashboard.html")
+        self.assertIn("dashboard-main", html)
+        self.assertNotIn("dashboard-prototype-nav", html)
 
     def test_english_transfer_page_has_no_ukrainian_transfer_phrases(self):
         response = self.dashboard_for(self.admin, "/en/stock/transfer/")
