@@ -4,13 +4,16 @@
 {% block title %}{% trans "Журнал аудиту" %} · {% trans "Складський облік" %}{% endblock %}
 
 {% block content %}
-<div class="list-page">
+<div class="list-page audit-log-page">
     <div class="list-page-header">
-        <div class="list-page-title"><h1 class="mb-0">{% trans "Журнал аудиту" %}</h1></div>
+        <div class="list-page-title">
+            <h1 class="mb-1">{% trans "Журнал аудиту" %}</h1>
+            <p class="text-muted mb-0">{% trans "Системні дії, зміни доступів і створення складських операцій." %}</p>
+        </div>
     </div>
     <div class="card content-card data-table-card">
         <div class="table-responsive">
-            <table class="table table-striped table-hover align-middle mb-0 data-table">
+            <table class="table table-striped table-hover align-middle mb-0 data-table audit-log-table">
                 <thead class="table-light">
                     <tr>
                         <th>{% trans "Дата" %}</th>
@@ -18,18 +21,27 @@
                         <th>{% trans "Дія" %}</th>
                         <th>{% trans "Об'єкт" %}</th>
                         <th>{% trans "Зміни" %}</th>
-                        <th>{% trans "IP-адреса" %}</th>
+                        <th>{% trans "IP" %}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for entry in audit_logs %}
                         <tr>
-                            <td>{{ entry.created_at|date:"Y-m-d H:i:s" }}</td>
+                            <td class="audit-log-date">
+                                <div>{{ entry.created_at|date:"d.m.Y" }}</div>
+                                <div class="text-muted">{{ entry.created_at|date:"H:i:s" }}</div>
+                            </td>
                             <td>{% if entry.actor %}{{ entry.actor|display_name }}{% else %}—{% endif %}</td>
-                            <td>{{ entry.action }}</td>
-                            <td>{% if entry.object_repr %}{{ entry.object_repr }}{% else %}{{ entry.object_type }} #{{ entry.object_id }}{% endif %}</td>
-                            <td><pre class="mb-0 small">{{ entry.changes }}</pre></td>
-                            <td>{{ entry.ip_address|default:"—" }}</td>
+                            <td><span class="status-badge audit-log-action">{{ entry.action|audit_action_label }}</span></td>
+                            <td class="audit-log-object">{% if entry.object_repr %}{{ entry.object_repr|audit_object_label }}{% else %}{{ entry.object_type }} #{{ entry.object_id }}{% endif %}</td>
+                            <td class="audit-log-changes">
+                                {% for label, value in entry.changes|audit_changes_summary %}
+                                    <div><span class="text-muted">{{ label }}:</span> <span>{{ value|default:"—" }}</span></div>
+                                {% empty %}
+                                    —
+                                {% endfor %}
+                            </td>
+                            <td class="audit-log-ip">{{ entry.ip_address|default:"—" }}</td>
                         </tr>
                     {% empty %}
                         <tr><td colspan="6" class="text-center py-5">{% trans "Записів аудиту не знайдено." %}</td></tr>

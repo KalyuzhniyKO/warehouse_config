@@ -322,6 +322,19 @@ header .navbar { min-height: 56px; }
 .operation-audit-table td{vertical-align:top}
 .operation-audit-table td:nth-child(6){min-width:230px;white-space:normal}
 .operation-audit-table td:nth-child(8),.operation-audit-table td:nth-child(9){min-width:190px}
+.audit-log-table{min-width:980px}
+.audit-log-table td{vertical-align:top}
+.audit-log-date,.audit-log-ip{white-space:nowrap;font-variant-numeric:tabular-nums}
+.audit-log-object{min-width:180px;max-width:280px;overflow-wrap:anywhere}
+.audit-log-changes{min-width:260px;max-width:440px;overflow-wrap:anywhere;font-size:.92rem;line-height:1.35}
+.audit-log-action{white-space:normal;text-align:left}
+@media print{
+    .audit-log-page .data-table-card{border:0;box-shadow:none}
+    .audit-log-table{min-width:0;font-size:.82rem}
+    .audit-log-table th,.audit-log-table td{padding:.42rem .5rem}
+    .audit-log-object{max-width:220px}
+    .audit-log-changes{max-width:320px}
+}
 @media (max-width:767.98px){.operation-audit-page .list-page-actions,.operation-audit-page .list-page-actions .btn{width:100%}}
 .table-action:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid #d4ac00;outline-offset:2px}
 .label-preview-sheet.show-grid{background-image:linear-gradient(to right,rgba(71,85,105,.12) 1px,transparent 1px),linear-gradient(to bottom,rgba(71,85,105,.12) 1px,transparent 1px);background-size:4px 4px}
