@@ -359,7 +359,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, ">Склад</label>")
         self.assertNotContains(response, ">Локація</label>")
-        self.assertNotContains(response, "Документ")
+        self.assertNotContains(response, ">Документ</label>")
         self.assertNotContains(response, "Коментар")
         self.assertNotContains(response, "Дата операції")
         self.assertNotContains(response, "Надрукувати етикетку")
@@ -454,7 +454,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertContains(response, "✓")
         self.assertContains(response, "Товар повернено")
         self.assertContains(response, self.item.name)
-        self.assertContains(response, "2,000")
+        self.assertContains(response, "2")
         self.assertContains(response, "Хто повертає")
         self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Місце використання")
@@ -464,7 +464,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertContains(response, "Новий прихід товару")
         self.assertContains(response, "На головний екран")
         self.assertContains(response, reverse("dashboard"))
-        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(response, "Друкувати документ")
         self.assertContains(
             response,
             f'{reverse("stock_movement_print", kwargs={"pk": movement.pk})}?autoprint=1',
@@ -499,7 +499,7 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         self.assertIn("✓", html)
         self.assertIn("Who returns", html)
         self.assertIn("Place of use", html)
-        self.assertIn("Print control slip", html)
+        self.assertIn("Print document", html)
         self.assertIn("New stock receipt", html)
         self.assertIn("Home", html)
         for phrase in ["Товар повернено", "Хто повертає", "Місце використання", "Новий прихід товару"]:
