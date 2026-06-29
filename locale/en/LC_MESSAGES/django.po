@@ -3624,10 +3624,17 @@ msgstr "Transfer completed"
 
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16
-#, fuzzy
-#| msgid "Друкувати контрольний талон"
 msgid "Друкувати документ"
-msgstr "Print control slip"
+msgstr "Print document"
+
+msgid "Складський документ"
+msgstr "Warehouse document"
+
+msgid "Службовий ID операції"
+msgstr "Internal operation ID"
+
+msgid "Товарів за цим штрихкодом, назвою або кодом не знайдено."
+msgstr "Item with this barcode was not found."
 
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16

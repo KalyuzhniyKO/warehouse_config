@@ -41,7 +41,7 @@
             </div>
             <div class="d-flex justify-content-end gap-1 table-filter-actions">
                 <button class="btn btn-outline-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                 <div class="dropdown table-filter-dropdown">
                     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="dropdown" aria-expanded="false">{% trans "Розширені" %}</button>
                     <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu table-filter-menu--wide">
@@ -58,7 +58,7 @@
                         <div class="form-check">{{ filter_form.invalid_qty }} <label class="form-check-label" for="{{ filter_form.invalid_qty.id_for_label }}">{{ filter_form.invalid_qty.label }}</label></div>
                         <div class="d-flex gap-2 mt-2">
                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}?reset_filters=1">{% trans "Скинути збережені" %}</a>
+                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}?reset_filters=1">{% trans "Скинути збережені" %}</a>
                         </div>
                     </div>
                 </div>
@@ -80,12 +80,30 @@
                                         {{ filter_form.date_to }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </th>
+                        {% if is_document_registry %}
+                        <th>
+                            <div class="table-filter-heading">
+                                <span>{% trans "Номер документа" %}</span>
+                                <div class="dropdown table-filter-dropdown">
+                                    <button class="btn btn-sm table-filter-toggle{% if request.GET.document_number or request.GET.no_document %} active{% endif %}" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Фільтр документа' %}">▾</button>
+                                    <div class="dropdown-menu dropdown-menu-end p-2 shadow table-filter-menu">
+                                        <label class="form-label small" for="{{ filter_form.document_number.id_for_label }}">{{ filter_form.document_number.label }}</label>
+                                        {{ filter_form.document_number }}
+                                        <div class="d-flex gap-2 mt-2">
+                                            <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </th>
+                        {% endif %}
                         <th>
                             <div class="table-filter-heading">
                                 <span>{% trans "Тип операції" %}</span>
@@ -96,7 +114,7 @@
                                         {{ filter_form.movement_type }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -114,7 +132,7 @@
                                         {{ filter_form.item }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -132,7 +150,7 @@
                                         {{ filter_form.warehouse }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
@@ -152,13 +170,13 @@
                                         {{ filter_form.usage_place_id }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </th>
-                        <th>
+                        {% if not is_document_registry %}<th>
                             <div class="table-filter-heading">
                                 <span>{% trans "Документ" %}</span>
                                 <div class="dropdown table-filter-dropdown">
@@ -168,12 +186,12 @@
                                         {{ filter_form.document_number }}
                                         <div class="d-flex gap-2 mt-2">
                                             <button class="btn btn-primary btn-sm" type="submit" form="movement-filter-form">{% trans "Застосувати" %}</button>
-                                            <a class="btn btn-outline-secondary btn-sm" href="{% url 'movement_list' %}">{% trans "Скинути" %}</a>
+                                            <a class="btn btn-outline-secondary btn-sm" href="{{ reset_url }}">{% trans "Скинути" %}</a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </th>
+                        </th>{% endif %}
                         <th>{% trans "Інвентаризація" %}</th><th>{% trans "Коментар" %}</th><th>{% trans "Дії" %}</th>
                     </tr>
                 </thead>
@@ -181,14 +199,15 @@
                     {% for movement in movements %}
                         <tr class="{% if movement.is_cancelled %}table-secondary text-muted{% elif movement.qty <= 0 or not movement.document_number or not movement.recipient and movement.movement_type == movement.MovementType.OUT or not movement.department and movement.movement_type == movement.MovementType.OUT %}table-warning{% endif %}">
                             <td class="movement-date-cell"><div class="movement-date">{{ movement.occurred_at|date:"d.m.Y" }}</div><div class="movement-time">{{ movement.occurred_at|date:"H:i" }}</div></td>
+                            {% if is_document_registry %}<td class="movement-document-cell"><strong>{{ movement.document_number|default:"—" }}</strong></td>{% endif %}
                             <td><span class="status-badge">{{ movement.get_movement_type_display }}</span></td><td>{{ movement.item }}</td>
                             <td class="movement-code-cell">{{ movement.item.barcode.barcode|default:movement.item.internal_code|default:"—" }}</td>
                             <td class="text-end movement-qty-cell">{{ movement.qty|qty }}</td><td>{{ movement.source_location|default:"—" }}</td><td>{{ movement.destination_location|default:"—" }}</td>
                             <td>{{ movement.recipient|default:"—" }}</td><td>{{ movement.get_issue_reason_display|default:"—" }}</td><td>{% if movement.is_cancelled %}<span class="badge text-bg-danger">{% trans "Анулювано" %}</span><div class="small">{{ movement.cancelled_at|date:"d.m.Y H:i" }}</div>{% elif movement.reversal_of_id %}<span class="badge text-bg-warning">{% trans "Рух анулювання" %}</span>{% else %}<span class="badge text-bg-success">{% trans "Активно" %}</span>{% endif %}</td><td>{% if movement.performed_by %}{{ movement.performed_by|display_name }}{% else %}—{% endif %}</td><td>{{ movement.department|default:"—" }}</td>
-                            <td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td><td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{% if movement.is_cancelled %}<strong>{% trans "Причина анулювання" %}:</strong> {{ movement.cancellation_reason }}{% else %}{{ movement.comment|default:"—" }}{% endif %}</td><td class="text-nowrap"><a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_movement_print' movement.pk %}">{% trans "Друк" %}</a>{% if user.is_superuser and not movement.is_cancelled and not movement.reversal_of_id %} <a class="btn btn-outline-danger btn-sm" href="{% url 'stock_movement_cancel' movement.pk %}">{% trans "Анулювати" %}</a>{% endif %}</td>
+                            {% if not is_document_registry %}<td class="movement-document-cell">{{ movement.document_number|default:"—" }}</td>{% endif %}<td>{% if movement.inventory_count %}{{ movement.inventory_count.number }}{% else %}—{% endif %}</td><td>{% if movement.is_cancelled %}<strong>{% trans "Причина анулювання" %}:</strong> {{ movement.cancellation_reason }}{% else %}{{ movement.comment|default:"—" }}{% endif %}</td><td class="text-nowrap"><a class="btn btn-outline-secondary btn-sm" href="{% url 'stock_movement_print' movement.pk %}">{% if is_document_registry %}{% trans "Друкувати документ" %}{% else %}{% trans "Друк" %}{% endif %}</a>{% if user.is_superuser and not movement.is_cancelled and not movement.reversal_of_id %} <a class="btn btn-outline-danger btn-sm" href="{% url 'stock_movement_cancel' movement.pk %}">{% trans "Анулювати" %}</a>{% endif %}</td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="16" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{% url 'movement_list' %}">{% trans "Скинути фільтри" %}</a></td></tr>
+                        <tr><td colspan="16" class="text-center py-5"><div class="empty-state">{% trans "За вибраними фільтрами рухів не знайдено." %}</div><a class="btn btn-outline-secondary mt-2" href="{{ reset_url }}">{% trans "Скинути фільтри" %}</a></td></tr>
                     {% endfor %}
                 </tbody>
             </table>

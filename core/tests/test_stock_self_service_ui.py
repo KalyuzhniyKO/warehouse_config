@@ -137,16 +137,17 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         movement.refresh_from_db()
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Контрольний талон складської операції")
+        self.assertContains(response, "Складський документ CAM-1")
         self.assertContains(response, self.item.name)
-        self.assertContains(response, "1,250")
+        self.assertContains(response, "1,25")
         self.assertContains(response, "2026-05-13 10:06:32")
         self.assertContains(response, "Хто взяв товар")
         self.assertContains(response, self.recipient.name)
         self.assertContains(response, "Час для перевірки по відео:")
         self.assertNotContains(response, ">Склад</dt>")
         self.assertNotContains(response, ">Локація</dt>")
-        self.assertNotContains(response, "CAM-1")
+        self.assertContains(response, "Номер документа")
+        self.assertContains(response, "CAM-1")
         self.assertNotContains(response, "Camera check")
         self.assertNotContains(response, "Коментар / документ")
         self.assertNotContains(response, "Видав")
@@ -248,7 +249,7 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Контрольний талон складської операції")
+        self.assertContains(response, "Складський документ —")
 
     def test_english_stock_movement_print_page_uses_english_only_control_labels(self):
         self.client.force_login(self.storekeeper)
@@ -268,7 +269,7 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Warehouse operation control slip", html)
+        self.assertIn("Warehouse document —", html)
         self.assertIn("Who takes the item", html)
         self.assertIn(self.recipient.name, html)
         self.assertTrue("Department / place of use" in html or "Місце використання" in html)

@@ -3375,10 +3375,14 @@ msgstr "Spostamento completato"
 
 #: templates/core/stock_transfer_result.html:17
 #: templates/core/stock_writeoff_result.html:15
-#, fuzzy
-#| msgid "Друкувати контрольний талон"
 msgid "Друкувати документ"
-msgstr "Stampa tagliando di controllo"
+msgstr "Stampa documento"
+
+msgid "Складський документ"
+msgstr "Documento di magazzino"
+
+msgid "Службовий ID операції"
+msgstr "ID interno dell'operazione"
 
 #: templates/core/stock_transfer_result.html:17
 #: templates/core/stock_writeoff_result.html:15

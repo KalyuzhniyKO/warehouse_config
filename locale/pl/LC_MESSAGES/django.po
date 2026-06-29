@@ -3182,3 +3182,12 @@ msgstr "Jm."
 
 msgid "Видати"
 msgstr "Wydaj"
+
+msgid "Друкувати документ"
+msgstr "Drukuj dokument"
+
+msgid "Складський документ"
+msgstr "Dokument magazynowy"
+
+msgid "Службовий ID операції"
+msgstr "Wewnętrzny identyfikator operacji"
