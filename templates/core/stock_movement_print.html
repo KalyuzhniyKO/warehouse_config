@@ -3,7 +3,7 @@
 <html lang="{{ LANGUAGE_CODE|default:'uk' }}">
 <head>
     <meta charset="utf-8">
-    <title>{% trans "Контрольний талон складської операції" %} #{{ movement.pk }}</title>
+    <title>{% trans "Складський документ" %} {{ movement.document_number|default:"—" }}</title>
     <style>
         @page { size: A4; margin: 14mm; }
         body { font-family: Arial, sans-serif; color:#000; background:#fff; margin:0; font-size:14px; }
@@ -22,16 +22,18 @@
     <button type="button" onclick="window.history.back()">{% trans "Назад" %}</button>
 </div>
 <main class="doc">
-    <h1>
+    <h1>{% trans "Складський документ" %} {{ movement.document_number|default:"—" }}</h1>
+    <h2>
         {% if movement.movement_type == movement.MovementType.IN %}{% trans "Прихід товару" %}
         {% elif movement.movement_type == movement.MovementType.OUT %}{% trans "Видача товару" %}
         {% elif movement.movement_type == movement.MovementType.RETURN %}{% trans "Повернення товару" %}
         {% elif movement.movement_type == movement.MovementType.TRANSFER %}{% trans "Переміщення товару" %}
         {% elif movement.movement_type == movement.MovementType.WRITEOFF %}{% trans "Списання товару" %}
         {% else %}{{ movement.get_movement_type_display }}{% endif %}
-    </h1>
+    </h2>
     <table>
-        <tr><th>{% trans "ID операції" %}</th><td>{{ movement.pk }}</td></tr>
+        <tr><th>{% trans "Номер документа" %}</th><td><strong>{{ movement.document_number|default:"—" }}</strong></td></tr>
+        <tr><th>{% trans "Службовий ID операції" %}</th><td>{{ movement.pk }}</td></tr>
         <tr><th>{% trans "Дата і час операції" %}</th><td>{{ movement.occurred_at|date:"Y-m-d H:i:s" }}</td></tr>
         <tr><th>{% trans "Тип операції" %}</th><td>{{ movement.get_movement_type_display }}</td></tr>
         <tr><th>{% trans "Статус" %}</th><td>{% if movement.is_cancelled %}<strong>{% trans "Анулювано" %}</strong>{% elif movement.reversal_of_id %}{% trans "Рух анулювання" %}{% else %}{% trans "Активно" %}{% endif %}</td></tr>

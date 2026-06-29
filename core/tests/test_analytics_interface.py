@@ -39,7 +39,7 @@ class AnalyticsInterfaceTests(AnalyticsInterfaceTestBase):
         self.assertContains(response, "analytics-kpi-grid")
         self.assertContains(response, "analytics-filter-panel")
         self.assertContains(response, "Експорт Excel")
-        self.assertContains(response, "Експорт CSV")
+        self.assertNotContains(response, "Експорт CSV")
         self.assertNotContains(response, "Експорт PDF")
         self.assertNotContains(response, ">movement_type=out<", html=True)
 

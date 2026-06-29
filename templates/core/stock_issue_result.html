@@ -39,7 +39,7 @@
     </div>
 
     <div class="d-grid gap-3">
-        <a class="btn btn-primary btn-lg py-3 fs-4 fw-semibold rounded-4" href="{% url 'stock_movement_print' movement.pk %}?autoprint=1">{% trans "Друкувати контрольний талон" %}</a>
+        <a class="btn btn-primary btn-lg py-3 fs-4 fw-semibold rounded-4" href="{% url 'stock_movement_print' movement.pk %}?autoprint=1">{% trans "Друкувати документ" %}</a>
         <a class="btn btn-outline-primary btn-lg py-3 fs-4 fw-semibold rounded-4" href="{% url 'stock_issue' %}">{% trans "Нова видача" %}</a>
         <a class="btn btn-outline-secondary btn-lg py-3 fs-4 fw-semibold rounded-4" href="{% url 'dashboard' %}">{% trans "На головний екран" %}</a>
     </div>

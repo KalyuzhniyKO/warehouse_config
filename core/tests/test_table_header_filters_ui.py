@@ -210,9 +210,62 @@ class TableHeaderFilterUITests(TestCase):
 
         self.assertContains(response, "Реєстр документів")
         self.assertContains(response, "Документи складських операцій")
+        self.assertContains(response, "Номер документа")
         self.assertContains(response, "IN-2026-000001")
+        self.assertContains(response, "Друкувати документ")
         self.assertContains(response, reverse("stock_movement_print", args=[movement.pk]))
         self.assertContains(response, 'name="document_number"')
+
+    def test_stock_documents_print_all_document_types_by_document_number(self):
+        movement_types = [
+            StockMovement.MovementType.IN,
+            StockMovement.MovementType.OUT,
+            StockMovement.MovementType.RETURN,
+            StockMovement.MovementType.TRANSFER,
+            StockMovement.MovementType.WRITEOFF,
+            StockMovement.MovementType.INITIAL_BALANCE,
+        ]
+
+        for index, movement_type in enumerate(movement_types, start=1):
+            location_fields = {}
+            if movement_type in {
+                StockMovement.MovementType.OUT,
+                StockMovement.MovementType.WRITEOFF,
+            }:
+                location_fields["source_location"] = self.location
+            elif movement_type == StockMovement.MovementType.TRANSFER:
+                location_fields["source_location"] = self.location
+                location_fields["destination_location"] = self.location
+            else:
+                location_fields["destination_location"] = self.location
+            movement = StockMovement.objects.create(
+                movement_type=movement_type,
+                item=self.item,
+                qty=Decimal("1.000"),
+                document_number=f"TEST-2026-{index:06d}",
+                **location_fields,
+            )
+
+            with self.subTest(movement_type=movement_type):
+                response = self.client.get(reverse("stock_movement_print", args=[movement.pk]))
+                self.assertContains(response, f"Складський документ {movement.document_number}")
+                self.assertContains(response, "Номер документа")
+                self.assertContains(response, movement.document_number)
+                self.assertContains(response, "Службовий ID операції")
+
+    def test_old_document_without_number_still_opens_for_printing(self):
+        movement = StockMovement.objects.create(
+            movement_type=StockMovement.MovementType.IN,
+            item=self.item,
+            qty=Decimal("1.000"),
+            destination_location=self.location,
+            document_number="",
+        )
+
+        response = self.client.get(reverse("stock_movement_print", args=[movement.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Складський документ —")
 
     def test_table_filter_and_archive_print_css_rules_exist(self):
         css = (PROJECT_ROOT / "static/core/css/app.css").read_text()

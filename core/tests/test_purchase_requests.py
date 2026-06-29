@@ -402,7 +402,7 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, f'href="{detail_url}"')
         self.assertContains(response, "Compact purchase row")
         self.assertContains(response, "Compact need description")
-        self.assertContains(response, "10,000 pairs")
+        self.assertContains(response, "10 pairs")
 
     def test_active_list_hides_archived_requests_and_archive_list_hides_active(self):
         active = self.create_request(title="Active request")
@@ -904,7 +904,7 @@ class PurchaseRequestTests(TestCase):
         self.assertContains(response, "detail-payment-status")
         self.assertContains(response, "detail-delivery-status")
         self.assertContains(response, "Кількість / одиниця")
-        self.assertContains(response, "12,000 pairs")
+        self.assertContains(response, "12 pairs")
         self.assertContains(response, "Вартість за одиницю")
         self.assertContains(response, "Сума")
         html = response.content.decode()

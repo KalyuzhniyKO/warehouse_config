@@ -35,7 +35,7 @@ class StockIssueInterfaceTests(StockIssueInterfaceTestBase):
         self.assertContains(response, "Новий прихід товару")
         self.assertContains(response, "На головний екран")
         self.assertContains(response, reverse("dashboard"))
-        self.assertContains(response, "Друкувати контрольний талон")
+        self.assertContains(response, "Друкувати документ")
         self.assertContains(
             response,
             f'{reverse("stock_movement_print", kwargs={"pk": movement.pk})}?autoprint=1',
@@ -218,8 +218,9 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Контрольний талон складської операції")
-        self.assertContains(response, "ID операції")
+        self.assertContains(response, "Складський документ —")
+        self.assertContains(response, "Номер документа")
+        self.assertContains(response, "Службовий ID операції")
         self.assertContains(response, "Тип операції")
         self.assertContains(response, "Дата і час операції")
         self.assertContains(response, "Товар")
@@ -249,8 +250,9 @@ class StockOperationWorkflowTests(StockOperationWorkflowTestBase):
         html = response.content.decode()
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("Warehouse operation control slip", html)
-        self.assertIn("Operation ID", html)
+        self.assertIn("Warehouse document —", html)
+        self.assertIn("Document number", html)
+        self.assertIn("Internal operation ID", html)
         self.assertIn("Operation type", html)
         self.assertIn("Operation date and time", html)
         self.assertIn("Item", html)

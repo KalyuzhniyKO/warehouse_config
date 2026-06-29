@@ -3658,10 +3658,14 @@ msgstr "Переміщення виконано"
 
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16
-#, fuzzy
-#| msgid "Друкувати контрольний талон"
 msgid "Друкувати документ"
-msgstr "Друкувати контрольний талон"
+msgstr "Друкувати документ"
+
+msgid "Складський документ"
+msgstr "Складський документ"
+
+msgid "Службовий ID операції"
+msgstr "Службовий ID операції"
 
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16

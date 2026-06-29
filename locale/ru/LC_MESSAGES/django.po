@@ -3567,7 +3567,13 @@ msgstr "Перемещение выполнено"
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16
 msgid "Друкувати документ"
-msgstr "Печатать контрольный талон"
+msgstr "Печатать документ"
+
+msgid "Складський документ"
+msgstr "Складской документ"
+
+msgid "Службовий ID операції"
+msgstr "Служебный ID операции"
 
 #: templates/core/stock_transfer_result.html:18
 #: templates/core/stock_writeoff_result.html:16

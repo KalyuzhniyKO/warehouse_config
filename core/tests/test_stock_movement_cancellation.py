@@ -128,18 +128,22 @@ class StockMovementCancellationTests(TestCase):
         self.assertEqual(self.balance(self.source), Decimal("8.000"))
 
     def test_cancelling_transfer_increases_source_and_decreases_destination(self):
+        target_warehouse = Warehouse.objects.create(name="Target")
+        target_location = Location.objects.create(
+            warehouse=target_warehouse, name="Target location"
+        )
         receive_stock(item=self.item, location=self.source, qty=9)
         movement = transfer_stock(
             item=self.item,
             source_location=self.source,
-            target_location=self.destination,
+            target_location=target_location,
             qty=4,
         )
 
         self.cancel(movement)
 
         self.assertEqual(self.balance(self.source), Decimal("9.000"))
-        self.assertEqual(self.balance(self.destination), Decimal("0.000"))
+        self.assertEqual(self.balance(target_location), Decimal("0.000"))
 
     def test_cancelling_adjustment_reverses_destination_side(self):
         movement = adjust_stock(item=self.item, location=self.destination, quantity_delta=6)
